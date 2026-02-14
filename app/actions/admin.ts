@@ -1,0 +1,515 @@
+"use server"
+
+import { createClient } from "@/lib/supabase/server"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import { v4 as uuidv4 } from "uuid"
+import { extractCompanyFromFileName } from "@/lib/company-parser"
+
+interface PortfolioInput {
+  fileName: string
+  fileUrl: string      // Supabase Storage public URL
+  mimeType: string
+  filePath: string     // Storage 경로 (분석 후 삭제용)
+  companies: string[]
+  year: number
+  documentType: string
+}
+
+// 관리자용: Supabase Storage에 파일 업로드
+export async function uploadAdminFile(formData: FormData) {
+  try {
+    const file = formData.get("file") as File
+    if (!file) {
+      return { error: "파일이 없습니다." }
+    }
+
+    // Gemini inline 제한 고려
+    const maxSize = 50 * 1024 * 1024 // 50MB
+    if (file.size > maxSize) {
+      return { error: `파일 크기는 ${Math.round(maxSize / 1024 / 1024)}MB를 초과할 수 없습니다. (현재: ${Math.round(file.size / 1024 / 1024)}MB)` }
+    }
+
+    const supabase = await createClient()
+    
+    const fileExt = file.name.split(".").pop()
+    const uniqueFileName = `${uuidv4()}.${fileExt}`
+    const filePath = `admin/${uniqueFileName}`
+
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    const { error } = await supabase.storage
+      .from("resumes")
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (error) {
+      console.error("Upload error:", error)
+      return { error: "파일 업로드에 실패했습니다." }
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("resumes")
+      .getPublicUrl(filePath)
+
+    // 파일명에서 회사명 자동 추출
+    const extractedCompanies = extractCompanyFromFileName(file.name)
+    
+    console.log('📁 파일명:', file.name)
+    console.log('🏢 추출된 회사:', extractedCompanies)
+
+    return {
+      data: {
+        fileName: file.name,
+        filePath: filePath,
+        fileUrl: urlData.publicUrl,
+        mimeType: file.type,
+        size: file.size,
+        extractedCompanies: extractedCompanies, // 자동 추출된 회사명
+      }
+    }
+  } catch (error) {
+    console.error("Upload error:", error)
+    return { error: "파일 업로드 중 오류가 발생했습니다." }
+  }
+}
+
+// 포트폴리오 분석 및 저장 (inline_data 사용 - 파일시스템 불필요)
+export async function analyzeAndSavePortfolio(input: PortfolioInput) {
+  console.log('⭐⭐⭐ analyzeAndSavePortfolio 호출됨!')
+  console.log('⭐ 입력 companies:', input.companies)
+  console.log('⭐ 입력 fileName:', input.fileName)
+  
+  try {
+    // 🔥 강제: 파일명에서 회사명 직접 추출
+    console.log('⭐ companies.length:', input.companies.length)
+    if (input.companies.length === 0) {
+      console.log('⭐⭐⭐ 강제 추출 시작!')
+      // 유니코드 정규화
+      const fileName = input.fileName.normalize('NFC')
+      const detectedCompanies: string[] = []
+      
+      console.log('⭐ 정규화된 fileName:', fileName)
+      
+      // 정규식으로 매칭 (더 안전)
+      if (/넷마블/u.test(fileName)) {
+        console.log('⭐ 넷마블 발견!')
+        detectedCompanies.push('넷마블')
+      }
+      if (/넥슨/u.test(fileName)) detectedCompanies.push('넥슨')
+      if (/네오위즈/u.test(fileName)) detectedCompanies.push('네오위즈')
+      if (/엔씨/u.test(fileName)) detectedCompanies.push('엔씨소프트')
+      if (/스마일게이트/u.test(fileName)) detectedCompanies.push('스마일게이트')
+      if (/크래프톤/u.test(fileName)) detectedCompanies.push('크래프톤')
+      if (/라이온하트/u.test(fileName)) detectedCompanies.push('라이온하트')
+      if (/매드엔진/u.test(fileName)) detectedCompanies.push('매드엔진')
+      if (/웹젠/u.test(fileName)) detectedCompanies.push('웹젠')
+      
+      console.log('⭐ detectedCompanies:', detectedCompanies)
+      
+      if (detectedCompanies.length > 0) {
+        console.log('🔥🔥🔥 강제 추출 성공:', detectedCompanies)
+        input.companies = detectedCompanies
+      } else {
+        console.log('❌ detectedCompanies가 비어있음!')
+      }
+    }
+    
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    if (!apiKey) {
+      throw new Error("GOOGLE_GENERATIVE_AI_API_KEY가 설정되지 않았습니다.")
+    }
+
+    const supabase = await createClient()
+
+    const prompt = `당신은 11년 경력의 게임 기획 포트폴리오 전문가이자 채용 담당자입니다.
+이 문서는 **실제로 게임 회사에 합격한 포트폴리오**입니다.
+학습 데이터로 활용되므로, 이 문서의 **성공 요인을 면밀히 분석**해주세요.
+
+## 🎯 분석 목표
+이 문서를 한 장 한 장 **꼼꼼히 읽고** 다음을 파악하세요:
+1. **문서 구조**: 어떤 흐름으로 구성되었나? (목차, 섹션 구성)
+2. **강점 패턴**: 무엇이 이 문서를 돋보이게 만들었나?
+3. **수치/데이터**: 얼마나 구체적인가? 어떤 데이터를 사용했나?
+4. **시각 자료**: 다이어그램, 표, 차트는 어떻게 활용했나?
+5. **기술 이해도**: 게임 개발 용어, 기술 스택 언급 정도
+6. **차별화**: 다른 일반적 포트폴리오와 차별화되는 요소는?
+
+## 점수 기준 (합격 문서이므로 80점 이상 권장)
+- 95-100점: 레벨디자인/시스템 기획서 (상세 스펙, 플로우차트, 수치 테이블 풍부)
+- 88-94점: 게임 제안서/컨셉 문서 (방향성 명확, 시장분석, 설득력)
+- 80-87점: 밸런싱/테이블 설계서 (수식, 데이터 구조)
+- 75-79점: 자기PR/소개 문서
+- 70점 이하: 개선 필요 (합격 문서이므로 드물어야 함)
+
+## 평가 항목 (각 0-100점)
+1. **논리력 (logic_score)**: 문제 정의 → 가설 → 해결 → 결과의 논리 흐름
+2. **구체성 (specificity_score)**: 수치, 데이터, KPI, 구체적 사례 (예: "30% 증가", "DAU 5000")
+3. **가독성 (readability_score)**: 문서 구조, 시각적 정리, 다이어그램/표 활용
+4. **기술이해 (technical_score)**: 게임 개발 기술, 용어, 파이프라인 이해도
+5. **창의성 (creativity_score)**: 독창적 아이디어, 차별화 요소
+
+## 추출할 정보 (매우 구체적으로)
+- **핵심 키워드/태그**: 문서에 등장한 주요 개념 (최대 12개)
+- **문서 요약**: 이 문서가 무엇을 다루는지 명확히 (250자 이내)
+- **강점 4가지**: "왜 이 문서가 합격했는가?"에 대한 구체적 분석
+  예: "플로우차트 5개로 시스템 흐름 명확히 시각화"
+       "KPI 수치를 3개 섹션에 걸쳐 구체적으로 제시"
+- **개선 가능 점 3가지**: 완벽한 문서는 없으므로, 더 좋아질 수 있는 부분
+  예: "결론 섹션에 A/B 테스트 결과 추가 가능"
+
+## 응답 형식 (반드시 JSON만 출력, 다른 텍스트 없이)
+{
+  "scores": {
+    "logic_score": 92,
+    "specificity_score": 90,
+    "readability_score": 93,
+    "technical_score": 88,
+    "creativity_score": 91
+  },
+  "overall_score": 91,
+  "tags": ["시스템기획", "밸런스", "레벨디자인", "KPI", "플로우차트"],
+  "summary": "신규 RPG 게임의 전투 시스템 기획서. 스킬 밸런싱 수치 설계와 플로우차트로 시스템 흐름을 명확히 제시. KPI 목표치(DAU 5000, 매출 30% 증가) 명시.",
+  "strengths": [
+    "플로우차트 5개로 전투 시스템 흐름을 단계별로 시각화",
+    "스킬 밸런싱 수치 테이블에 DPS, 쿨타임, 마나 소모량 등 구체적 수치 제시",
+    "경쟁작 3개 분석하여 차별화 요소 명확히 정리",
+    "A/B 테스트 결과 데이터(전투 만족도 85%)를 근거로 제시"
+  ],
+  "weaknesses": [
+    "결론 섹션에서 향후 확장성(추가 스킬, 밸런스 패치) 언급 부족",
+    "UI/UX 목업이 없어 실제 구현 이미지 상상 어려움",
+    "개발 일정 및 리소스 계획 부재"
+  ]
+}
+
+**중요**: 이 문서를 읽고, 성공 요인을 구체적으로 분석하세요. 나중에 다른 포트폴리오 평가 시 이 패턴을 참고할 것입니다.`
+
+    // 파일 다운로드하여 base64로 변환
+    const response = await fetch(input.fileUrl, {
+      signal: AbortSignal.timeout(180000) // 3분 타임아웃
+    })
+    if (!response.ok) {
+      throw new Error("파일을 다운로드할 수 없습니다.")
+    }
+    const fileBuffer = Buffer.from(await response.arrayBuffer())
+    const base64Data = fileBuffer.toString("base64")
+
+    // Base64 크기 체크 (Gemini inline 제한)
+    const maxInlineSize = 50 * 1024 * 1024 // 50MB까지 시도
+    const base64Size = base64Data.length * 0.75
+    if (base64Size > maxInlineSize) {
+      throw new Error(`파일이 너무 큽니다. (${Math.round(base64Size / 1024 / 1024)}MB) 50MB 이하의 파일을 사용해주세요.`)
+    }
+
+    try {
+      // Gemini API 호출 - inline_data로 전달
+      const genAI = new GoogleGenerativeAI(apiKey)
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.0-flash",
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        }
+      })
+
+      const result = await model.generateContent([
+        { text: prompt },
+        {
+          inlineData: {
+            mimeType: input.mimeType,
+            data: base64Data,
+          },
+        },
+      ])
+
+      const responseText = result.response.text()
+
+      // JSON 추출
+      let jsonStr = responseText
+      const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1]
+      } else {
+        const objectMatch = responseText.match(/\{[\s\S]*\}/)
+        if (objectMatch) {
+          jsonStr = objectMatch[0]
+        }
+      }
+
+      const analysis = JSON.parse(jsonStr)
+
+      // 점수를 정수로 변환 (소수점 반올림)
+      const convertToInt = (value: any): number => {
+        if (typeof value === 'string') {
+          return Math.round(parseFloat(value))
+        }
+        if (typeof value === 'number') {
+          return Math.round(value)
+        }
+        return 0
+      }
+
+      console.log('💾 DB 저장 - 파일명:', input.fileName)
+      console.log('💾 DB 저장 - 회사:', input.companies)
+
+      // DB에 저장
+      const { error: dbError } = await supabase
+        .from("portfolios")
+        .insert({
+          file_name: input.fileName,
+          file_url: input.fileUrl,
+          companies: input.companies,
+          year: input.year,
+          document_type: input.documentType,
+          overall_score: convertToInt(analysis.overall_score),
+          logic_score: convertToInt(analysis.scores?.logic_score),
+          specificity_score: convertToInt(analysis.scores?.specificity_score),
+          readability_score: convertToInt(analysis.scores?.readability_score),
+          technical_score: convertToInt(analysis.scores?.technical_score),
+          creativity_score: convertToInt(analysis.scores?.creativity_score),
+          tags: analysis.tags,
+          summary: analysis.summary,
+          strengths: analysis.strengths,
+          weaknesses: analysis.weaknesses
+        })
+        .select()
+        .single()
+
+      if (dbError) {
+        throw new Error(`DB 저장 실패: ${dbError.message}`)
+      }
+
+      return {
+        success: true,
+        score: analysis.overall_score,
+        analysisData: analysis
+      }
+
+    } finally {
+      // Supabase Storage에서 파일 삭제 (학습 데이터는 보관하지 않음)
+      await supabase.storage.from("resumes").remove([input.filePath]).catch(() => {})
+    }
+
+  } catch (error) {
+    console.error("Portfolio analysis error:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "분석 중 오류가 발생했습니다."
+    }
+  }
+}
+
+// 포트폴리오 통계 조회
+export async function getPortfolioStats() {
+  try {
+    const supabase = await createClient()
+
+    const { data: companyData, error } = await supabase
+      .from("portfolios")
+      .select("companies")
+
+    if (error) throw error
+
+    const companyCount: Record<string, number> = {}
+    companyData?.forEach(row => {
+      row.companies?.forEach((company: string) => {
+        companyCount[company] = (companyCount[company] || 0) + 1
+      })
+    })
+
+    const sortedCompanies = Object.entries(companyCount)
+      .sort((a, b) => b[1] - a[1])
+      .map(([company]) => company)
+
+    return {
+      success: true,
+      data: {
+        total: companyData?.length || 0,
+        companies: sortedCompanies
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "통계 조회 실패"
+    }
+  }
+}
+
+// 회사별 평균 점수 조회
+export async function getCompanyAverages(company: string) {
+  try {
+    const supabase = await createClient()
+
+    const { data: portfolioData, error } = await supabase
+      .from("portfolios")
+      .select("*")
+      .contains("companies", [company])
+
+    if (error) throw error
+
+    if (!portfolioData || portfolioData.length === 0) {
+      return { success: true, data: null }
+    }
+
+    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
+
+    return {
+      success: true,
+      data: {
+        count: portfolioData.length,
+        overall_avg: Math.round(avg(portfolioData.map(d => d.overall_score))),
+        logic_avg: Math.round(avg(portfolioData.map(d => d.logic_score))),
+        specificity_avg: Math.round(avg(portfolioData.map(d => d.specificity_score))),
+        readability_avg: Math.round(avg(portfolioData.map(d => d.readability_score))),
+        technical_avg: Math.round(avg(portfolioData.map(d => d.technical_score))),
+        creativity_avg: Math.round(avg(portfolioData.map(d => d.creativity_score)))
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "조회 실패"
+    }
+  }
+}
+
+// 전체 포트폴리오 데이터 조회
+export async function getAllPortfoliosForComparison() {
+  try {
+    const supabase = await createClient()
+
+    const { data: portfolioData, error } = await supabase
+      .from("portfolios")
+      .select("*")
+      .order("overall_score", { ascending: false })
+
+    if (error) throw error
+
+    return { success: true, data: portfolioData }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "조회 실패"
+    }
+  }
+}
+
+// 학습된 포트폴리오 목록 조회
+export async function getPortfolioList() {
+  try {
+    const supabase = await createClient()
+
+    const { data: portfolioList, error } = await supabase
+      .from("portfolios")
+      .select("id, file_name, companies, year, document_type, overall_score, created_at")
+      .order("created_at", { ascending: false })
+
+    if (error) throw error
+
+    return { success: true, data: portfolioList }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "목록 조회 실패"
+    }
+  }
+}
+
+// 포트폴리오 삭제
+export async function deletePortfolio(id: string) {
+  try {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+      .from("portfolios")
+      .delete()
+      .eq("id", id)
+
+    if (error) throw error
+
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "삭제 실패"
+    }
+  }
+}
+
+// 포트폴리오 일괄 삭제
+export async function deleteMultiplePortfolios(ids: string[]) {
+  try {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+      .from("portfolios")
+      .delete()
+      .in("id", ids)
+
+    if (error) throw error
+
+    return { success: true, count: ids.length }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "일괄 삭제 실패"
+    }
+  }
+}
+
+// 회사별 학습 데이터 통계
+export async function getCompanyStats() {
+  try {
+    const supabase = await createClient()
+    
+    // 전체 포트폴리오 가져오기
+    const { data: portfolios, error } = await supabase
+      .from("portfolios")
+      .select("companies")
+
+    if (error) {
+      console.error("Company stats error:", error)
+      return { error: error.message }
+    }
+
+    // 회사별 카운트
+    const stats: Record<string, number> = {}
+    
+    const targetCompanies = [
+      "엔씨소프트",
+      "넥슨", 
+      "넷마블",
+      "네오위즈",
+      "스마일게이트",
+      "라이온하트",
+      "매드엔진",
+      "웹젠",
+      "일반게임회사"
+    ]
+
+    // 초기화
+    targetCompanies.forEach(company => {
+      stats[company] = 0
+    })
+
+    // 카운트
+    portfolios?.forEach(portfolio => {
+      if (portfolio.companies && Array.isArray(portfolio.companies)) {
+        portfolio.companies.forEach((company: string) => {
+          if (targetCompanies.includes(company)) {
+            stats[company]++
+          }
+        })
+      }
+    })
+
+    return { data: stats }
+  } catch (error) {
+    console.error("Get company stats error:", error)
+    return { error: error instanceof Error ? error.message : "회사별 통계 조회 실패" }
+  }
+}

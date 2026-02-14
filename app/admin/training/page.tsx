@@ -1,0 +1,498 @@
+"use client"
+
+import { useState, useCallback, useEffect } from "react"
+import { useDropzone } from "react-dropzone"
+import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Brain, AlertTriangle, TrendingUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioList, getCompanyStats } from "@/app/actions/admin"
+import Link from "next/link"
+
+interface TrainingFile {
+  file: File
+  status: "pending" | "uploading" | "analyzing" | "success" | "error" | "skipped"
+  message?: string
+  score?: number
+  companies?: string[]
+}
+
+export default function TrainingPage() {
+  const [files, setFiles] = useState<TrainingFile[]>([])
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [completedCount, setCompletedCount] = useState(0)
+  const [existingFiles, setExistingFiles] = useState<string[]>([])
+  const [companyStats, setCompanyStats] = useState<Record<string, number>>({})
+  const [isLoadingStats, setIsLoadingStats] = useState(false)
+
+  // 기존 학습 파일 목록 로드
+  useEffect(() => {
+    loadExistingFiles()
+    loadCompanyStats()
+  }, [])
+
+  const loadExistingFiles = async () => {
+    const result = await getPortfolioList()
+    if (result.data) {
+      const fileNames = result.data.map((p: any) => p.file_name)
+      setExistingFiles(fileNames)
+    }
+  }
+
+  const loadCompanyStats = async () => {
+    setIsLoadingStats(true)
+    const result = await getCompanyStats()
+    if (result.data) {
+      setCompanyStats(result.data)
+    }
+    setIsLoadingStats(false)
+  }
+
+  // 파일 드롭
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+    // 거부된 파일 처리
+    if (rejectedFiles.length > 0) {
+      const errors = rejectedFiles.map(({ file, errors }) => {
+        const errorMsg = errors.map((e: any) => {
+          if (e.code === 'file-too-large') return `${file.name}: 파일이 너무 큽니다 (최대 50MB)`
+          if (e.code === 'file-invalid-type') return `${file.name}: 지원하지 않는 파일 형식입니다`
+          return `${file.name}: ${e.message}`
+        }).join('\n')
+        return errorMsg
+      }).join('\n')
+      alert(`❌ 업로드 실패:\n\n${errors}`)
+    }
+
+    // 중복 체크 및 파일 추가
+    const duplicates: string[] = []
+    const newFiles: TrainingFile[] = acceptedFiles.map(file => {
+      const isDuplicate = existingFiles.includes(file.name)
+      if (isDuplicate) {
+        duplicates.push(file.name)
+      }
+      return {
+        file,
+        status: isDuplicate ? "skipped" : "pending",
+        message: isDuplicate ? "이미 학습된 파일" : undefined
+      }
+    })
+
+    if (duplicates.length > 0) {
+      alert(`⚠️ 중복 파일 발견:\n\n${duplicates.join('\n')}\n\n이미 학습된 파일은 건너뜁니다.`)
+    }
+
+    setFiles(prev => [...prev, ...newFiles])
+  }, [existingFiles])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "application/pdf": [".pdf"],
+      // "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"], // 워드는 Gemini가 지원 안 함
+      "text/plain": [".txt"],
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"]
+    },
+    multiple: true,
+    maxSize: 50 * 1024 * 1024 // 50MB 제한
+  })
+
+  // 일괄 학습 시작
+  const startTraining = async () => {
+    if (files.length === 0) {
+      alert("파일을 먼저 추가해주세요.")
+      return
+    }
+
+    const pendingFiles = files.filter(f => f.status === "pending")
+    if (pendingFiles.length === 0) {
+      alert("학습할 파일이 없습니다. (모두 중복 파일)")
+      return
+    }
+
+    setIsProcessing(true)
+    setProgress(0)
+    setCompletedCount(0)
+
+    const totalFiles = files.length
+
+    for (let i = 0; i < files.length; i++) {
+      const fileData = files[i]
+
+      // 이미 스킵된 파일은 건너뛰기
+      if (fileData.status === "skipped") {
+        setProgress(((i + 1) / totalFiles) * 100)
+        continue
+      }
+
+      try {
+        // 1. 업로드 중
+        setFiles(prev => prev.map((f, idx) => 
+          idx === i ? { ...f, status: "uploading", message: "업로드 중..." } : f
+        ))
+
+        const formData = new FormData()
+        formData.append("file", fileData.file)
+        
+        const uploadResult = await uploadAdminFile(formData)
+        
+        if (uploadResult.error) {
+          throw new Error(uploadResult.error)
+        }
+
+        // 2. AI 분석 중
+        setFiles(prev => prev.map((f, idx) => 
+          idx === i ? { ...f, status: "analyzing", message: "AI 분석 중..." } : f
+        ))
+        
+        // 자동 추출된 회사명 사용 (백업: 파일명에서 직접 추출)
+        let companies = (uploadResult.data as any)?.extractedCompanies || []
+        
+        // 백업: 파일명에서 직접 회사명 추출
+        if (companies.length === 0) {
+          const fileName = fileData.file.name
+          if (fileName.includes('넷마블')) companies.push('넷마블')
+          if (fileName.includes('넥슨')) companies.push('넥슨')
+          if (fileName.includes('네오위즈')) companies.push('네오위즈')
+          if (fileName.includes('엔씨')) companies.push('엔씨소프트')
+          if (fileName.includes('스마일게이트')) companies.push('스마일게이트')
+          if (fileName.includes('크래프톤')) companies.push('크래프톤')
+          if (fileName.includes('라이온하트')) companies.push('라이온하트')
+          if (fileName.includes('매드엔진')) companies.push('매드엔진')
+          if (fileName.includes('웹젠')) companies.push('웹젠')
+        }
+        
+        const result = await analyzeAndSavePortfolio({
+          fileName: uploadResult.data!.fileName,
+          fileUrl: uploadResult.data!.fileUrl,
+          mimeType: uploadResult.data!.mimeType,
+          filePath: uploadResult.data!.filePath,
+          companies: companies, // 파일명에서 자동 추출!
+          year: new Date().getFullYear(),
+          documentType: "학습데이터"
+        })
+
+        if (result.success) {
+          const companyMsg = companies.length > 0 ? ` (${companies.join(", ")})` : ""
+          setFiles(prev => prev.map((f, idx) => 
+            idx === i ? { 
+              ...f, 
+              status: "success", 
+              message: `완료${companyMsg}`,
+              score: result.score,
+              companies: companies
+            } : f
+          ))
+          setCompletedCount(prev => prev + 1)
+        } else {
+          throw new Error(result.error)
+        }
+      } catch (error) {
+        setFiles(prev => prev.map((f, idx) => 
+          idx === i ? { 
+            ...f, 
+            status: "error", 
+            message: error instanceof Error ? error.message : "분석 실패" 
+          } : f
+        ))
+      }
+
+      // 진행률 업데이트
+      setProgress(((i + 1) / totalFiles) * 100)
+      
+      // Rate limiting (3초 대기 - 큰 파일 처리 시간 고려)
+      if (i < files.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 3000))
+      }
+    }
+
+    setIsProcessing(false)
+    
+    // 학습 완료 후 기존 파일 목록 새로고침
+    await loadExistingFiles()
+    await loadCompanyStats() // 통계도 새로고침
+  }
+
+  const clearAll = () => {
+    setFiles([])
+    setProgress(0)
+    setCompletedCount(0)
+  }
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const successCount = files.filter(f => f.status === "success").length
+  const errorCount = files.filter(f => f.status === "error").length
+  const skippedCount = files.filter(f => f.status === "skipped").length
+  const pendingCount = files.filter(f => f.status === "pending").length
+
+  return (
+    <div className="min-h-screen bg-[#0a1628] py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* 헤더 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+            <Brain className="w-8 h-8 text-[#5B8DEF]" />
+            학습 데이터 일괄 업로드
+          </h1>
+          <p className="text-slate-400">
+            합격 포트폴리오 파일들을 업로드하면 AI가 자동으로 분석하고 DB에 저장합니다.
+          </p>
+        </div>
+
+        {/* 회사별 학습 데이터 통계 */}
+        <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-[#5B8DEF]" />
+              회사별 학습 데이터 현황
+            </CardTitle>
+            <CardDescription className="text-slate-400 text-sm">
+              각 회사별로 현재 학습된 포트폴리오 개수
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingStats ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-[#5B8DEF]" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                {Object.entries(companyStats).map(([company, count]) => {
+                  const colors: Record<string, string> = {
+                    "엔씨소프트": "from-green-500 to-emerald-600",
+                    "넥슨": "from-blue-500 to-cyan-600",
+                    "넷마블": "from-red-500 to-rose-600",
+                    "네오위즈": "from-purple-500 to-violet-600",
+                    "스마일게이트": "from-orange-500 to-amber-600",
+                    "라이온하트": "from-pink-500 to-fuchsia-600",
+                    "매드엔진": "from-indigo-500 to-blue-600",
+                    "웹젠": "from-teal-500 to-cyan-600",
+                    "일반게임회사": "from-slate-500 to-gray-600"
+                  }
+
+                  return (
+                    <div
+                      key={company}
+                      className={`bg-gradient-to-br ${colors[company]} rounded-lg p-3 text-white shadow-md`}
+                    >
+                      <div className="text-xs font-medium mb-0.5 opacity-90">
+                        {company}
+                      </div>
+                      <div className="text-2xl font-bold">
+                        {count}
+                      </div>
+                      <div className="text-[10px] opacity-75">
+                        개 학습됨
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 통계 카드 */}
+        {files.length > 0 && (
+          <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div>
+                  <p className="text-3xl font-bold text-[#5B8DEF]">{files.length}</p>
+                  <p className="text-slate-400 text-sm mt-1">총 파일</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-emerald-400">{successCount}</p>
+                  <p className="text-slate-400 text-sm mt-1">성공</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-amber-400">{skippedCount}</p>
+                  <p className="text-slate-400 text-sm mt-1">중복</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-red-400">{errorCount}</p>
+                  <p className="text-slate-400 text-sm mt-1">실패</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 학습 데이터 관리 링크 */}
+        <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Database className="w-5 h-5 text-[#5B8DEF]" />
+                <div>
+                  <p className="text-slate-200 font-medium">기존 학습 데이터: {existingFiles.length}개</p>
+                  <p className="text-slate-400 text-sm">이미 학습된 파일은 자동으로 건너뜁니다</p>
+                </div>
+              </div>
+              <Link href="/admin/data">
+                <Button
+                  variant="outline"
+                  className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
+                >
+                  <Database className="w-4 h-4 mr-2" />
+                  학습 데이터 관리
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 드롭존 */}
+        <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Upload className="w-5 h-5 text-[#5B8DEF]" />
+              파일 선택
+            </CardTitle>
+            <CardDescription className="text-slate-400">
+              PDF, DOCX, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 50MB)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
+                isDragActive 
+                  ? "border-[#5B8DEF] bg-[#5B8DEF]/10 scale-[1.02]" 
+                  : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/30"
+              }`}
+            >
+              <input {...getInputProps()} />
+              <Database className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+              <p className="text-slate-300 text-lg mb-1">
+                {isDragActive ? "여기에 놓으세요" : "파일을 여기에 드래그"}
+              </p>
+              <p className="text-slate-500 text-sm">또는 클릭하여 선택</p>
+            </div>
+
+            {/* 파일 목록 */}
+            {files.length > 0 && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[#5B8DEF] text-sm font-medium">
+                    {files.length}개 파일 선택됨
+                  </p>
+                  {!isProcessing && (
+                    <Button
+                      onClick={clearAll}
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-400 hover:text-white hover:bg-slate-800"
+                    >
+                      전체 삭제
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2 max-h-64 overflow-auto">
+                  {files.map((fileData, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`flex items-center gap-3 p-3 rounded-lg ${
+                        fileData.status === "success" ? "bg-emerald-500/10 border border-emerald-500/20" :
+                        fileData.status === "error" ? "bg-red-500/10 border border-red-500/20" :
+                        fileData.status === "skipped" ? "bg-amber-500/10 border border-amber-500/20" :
+                        fileData.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/20" :
+                        fileData.status === "uploading" ? "bg-amber-500/10 border border-amber-500/20" :
+                        "bg-slate-800/50 border border-transparent"
+                      }`}
+                    >
+                      {fileData.status === "pending" && <div className="w-4 h-4 rounded-full border-2 border-slate-500" />}
+                      {fileData.status === "uploading" && <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />}
+                      {fileData.status === "analyzing" && <Loader2 className="w-4 h-4 text-[#5B8DEF] animate-spin" />}
+                      {fileData.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                      {fileData.status === "error" && <XCircle className="w-4 h-4 text-red-400" />}
+                      {fileData.status === "skipped" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
+                      
+                      <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-slate-300 text-sm truncate">{fileData.file.name}</p>
+                        <p className="text-slate-500 text-xs">{(fileData.file.size / 1024 / 1024).toFixed(2)}MB</p>
+                      </div>
+                      
+                      {fileData.score && (
+                        <span className="text-[#5B8DEF] font-bold text-sm">{fileData.score}점</span>
+                      )}
+                      
+                      {fileData.message && (
+                        <span className={`text-xs ${
+                          fileData.status === "error" ? "text-red-400" : "text-slate-400"
+                        }`}>{fileData.message}</span>
+                      )}
+                      
+                      {!isProcessing && fileData.status === "pending" && (
+                        <button
+                          onClick={() => removeFile(idx)}
+                          className="text-slate-400 hover:text-red-400 transition-colors"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 실행 버튼 */}
+        <Card className="bg-slate-900/80 border-[#1e3a5f]">
+          <CardContent className="pt-6">
+            <Button
+              onClick={startTraining}
+              disabled={isProcessing || files.length === 0 || pendingCount === 0}
+              className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white h-14 text-lg disabled:opacity-50"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  AI 학습 중... ({completedCount}/{files.length})
+                </>
+              ) : (
+                <>
+                  <Brain className="w-5 h-5 mr-2" />
+                  학습 시작 ({pendingCount}개 파일{skippedCount > 0 ? `, ${skippedCount}개 중복` : ''})
+                </>
+              )}
+            </Button>
+
+            {/* 진행률 */}
+            {isProcessing && (
+              <div className="mt-4">
+                <div className="flex justify-between text-sm text-slate-400 mb-2">
+                  <span>진행률</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
+            )}
+
+            {/* 완료 메시지 */}
+            {!isProcessing && completedCount > 0 && (
+              <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                <p className="text-emerald-400 text-center font-medium">
+                  🎉 총 {successCount}개 데이터 학습 완료!
+                  {errorCount > 0 && ` (${errorCount}개 실패)`}
+                </p>
+              </div>
+            )}
+
+            <p className="text-slate-500 text-xs text-center mt-4">
+              * Gemini AI가 각 파일을 분석하여 점수, 태그, 요약을 추출하고 DB에 저장합니다.<br/>
+              * 큰 파일은 처리 시간이 오래 걸릴 수 있습니다. (최대 50MB)
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

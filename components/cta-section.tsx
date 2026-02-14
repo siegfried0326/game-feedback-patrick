@@ -1,0 +1,51 @@
+import { ArrowRight, MessageCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export function CTASection() {
+  return (
+    <section className="py-20 px-6 bg-gradient-to-r from-[#0d1f3c] via-[#162a4a] to-[#0d1f3c] border-t border-b border-[#5B8DEF]/30">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 text-balance">
+          지금 바로 시작하세요
+        </h2>
+        <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto text-pretty">
+          첫 1회는 무료입니다.<br className="hidden sm:block" />
+          부담 없이 피드백 품질을 경험해 보세요.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button 
+            asChild 
+            size="lg" 
+            className="bg-[#5B8DEF] text-white hover:bg-[#4A7CE0] px-8 h-12 text-base"
+          >
+            <a href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162" target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="mr-2 w-4 h-4" />
+              무료 상담 신청하기
+            </a>
+          </Button>
+          <Button 
+            asChild
+            variant="outline" 
+            size="lg" 
+            className="border-[#1e3a5f] text-slate-300 hover:bg-[#162a4a] hover:text-white px-8 h-12 text-base bg-transparent"
+          >
+            <a href="https://v0-cafe-naver-homepage.vercel.app/" target="_blank" rel="noopener noreferrer">
+              PATRICK 강의 보기
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </a>
+          </Button>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-[#1e3a5f]">
+          <p className="text-slate-500 text-sm mb-4">
+            PATRICK 강의 수강생이라면?
+          </p>
+          <p className="text-[#5B8DEF] text-lg font-medium">
+            수강생 전용 할인 혜택을 받으실 수 있습니다
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}

@@ -11,7 +11,7 @@ function LoginContent() {
   const redirectTo = searchParams.get("redirect") || "/"
   const error = searchParams.get("error")
 
-  const handleSocialLogin = async (provider: "google" | "kakao" | "naver") => {
+  const handleSocialLogin = async (provider: "google" | "kakao" | "apple") => {
     const supabase = createClient()
 
     const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`
@@ -79,15 +79,15 @@ function LoginContent() {
               카카오로 계속하기
             </button>
 
-            {/* 네이버 로그인 */}
+            {/* Apple 로그인 */}
             <button
-              onClick={() => handleSocialLogin("naver" as any)}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#03C75A] hover:bg-[#02B550] text-white font-medium transition-colors"
+              onClick={() => handleSocialLogin("apple")}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-black hover:bg-gray-900 text-white font-medium transition-colors border border-gray-700"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
-                <path d="M16.27 3H7.73C5.12 3 3 5.12 3 7.73v8.54C3 18.88 5.12 21 7.73 21h8.54C18.88 21 21 18.88 21 16.27V7.73C21 5.12 18.88 3 16.27 3zm-2.1 12.1h-2.35l-2.4-3.44v3.44H7.07V8.9h2.35l2.4 3.44V8.9h2.35v6.2z" />
+                <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.52-3.23 0-1.44.64-2.2.52-3.06-.4C3.79 16.17 4.36 9.53 8.82 9.28c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.3 4.11zM12.03 9.2C11.88 7.15 13.5 5.45 15.4 5.3c.27 2.32-2.1 4.06-3.37 3.9z" />
               </svg>
-              네이버로 계속하기
+              Apple로 계속하기
             </button>
           </div>
         </div>

@@ -3,14 +3,14 @@
 import { Brain, Database, FileWarning, CheckCircle2, XCircle, ArrowDown, Sparkles, TrendingUp } from "lucide-react"
 
 export function AIComparison() {
-  // 연도별 학습 데이터 수치
+  // 연도별 학습 데이터 수치 (합계 = 187)
   const yearlyData = [
-    { year: "2023", count: 32, label: "합격 포트폴리오" },
-    { year: "2024", count: 48, label: "합격 포트폴리오" },
-    { year: "2025", count: 41, label: "합격 포트폴리오" },
-    { year: "2026", count: 12, label: "합산 중...", isOngoing: true },
+    { year: "2023", count: 45, label: "합격 포트폴리오" },
+    { year: "2024", count: 68, label: "합격 포트폴리오" },
+    { year: "2025", count: 52, label: "합격 포트폴리오" },
+    { year: "2026", count: 22, label: "합산 중...", isOngoing: true },
   ]
-  
+
   const totalCount = yearlyData.reduce((sum, item) => sum + item.count, 0)
 
   return (
@@ -23,7 +23,7 @@ export function AIComparison() {
             AI 학습의 비밀
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
-            <span className="text-red-400">Gemini가 부족한 게 아닙니다.</span><br />
+            <span className="text-red-400">AI가 부족한 게 아닙니다.</span><br />
             <span className="text-[#5B8DEF]">당신의 자료가 부족한 겁니다.</span>
           </h2>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -33,14 +33,14 @@ export function AIComparison() {
 
         {/* Comparison Infographic */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          
-          {/* LEFT: Your Gemini (Bad) */}
+
+          {/* LEFT: Generic AI (Bad) */}
           <div className="relative">
             <div className="absolute -top-3 left-6 px-4 py-1 bg-red-500/20 border border-red-500/30 rounded-full text-red-400 text-sm font-medium">
               일반적인 AI 첨삭
             </div>
             <div className="bg-slate-900/80 border border-red-500/30 rounded-2xl p-8 pt-12">
-              
+
               {/* Data Input Section */}
               <div className="mb-8">
                 <p className="text-slate-400 text-sm mb-4 text-center">학습 데이터</p>
@@ -68,14 +68,14 @@ export function AIComparison() {
                 </div>
               </div>
 
-              {/* Gemini Brain */}
+              {/* Generic AI Brain */}
               <div className="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 mb-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center">
                     <Sparkles className="w-6 h-6 text-slate-500" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold">Gemini AI</p>
+                    <p className="text-white font-semibold">일반 AI</p>
                     <p className="text-xs text-red-400">부족한 데이터로 학습</p>
                   </div>
                 </div>
@@ -90,11 +90,11 @@ export function AIComparison() {
                 <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">"문서 구조가 좋습니다" (뻔한 말)</p>
+                  <p className="text-sm text-slate-400">&quot;문서 구조가 좋습니다&quot; (뻔한 말)</p>
                 </div>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">"리더십을 더 강조하세요" (근거 없음)</p>
+                  <p className="text-sm text-slate-400">&quot;리더십을 더 강조하세요&quot; (근거 없음)</p>
                 </div>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
@@ -104,17 +104,17 @@ export function AIComparison() {
             </div>
           </div>
 
-          {/* RIGHT: Our Gemini (Good) */}
+          {/* RIGHT: PATRICK AI (Good) */}
           <div className="relative">
             <div className="absolute -top-3 left-6 px-4 py-1 bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 rounded-full text-[#5B8DEF] text-sm font-medium">
               PATRICK AI 첨삭
             </div>
             <div className="bg-slate-900/80 border border-[#5B8DEF]/30 rounded-2xl p-8 pt-12">
-              
+
               {/* Data Input Section - Yearly Stats */}
               <div className="mb-8">
                 <p className="text-slate-400 text-sm mb-4 text-center">연도별 학습 데이터</p>
-                
+
                 {/* Year by Year Data Visualization */}
                 <div className="space-y-3">
                   {yearlyData.map((item) => (
@@ -123,13 +123,13 @@ export function AIComparison() {
                         {item.year}
                       </span>
                       <div className="flex-1 bg-slate-800 rounded-full h-6 overflow-hidden">
-                        <div 
+                        <div
                           className={`h-full rounded-full flex items-center justify-end pr-3 transition-all ${
-                            item.isOngoing 
-                              ? 'bg-gradient-to-r from-[#5B8DEF]/60 to-[#5B8DEF] animate-pulse' 
+                            item.isOngoing
+                              ? 'bg-gradient-to-r from-[#5B8DEF]/60 to-[#5B8DEF] animate-pulse'
                               : 'bg-gradient-to-r from-[#5B8DEF]/80 to-[#5B8DEF]'
                           }`}
-                          style={{ width: `${Math.min((item.count / 50) * 100, 100)}%` }}
+                          style={{ width: `${Math.min((item.count / 70) * 100, 100)}%` }}
                         >
                           <span className="text-xs font-bold text-white">{item.count}개</span>
                         </div>
@@ -140,12 +140,12 @@ export function AIComparison() {
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Total Count */}
                 <div className="mt-6 p-4 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl text-center">
                   <div className="flex items-center justify-center gap-2">
                     <TrendingUp className="w-5 h-5 text-[#5B8DEF]" />
-                    <span className="text-[#5B8DEF] font-bold text-2xl">{totalCount}+</span>
+                    <span className="text-[#5B8DEF] font-bold text-2xl">{totalCount}</span>
                   </div>
                   <p className="text-slate-400 text-sm mt-1">검증된 합격 포트폴리오 학습 완료</p>
                 </div>
@@ -158,14 +158,14 @@ export function AIComparison() {
                 </div>
               </div>
 
-              {/* Gemini Brain */}
+              {/* Claude AI Brain */}
               <div className="bg-gradient-to-b from-[#5B8DEF]/10 to-slate-900 border border-[#5B8DEF]/30 rounded-xl p-6 mb-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5B8DEF]/30 to-blue-500/20 flex items-center justify-center">
                     <Sparkles className="w-6 h-6 text-[#5B8DEF]" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold">Gemini AI</p>
+                    <p className="text-white font-semibold">Claude AI</p>
                     <p className="text-xs text-[#5B8DEF]">검증된 데이터로 학습</p>
                   </div>
                 </div>
@@ -180,15 +180,15 @@ export function AIComparison() {
                 <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">"3번 문단의 수치 표현이 합격자 대비 구체성 부족"</p>
+                  <p className="text-sm text-slate-300">&quot;3번 문단의 수치 표현이 합격자 대비 구체성 부족&quot;</p>
                 </div>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">"A사 합격자 문서와 비교 시 기술 스택 설명 방식 개선 필요"</p>
+                  <p className="text-sm text-slate-300">&quot;A사 합격자 문서와 비교 시 기술 스택 설명 방식 개선 필요&quot;</p>
                 </div>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">"상위 20% 합격자 평균 점수: 82점, 현재 점수: 67점"</p>
+                  <p className="text-sm text-slate-300">&quot;상위 20% 합격자 평균 점수: 82점, 현재 점수: 67점&quot;</p>
                 </div>
               </div>
             </div>
@@ -199,7 +199,7 @@ export function AIComparison() {
         <div className="mt-16 text-center">
           <div className="inline-block bg-gradient-to-r from-[#5B8DEF]/10 via-[#5B8DEF]/5 to-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-2xl px-8 py-6">
             <p className="text-xl md:text-2xl text-white font-medium">
-              똑같은 <span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">e</span><span className="text-[#FBBC05]">m</span><span className="text-[#4285F4]">i</span><span className="text-[#34A853]">n</span><span className="text-[#EA4335]">i</span>도,<br className="sm:hidden" />
+              똑같은 AI도,<br className="sm:hidden" />
               <span className="text-[#5B8DEF] font-bold"> 어떤 데이터로 학습했느냐</span>가 전부입니다.
             </p>
           </div>

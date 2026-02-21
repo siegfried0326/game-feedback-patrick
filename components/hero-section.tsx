@@ -74,7 +74,7 @@ export function HeroSection() {
     }
   }, [])
 
-  // 파일 분석 실행 (Supabase Storage + Gemini 직접 읽기)
+  // 파일 분석 실행 (Supabase Storage + Claude AI 분석)
   const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[]) => {
     setIsAnalyzing(true)
     setError(null)
@@ -112,7 +112,7 @@ export function HeroSection() {
           idx === i ? { ...f, status: "analyzing" } : f
         ))
 
-        // Gemini가 PDF를 직접 읽어서 분석
+        // Claude가 PDF를 직접 읽어서 분석
         const analysisResult = await analyzeDocumentDirect({
           fileName: uploadResult.data!.fileName,
           fileUrl: uploadResult.data!.fileUrl,
@@ -400,7 +400,7 @@ export function HeroSection() {
         {/* Subtitle */}
         <p className="text-slate-400 mb-6 flex items-center justify-center gap-2">
           <Database className="w-4 h-4 text-[#5B8DEF]" />
-          <span>실제 합격 포트폴리오 <span className="text-[#5B8DEF] font-semibold">133개</span>로 학습된 AI</span>
+          <span>실제 합격 포트폴리오 <span className="text-[#5B8DEF] font-semibold">187개</span>로 학습된 AI</span>
         </p>
 
         {/* Upload Area */}

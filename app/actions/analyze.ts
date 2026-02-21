@@ -3,6 +3,27 @@
 import { createClient } from "@/lib/supabase/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { v4 as uuidv4 } from "uuid"
+import { checkAnalysisAllowance, saveAnalysisHistory } from "./subscription"
+
+// 분석 전 인증 + 구독 확인
+export async function checkBeforeAnalysis() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { allowed: false, reason: "login_required" as const }
+  }
+
+  const allowance = await checkAnalysisAllowance()
+  if (!allowance.allowed) {
+    if (allowance.expired) {
+      return { allowed: false, reason: "expired" as const, plan: allowance.plan }
+    }
+    return { allowed: false, reason: "limit_reached" as const, plan: allowance.plan }
+  }
+
+  return { allowed: true, plan: allowance.plan, unlimited: allowance.unlimited, remaining: allowance.remaining }
+}
 
 // Supabase Storage에 파일 업로드
 export async function uploadFileToStorage(formData: FormData) {
@@ -299,19 +320,29 @@ ${referenceStats}
           userScore: analysis.score
         }))
 
-      return {
-        data: {
-          score: analysis.score,
-          categories: analysis.categories,
-          strengths: analysis.strengths,
-          weaknesses: analysis.weaknesses,
-          ranking: {
-            total: portfolios?.length || 0,
-            percentile,
-            companyComparison
-          }
+      const analysisData = {
+        score: analysis.score,
+        categories: analysis.categories,
+        strengths: analysis.strengths,
+        weaknesses: analysis.weaknesses,
+        ranking: {
+          total: portfolios?.length || 0,
+          percentile,
+          companyComparison
         }
       }
+
+      // 분석 이력 저장 (비동기, 실패해도 결과는 반환)
+      saveAnalysisHistory({
+        fileName: input.fileName,
+        score: analysis.score,
+        categories: analysis.categories,
+        strengths: analysis.strengths,
+        weaknesses: analysis.weaknesses,
+        ranking: analysisData.ranking,
+      }).catch(() => {})
+
+      return { data: analysisData }
     } finally {
       // Supabase Storage에서 파일 삭제
       const supabaseClient = await createClient()

@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,6 +11,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
+const CHANNEL_TALK_URL = "https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
+
 const plans = [
   {
     name: "무료 체험",
@@ -18,10 +21,12 @@ const plans = [
     description: "처음 이용하시는 분들을 위한 무료 체험",
     features: [
       "1회 문서 피드백",
-      "24시간 내 응답",
+      "5개 항목 점수 평가",
       "기본 피드백 제공",
     ],
     cta: "무료로 시작하기",
+    href: "/analyze",
+    isExternal: false,
     highlighted: false
   },
   {
@@ -31,12 +36,14 @@ const plans = [
     description: "집중적인 포트폴리오 준비에 최적",
     features: [
       "무제한 문서 업로드",
-      "24시간 내 피드백",
+      "즉시 AI 분석 결과 제공",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
       "수정본 재검토 무제한"
     ],
     cta: "구독 시작하기",
+    href: CHANNEL_TALK_URL,
+    isExternal: true,
     highlighted: true
   },
   {
@@ -48,13 +55,15 @@ const plans = [
     badge: "약 10% 할인",
     features: [
       "무제한 문서 업로드",
-      "24시간 내 피드백",
+      "즉시 AI 분석 결과 제공",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
       "수정본 재검토 무제한",
       "우선 순위 피드백"
     ],
     cta: "3개월 패스 구매",
+    href: CHANNEL_TALK_URL,
+    isExternal: true,
     highlighted: false
   }
 ]
@@ -137,18 +146,24 @@ export function PricingModal() {
                 ))}
               </ul>
 
-              <Button 
+              <Button
                 asChild
                 size="sm"
                 className={`w-full ${
-                  plan.highlighted 
-                    ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white" 
+                  plan.highlighted
+                    ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
                     : "bg-secondary hover:bg-secondary/80 text-foreground"
                 }`}
               >
-                <a href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162" target="_blank" rel="noopener noreferrer">
-                  {plan.cta}
-                </a>
+                {plan.isExternal ? (
+                  <a href={plan.href} target="_blank" rel="noopener noreferrer">
+                    {plan.cta}
+                  </a>
+                ) : (
+                  <Link href={plan.href}>
+                    {plan.cta}
+                  </Link>
+                )}
               </Button>
             </div>
           ))}

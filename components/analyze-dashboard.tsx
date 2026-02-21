@@ -1,15 +1,16 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
-import { uploadFileToStorage, analyzeDocumentDirect, deleteFileFromStorage } from "@/app/actions/analyze"
+import { uploadFileToStorage, analyzeDocumentDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
+import Link from "next/link"
 
 type AnalysisResult = {
   fileName: string
@@ -49,6 +50,29 @@ export function AnalyzeDashboard() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState("")
+  const [allowanceInfo, setAllowanceInfo] = useState<{
+    allowed: boolean
+    reason?: string
+    plan?: string
+    remaining?: number
+    unlimited?: boolean
+  } | null>(null)
+  const [checkingAllowance, setCheckingAllowance] = useState(true)
+
+  // 페이지 로드 시 구독 상태 체크
+  useEffect(() => {
+    async function checkAllowance() {
+      try {
+        const result = await checkBeforeAnalysis()
+        setAllowanceInfo(result)
+      } catch {
+        setAllowanceInfo({ allowed: true }) // 에러 시 허용 (서버에서 재검증)
+      } finally {
+        setCheckingAllowance(false)
+      }
+    }
+    checkAllowance()
+  }, [])
 
   // 여러 파일 분석 (Supabase Storage + Gemini 직접 읽기)
   const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[]) => {
@@ -179,8 +203,73 @@ export function AnalyzeDashboard() {
           </p>
         </div>
 
+        {/* 로딩 중 */}
+        {checkingAllowance && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+          </div>
+        )}
+
+        {/* 구독 제한 안내 */}
+        {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && (
+          <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
+            <CardContent className="pt-8 pb-8 text-center">
+              <Lock className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+              {allowanceInfo.reason === "limit_reached" ? (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-2">무료 체험 횟수를 모두 사용했습니다</h2>
+                  <p className="text-slate-400 mb-6">
+                    무제한 분석을 원하시면 구독을 시작해 주세요.
+                  </p>
+                </>
+              ) : allowanceInfo.reason === "expired" ? (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-2">구독이 만료되었습니다</h2>
+                  <p className="text-slate-400 mb-6">
+                    계속 이용하시려면 구독을 갱신해 주세요.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
+                  <p className="text-slate-400 mb-6">
+                    문서 분석을 위해 로그인해 주세요.
+                  </p>
+                </>
+              )}
+              <div className="flex justify-center gap-3">
+                {allowanceInfo.reason === "login_required" ? (
+                  <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                    <Link href="/login?redirect=/analyze">로그인하기</Link>
+                  </Button>
+                ) : (
+                  <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                    <Link href="/pricing">요금제 보기</Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 무료 플랜 안내 배너 */}
+        {!checkingAllowance && allowanceInfo?.allowed && allowanceInfo.plan === "free" && !allowanceInfo.unlimited && results.length === 0 && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-amber-400">
+                무료 체험 중입니다. 남은 분석 횟수: <span className="font-bold">{allowanceInfo.remaining || 0}회</span>
+              </p>
+              <p className="text-xs text-amber-400/70 mt-1">
+                무제한 분석을 원하시면{" "}
+                <Link href="/pricing" className="underline hover:text-amber-300">구독을 시작</Link>해 주세요.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Upload Section - 결과가 없을 때만 표시 */}
-        {results.length === 0 && (
+        {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
           <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">

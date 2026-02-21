@@ -1,5 +1,5 @@
 import { AnalyzeDashboard } from "@/components/analyze-dashboard"
-import { AnalyzeHeader } from "@/components/analyze-header"
+import { AuthAnalyzeHeader } from "@/components/auth-analyze-header"
 
 // 큰 파일 분석을 위한 타임아웃 설정 (5분)
 export const maxDuration = 300
@@ -12,7 +12,7 @@ export const metadata = {
 export default function AnalyzePage() {
   return (
     <main className="min-h-screen bg-background">
-      <AnalyzeHeader />
+      <AuthAnalyzeHeader />
       <AnalyzeDashboard />
     </main>
   )

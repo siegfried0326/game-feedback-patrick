@@ -1,4 +1,4 @@
-import { Header } from "@/components/header"
+import { AuthHeader } from "@/components/auth-header"
 import { HeroSection } from "@/components/hero-section"
 import { WhyChooseUs } from "@/components/why-choose-us"
 import { AIComparison } from "@/components/ai-comparison"
@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 export default function FeedbackLandingPage() {
   return (
     <main className="min-h-screen bg-background">
-      <Header />
+      <AuthHeader />
       <HeroSection />
       <WhyChooseUs />
       <AIComparison />

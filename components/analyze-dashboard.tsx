@@ -35,10 +35,12 @@ type AnalysisResult = {
   ranking?: {
     total: number
     percentile: number
+    rank?: number
     companyComparison?: {
       company: string
       avgScore: number
       userScore: number
+      sampleCount?: number
     }[]
   }
 }
@@ -606,54 +608,107 @@ export function AnalyzeDashboard() {
                   <RadarChartComponent data={results[currentIndex].categories} />
                 </div>
 
+                {/* 합격자 포트폴리오 사이 랭킹 */}
                 {results[currentIndex].ranking && results[currentIndex].ranking!.total > 0 && (
-                  <Card className="bg-slate-900/80 border-[#1e3a5f]">
+                  <Card className="bg-gradient-to-br from-slate-900/80 to-[#0d1b2a] border-[#5B8DEF]/30">
                     <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#5B8DEF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <CardTitle className="text-white flex items-center gap-2 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        합격 포트폴리오 {results[currentIndex].ranking!.total}개 기준 랭킹
+                        합격자 포트폴리오 {results[currentIndex].ranking!.total}개 기준 내 위치
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid md:grid-cols-2 gap-8">
-                        <div className="text-center">
-                          <p className="text-slate-400 text-sm mb-2">전체 랭킹</p>
-                          <p className="text-5xl font-bold text-[#5B8DEF] mb-2">
-                            상위 {Math.max(1, 100 - results[currentIndex].ranking!.percentile)}%
-                          </p>
-                          <p className="text-slate-400 text-sm">
-                            {results[currentIndex].ranking!.total}개 합격 포트폴리오 중
+                      {/* 랭킹 요약 - 3컬럼 */}
+                      <div className="grid grid-cols-3 gap-4 mb-8">
+                        <div className="text-center p-4 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
+                          <p className="text-xs text-slate-400 mb-1">전체 순위</p>
+                          <p className="text-3xl font-bold text-[#5B8DEF]">
+                            {results[currentIndex].ranking!.rank || Math.max(1, Math.round(results[currentIndex].ranking!.total * (100 - results[currentIndex].ranking!.percentile) / 100))}
+                            <span className="text-base text-slate-400">/{results[currentIndex].ranking!.total}</span>
                           </p>
                         </div>
-                        {results[currentIndex].ranking!.companyComparison && results[currentIndex].ranking!.companyComparison!.length > 0 && (
-                          <div>
-                            <p className="text-slate-400 text-sm mb-3">회사별 합격자 평균 비교</p>
-                            <div className="space-y-2">
-                              {results[currentIndex].ranking!.companyComparison!.map((comp, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                  <span className="text-slate-300 text-sm w-24 truncate">{comp.company}</span>
-                                  <div className="flex-1 bg-slate-800 rounded-full h-4 overflow-hidden">
-                                    <div
-                                      className="h-full bg-slate-600 rounded-full relative"
-                                      style={{ width: `${comp.avgScore}%` }}
-                                    >
-                                      <span className="absolute right-2 text-xs text-slate-300">{comp.avgScore}</span>
-                                    </div>
-                                  </div>
-                                  <span className={`text-sm font-medium ${results[currentIndex].score >= comp.avgScore ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                    {results[currentIndex].score >= comp.avgScore ? '+' : ''}{results[currentIndex].score - comp.avgScore}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                            <p className="text-xs text-slate-500 mt-3">
-                              내 점수: {results[currentIndex].score}점
-                            </p>
-                          </div>
-                        )}
+                        <div className="text-center p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                          <p className="text-xs text-slate-400 mb-1">상위</p>
+                          <p className="text-3xl font-bold text-amber-400">
+                            {Math.max(1, 100 - results[currentIndex].ranking!.percentile)}
+                            <span className="text-base">%</span>
+                          </p>
+                        </div>
+                        <div className="text-center p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                          <p className="text-xs text-slate-400 mb-1">내 점수</p>
+                          <p className="text-3xl font-bold text-emerald-400">
+                            {results[currentIndex].score}
+                            <span className="text-base text-slate-400">점</span>
+                          </p>
+                        </div>
                       </div>
+
+                      {/* 점수 분포 바 */}
+                      <div className="mb-8">
+                        <p className="text-slate-400 text-sm mb-3">합격 포트폴리오 점수 분포에서 내 위치</p>
+                        <div className="relative">
+                          <div className="w-full bg-slate-800 rounded-full h-8 overflow-hidden flex">
+                            <div className="h-full bg-red-500/30 flex items-center justify-center text-xs text-red-300" style={{ width: '20%' }}>~70</div>
+                            <div className="h-full bg-amber-500/30 flex items-center justify-center text-xs text-amber-300" style={{ width: '20%' }}>70~80</div>
+                            <div className="h-full bg-[#5B8DEF]/30 flex items-center justify-center text-xs text-blue-300" style={{ width: '25%' }}>80~88</div>
+                            <div className="h-full bg-emerald-500/30 flex items-center justify-center text-xs text-emerald-300" style={{ width: '20%' }}>88~95</div>
+                            <div className="h-full bg-purple-500/30 flex items-center justify-center text-xs text-purple-300" style={{ width: '15%' }}>95+</div>
+                          </div>
+                          {/* 내 점수 위치 표시 */}
+                          <div
+                            className="absolute -top-1 flex flex-col items-center"
+                            style={{ left: `${Math.min(Math.max(results[currentIndex].score, 5), 98)}%`, transform: 'translateX(-50%)' }}
+                          >
+                            <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white" />
+                            <div className="w-0.5 h-10 bg-white/60" />
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2 text-center">
+                          내 점수 {results[currentIndex].score}점 · 합격자 평균 대비 {results[currentIndex].score >= (results[currentIndex].ranking!.percentile > 50 ? 85 : 80) ? '상위권' : '개선 필요'}
+                        </p>
+                      </div>
+
+                      {/* 회사별 합격자 비교 */}
+                      {results[currentIndex].ranking!.companyComparison && results[currentIndex].ranking!.companyComparison!.length > 0 && (
+                        <div>
+                          <p className="text-white font-semibold text-base mb-4">회사별 합격자 평균 vs 내 점수</p>
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            {results[currentIndex].ranking!.companyComparison!.map((comp, idx) => {
+                              const diff = results[currentIndex].score - comp.avgScore
+                              const isAbove = diff >= 0
+                              return (
+                                <div key={idx} className={`p-4 rounded-xl border ${isAbove ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-amber-500/5 border-amber-500/20'}`}>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-white font-medium text-sm">{comp.company}</span>
+                                    <span className={`text-sm font-bold ${isAbove ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                      {isAbove ? '+' : ''}{diff}점
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                        <div
+                                          className={`h-full rounded-full ${isAbove ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                          style={{ width: `${Math.min(comp.avgScore, 100)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <span className="text-xs text-slate-400 w-16 text-right">평균 {comp.avgScore}점</span>
+                                  </div>
+                                  {comp.sampleCount && (
+                                    <p className="text-xs text-slate-600 mt-1">{comp.sampleCount}개 합격 샘플</p>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-4 text-center">
+                            * 각 회사의 실제 합격 포트폴리오 점수 평균과 비교한 결과입니다
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
@@ -720,7 +775,7 @@ export function AnalyzeDashboard() {
 
                     <div className="flex flex-col sm:flex-row items-center gap-4">
                       <a
-                        href="https://open.kakao.com/o/sExample"
+                        href="https://open.kakao.com/o/sLz0kgBf"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-bold rounded-xl transition-colors text-lg"

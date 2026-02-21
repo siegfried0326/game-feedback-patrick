@@ -8,10 +8,12 @@ type ScoreCardProps = {
   ranking?: {
     total: number
     percentile: number
+    rank?: number
     companyComparison?: {
       company: string
       avgScore: number
       userScore: number
+      sampleCount?: number
     }[]
   }
 }

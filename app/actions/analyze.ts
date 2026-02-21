@@ -346,14 +346,28 @@ ${referenceStats}
         percentile = Math.round((betterThan / portfolios.length) * 100)
       }
 
-      // 회사별 비교 데이터
-      const companyComparison = Object.entries(companyStats)
-        .slice(0, 5)
+      // 회사별 비교 데이터 - 주요 회사 우선 정렬
+      const priorityCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트", "네오위즈", "웹젠"]
+      const sortedCompanies = Object.entries(companyStats)
+        .sort((a, b) => {
+          const aIdx = priorityCompanies.findIndex(c => a[0].includes(c))
+          const bIdx = priorityCompanies.findIndex(c => b[0].includes(c))
+          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
+          if (aIdx !== -1) return -1
+          if (bIdx !== -1) return 1
+          return b[1].count - a[1].count
+        })
+      const companyComparison = sortedCompanies
+        .slice(0, 8)
         .map(([company, stat]) => ({
           company,
           avgScore: Math.round(stat.total / stat.count),
-          userScore: analysis.score
+          userScore: analysis.score,
+          sampleCount: stat.count,
         }))
+
+      // 순위 계산 (몇 등인지)
+      const rank = portfolios ? portfolios.filter(p => (p.overall_score || 0) > analysis.score).length + 1 : 0
 
       const analysisData = {
         score: analysis.score,
@@ -363,6 +377,7 @@ ${referenceStats}
         ranking: {
           total: portfolios?.length || 0,
           percentile,
+          rank,
           companyComparison
         }
       }

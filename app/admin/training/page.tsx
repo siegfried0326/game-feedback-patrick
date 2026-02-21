@@ -87,7 +87,7 @@ export default function TrainingPage() {
     if (rejectedFiles.length > 0) {
       const errors = rejectedFiles.map(({ file, errors }) => {
         return errors.map((e: any) => {
-          if (e.code === 'file-too-large') return `${file.name}: 파일이 너무 큽니다 (최대 50MB)`
+          if (e.code === 'file-too-large') return `${file.name}: 파일이 너무 큽니다 (최대 200MB)`
           if (e.code === 'file-invalid-type') return `${file.name}: 지원하지 않는 파일 형식입니다`
           return `${file.name}: ${e.message}`
         }).join('\n')
@@ -122,7 +122,7 @@ export default function TrainingPage() {
       "image/png": [".png"]
     },
     multiple: true,
-    maxSize: 50 * 1024 * 1024
+    maxSize: 200 * 1024 * 1024
   })
 
   const startTraining = async () => {
@@ -455,7 +455,7 @@ export default function TrainingPage() {
                   파일 선택
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  PDF, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 50MB)
+                  PDF, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 200MB)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -598,7 +598,7 @@ export default function TrainingPage() {
 
                 <p className="text-slate-500 text-xs text-center mt-4">
                   * Gemini AI가 각 파일을 분석하여 점수, 태그, 요약을 추출하고 DB에 저장합니다.<br/>
-                  * 큰 파일은 처리 시간이 오래 걸릴 수 있습니다. (최대 50MB)
+                  * 큰 파일은 처리 시간이 오래 걸릴 수 있습니다. (최대 200MB)
                 </p>
               </CardContent>
             </Card>

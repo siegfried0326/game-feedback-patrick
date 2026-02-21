@@ -35,7 +35,7 @@ export function ServiceIntro() {
             어떤 분석을 받을 수 있나요?
           </h2>
           <p className="text-slate-400 max-w-2xl mx-auto text-pretty">
-            합격 포트폴리오 100개를 학습한 AI가<br className="hidden sm:block" />
+            합격 포트폴리오 187개를 학습한 AI가<br className="hidden sm:block" />
             여러분의 기획서를 즉시 정밀 분석합니다.
           </p>
         </div>
@@ -82,7 +82,7 @@ export function ServiceIntro() {
             </div>
             <div className="bg-gradient-to-br from-[#5B8DEF]/5 to-[#5B8DEF]/10 rounded-xl p-6 border border-[#5B8DEF]/20">
               <div className="text-center">
-                <div className="text-5xl font-bold text-[#5B8DEF] mb-2">100+</div>
+                <div className="text-5xl font-bold text-[#5B8DEF] mb-2">187</div>
                 <p className="text-slate-400 text-sm">합격 포트폴리오 학습 데이터</p>
               </div>
               <div className="h-px bg-[#1e3a5f] my-6" />

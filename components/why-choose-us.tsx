@@ -1,7 +1,8 @@
 "use client"
 
-import { Database, ShieldCheck, BarChart3, FolderOpen, ArrowRight, MessageSquare } from "lucide-react"
+import { Database, ShieldCheck, BarChart3, ArrowRight, MessageSquare } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import Image from "next/image"
 
 export function WhyChooseUs() {
   return (
@@ -28,28 +29,36 @@ export function WhyChooseUs() {
             </p>
             <p className="text-xl md:text-2xl text-white leading-relaxed">
               제게는 제 손을 거쳐 취업한{" "}
-              <span className="text-[#5B8DEF] font-bold">100개 이상의 실제 데이터</span>가 있습니다.
+              <span className="text-[#5B8DEF] font-bold">187개의 실제 데이터</span>가 있습니다.
             </p>
             <p className="text-lg text-slate-300 leading-relaxed mt-8">
-              이 서비스는 합격 포트폴리오 100개 이상을{" "}
+              이 서비스는 합격 포트폴리오 187개를{" "}
               <span className="text-[#5B8DEF] font-semibold">Google Gemini</span>에 학습시켜 만든{" "}
               <span className="text-white font-semibold">'검증된 솔루션'</span>입니다.
             </p>
           </div>
 
-          {/* Image Right */}
+          {/* Image Right - 실제 포트폴리오 데이터 */}
           <div className="relative">
-            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 aspect-[4/3] flex flex-col items-center justify-center">
-              <FolderOpen className="w-16 h-16 text-[#5B8DEF] mb-4" />
-              <p className="text-slate-400 text-center font-medium">
-                실제 합격자 포트폴리오 100개 폴더 캡처 화면
-              </p>
-              <p className="text-slate-500 text-sm mt-2">
-                (이미지 준비 중)
-              </p>
+            <div className="relative bg-slate-900/80 border border-[#1e3a5f] rounded-2xl overflow-hidden aspect-[4/3]">
+              {/* 실제 스크린샷 + 블러 처리 */}
+              <Image
+                src="/portfolio-data.png"
+                alt="합격자 포트폴리오 데이터"
+                fill
+                className="object-cover blur-[6px] opacity-60"
+              />
+              {/* 개인정보 보호 그라데이션 오버레이 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f3c] via-[#0d1f3c]/40 to-transparent" />
+              {/* 숫자 강조 오버레이 */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-7xl md:text-8xl font-black text-[#5B8DEF] drop-shadow-2xl">187</div>
+                <p className="text-white text-lg md:text-xl font-bold mt-2 drop-shadow-lg">합격자 포트폴리오</p>
+                <p className="text-slate-300 text-sm mt-1 drop-shadow-lg">실제 데이터로 학습된 AI</p>
+              </div>
             </div>
-            <div className="absolute -bottom-4 -right-4 bg-[#5B8DEF] text-white px-4 py-2 rounded-lg font-bold text-sm">
-              100+ 합격 데이터
+            <div className="absolute -bottom-4 -right-4 bg-[#5B8DEF] text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+              187개 실전 데이터
             </div>
           </div>
         </div>
@@ -65,7 +74,7 @@ export function WhyChooseUs() {
                 데이터의 질이 다릅니다
               </h3>
               <p className="text-slate-400 leading-relaxed">
-                검증된 <span className="text-[#5B8DEF]">합격 포트폴리오 100개</span>를 기반으로 분석합니다.
+                검증된 <span className="text-[#5B8DEF]">합격 포트폴리오 187개</span>를 기반으로 분석합니다.
                 인터넷에서 긁어온 데이터가 아닙니다.
               </p>
             </CardContent>
@@ -95,7 +104,7 @@ export function WhyChooseUs() {
                 냉정한 비교 분석
               </h3>
               <p className="text-slate-400 leading-relaxed">
-                당신의 문서 vs <span className="text-[#5B8DEF]">100개 이상의 합격 포트폴리오</span>.
+                당신의 문서 vs <span className="text-[#5B8DEF]">187개의 합격 포트폴리오</span>.
                 어디가 부족한지, 무엇을 보완해야 하는지 명확히 알려드립니다.
               </p>
             </CardContent>

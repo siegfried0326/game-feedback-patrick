@@ -11,7 +11,7 @@ const steps = [
     icon: Zap,
     step: "02",
     title: "AI 즉시 분석",
-    description: "합격 포트폴리오 100개를 학습한 AI가 즉시 문서를 분석합니다. 기다릴 필요 없습니다."
+    description: "합격 포트폴리오 187개를 학습한 AI가 즉시 문서를 분석합니다. 기다릴 필요 없습니다."
   },
   {
     icon: BarChart3,

@@ -38,7 +38,9 @@ export function ScoreCard({ score, ranking }: ScoreCardProps) {
     return "보완 필요"
   }
 
-  const topPercent = ranking && ranking.total > 0
+  const topPercent = ranking && ranking.total > 0 && ranking.rank
+    ? Math.max(1, Math.round((ranking.rank / ranking.total) * 100))
+    : ranking && ranking.total > 0
     ? Math.max(1, 100 - ranking.percentile)
     : null
 

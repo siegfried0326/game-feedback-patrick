@@ -609,38 +609,32 @@ export function AnalyzeDashboard() {
                 </div>
 
                 {/* 합격자 포트폴리오 사이 랭킹 */}
-                {results[currentIndex].ranking && results[currentIndex].ranking!.total > 0 && (
+                {results[currentIndex].ranking && results[currentIndex].ranking!.total > 0 && (() => {
+                  const ranking = results[currentIndex].ranking!
+                  const topPercent = Math.max(1, Math.round((ranking.rank || 1) / ranking.total * 100))
+                  return (
                   <Card className="bg-gradient-to-br from-slate-900/80 to-[#0d1b2a] border-[#5B8DEF]/30">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2 text-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        합격자 포트폴리오 {results[currentIndex].ranking!.total}개 기준 내 위치
+                        합격자 포트폴리오 {ranking.total}개 중 내 위치
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {/* 랭킹 요약 - 3컬럼 */}
-                      <div className="grid grid-cols-3 gap-4 mb-8">
-                        <div className="text-center p-4 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
-                          <p className="text-xs text-slate-400 mb-1">전체 순위</p>
-                          <p className="text-3xl font-bold text-[#5B8DEF]">
-                            {results[currentIndex].ranking!.rank || Math.max(1, Math.round(results[currentIndex].ranking!.total * (100 - results[currentIndex].ranking!.percentile) / 100))}
-                            <span className="text-base text-slate-400">/{results[currentIndex].ranking!.total}</span>
+                      {/* 랭킹 요약 - 2컬럼 */}
+                      <div className="grid grid-cols-2 gap-4 mb-8">
+                        <div className="text-center p-5 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
+                          <p className="text-xs text-slate-400 mb-2">내 점수</p>
+                          <p className="text-4xl font-bold text-[#5B8DEF]">
+                            {results[currentIndex].score}<span className="text-lg text-slate-400">점</span>
                           </p>
                         </div>
-                        <div className="text-center p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                          <p className="text-xs text-slate-400 mb-1">상위</p>
-                          <p className="text-3xl font-bold text-amber-400">
-                            {Math.max(1, 100 - results[currentIndex].ranking!.percentile)}
-                            <span className="text-base">%</span>
-                          </p>
-                        </div>
-                        <div className="text-center p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                          <p className="text-xs text-slate-400 mb-1">내 점수</p>
-                          <p className="text-3xl font-bold text-emerald-400">
-                            {results[currentIndex].score}
-                            <span className="text-base text-slate-400">점</span>
+                        <div className={`text-center p-5 border rounded-xl ${topPercent <= 30 ? 'bg-emerald-500/10 border-emerald-500/20' : topPercent <= 60 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                          <p className="text-xs text-slate-400 mb-2">{ranking.total}개 중 순위</p>
+                          <p className={`text-4xl font-bold ${topPercent <= 30 ? 'text-emerald-400' : topPercent <= 60 ? 'text-amber-400' : 'text-red-400'}`}>
+                            상위 {topPercent}<span className="text-lg">%</span>
                           </p>
                         </div>
                       </div>
@@ -650,11 +644,11 @@ export function AnalyzeDashboard() {
                         <p className="text-slate-400 text-sm mb-3">합격 포트폴리오 점수 분포에서 내 위치</p>
                         <div className="relative">
                           <div className="w-full bg-slate-800 rounded-full h-8 overflow-hidden flex">
-                            <div className="h-full bg-red-500/30 flex items-center justify-center text-xs text-red-300" style={{ width: '20%' }}>~70</div>
+                            <div className="h-full bg-red-500/30 flex items-center justify-center text-xs text-red-300" style={{ width: '15%' }}>~70</div>
                             <div className="h-full bg-amber-500/30 flex items-center justify-center text-xs text-amber-300" style={{ width: '20%' }}>70~80</div>
-                            <div className="h-full bg-[#5B8DEF]/30 flex items-center justify-center text-xs text-blue-300" style={{ width: '25%' }}>80~88</div>
-                            <div className="h-full bg-emerald-500/30 flex items-center justify-center text-xs text-emerald-300" style={{ width: '20%' }}>88~95</div>
-                            <div className="h-full bg-purple-500/30 flex items-center justify-center text-xs text-purple-300" style={{ width: '15%' }}>95+</div>
+                            <div className="h-full bg-[#5B8DEF]/30 flex items-center justify-center text-xs text-blue-300" style={{ width: '30%' }}>80~88</div>
+                            <div className="h-full bg-emerald-500/30 flex items-center justify-center text-xs text-emerald-300" style={{ width: '25%' }}>88~95</div>
+                            <div className="h-full bg-purple-500/30 flex items-center justify-center text-xs text-purple-300" style={{ width: '10%' }}>95+</div>
                           </div>
                           {/* 내 점수 위치 표시 */}
                           <div
@@ -666,16 +660,36 @@ export function AnalyzeDashboard() {
                           </div>
                         </div>
                         <p className="text-xs text-slate-500 mt-2 text-center">
-                          내 점수 {results[currentIndex].score}점 · 합격자 평균 대비 {results[currentIndex].score >= (results[currentIndex].ranking!.percentile > 50 ? 85 : 80) ? '상위권' : '개선 필요'}
+                          내 점수 {results[currentIndex].score}점
                         </p>
                       </div>
 
-                      {/* 회사별 합격자 비교 */}
-                      {results[currentIndex].ranking!.companyComparison && results[currentIndex].ranking!.companyComparison!.length > 0 && (
+                      {/* 회사별 합격자 비교 - 고정 슬롯 */}
+                      {ranking.companyComparison && ranking.companyComparison.length > 0 && (
                         <div>
                           <p className="text-white font-semibold text-base mb-4">회사별 합격자 평균 vs 내 점수</p>
                           <div className="grid sm:grid-cols-2 gap-3">
-                            {results[currentIndex].ranking!.companyComparison!.map((comp, idx) => {
+                            {ranking.companyComparison.map((comp, idx) => {
+                              const hasData = comp.sampleCount && comp.sampleCount > 0
+                              if (!hasData) {
+                                return (
+                                  <div key={idx} className="p-4 rounded-xl border border-slate-700/50 bg-slate-800/30">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-slate-400 font-medium text-sm">{comp.company}</span>
+                                      <span className="text-xs text-slate-600 bg-slate-700/50 px-2 py-0.5 rounded">준비중</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1">
+                                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                          <div className="h-full rounded-full bg-slate-700 w-0" />
+                                        </div>
+                                      </div>
+                                      <span className="text-xs text-slate-600 w-16 text-right">- 점</span>
+                                    </div>
+                                    <p className="text-xs text-slate-700 mt-1">데이터 수집중</p>
+                                  </div>
+                                )
+                              }
                               const diff = results[currentIndex].score - comp.avgScore
                               const isAbove = diff >= 0
                               return (
@@ -697,21 +711,20 @@ export function AnalyzeDashboard() {
                                     </div>
                                     <span className="text-xs text-slate-400 w-16 text-right">평균 {comp.avgScore}점</span>
                                   </div>
-                                  {comp.sampleCount && (
-                                    <p className="text-xs text-slate-600 mt-1">{comp.sampleCount}개 합격 샘플</p>
-                                  )}
+                                  <p className="text-xs text-slate-600 mt-1">{comp.sampleCount}개 합격 샘플</p>
                                 </div>
                               )
                             })}
                           </div>
                           <p className="text-xs text-slate-500 mt-4 text-center">
-                            * 각 회사의 실제 합격 포트폴리오 점수 평균과 비교한 결과입니다
+                            * 실제 합격 포트폴리오 점수 평균과 비교 · 데이터는 지속 업데이트됩니다
                           </p>
                         </div>
                       )}
                     </CardContent>
                   </Card>
-                )}
+                  )
+                })()}
 
                 <FeedbackCards
                   strengths={results[currentIndex].strengths}

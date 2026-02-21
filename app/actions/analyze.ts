@@ -342,26 +342,50 @@ ${referenceStats}
 
       const analysis = JSON.parse(jsonStr)
 
-      // 랭킹 계산
+      // 랭킹 계산 - 항상 187개 기준으로 표시
+      const DISPLAY_TOTAL = 187
+      const actualTotal = portfolios?.length || 0
+
+      // 실제 데이터 기반으로 백분위 계산 후 187개 기준으로 환산
       let percentile = 50
-      if (portfolios && portfolios.length > 0) {
-        const betterThan = portfolios.filter(p => (p.overall_score || 0) < analysis.score).length
-        percentile = Math.round((betterThan / portfolios.length) * 100)
+      let rank = Math.round(DISPLAY_TOTAL / 2) // 기본값: 중간
+      if (actualTotal > 0) {
+        const betterThan = portfolios!.filter(p => (p.overall_score || 0) < analysis.score).length
+        percentile = Math.round((betterThan / actualTotal) * 100)
+        // 187개 기준 순위 환산 (최소 1, 최대 187)
+        rank = Math.max(1, Math.min(DISPLAY_TOTAL, DISPLAY_TOTAL - Math.round((percentile / 100) * DISPLAY_TOTAL)))
       }
 
-      // 회사별 비교 데이터 - 주요 회사 우선 정렬
-      const priorityCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트", "네오위즈", "웹젠"]
-      const sortedCompanies = Object.entries(companyStats)
-        .sort((a, b) => {
-          const aIdx = priorityCompanies.findIndex(c => a[0].includes(c))
-          const bIdx = priorityCompanies.findIndex(c => b[0].includes(c))
-          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
-          if (aIdx !== -1) return -1
-          if (bIdx !== -1) return 1
-          return b[1].count - a[1].count
-        })
-      const companyComparison = sortedCompanies
-        .slice(0, 8)
+      // 회사별 비교 데이터 - 6개 회사 고정 슬롯
+      const fixedCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠"]
+      const companyComparison = fixedCompanies.map(company => {
+        // 학습 데이터에서 해당 회사 찾기 (부분 매칭)
+        const matchedEntry = Object.entries(companyStats).find(([key]) =>
+          key.includes(company) || company.includes(key)
+        )
+        if (matchedEntry) {
+          const [matchedName, stat] = matchedEntry
+          return {
+            company: matchedName,
+            avgScore: Math.round(stat.total / stat.count),
+            userScore: analysis.score,
+            sampleCount: stat.count,
+          }
+        }
+        // 데이터 없으면 null 표시용
+        return {
+          company,
+          avgScore: 0,
+          userScore: analysis.score,
+          sampleCount: 0,
+        }
+      })
+
+      // 고정 6개 + 기타 데이터 있는 회사 추가
+      const otherCompanies = Object.entries(companyStats)
+        .filter(([key]) => !fixedCompanies.some(fc => key.includes(fc) || fc.includes(key)))
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 2)
         .map(([company, stat]) => ({
           company,
           avgScore: Math.round(stat.total / stat.count),
@@ -369,8 +393,7 @@ ${referenceStats}
           sampleCount: stat.count,
         }))
 
-      // 순위 계산 (몇 등인지)
-      const rank = portfolios ? portfolios.filter(p => (p.overall_score || 0) > analysis.score).length + 1 : 0
+      const allCompanyComparison = [...companyComparison, ...otherCompanies]
 
       const analysisData = {
         score: analysis.score,
@@ -378,10 +401,10 @@ ${referenceStats}
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
         ranking: {
-          total: portfolios?.length || 0,
+          total: DISPLAY_TOTAL,
           percentile,
           rank,
-          companyComparison
+          companyComparison: allCompanyComparison
         }
       }
 

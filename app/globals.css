@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+* {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 :root {
   --background: #0a1628;
   --foreground: #f1f5f9;

@@ -1,29 +1,29 @@
-import { Upload, Clock, MessageCircle, RotateCcw } from "lucide-react"
+import { Upload, Zap, BarChart3, FolderKanban } from "lucide-react"
 
 const steps = [
   {
     icon: Upload,
     step: "01",
-    title: "문서 업로드",
-    description: "시스템 기획서, 콘텐츠 기획서, 레벨 디자인 문서 등 피드백 받고 싶은 문서를 업로드합니다."
+    title: "프로젝트 생성",
+    description: "지원할 회사나 주제별로 프로젝트를 만들고, 기획서를 업로드합니다."
   },
   {
-    icon: Clock,
+    icon: Zap,
     step: "02",
-    title: "검토 진행",
-    description: "현업 기획자가 직접 문서를 검토하고 상세한 피드백을 작성합니다."
+    title: "AI 즉시 분석",
+    description: "합격 포트폴리오 100개를 학습한 AI가 즉시 문서를 분석합니다. 기다릴 필요 없습니다."
   },
   {
-    icon: MessageCircle,
+    icon: BarChart3,
     step: "03",
-    title: "피드백 확인",
-    description: "24시간 내에 상세한 피드백과 함께 개선 방향을 전달받습니다."
+    title: "점수 · 등급 확인",
+    description: "종합 점수, S~D 등급, 5개 영역 레이더 차트, 상위 몇 % 랭킹을 확인합니다."
   },
   {
-    icon: RotateCcw,
+    icon: FolderKanban,
     step: "04",
-    title: "수정 후 재업로드",
-    description: "피드백을 반영하여 수정한 문서를 다시 업로드하면 추가 피드백을 받을 수 있습니다."
+    title: "수정 후 재분석",
+    description: "피드백을 반영해 수정한 문서를 같은 프로젝트에 재업로드하면 점수 변화를 추적할 수 있습니다."
   }
 ]
 
@@ -39,7 +39,7 @@ export function HowItWorks() {
             이용 방법
           </h2>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            간단한 4단계로 전문적인 피드백을 받아보세요
+            업로드하면 AI가 즉시 분석합니다. 간단한 4단계로 시작하세요
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export function HowItWorks() {
 
         <div className="mt-16 text-center">
           <p className="text-slate-400 mb-4">
-            구독 기간 동안 <span className="text-white font-medium">무제한</span>으로 문서를 업로드하고 피드백을 받을 수 있습니다.
+            무료 플랜은 <span className="text-white font-medium">프로젝트 1개</span>, 구독하면 <span className="text-white font-medium">무제한</span>으로 프로젝트를 생성할 수 있습니다.
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { Database, ShieldCheck, BarChart3, FolderOpen, ArrowRight } from "lucide-react"
+import { Database, ShieldCheck, BarChart3, FolderOpen, ArrowRight, MessageSquare } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export function WhyChooseUs() {
@@ -102,45 +102,50 @@ export function WhyChooseUs() {
           </Card>
         </div>
 
-        {/* Visual Proof Section */}
+        {/* AI 분석 결과 미리보기 */}
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 text-[#5B8DEF] text-sm font-medium mb-8">
-            실제 사례로 증명합니다
+            AI가 이렇게 분석합니다
           </div>
-          
+
           <h3 className="text-2xl md:text-3xl font-bold text-white mb-12">
-            Before & After
+            분석 결과 미리보기
           </h3>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 aspect-[4/3] flex flex-col items-center justify-center">
-              <div className="text-red-400 text-sm font-medium mb-4">BEFORE</div>
-              <p className="text-slate-400 font-medium">
-                실제 분석 및 합격 사례 캡처
-              </p>
-              <p className="text-slate-500 text-sm mt-2">
-                (이미지 준비 중)
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* 점수 카드 */}
+            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col items-center justify-center">
+              <div className="text-6xl font-bold text-[#5B8DEF] mb-2">85</div>
+              <div className="text-slate-400 text-sm mb-4">종합 점수</div>
+              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium">
+                A등급 · 상위 12%
+              </div>
+            </div>
+
+            {/* 레이더 차트 */}
+            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col items-center justify-center">
+              <BarChart3 className="w-16 h-16 text-[#5B8DEF] mb-4" />
+              <p className="text-white font-medium mb-2">5개 영역 레이더 분석</p>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                구조 · 논리 · 창의성 · 실현성 · 표현력
               </p>
             </div>
 
-            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 aspect-[4/3] flex flex-col items-center justify-center">
-              <div className="text-emerald-400 text-sm font-medium mb-4">AFTER</div>
-              <p className="text-slate-400 font-medium">
-                피드백 반영 후 합격 사례
-              </p>
-              <p className="text-slate-500 text-sm mt-2">
-                (이미지 준비 중)
+            {/* 피드백 카드 */}
+            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col items-center justify-center">
+              <MessageSquare className="w-16 h-16 text-emerald-400 mb-4" />
+              <p className="text-white font-medium mb-2">항목별 상세 피드백</p>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                각 영역별 강점, 약점, 구체적 개선 방향 제시
               </p>
             </div>
           </div>
 
-          <a 
-            href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162" 
-            target="_blank" 
-            rel="noopener noreferrer"
+          <a
+            href="/analyze"
             className="inline-flex items-center gap-2 mt-12 text-[#5B8DEF] hover:text-[#7aa5f5] font-medium transition-colors"
           >
-            더 많은 사례 보러가기
+            지금 바로 분석해보기
             <ArrowRight className="w-4 h-4" />
           </a>
         </div>

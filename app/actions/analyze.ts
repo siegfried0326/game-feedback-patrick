@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory } from "./subscription"
 
@@ -39,7 +39,7 @@ export async function uploadFileToStorage(formData: FormData) {
     }
 
     const supabase = await createClient()
-    
+
     // 고유한 파일명 생성
     const fileExt = file.name.split(".").pop()
     const uniqueFileName = `${uuidv4()}.${fileExt}`
@@ -94,34 +94,33 @@ export async function deleteFileFromStorage(filePath: string) {
   }
 }
 
-// PDF를 직접 Gemini에게 전달하여 분석 (inline_data 사용 - 파일시스템 불필요)
+// Claude API로 문서 분석
 export async function analyzeDocumentDirect(input: {
   projectId: string
   fileName: string
-  fileUrl: string  // Supabase Storage public URL
+  fileUrl: string
   mimeType: string
-  filePath: string // 분석 후 삭제용
+  filePath: string
 }) {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return { error: "GOOGLE_GENERATIVE_AI_API_KEY가 설정되지 않았습니다." }
+    return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
   }
 
   try {
     const supabase = await createClient()
-    
-    // 🔥 학습된 포트폴리오 데이터 가져오기 (실제 내용 포함 - 패턴 학습용)
+
+    // 학습된 포트폴리오 데이터 가져오기
     const { data: portfolios } = await supabase
       .from("portfolios")
       .select("file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type")
       .order("overall_score", { ascending: false })
-      .limit(50) // 상위 50개만 (토큰 제한 고려)
+      .limit(50)
 
     // 학습 데이터 통계 및 패턴 분석
     let referenceStats = ""
     const companyStats: Record<string, { total: number; count: number }> = {}
-    
-    // avgScores를 if 블록 밖에서 선언 (스코프 문제 해결)
+
     let avgScores = {
       overall: 85,
       logic: 85,
@@ -130,7 +129,7 @@ export async function analyzeDocumentDirect(input: {
       technical: 85,
       creativity: 85,
     }
-    
+
     if (portfolios && portfolios.length > 0) {
       avgScores = {
         overall: Math.round(portfolios.reduce((a, b) => a + (b.overall_score || 0), 0) / portfolios.length),
@@ -140,8 +139,7 @@ export async function analyzeDocumentDirect(input: {
         technical: Math.round(portfolios.reduce((a, b) => a + (b.technical_score || 0), 0) / portfolios.length),
         creativity: Math.round(portfolios.reduce((a, b) => a + (b.creativity_score || 0), 0) / portfolios.length),
       }
-      
-      // 회사별 통계
+
       portfolios.forEach(p => {
         (p.companies as string[] || []).forEach((company: string) => {
           if (!companyStats[company]) {
@@ -151,7 +149,7 @@ export async function analyzeDocumentDirect(input: {
           companyStats[company].count += 1
         })
       })
-      
+
       const allTags = portfolios.flatMap(p => p.tags || [])
       const tagCounts = allTags.reduce((acc: Record<string, number>, tag: string) => {
         acc[tag] = (acc[tag] || 0) + 1
@@ -161,8 +159,7 @@ export async function analyzeDocumentDirect(input: {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 15)
         .map(([tag]) => tag)
-      
-      // 🔥 실제 합격 사례 패턴 추출 (상위 10개)
+
       const topExamples = portfolios.slice(0, 10).map((p, idx) => {
         const strengthsList = (p.strengths || []).slice(0, 3).map(s => `  · ${s}`).join("\n")
         const weaknessesList = (p.weaknesses || []).slice(0, 2).map(w => `  · ${w}`).join("\n")
@@ -178,7 +175,7 @@ ${weaknessesList}` : ""}
 - 요약: ${p.summary || "N/A"}
 `
       }).join("\n")
-      
+
       referenceStats = `
 ## 📊 학습 데이터 기반 비교 분석 (실제 합격 포트폴리오 ${portfolios.length}개)
 
@@ -190,7 +187,7 @@ ${weaknessesList}` : ""}
 - 주요 키워드: ${topTags.join(", ")}
 
 ### 회사별 평균 점수
-${Object.entries(companyStats).slice(0, 8).map(([company, stat]) => 
+${Object.entries(companyStats).slice(0, 8).map(([company, stat]) =>
   `- ${company}: ${Math.round(stat.total / stat.count)}점 (${stat.count}개 샘플)`
 ).join("\n")}
 
@@ -210,7 +207,7 @@ ${topExamples}
 `
     }
 
-    const prompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
+    const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}
@@ -274,22 +271,56 @@ ${referenceStats}
     const fileBuffer = Buffer.from(await response.arrayBuffer())
     const base64Data = fileBuffer.toString("base64")
 
+    // Claude가 지원하는 미디어 타입 매핑
+    const supportedMediaTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ]
+
+    let mediaType = input.mimeType as "application/pdf" | "image/jpeg" | "image/png" | "image/gif" | "image/webp"
+
+    // 지원하지 않는 타입이면 PDF로 기본 설정
+    if (!supportedMediaTypes.includes(input.mimeType)) {
+      mediaType = "application/pdf"
+    }
+
     try {
-      // Gemini API 호출 - inline_data로 PDF 직접 전달
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+      // Claude API 호출
+      const anthropic = new Anthropic({ apiKey })
 
-      const result = await model.generateContent([
-        { text: prompt },
-        {
-          inlineData: {
-            mimeType: input.mimeType,
-            data: base64Data,
+      const message = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "document",
+                source: {
+                  type: "base64",
+                  media_type: mediaType,
+                  data: base64Data,
+                },
+              },
+              {
+                type: "text",
+                text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요.",
+              },
+            ],
           },
-        },
-      ])
+        ],
+        system: systemPrompt,
+      })
 
-      const responseText = result.response.text()
+      // 응답 텍스트 추출
+      const responseText = message.content
+        .filter((block): block is Anthropic.TextBlock => block.type === "text")
+        .map(block => block.text)
+        .join("")
 
       // JSON 파싱
       let jsonStr = responseText
@@ -333,7 +364,7 @@ ${referenceStats}
         }
       }
 
-      // 분석 이력 저장 (비동기, 실패해도 결과는 반환)
+      // 분석 이력 저장
       saveAnalysisHistory({
         projectId: input.projectId,
         fileName: input.fileName,

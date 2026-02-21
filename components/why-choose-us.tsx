@@ -33,7 +33,7 @@ export function WhyChooseUs() {
             </p>
             <p className="text-lg text-slate-300 leading-relaxed mt-8">
               이 서비스는 합격 포트폴리오 187개를{" "}
-              <span className="text-[#5B8DEF] font-semibold">Google Gemini</span>에 학습시켜 만든{" "}
+              <span className="text-[#5B8DEF] font-semibold">Claude AI</span>에 학습시켜 만든{" "}
               <span className="text-white font-semibold">'검증된 솔루션'</span>입니다.
             </p>
           </div>

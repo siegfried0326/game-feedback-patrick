@@ -56,7 +56,7 @@ export function HeroSection() {
             <div className="bg-[#5B8DEF]/5 border border-[#5B8DEF]/30 rounded-2xl p-6">
               <p className="text-[#5B8DEF] font-bold text-sm mb-4 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
-                PATRICK AI는?
+                이 서비스는?
               </p>
               <div className="space-y-2.5">
                 <div className="flex items-start gap-2.5">

@@ -1,5 +1,6 @@
 import { ArrowRight, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export function CTASection() {
   return (
@@ -14,36 +15,27 @@ export function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button 
-            asChild 
-            size="lg" 
+          <Button
+            asChild
+            size="lg"
             className="bg-[#5B8DEF] text-white hover:bg-[#4A7CE0] px-8 h-12 text-base"
+          >
+            <Link href="/analyze">
+              <ArrowRight className="mr-2 w-4 h-4" />
+              무료로 분석 시작
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="border-[#1e3a5f] text-slate-300 hover:bg-[#162a4a] hover:text-white px-8 h-12 text-base bg-transparent"
           >
             <a href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162" target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-2 w-4 h-4" />
-              무료 상담 신청하기
+              문의하기
             </a>
           </Button>
-          <Button 
-            asChild
-            variant="outline" 
-            size="lg" 
-            className="border-[#1e3a5f] text-slate-300 hover:bg-[#162a4a] hover:text-white px-8 h-12 text-base bg-transparent"
-          >
-            <a href="https://v0-cafe-naver-homepage.vercel.app/" target="_blank" rel="noopener noreferrer">
-              PATRICK 강의 보기
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </a>
-          </Button>
-        </div>
-
-        <div className="mt-12 pt-8 border-t border-[#1e3a5f]">
-          <p className="text-slate-500 text-sm mb-4">
-            PATRICK 강의 수강생이라면?
-          </p>
-          <p className="text-[#5B8DEF] text-lg font-medium">
-            수강생 전용 할인 혜택을 받으실 수 있습니다
-          </p>
         </div>
       </div>
     </section>

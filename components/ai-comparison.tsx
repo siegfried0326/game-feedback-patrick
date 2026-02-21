@@ -104,10 +104,10 @@ export function AIComparison() {
             </div>
           </div>
 
-          {/* RIGHT: PATRICK AI (Good) */}
+          {/* RIGHT: Our AI (Good) */}
           <div className="relative">
             <div className="absolute -top-3 left-6 px-4 py-1 bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 rounded-full text-[#5B8DEF] text-sm font-medium">
-              PATRICK AI 첨삭
+              이 서비스의 AI 첨삭
             </div>
             <div className="bg-slate-900/80 border border-[#5B8DEF]/30 rounded-2xl p-8 pt-12">
 

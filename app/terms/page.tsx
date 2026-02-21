@@ -2,8 +2,8 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
-  title: "이용약관 | PATRICK 게임 기획 문서 피드백",
-  description: "PATRICK 게임 기획 문서 피드백 서비스의 이용약관 안내",
+  title: "이용약관 | 게임 기획 문서 피드백",
+  description: "게임 기획 문서 피드백 서비스의 이용약관 안내",
 }
 
 export default function TermsPage() {
@@ -25,7 +25,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">제1조 (목적)</h2>
             <p>
-              본 약관은 PATRICK(이하 &quot;회사&quot;)이 제공하는 게임 기획 문서 피드백 서비스(이하 &quot;서비스&quot;)의
+              본 약관은 문라이트커리어랩(이하 &quot;회사&quot;)이 제공하는 게임 기획 문서 피드백 서비스(이하 &quot;서비스&quot;)의
               이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.
             </p>
           </section>

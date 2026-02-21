@@ -12,18 +12,11 @@ export function Footer() {
             </div>
             <div>
               <span className="font-semibold text-white">게임 기획 문서 피드백</span>
-              <p className="text-xs text-slate-400">by PATRICK</p>
+              <p className="text-xs text-slate-400">by 문라이트커리어랩</p>
             </div>
           </div>
 
           <div className="flex items-center gap-6 text-sm text-slate-400">
-            <Link
-              href="https://v0-cafe-naver-homepage.vercel.app/"
-              target="_blank"
-              className="hover:text-white transition-colors"
-            >
-              PATRICK 강의
-            </Link>
             <Link
               href="/terms"
               className="hover:text-white transition-colors"
@@ -53,7 +46,7 @@ export function Footer() {
           <p>사업장 주소: 경기도 수원시 영통구 센트럴타운로 107, 202동 10층 1008호(이의동, 광교푸르지오 월드마크)</p>
           <p>연락처: 031-695-4230</p>
           <p className="mt-4">
-            Copyright 2025. PATRICK All rights reserved.
+            Copyright 2025. 문라이트커리어랩 All rights reserved.
           </p>
         </div>
       </div>

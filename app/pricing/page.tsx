@@ -3,8 +3,8 @@ import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export const metadata = {
-  title: "요금제 | PATRICK 게임 기획 문서 피드백",
-  description: "PATRICK 게임 기획 문서 피드백 서비스 요금제 안내. 월 구독 17,900원, 3개월 패스 49,000원.",
+  title: "요금제 | 게임 기획 문서 피드백",
+  description: "게임 기획 문서 피드백 서비스 요금제 안내. 월 구독 17,900원, 3개월 패스 49,000원.",
 }
 
 const plans = [

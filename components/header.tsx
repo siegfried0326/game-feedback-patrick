@@ -38,14 +38,6 @@ export function Header({ user }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="https://v0-cafe-naver-homepage.vercel.app/"
-            target="_blank"
-            className="text-sm text-slate-400 hover:text-white transition-colors hidden sm:block"
-          >
-            PATRICK 강의
-          </Link>
-
           {user ? (
             <>
               <Link

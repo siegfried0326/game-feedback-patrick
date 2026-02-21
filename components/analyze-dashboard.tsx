@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, FileSearch, ArrowRight, Star } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -749,75 +749,22 @@ export function AnalyzeDashboard() {
                   weaknesses={results[currentIndex].weaknesses}
                 />
 
-                {/* 실제 합격자 문서와 비교 - 패트릭 과외 유도 */}
-                <Card className="bg-gradient-to-br from-[#5B8DEF]/10 via-slate-900/80 to-amber-500/5 border-[#5B8DEF]/30 overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#5B8DEF]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                  <CardContent className="p-8 relative">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-12 h-12 rounded-xl bg-[#5B8DEF]/20 flex items-center justify-center">
-                        <FileSearch className="w-6 h-6 text-[#5B8DEF]" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-white">실제 합격자 문서와 비교</h3>
-                        <p className="text-sm text-slate-400">AI 분석 너머의 실전 피드백</p>
-                      </div>
+                {/* 더 정확한 피드백이 필요하다면 */}
+                <Card className="bg-slate-900/80 border-[#1e3a5f]">
+                  <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                      <p className="text-white font-semibold mb-1">AI 분석 결과에 대해 궁금한 점이 있으신가요?</p>
+                      <p className="text-sm text-slate-400">1:1 상담을 통해 더 자세한 피드백을 받아보세요.</p>
                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-6 mb-8">
-                      <div className="space-y-4">
-                        <p className="text-slate-300 leading-relaxed">
-                          AI가 <span className="text-[#5B8DEF] font-semibold">{results[currentIndex].score}점</span>을 매겼지만,
-                          실제 합격자 문서와 <span className="text-white font-medium">1:1로 비교</span>해야 진짜 차이를 알 수 있습니다.
-                        </p>
-                        <ul className="space-y-3">
-                          <li className="flex items-start gap-3">
-                            <Star className="w-4 h-4 text-amber-400 shrink-0 mt-1" />
-                            <span className="text-sm text-slate-400">
-                              같은 회사 합격자의 <span className="text-white">실제 포트폴리오</span>와 나란히 비교
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <Star className="w-4 h-4 text-amber-400 shrink-0 mt-1" />
-                            <span className="text-sm text-slate-400">
-                              11년차 현업 기획자가 <span className="text-white">구체적 수정 방향</span> 직접 제시
-                            </span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <Star className="w-4 h-4 text-amber-400 shrink-0 mt-1" />
-                            <span className="text-sm text-slate-400">
-                              AI가 잡지 못하는 <span className="text-white">업계 트렌드와 채용 관점</span> 피드백
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-6 flex flex-col justify-center">
-                        <div className="text-center mb-4">
-                          <p className="text-sm text-slate-500 mb-1">현재 AI 분석 점수</p>
-                          <p className="text-4xl font-bold text-[#5B8DEF]">{results[currentIndex].score}<span className="text-lg text-slate-500">점</span></p>
-                        </div>
-                        <div className="w-full h-px bg-slate-700 my-3" />
-                        <div className="text-center">
-                          <p className="text-sm text-slate-500 mb-1">1:1 과외 후 평균 점수 상승</p>
-                          <p className="text-2xl font-bold text-emerald-400">+15~25<span className="text-sm text-slate-500">점</span></p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-4">
-                      <a
-                        href="https://open.kakao.com/o/sLz0kgBf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-bold rounded-xl transition-colors text-lg"
-                      >
-                        패트릭 1:1 과외 상담
-                        <ArrowRight className="w-5 h-5" />
-                      </a>
-                      <p className="text-xs text-slate-500 text-center sm:text-left">
-                        187개 합격 포트폴리오를 보유한 11년차 현업 기획자가 직접 첨삭합니다.
-                      </p>
-                    </div>
+                    <a
+                      href="https://open.kakao.com/o/sLz0kgBf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm"
+                    >
+                      1:1 상담 신청
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
                   </CardContent>
                 </Card>
               </>

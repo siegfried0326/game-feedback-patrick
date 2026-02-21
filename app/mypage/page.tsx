@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2 } from "lucide-react"
+import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, ChevronDown, ChevronUp, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getSubscription, cancelSubscription, getAnalysisHistory } from "@/app/actions/subscription"
+import { getSubscription, cancelSubscription, getAnalysisHistory, getAnalysisDetail } from "@/app/actions/subscription"
 import { getUser } from "@/app/actions/auth"
+import { ScoreCard } from "@/components/score-card"
+import { RadarChartComponent } from "@/components/radar-chart-component"
+import { FeedbackCards } from "@/components/feedback-cards"
 
 type Subscription = {
   plan: string
@@ -20,8 +23,14 @@ type AnalysisItem = {
   file_name: string
   overall_score: number
   analyzed_at: string
+  categories: { subject: string; value: number; fullMark: number }[]
   strengths: string[]
   weaknesses: string[]
+  ranking?: {
+    total: number
+    percentile: number
+    companyComparison?: { company: string; avgScore: number; userScore: number }[]
+  }
 }
 
 export default function MyPage() {
@@ -32,6 +41,9 @@ export default function MyPage() {
   const [cancelling, setCancelling] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [detailData, setDetailData] = useState<Record<string, AnalysisItem>>({})
+  const [loadingDetail, setLoadingDetail] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadData() {
@@ -67,6 +79,30 @@ export default function MyPage() {
     loadData()
   }, [])
 
+  const handleToggleDetail = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null)
+      return
+    }
+
+    setExpandedId(id)
+
+    // 이미 로드된 데이터가 있으면 재사용
+    if (detailData[id]) return
+
+    setLoadingDetail(id)
+    try {
+      const result = await getAnalysisDetail(id)
+      if (result.data) {
+        setDetailData(prev => ({ ...prev, [id]: result.data as AnalysisItem }))
+      }
+    } catch {
+      console.error("상세 데이터 로딩 실패")
+    } finally {
+      setLoadingDetail(null)
+    }
+  }
+
   const handleCancel = async () => {
     setCancelling(true)
     setMessage(null)
@@ -77,7 +113,6 @@ export default function MyPage() {
       setMessage({ type: "error", text: result.error })
     } else {
       setMessage({ type: "success", text: "구독이 해지되었습니다. 만료일까지 계속 이용 가능합니다." })
-      // 구독 정보 새로고침
       const subResult = await getSubscription()
       if (subResult.data) {
         setSubscription(subResult.data as Subscription)
@@ -157,6 +192,20 @@ export default function MyPage() {
           </div>
         )}
 
+        {/* 데이터 보호 안내 */}
+        <div className="mb-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-start gap-3">
+          <Shield className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-emerald-400 font-medium">
+              당신의 데이터는 안전합니다
+            </p>
+            <p className="text-xs text-emerald-400/70 mt-1">
+              업로드된 문서는 분석 즉시 서버에서 완전히 삭제됩니다. 분석 결과는 암호화되어 저장되며,
+              본인만 조회할 수 있습니다. 서비스 관리자를 포함한 그 누구도 회원님의 분석 결과를 열람할 수 없습니다.
+            </p>
+          </div>
+        </div>
+
         {/* 프로필 섹션 */}
         <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 mb-6">
           <h2 className="text-lg font-semibold text-white mb-4">프로필</h2>
@@ -222,7 +271,6 @@ export default function MyPage() {
                 )}
               </div>
 
-              {/* 무료 플랜 안내 */}
               {subscription.plan === "free" && (
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
                   <p className="text-sm text-slate-300">
@@ -234,7 +282,6 @@ export default function MyPage() {
                 </div>
               )}
 
-              {/* 구독 해지 버튼 */}
               {subscription.plan !== "free" && subscription.status === "active" && (
                 <>
                   {!showCancelConfirm ? (
@@ -291,27 +338,86 @@ export default function MyPage() {
             분석 이력
           </h2>
 
+          {/* 프라이버시 안내 */}
+          <div className="mb-4 flex items-center gap-2 text-xs text-slate-500">
+            <Lock className="w-3 h-3" />
+            <span>분석 결과는 본인만 열람 가능하며, 관리자도 접근할 수 없습니다.</span>
+          </div>
+
           {history.length > 0 ? (
             <div className="space-y-3">
               {history.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-white font-medium text-sm truncate max-w-[60%]">
-                      {item.file_name}
-                    </h3>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-[#5B8DEF]" />
-                      <span className="text-[#5B8DEF] font-bold">{item.overall_score}</span>
-                      <span className="text-slate-500 text-sm">/100</span>
+                <div key={item.id}>
+                  <button
+                    onClick={() => handleToggleDetail(item.id)}
+                    className="w-full text-left bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-white font-medium text-sm truncate max-w-[50%]">
+                        {item.file_name}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 text-[#5B8DEF]" />
+                          <span className="text-[#5B8DEF] font-bold">{item.overall_score}</span>
+                          <span className="text-slate-500 text-sm">/100</span>
+                        </div>
+                        {expandedId === item.id ? (
+                          <ChevronUp className="w-4 h-4 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <Calendar className="w-3 h-3" />
-                    {formatDate(item.analyzed_at)}
-                  </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <Calendar className="w-3 h-3" />
+                      {formatDate(item.analyzed_at)}
+                      <span className="text-slate-600">|</span>
+                      <span>클릭하여 상세 결과 보기</span>
+                    </div>
+                  </button>
+
+                  {/* 상세 결과 패널 */}
+                  {expandedId === item.id && (
+                    <div className="mt-2 bg-[#0d1b2a] rounded-lg border border-[#1e3a5f] p-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {loadingDetail === item.id ? (
+                        <div className="flex justify-center py-8">
+                          <Loader2 className="w-6 h-6 text-[#5B8DEF] animate-spin" />
+                        </div>
+                      ) : detailData[item.id] ? (
+                        <div className="space-y-6">
+                          <div className="grid lg:grid-cols-2 gap-6">
+                            <ScoreCard score={detailData[item.id].overall_score} />
+                            {detailData[item.id].categories && detailData[item.id].categories.length > 0 && (
+                              <RadarChartComponent data={detailData[item.id].categories} />
+                            )}
+                          </div>
+
+                          {/* 랭킹 */}
+                          {detailData[item.id].ranking && detailData[item.id].ranking!.total > 0 && (
+                            <div className="bg-slate-900/80 rounded-lg border border-[#1e3a5f] p-4">
+                              <p className="text-sm text-slate-400 mb-2">
+                                합격 포트폴리오 {detailData[item.id].ranking!.total}개 기준
+                              </p>
+                              <p className="text-2xl font-bold text-[#5B8DEF]">
+                                상위 {100 - detailData[item.id].ranking!.percentile}%
+                              </p>
+                            </div>
+                          )}
+
+                          {/* 강점/약점 */}
+                          {(detailData[item.id].strengths?.length > 0 || detailData[item.id].weaknesses?.length > 0) && (
+                            <FeedbackCards
+                              strengths={detailData[item.id].strengths || []}
+                              weaknesses={detailData[item.id].weaknesses || []}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-slate-400 text-center py-4">데이터를 불러올 수 없습니다.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

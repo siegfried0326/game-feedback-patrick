@@ -107,6 +107,24 @@ export async function getAnalysisHistory() {
   return { data: data || [] }
 }
 
+export async function getAnalysisDetail(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  // RLS가 적용되어 있어 본인 데이터만 조회 가능
+  const { data, error } = await supabase
+    .from("analysis_history")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single()
+
+  if (error) return { error: "분석 결과를 찾을 수 없습니다." }
+  return { data }
+}
+
 export async function saveAnalysisHistory(result: {
   fileName: string
   score: number

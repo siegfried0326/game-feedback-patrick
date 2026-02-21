@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -263,6 +263,19 @@ export function AnalyzeDashboard() {
               <p className="text-xs text-amber-400/70 mt-1">
                 무제한 분석을 원하시면{" "}
                 <Link href="/pricing" className="underline hover:text-amber-300">구독을 시작</Link>해 주세요.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 데이터 보호 안내 */}
+        {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
+          <div className="mb-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-start gap-3">
+            <Shield className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-emerald-400 font-medium">당신의 데이터는 안전합니다</p>
+              <p className="text-xs text-emerald-400/70 mt-1">
+                업로드된 문서는 분석 즉시 서버에서 완전히 삭제됩니다. 분석 결과는 본인만 조회할 수 있으며, 관리자를 포함한 그 누구도 열람할 수 없습니다.
               </p>
             </div>
           </div>

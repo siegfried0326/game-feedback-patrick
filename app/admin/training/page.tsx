@@ -2,12 +2,17 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Brain, AlertTriangle, TrendingUp } from "lucide-react"
+import {
+  Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Brain,
+  AlertTriangle, TrendingUp, Trash2, Eye, RefreshCw
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioList, getCompanyStats } from "@/app/actions/admin"
-import Link from "next/link"
+import {
+  uploadAdminFile, analyzeAndSavePortfolio, getPortfolioList,
+  getCompanyStats, deletePortfolio, deleteMultiplePortfolios
+} from "@/app/actions/admin"
 
 interface TrainingFile {
   file: File
@@ -17,20 +22,36 @@ interface TrainingFile {
   companies?: string[]
 }
 
+type TabType = "upload" | "data"
+
 export default function TrainingPage() {
+  const [activeTab, setActiveTab] = useState<TabType>("upload")
+
+  // ── 공통 상태 ──
+  const [companyStats, setCompanyStats] = useState<Record<string, number>>({})
+  const [isLoadingStats, setIsLoadingStats] = useState(false)
+
+  // ── 업로드 탭 상태 ──
   const [files, setFiles] = useState<TrainingFile[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [completedCount, setCompletedCount] = useState(0)
   const [existingFiles, setExistingFiles] = useState<string[]>([])
-  const [companyStats, setCompanyStats] = useState<Record<string, number>>({})
-  const [isLoadingStats, setIsLoadingStats] = useState(false)
 
-  // 기존 학습 파일 목록 로드
+  // ── 데이터 관리 탭 상태 ──
+  const [portfolios, setPortfolios] = useState<any[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isLoadingData, setIsLoadingData] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // 초기 로드
   useEffect(() => {
-    loadExistingFiles()
-    loadCompanyStats()
+    loadAll()
   }, [])
+
+  const loadAll = async () => {
+    await Promise.all([loadExistingFiles(), loadCompanyStats(), loadPortfolios()])
+  }
 
   const loadExistingFiles = async () => {
     const result = await getPortfolioList()
@@ -49,28 +70,32 @@ export default function TrainingPage() {
     setIsLoadingStats(false)
   }
 
-  // 파일 드롭
+  const loadPortfolios = async () => {
+    setIsLoadingData(true)
+    const result = await getPortfolioList()
+    if (result.data) {
+      setPortfolios(result.data)
+    }
+    setIsLoadingData(false)
+  }
+
+  // ── 업로드 로직 ──
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
-    // 거부된 파일 처리
     if (rejectedFiles.length > 0) {
       const errors = rejectedFiles.map(({ file, errors }) => {
-        const errorMsg = errors.map((e: any) => {
+        return errors.map((e: any) => {
           if (e.code === 'file-too-large') return `${file.name}: 파일이 너무 큽니다 (최대 50MB)`
           if (e.code === 'file-invalid-type') return `${file.name}: 지원하지 않는 파일 형식입니다`
           return `${file.name}: ${e.message}`
         }).join('\n')
-        return errorMsg
       }).join('\n')
       alert(`❌ 업로드 실패:\n\n${errors}`)
     }
 
-    // 중복 체크 및 파일 추가
     const duplicates: string[] = []
     const newFiles: TrainingFile[] = acceptedFiles.map(file => {
       const isDuplicate = existingFiles.includes(file.name)
-      if (isDuplicate) {
-        duplicates.push(file.name)
-      }
+      if (isDuplicate) duplicates.push(file.name)
       return {
         file,
         status: isDuplicate ? "skipped" : "pending",
@@ -89,16 +114,14 @@ export default function TrainingPage() {
     onDrop,
     accept: {
       "application/pdf": [".pdf"],
-      // "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"], // 워드는 Gemini가 지원 안 함
       "text/plain": [".txt"],
       "image/jpeg": [".jpg", ".jpeg"],
       "image/png": [".png"]
     },
     multiple: true,
-    maxSize: 50 * 1024 * 1024 // 50MB 제한
+    maxSize: 50 * 1024 * 1024
   })
 
-  // 일괄 학습 시작
   const startTraining = async () => {
     if (files.length === 0) {
       alert("파일을 먼저 추가해주세요.")
@@ -120,36 +143,31 @@ export default function TrainingPage() {
     for (let i = 0; i < files.length; i++) {
       const fileData = files[i]
 
-      // 이미 스킵된 파일은 건너뛰기
       if (fileData.status === "skipped") {
         setProgress(((i + 1) / totalFiles) * 100)
         continue
       }
 
       try {
-        // 1. 업로드 중
-        setFiles(prev => prev.map((f, idx) => 
+        setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "uploading", message: "업로드 중..." } : f
         ))
 
         const formData = new FormData()
         formData.append("file", fileData.file)
-        
+
         const uploadResult = await uploadAdminFile(formData)
-        
+
         if (uploadResult.error) {
           throw new Error(uploadResult.error)
         }
 
-        // 2. AI 분석 중
-        setFiles(prev => prev.map((f, idx) => 
+        setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "analyzing", message: "AI 분석 중..." } : f
         ))
-        
-        // 자동 추출된 회사명 사용 (백업: 파일명에서 직접 추출)
+
         let companies = (uploadResult.data as any)?.extractedCompanies || []
-        
-        // 백업: 파일명에서 직접 회사명 추출
+
         if (companies.length === 0) {
           const fileName = fileData.file.name
           if (fileName.includes('넷마블')) companies.push('넷마블')
@@ -162,23 +180,23 @@ export default function TrainingPage() {
           if (fileName.includes('매드엔진')) companies.push('매드엔진')
           if (fileName.includes('웹젠')) companies.push('웹젠')
         }
-        
+
         const result = await analyzeAndSavePortfolio({
           fileName: uploadResult.data!.fileName,
           fileUrl: uploadResult.data!.fileUrl,
           mimeType: uploadResult.data!.mimeType,
           filePath: uploadResult.data!.filePath,
-          companies: companies, // 파일명에서 자동 추출!
+          companies: companies,
           year: new Date().getFullYear(),
           documentType: "학습데이터"
         })
 
         if (result.success) {
           const companyMsg = companies.length > 0 ? ` (${companies.join(", ")})` : ""
-          setFiles(prev => prev.map((f, idx) => 
-            idx === i ? { 
-              ...f, 
-              status: "success", 
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? {
+              ...f,
+              status: "success",
               message: `완료${companyMsg}`,
               score: result.score,
               companies: companies
@@ -189,29 +207,24 @@ export default function TrainingPage() {
           throw new Error(result.error)
         }
       } catch (error) {
-        setFiles(prev => prev.map((f, idx) => 
-          idx === i ? { 
-            ...f, 
-            status: "error", 
-            message: error instanceof Error ? error.message : "분석 실패" 
+        setFiles(prev => prev.map((f, idx) =>
+          idx === i ? {
+            ...f,
+            status: "error",
+            message: error instanceof Error ? error.message : "분석 실패"
           } : f
         ))
       }
 
-      // 진행률 업데이트
       setProgress(((i + 1) / totalFiles) * 100)
-      
-      // Rate limiting (3초 대기 - 큰 파일 처리 시간 고려)
+
       if (i < files.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 3000))
       }
     }
 
     setIsProcessing(false)
-    
-    // 학습 완료 후 기존 파일 목록 새로고침
-    await loadExistingFiles()
-    await loadCompanyStats() // 통계도 새로고침
+    await loadAll()
   }
 
   const clearAll = () => {
@@ -229,30 +242,102 @@ export default function TrainingPage() {
   const skippedCount = files.filter(f => f.status === "skipped").length
   const pendingCount = files.filter(f => f.status === "pending").length
 
+  // ── 데이터 관리 로직 ──
+  const handleDelete = async (id: string) => {
+    if (!confirm("이 학습 데이터를 삭제하시겠습니까?")) return
+
+    setIsDeleting(true)
+    const result = await deletePortfolio(id)
+    if (result.success) {
+      await loadAll()
+    } else {
+      alert("삭제 실패: " + result.error)
+    }
+    setIsDeleting(false)
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!confirm(`선택한 ${selectedIds.length}개 학습 데이터를 삭제하시겠습니까?\n\n⚠️ 삭제하면 AI도 이 데이터를 잊어버립니다.`)) return
+
+    setIsDeleting(true)
+    const result = await deleteMultiplePortfolios(selectedIds)
+    if (result.success) {
+      setSelectedIds([])
+      await loadAll()
+      alert(`✅ ${result.count}개 데이터가 삭제되었습니다.`)
+    } else {
+      alert("삭제 실패: " + result.error)
+    }
+    setIsDeleting(false)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === portfolios.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(portfolios.map(p => p.id))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    )
+  }
+
+  // ── 회사별 색상 맵 ──
+  const companyColors: Record<string, string> = {
+    "엔씨소프트": "from-green-500 to-emerald-600",
+    "넥슨": "from-blue-500 to-cyan-600",
+    "넷마블": "from-red-500 to-rose-600",
+    "네오위즈": "from-purple-500 to-violet-600",
+    "스마일게이트": "from-orange-500 to-amber-600",
+    "라이온하트": "from-pink-500 to-fuchsia-600",
+    "매드엔진": "from-indigo-500 to-blue-600",
+    "웹젠": "from-teal-500 to-cyan-600",
+    "일반게임회사": "from-slate-500 to-gray-600"
+  }
+
   return (
     <div className="min-h-screen bg-[#0a1628] py-12 px-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-            <Brain className="w-8 h-8 text-[#5B8DEF]" />
-            학습 데이터 일괄 업로드
-          </h1>
-          <p className="text-slate-400">
-            합격 포트폴리오 파일들을 업로드하면 AI가 자동으로 분석하고 DB에 저장합니다.
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+              <Brain className="w-8 h-8 text-[#5B8DEF]" />
+              학습 데이터 관리
+            </h1>
+            <p className="text-slate-400">
+              합격 포트폴리오를 업로드하고, 학습된 데이터를 관리하세요.
+            </p>
+          </div>
+          <Button
+            onClick={loadAll}
+            disabled={isLoadingStats || isLoadingData}
+            variant="outline"
+            className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
+          >
+            {(isLoadingStats || isLoadingData) ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            새로고침
+          </Button>
         </div>
 
-        {/* 회사별 학습 데이터 통계 */}
+        {/* 회사별 학습 데이터 통계 (공통) */}
         <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 mb-6">
           <CardHeader>
             <CardTitle className="text-lg text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-[#5B8DEF]" />
               회사별 학습 데이터 현황
+              <span className="text-sm font-normal text-slate-400 ml-2">
+                총 {portfolios.length}개
+              </span>
             </CardTitle>
-            <CardDescription className="text-slate-400 text-sm">
-              각 회사별로 현재 학습된 포트폴리오 개수
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoadingStats ? (
@@ -261,237 +346,395 @@ export default function TrainingPage() {
               </div>
             ) : (
               <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                {Object.entries(companyStats).map(([company, count]) => {
-                  const colors: Record<string, string> = {
-                    "엔씨소프트": "from-green-500 to-emerald-600",
-                    "넥슨": "from-blue-500 to-cyan-600",
-                    "넷마블": "from-red-500 to-rose-600",
-                    "네오위즈": "from-purple-500 to-violet-600",
-                    "스마일게이트": "from-orange-500 to-amber-600",
-                    "라이온하트": "from-pink-500 to-fuchsia-600",
-                    "매드엔진": "from-indigo-500 to-blue-600",
-                    "웹젠": "from-teal-500 to-cyan-600",
-                    "일반게임회사": "from-slate-500 to-gray-600"
-                  }
-
-                  return (
-                    <div
-                      key={company}
-                      className={`bg-gradient-to-br ${colors[company]} rounded-lg p-3 text-white shadow-md`}
-                    >
-                      <div className="text-xs font-medium mb-0.5 opacity-90">
-                        {company}
-                      </div>
-                      <div className="text-2xl font-bold">
-                        {count}
-                      </div>
-                      <div className="text-[10px] opacity-75">
-                        개 학습됨
-                      </div>
-                    </div>
-                  )
-                })}
+                {Object.entries(companyStats).map(([company, count]) => (
+                  <div
+                    key={company}
+                    className={`bg-gradient-to-br ${companyColors[company] || "from-slate-600 to-slate-700"} rounded-lg p-3 text-white shadow-md`}
+                  >
+                    <div className="text-xs font-medium mb-0.5 opacity-90">{company}</div>
+                    <div className="text-2xl font-bold">{count}</div>
+                    <div className="text-[10px] opacity-75">개 학습됨</div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* 통계 카드 */}
-        {files.length > 0 && (
-          <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-4 gap-4 text-center">
-                <div>
-                  <p className="text-3xl font-bold text-[#5B8DEF]">{files.length}</p>
-                  <p className="text-slate-400 text-sm mt-1">총 파일</p>
+        {/* 탭 전환 */}
+        <div className="flex gap-1 mb-6 bg-slate-900/80 p-1 rounded-xl border border-[#1e3a5f]">
+          <button
+            onClick={() => setActiveTab("upload")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "upload"
+                ? "bg-[#5B8DEF] text-white shadow-lg"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            파일 업로드
+          </button>
+          <button
+            onClick={() => setActiveTab("data")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "data"
+                ? "bg-[#5B8DEF] text-white shadow-lg"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            데이터 관리
+            <span className="text-xs opacity-75">({portfolios.length})</span>
+          </button>
+        </div>
+
+        {/* ═══════════════════════════════════ */}
+        {/* 업로드 탭 */}
+        {/* ═══════════════════════════════════ */}
+        {activeTab === "upload" && (
+          <>
+            {/* 업로드 통계 */}
+            {files.length > 0 && (
+              <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-4 gap-4 text-center">
+                    <div>
+                      <p className="text-3xl font-bold text-[#5B8DEF]">{files.length}</p>
+                      <p className="text-slate-400 text-sm mt-1">총 파일</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-emerald-400">{successCount}</p>
+                      <p className="text-slate-400 text-sm mt-1">성공</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-amber-400">{skippedCount}</p>
+                      <p className="text-slate-400 text-sm mt-1">중복</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-red-400">{errorCount}</p>
+                      <p className="text-slate-400 text-sm mt-1">실패</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 드롭존 */}
+            <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-[#5B8DEF]" />
+                  파일 선택
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  PDF, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 50MB)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
+                    isDragActive
+                      ? "border-[#5B8DEF] bg-[#5B8DEF]/10 scale-[1.02]"
+                      : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/30"
+                  }`}
+                >
+                  <input {...getInputProps()} />
+                  <Database className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+                  <p className="text-slate-300 text-lg mb-1">
+                    {isDragActive ? "여기에 놓으세요" : "파일을 여기에 드래그"}
+                  </p>
+                  <p className="text-slate-500 text-sm">또는 클릭하여 선택</p>
                 </div>
-                <div>
-                  <p className="text-3xl font-bold text-emerald-400">{successCount}</p>
-                  <p className="text-slate-400 text-sm mt-1">성공</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-amber-400">{skippedCount}</p>
-                  <p className="text-slate-400 text-sm mt-1">중복</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-red-400">{errorCount}</p>
-                  <p className="text-slate-400 text-sm mt-1">실패</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                {/* 파일 목록 */}
+                {files.length > 0 && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[#5B8DEF] text-sm font-medium">
+                        {files.length}개 파일 선택됨
+                      </p>
+                      {!isProcessing && (
+                        <Button
+                          onClick={clearAll}
+                          variant="ghost"
+                          size="sm"
+                          className="text-slate-400 hover:text-white hover:bg-slate-800"
+                        >
+                          전체 삭제
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-2 max-h-64 overflow-auto">
+                      {files.map((fileData, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex items-center gap-3 p-3 rounded-lg ${
+                            fileData.status === "success" ? "bg-emerald-500/10 border border-emerald-500/20" :
+                            fileData.status === "error" ? "bg-red-500/10 border border-red-500/20" :
+                            fileData.status === "skipped" ? "bg-amber-500/10 border border-amber-500/20" :
+                            fileData.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/20" :
+                            fileData.status === "uploading" ? "bg-amber-500/10 border border-amber-500/20" :
+                            "bg-slate-800/50 border border-transparent"
+                          }`}
+                        >
+                          {fileData.status === "pending" && <div className="w-4 h-4 rounded-full border-2 border-slate-500" />}
+                          {fileData.status === "uploading" && <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />}
+                          {fileData.status === "analyzing" && <Loader2 className="w-4 h-4 text-[#5B8DEF] animate-spin" />}
+                          {fileData.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                          {fileData.status === "error" && <XCircle className="w-4 h-4 text-red-400" />}
+                          {fileData.status === "skipped" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
+
+                          <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-slate-300 text-sm truncate">{fileData.file.name}</p>
+                            <p className="text-slate-500 text-xs">{(fileData.file.size / 1024 / 1024).toFixed(2)}MB</p>
+                          </div>
+
+                          {fileData.score && (
+                            <span className="text-[#5B8DEF] font-bold text-sm">{fileData.score}점</span>
+                          )}
+
+                          {fileData.message && (
+                            <span className={`text-xs ${
+                              fileData.status === "error" ? "text-red-400" : "text-slate-400"
+                            }`}>{fileData.message}</span>
+                          )}
+
+                          {!isProcessing && fileData.status === "pending" && (
+                            <button
+                              onClick={() => removeFile(idx)}
+                              className="text-slate-400 hover:text-red-400 transition-colors"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 실행 버튼 */}
+            <Card className="bg-slate-900/80 border-[#1e3a5f]">
+              <CardContent className="pt-6">
+                <Button
+                  onClick={startTraining}
+                  disabled={isProcessing || files.length === 0 || pendingCount === 0}
+                  className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white h-14 text-lg disabled:opacity-50"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      AI 학습 중... ({completedCount}/{files.length})
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-5 h-5 mr-2" />
+                      학습 시작 ({pendingCount}개 파일{skippedCount > 0 ? `, ${skippedCount}개 중복` : ''})
+                    </>
+                  )}
+                </Button>
+
+                {isProcessing && (
+                  <div className="mt-4">
+                    <div className="flex justify-between text-sm text-slate-400 mb-2">
+                      <span>진행률</span>
+                      <span>{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+                )}
+
+                {!isProcessing && completedCount > 0 && (
+                  <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <p className="text-emerald-400 text-center font-medium">
+                      총 {successCount}개 데이터 학습 완료!
+                      {errorCount > 0 && ` (${errorCount}개 실패)`}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-slate-500 text-xs text-center mt-4">
+                  * Gemini AI가 각 파일을 분석하여 점수, 태그, 요약을 추출하고 DB에 저장합니다.<br/>
+                  * 큰 파일은 처리 시간이 오래 걸릴 수 있습니다. (최대 50MB)
+                </p>
+              </CardContent>
+            </Card>
+          </>
         )}
 
-        {/* 학습 데이터 관리 링크 */}
-        <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Database className="w-5 h-5 text-[#5B8DEF]" />
-                <div>
-                  <p className="text-slate-200 font-medium">기존 학습 데이터: {existingFiles.length}개</p>
-                  <p className="text-slate-400 text-sm">이미 학습된 파일은 자동으로 건너뜁니다</p>
+        {/* ═══════════════════════════════════ */}
+        {/* 데이터 관리 탭 */}
+        {/* ═══════════════════════════════════ */}
+        {activeTab === "data" && (
+          <>
+            {/* 전체 통계 */}
+            <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-3xl font-bold text-[#5B8DEF]">{portfolios.length}</p>
+                    <p className="text-slate-400 text-sm mt-1">총 학습 데이터</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-emerald-400">{selectedIds.length}</p>
+                    <p className="text-slate-400 text-sm mt-1">선택됨</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-400">
+                      {portfolios.length > 0 ? Math.round(portfolios.reduce((sum: number, p: any) => sum + (p.overall_score || 0), 0) / portfolios.length) : 0}
+                    </p>
+                    <p className="text-slate-400 text-sm mt-1">평균 점수</p>
+                  </div>
                 </div>
-              </div>
-              <Link href="/admin/data">
-                <Button
-                  variant="outline"
-                  className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
-                >
-                  <Database className="w-4 h-4 mr-2" />
-                  학습 데이터 관리
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* 드롭존 */}
-        <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Upload className="w-5 h-5 text-[#5B8DEF]" />
-              파일 선택
-            </CardTitle>
-            <CardDescription className="text-slate-400">
-              PDF, DOCX, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 50MB)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
-                isDragActive 
-                  ? "border-[#5B8DEF] bg-[#5B8DEF]/10 scale-[1.02]" 
-                  : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/30"
-              }`}
-            >
-              <input {...getInputProps()} />
-              <Database className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-              <p className="text-slate-300 text-lg mb-1">
-                {isDragActive ? "여기에 놓으세요" : "파일을 여기에 드래그"}
-              </p>
-              <p className="text-slate-500 text-sm">또는 클릭하여 선택</p>
-            </div>
-
-            {/* 파일 목록 */}
-            {files.length > 0 && (
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[#5B8DEF] text-sm font-medium">
-                    {files.length}개 파일 선택됨
-                  </p>
-                  {!isProcessing && (
+            {/* 데이터 목록 */}
+            <Card className="bg-slate-900/80 border-[#1e3a5f]">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">학습 데이터 목록</CardTitle>
+                  {selectedIds.length > 0 && (
                     <Button
-                      onClick={clearAll}
-                      variant="ghost"
+                      onClick={handleBulkDelete}
+                      disabled={isDeleting}
+                      variant="destructive"
                       size="sm"
-                      className="text-slate-400 hover:text-white hover:bg-slate-800"
+                      className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
                     >
-                      전체 삭제
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      선택 삭제 ({selectedIds.length})
                     </Button>
                   )}
                 </div>
-                <div className="space-y-2 max-h-64 overflow-auto">
-                  {files.map((fileData, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`flex items-center gap-3 p-3 rounded-lg ${
-                        fileData.status === "success" ? "bg-emerald-500/10 border border-emerald-500/20" :
-                        fileData.status === "error" ? "bg-red-500/10 border border-red-500/20" :
-                        fileData.status === "skipped" ? "bg-amber-500/10 border border-amber-500/20" :
-                        fileData.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/20" :
-                        fileData.status === "uploading" ? "bg-amber-500/10 border border-amber-500/20" :
-                        "bg-slate-800/50 border border-transparent"
-                      }`}
-                    >
-                      {fileData.status === "pending" && <div className="w-4 h-4 rounded-full border-2 border-slate-500" />}
-                      {fileData.status === "uploading" && <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />}
-                      {fileData.status === "analyzing" && <Loader2 className="w-4 h-4 text-[#5B8DEF] animate-spin" />}
-                      {fileData.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                      {fileData.status === "error" && <XCircle className="w-4 h-4 text-red-400" />}
-                      {fileData.status === "skipped" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                      
-                      <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-slate-300 text-sm truncate">{fileData.file.name}</p>
-                        <p className="text-slate-500 text-xs">{(fileData.file.size / 1024 / 1024).toFixed(2)}MB</p>
-                      </div>
-                      
-                      {fileData.score && (
-                        <span className="text-[#5B8DEF] font-bold text-sm">{fileData.score}점</span>
-                      )}
-                      
-                      {fileData.message && (
-                        <span className={`text-xs ${
-                          fileData.status === "error" ? "text-red-400" : "text-slate-400"
-                        }`}>{fileData.message}</span>
-                      )}
-                      
-                      {!isProcessing && fileData.status === "pending" && (
-                        <button
-                          onClick={() => removeFile(idx)}
-                          className="text-slate-400 hover:text-red-400 transition-colors"
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      )}
+              </CardHeader>
+              <CardContent>
+                {isLoadingData ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin mx-auto mb-4" />
+                    <p className="text-slate-400">데이터 로딩 중...</p>
+                  </div>
+                ) : portfolios.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Database className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                    <p className="text-slate-400 mb-2">학습 데이터가 없습니다</p>
+                    <p className="text-slate-500 text-sm">
+                      &ldquo;파일 업로드&rdquo; 탭에서 포트폴리오를 업로드하세요
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* 전체 선택 */}
+                    <div className="flex items-center gap-3 pb-3 border-b border-[#1e3a5f] mb-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.length === portfolios.length && portfolios.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#5B8DEF]"
+                      />
+                      <span className="text-slate-400 text-sm">전체 선택</span>
                     </div>
-                  ))}
+
+                    {/* 목록 */}
+                    <div className="space-y-2 max-h-[600px] overflow-auto">
+                      {portfolios.map((portfolio: any) => (
+                        <div
+                          key={portfolio.id}
+                          className={`flex items-center gap-3 p-4 rounded-lg transition-colors ${
+                            selectedIds.includes(portfolio.id)
+                              ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30"
+                              : "bg-slate-800/50 border border-transparent hover:bg-slate-800"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(portfolio.id)}
+                            onChange={() => toggleSelect(portfolio.id)}
+                            className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#5B8DEF]"
+                          />
+
+                          <div className="flex-1 min-w-0">
+                            <p className="text-slate-200 font-medium truncate">{portfolio.file_name}</p>
+                            <div className="flex items-center gap-3 mt-2">
+                              {portfolio.companies?.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  {portfolio.companies.map((company: string, idx: number) => (
+                                    <span key={idx} className="text-xs px-2 py-1 bg-[#5B8DEF]/10 text-[#5B8DEF] rounded">
+                                      {company}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-slate-500">회사 미지정</span>
+                              )}
+                              <span className="text-xs text-slate-500">{portfolio.year}년</span>
+                              <span className="text-xs text-slate-500">{portfolio.document_type}</span>
+                            </div>
+                            {portfolio.tags?.length > 0 && (
+                              <div className="flex items-center gap-1 mt-2">
+                                {portfolio.tags.slice(0, 5).map((tag: string, idx: number) => (
+                                  <span key={idx} className="text-xs px-2 py-0.5 bg-slate-700/50 text-slate-400 rounded">
+                                    {tag}
+                                  </span>
+                                ))}
+                                {portfolio.tags.length > 5 && (
+                                  <span className="text-xs text-slate-500">+{portfolio.tags.length - 5}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <p className="text-[#5B8DEF] font-bold text-lg">{portfolio.overall_score}점</p>
+                            <div className="flex gap-1 mt-1">
+                              <span className="text-xs text-slate-500">논리 {portfolio.logic_score}</span>
+                              <span className="text-xs text-slate-500">구체 {portfolio.specificity_score}</span>
+                              <span className="text-xs text-slate-500">가독 {portfolio.readability_score}</span>
+                            </div>
+                            <p className="text-slate-500 text-xs mt-1">
+                              {new Date(portfolio.created_at).toLocaleDateString('ko-KR')}
+                            </p>
+                          </div>
+
+                          {portfolio.file_url && (
+                            <a
+                              href={portfolio.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-500 hover:text-[#5B8DEF] transition-colors p-2"
+                              title="파일 보기"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </a>
+                          )}
+
+                          <button
+                            onClick={() => handleDelete(portfolio.id)}
+                            disabled={isDeleting}
+                            className="text-slate-500 hover:text-red-400 transition-colors p-2"
+                            title="삭제"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <p className="text-amber-400 text-sm">
+                    ⚠️ <strong>주의:</strong> 학습 데이터를 삭제하면 AI가 해당 데이터를 더 이상 참고하지 않습니다.
+                  </p>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 실행 버튼 */}
-        <Card className="bg-slate-900/80 border-[#1e3a5f]">
-          <CardContent className="pt-6">
-            <Button
-              onClick={startTraining}
-              disabled={isProcessing || files.length === 0 || pendingCount === 0}
-              className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white h-14 text-lg disabled:opacity-50"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  AI 학습 중... ({completedCount}/{files.length})
-                </>
-              ) : (
-                <>
-                  <Brain className="w-5 h-5 mr-2" />
-                  학습 시작 ({pendingCount}개 파일{skippedCount > 0 ? `, ${skippedCount}개 중복` : ''})
-                </>
-              )}
-            </Button>
-
-            {/* 진행률 */}
-            {isProcessing && (
-              <div className="mt-4">
-                <div className="flex justify-between text-sm text-slate-400 mb-2">
-                  <span>진행률</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-            )}
-
-            {/* 완료 메시지 */}
-            {!isProcessing && completedCount > 0 && (
-              <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                <p className="text-emerald-400 text-center font-medium">
-                  🎉 총 {successCount}개 데이터 학습 완료!
-                  {errorCount > 0 && ` (${errorCount}개 실패)`}
-                </p>
-              </div>
-            )}
-
-            <p className="text-slate-500 text-xs text-center mt-4">
-              * Gemini AI가 각 파일을 분석하여 점수, 태그, 요약을 추출하고 DB에 저장합니다.<br/>
-              * 큰 파일은 처리 시간이 오래 걸릴 수 있습니다. (최대 50MB)
-            </p>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   )

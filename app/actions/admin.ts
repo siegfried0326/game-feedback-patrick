@@ -405,7 +405,7 @@ export async function getPortfolioList() {
 
     const { data: portfolioList, error } = await supabase
       .from("portfolios")
-      .select("id, file_name, companies, year, document_type, overall_score, created_at")
+      .select("id, file_name, companies, year, document_type, overall_score, logic_score, specificity_score, readability_score, tags, file_url, created_at")
       .order("created_at", { ascending: false })
 
     if (error) throw error

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, ChevronDown, ChevronUp, Lock } from "lucide-react"
+import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getSubscription, cancelSubscription, getAnalysisHistory, getAnalysisDetail } from "@/app/actions/subscription"
 import { getUser } from "@/app/actions/auth"
@@ -33,6 +33,15 @@ type AnalysisItem = {
   }
 }
 
+// 점수 기반 등급 시스템
+function getGrade(score: number) {
+  if (score >= 90) return { label: "S", color: "from-amber-400 to-yellow-500", border: "border-amber-400/60", glow: "shadow-amber-400/20", text: "text-amber-400", bg: "bg-amber-400/10" }
+  if (score >= 80) return { label: "A", color: "from-purple-400 to-violet-500", border: "border-purple-400/60", glow: "shadow-purple-400/20", text: "text-purple-400", bg: "bg-purple-400/10" }
+  if (score >= 70) return { label: "B", color: "from-blue-400 to-cyan-500", border: "border-blue-400/60", glow: "shadow-blue-400/20", text: "text-blue-400", bg: "bg-blue-400/10" }
+  if (score >= 60) return { label: "C", color: "from-green-400 to-emerald-500", border: "border-green-400/60", glow: "shadow-green-400/20", text: "text-green-400", bg: "bg-green-400/10" }
+  return { label: "D", color: "from-slate-400 to-gray-500", border: "border-slate-400/60", glow: "shadow-slate-400/20", text: "text-slate-400", bg: "bg-slate-400/10" }
+}
+
 export default function MyPage() {
   const [user, setUser] = useState<{ email?: string; name?: string; avatar?: string } | null>(null)
   const [subscription, setSubscription] = useState<Subscription | null>(null)
@@ -41,9 +50,9 @@ export default function MyPage() {
   const [cancelling, setCancelling] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [selectedItem, setSelectedItem] = useState<AnalysisItem | null>(null)
   const [detailData, setDetailData] = useState<Record<string, AnalysisItem>>({})
-  const [loadingDetail, setLoadingDetail] = useState<string | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -79,27 +88,21 @@ export default function MyPage() {
     loadData()
   }, [])
 
-  const handleToggleDetail = async (id: string) => {
-    if (expandedId === id) {
-      setExpandedId(null)
-      return
-    }
+  const handleOpenDetail = async (item: AnalysisItem) => {
+    setSelectedItem(item)
 
-    setExpandedId(id)
+    if (detailData[item.id]) return
 
-    // 이미 로드된 데이터가 있으면 재사용
-    if (detailData[id]) return
-
-    setLoadingDetail(id)
+    setLoadingDetail(true)
     try {
-      const result = await getAnalysisDetail(id)
+      const result = await getAnalysisDetail(item.id)
       if (result.data) {
-        setDetailData(prev => ({ ...prev, [id]: result.data as AnalysisItem }))
+        setDetailData(prev => ({ ...prev, [item.id]: result.data as AnalysisItem }))
       }
     } catch {
       console.error("상세 데이터 로딩 실패")
     } finally {
-      setLoadingDetail(null)
+      setLoadingDetail(false)
     }
   }
 
@@ -158,6 +161,13 @@ export default function MyPage() {
     })
   }
 
+  const formatShortDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("ko-KR", {
+      month: "short",
+      day: "numeric",
+    })
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
@@ -166,9 +176,11 @@ export default function MyPage() {
     )
   }
 
+  const detail = selectedItem ? detailData[selectedItem.id] : null
+
   return (
     <main className="min-h-screen bg-[#0d1b2a]">
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-5xl mx-auto px-6 py-16">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8"
@@ -331,108 +343,242 @@ export default function MyPage() {
           )}
         </div>
 
-        {/* 분석 이력 섹션 */}
+        {/* ========== 문서 인벤토리 섹션 ========== */}
         <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#5B8DEF]" />
-            분석 이력
-          </h2>
-
-          {/* 프라이버시 안내 */}
-          <div className="mb-4 flex items-center gap-2 text-xs text-slate-500">
-            <Lock className="w-3 h-3" />
-            <span>분석 결과는 본인만 열람 가능하며, 관리자도 접근할 수 없습니다.</span>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <Swords className="w-5 h-5 text-[#5B8DEF]" />
+              문서 인벤토리
+            </h2>
+            <span className="text-xs text-slate-500">
+              {history.length}개 보유
+            </span>
           </div>
 
-          {history.length > 0 ? (
-            <div className="space-y-3">
-              {history.map((item) => (
-                <div key={item.id}>
-                  <button
-                    onClick={() => handleToggleDetail(item.id)}
-                    className="w-full text-left bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-white font-medium text-sm truncate max-w-[50%]">
-                        {item.file_name}
-                      </h3>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-[#5B8DEF]" />
-                          <span className="text-[#5B8DEF] font-bold">{item.overall_score}</span>
-                          <span className="text-slate-500 text-sm">/100</span>
-                        </div>
-                        {expandedId === item.id ? (
-                          <ChevronUp className="w-4 h-4 text-slate-400" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <Calendar className="w-3 h-3" />
-                      {formatDate(item.analyzed_at)}
-                      <span className="text-slate-600">|</span>
-                      <span>클릭하여 상세 결과 보기</span>
-                    </div>
-                  </button>
+          {/* 프라이버시 */}
+          <div className="mb-5 flex items-center gap-2 text-xs text-slate-500">
+            <Lock className="w-3 h-3" />
+            <span>본인만 열람 가능 | 관리자 접근 불가</span>
+          </div>
 
-                  {/* 상세 결과 패널 */}
-                  {expandedId === item.id && (
-                    <div className="mt-2 bg-[#0d1b2a] rounded-lg border border-[#1e3a5f] p-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                      {loadingDetail === item.id ? (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="w-6 h-6 text-[#5B8DEF] animate-spin" />
-                        </div>
-                      ) : detailData[item.id] ? (
-                        <div className="space-y-6">
-                          <div className="grid lg:grid-cols-2 gap-6">
-                            <ScoreCard score={detailData[item.id].overall_score} />
-                            {detailData[item.id].categories && detailData[item.id].categories.length > 0 && (
-                              <RadarChartComponent data={detailData[item.id].categories} />
-                            )}
-                          </div>
-
-                          {/* 랭킹 */}
-                          {detailData[item.id].ranking && detailData[item.id].ranking!.total > 0 && (
-                            <div className="bg-slate-900/80 rounded-lg border border-[#1e3a5f] p-4">
-                              <p className="text-sm text-slate-400 mb-2">
-                                합격 포트폴리오 {detailData[item.id].ranking!.total}개 기준
-                              </p>
-                              <p className="text-2xl font-bold text-[#5B8DEF]">
-                                상위 {100 - detailData[item.id].ranking!.percentile}%
-                              </p>
-                            </div>
-                          )}
-
-                          {/* 강점/약점 */}
-                          {(detailData[item.id].strengths?.length > 0 || detailData[item.id].weaknesses?.length > 0) && (
-                            <FeedbackCards
-                              strengths={detailData[item.id].strengths || []}
-                              weaknesses={detailData[item.id].weaknesses || []}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-slate-400 text-center py-4">데이터를 불러올 수 없습니다.</p>
-                      )}
-                    </div>
-                  )}
+          {/* 등급 범례 */}
+          {history.length > 0 && (
+            <div className="mb-5 flex flex-wrap gap-3 text-xs">
+              {[
+                { label: "S", range: "90+", color: "text-amber-400 border-amber-400/40" },
+                { label: "A", range: "80-89", color: "text-purple-400 border-purple-400/40" },
+                { label: "B", range: "70-79", color: "text-blue-400 border-blue-400/40" },
+                { label: "C", range: "60-69", color: "text-green-400 border-green-400/40" },
+                { label: "D", range: "~59", color: "text-slate-400 border-slate-400/40" },
+              ].map(g => (
+                <div key={g.label} className={`flex items-center gap-1.5 px-2 py-1 rounded border ${g.color}`}>
+                  <span className="font-bold">{g.label}</span>
+                  <span className="opacity-70">{g.range}</span>
                 </div>
               ))}
             </div>
+          )}
+
+          {history.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {history.map((item) => {
+                const grade = getGrade(item.overall_score)
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleOpenDetail(item)}
+                    className={`group relative bg-[#0d1b2a] rounded-xl border-2 ${grade.border} p-4
+                      hover:shadow-lg ${grade.glow} hover:scale-[1.03] transition-all duration-200
+                      text-left flex flex-col`}
+                  >
+                    {/* 등급 배지 */}
+                    <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color}
+                      flex items-center justify-center text-white font-black text-sm shadow-lg`}>
+                      {grade.label}
+                    </div>
+
+                    {/* 문서 아이콘 */}
+                    <div className={`w-10 h-10 rounded-lg ${grade.bg} flex items-center justify-center mb-3`}>
+                      <FileText className={`w-5 h-5 ${grade.text}`} />
+                    </div>
+
+                    {/* 파일명 */}
+                    <p className="text-white text-xs font-medium truncate w-full mb-2 pr-4">
+                      {item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}
+                    </p>
+
+                    {/* 점수 */}
+                    <div className="flex items-center gap-1 mb-1">
+                      <Star className={`w-3.5 h-3.5 ${grade.text}`} />
+                      <span className={`font-bold text-lg ${grade.text}`}>{item.overall_score}</span>
+                      <span className="text-slate-600 text-xs">/100</span>
+                    </div>
+
+                    {/* 날짜 */}
+                    <div className="flex items-center gap-1 text-[10px] text-slate-600 mt-auto">
+                      <Calendar className="w-2.5 h-2.5" />
+                      {formatShortDate(item.analyzed_at)}
+                    </div>
+
+                    {/* 호버 효과 */}
+                    <div className="absolute inset-0 rounded-xl bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )
+              })}
+
+              {/* 빈 슬롯 (인벤토리 느낌) */}
+              {history.length < 8 && Array.from({ length: Math.max(0, 4 - (history.length % 4 === 0 ? 4 : history.length % 4)) }).map((_, i) => (
+                <Link
+                  key={`empty-${i}`}
+                  href="/analyze"
+                  className="relative bg-[#0d1b2a]/50 rounded-xl border-2 border-dashed border-[#1e3a5f]/50 p-4
+                    flex flex-col items-center justify-center min-h-[160px] hover:border-[#5B8DEF]/30 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-slate-800/50 flex items-center justify-center mb-2 group-hover:bg-[#5B8DEF]/10 transition-colors">
+                    <span className="text-2xl text-slate-700 group-hover:text-[#5B8DEF] transition-colors">+</span>
+                  </div>
+                  <p className="text-[10px] text-slate-700 group-hover:text-slate-500 transition-colors">분석 추가</p>
+                </Link>
+              ))}
+            </div>
           ) : (
-            <div className="text-center py-8">
-              <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-400 mb-1">아직 분석 이력이 없습니다</p>
-              <p className="text-slate-500 text-sm mb-4">문서를 업로드하고 AI 분석을 받아보세요</p>
+            <div className="text-center py-12">
+              <div className="w-20 h-20 rounded-2xl bg-[#162a4a] flex items-center justify-center mx-auto mb-4">
+                <Swords className="w-10 h-10 text-slate-600" />
+              </div>
+              <p className="text-slate-400 mb-1 font-medium">인벤토리가 비어있습니다</p>
+              <p className="text-slate-500 text-sm mb-6">문서를 분석하여 첫 번째 아이템을 획득하세요!</p>
               <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                <Link href="/analyze">분석하러 가기</Link>
+                <Link href="/analyze">문서 분석하러 가기</Link>
               </Button>
             </div>
           )}
         </div>
       </div>
+
+      {/* ========== 상세 결과 모달 ========== */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
+          {/* 백드롭 */}
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setSelectedItem(null)}
+          />
+
+          {/* 모달 */}
+          <div className="relative w-full max-w-4xl mx-4 my-8 bg-[#0d1b2a] rounded-2xl border border-[#1e3a5f] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* 모달 헤더 */}
+            <div className="sticky top-0 z-10 bg-[#0d1b2a] rounded-t-2xl border-b border-[#1e3a5f] p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const grade = getGrade(selectedItem.overall_score)
+                  return (
+                    <>
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${grade.color} flex items-center justify-center text-white font-black text-lg`}>
+                        {grade.label}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold text-lg truncate max-w-[300px] sm:max-w-[500px]">
+                          {selectedItem.file_name}
+                        </h3>
+                        <p className="text-slate-500 text-xs flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(selectedItem.analyzed_at)}
+                        </p>
+                      </div>
+                    </>
+                  )
+                })()}
+              </div>
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="p-2 rounded-lg hover:bg-slate-800 transition-colors text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 모달 본문 */}
+            <div className="p-6 space-y-6">
+              {loadingDetail ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+                </div>
+              ) : detail ? (
+                <>
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <ScoreCard score={detail.overall_score} ranking={detail.ranking} />
+                    {detail.categories && detail.categories.length > 0 && (
+                      <RadarChartComponent data={detail.categories} />
+                    )}
+                  </div>
+
+                  {/* 랭킹 + 회사별 비교 */}
+                  {detail.ranking && detail.ranking.total > 0 && (
+                    <div className="bg-slate-900/80 rounded-xl border border-[#1e3a5f] p-6">
+                      <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-amber-400" />
+                        합격 포트폴리오 {detail.ranking.total}개 기준 랭킹
+                      </h4>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="text-center py-4">
+                          <p className="text-slate-400 text-sm mb-2">전체 랭킹</p>
+                          <p className="text-5xl font-bold text-[#5B8DEF] mb-1">
+                            상위 {Math.max(1, 100 - detail.ranking.percentile)}%
+                          </p>
+                          <p className="text-slate-500 text-xs">
+                            {detail.ranking.total}개 합격 포트폴리오 중
+                          </p>
+                        </div>
+                        {detail.ranking.companyComparison && detail.ranking.companyComparison.length > 0 && (
+                          <div>
+                            <p className="text-slate-400 text-sm mb-3">회사별 합격자 평균 비교</p>
+                            <div className="space-y-2.5">
+                              {detail.ranking.companyComparison.map((comp, idx) => {
+                                const diff = detail.overall_score - comp.avgScore
+                                return (
+                                  <div key={idx} className="flex items-center gap-3">
+                                    <span className="text-slate-300 text-xs w-20 truncate">{comp.company}</span>
+                                    <div className="flex-1 bg-slate-800 rounded-full h-5 overflow-hidden relative">
+                                      <div
+                                        className="h-full bg-slate-600 rounded-full"
+                                        style={{ width: `${Math.min(100, comp.avgScore)}%` }}
+                                      />
+                                      <span className="absolute inset-0 flex items-center justify-center text-[10px] text-slate-300 font-medium">
+                                        평균 {comp.avgScore}점
+                                      </span>
+                                    </div>
+                                    <span className={`text-xs font-bold min-w-[40px] text-right ${diff >= 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                                      {diff >= 0 ? "+" : ""}{diff}
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <p className="text-[10px] text-slate-600 mt-2">
+                              내 점수: {detail.overall_score}점
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 강점/약점 */}
+                  {(detail.strengths?.length > 0 || detail.weaknesses?.length > 0) && (
+                    <FeedbackCards
+                      strengths={detail.strengths || []}
+                      weaknesses={detail.weaknesses || []}
+                    />
+                  )}
+                </>
+              ) : (
+                <p className="text-slate-400 text-center py-8">데이터를 불러올 수 없습니다.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

@@ -442,7 +442,7 @@ export function AnalyzeDashboard() {
                 )}
 
                 <div className="grid lg:grid-cols-2 gap-8">
-                  <ScoreCard score={results[currentIndex].score} />
+                  <ScoreCard score={results[currentIndex].score} ranking={results[currentIndex].ranking} />
                   <RadarChartComponent data={results[currentIndex].categories} />
                 </div>
 

@@ -1,12 +1,22 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Trophy } from "lucide-react"
 
 type ScoreCardProps = {
   score: number
+  ranking?: {
+    total: number
+    percentile: number
+    companyComparison?: {
+      company: string
+      avgScore: number
+      userScore: number
+    }[]
+  }
 }
 
-export function ScoreCard({ score }: ScoreCardProps) {
+export function ScoreCard({ score, ranking }: ScoreCardProps) {
   const circumference = 2 * Math.PI * 45
   const strokeDashoffset = circumference - (score / 100) * circumference
 
@@ -26,6 +36,10 @@ export function ScoreCard({ score }: ScoreCardProps) {
     return "보완 필요"
   }
 
+  const topPercent = ranking && ranking.total > 0
+    ? Math.max(1, 100 - ranking.percentile)
+    : null
+
   return (
     <Card className="bg-slate-900/80 border-[#1e3a5f]">
       <CardHeader>
@@ -34,7 +48,6 @@ export function ScoreCard({ score }: ScoreCardProps) {
       <CardContent className="flex flex-col items-center justify-center py-8">
         <div className="relative w-40 h-40">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-            {/* Background circle */}
             <circle
               cx="50"
               cy="50"
@@ -43,7 +56,6 @@ export function ScoreCard({ score }: ScoreCardProps) {
               stroke="#1e3a5f"
               strokeWidth="8"
             />
-            {/* Progress circle */}
             <circle
               cx="50"
               cy="50"
@@ -63,15 +75,21 @@ export function ScoreCard({ score }: ScoreCardProps) {
           </div>
         </div>
         <div className="mt-6 text-center">
-          <span 
+          <span
             className="inline-block px-4 py-1.5 rounded-full text-sm font-medium text-white"
             style={{ backgroundColor: getScoreColor(score) }}
           >
             {getScoreLabel(score)}
           </span>
-          <p className="text-sm text-slate-400 mt-3">
-            상위 {Math.max(5, 100 - score + Math.floor(Math.random() * 10))}% 수준의 문서입니다
-          </p>
+          {topPercent !== null && (
+            <div className="flex items-center justify-center gap-1.5 mt-3">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <p className="text-sm text-slate-300">
+                합격 포트폴리오 <span className="text-white font-semibold">{ranking!.total}개</span> 기준{" "}
+                <span className="text-[#5B8DEF] font-bold">상위 {topPercent}%</span>
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

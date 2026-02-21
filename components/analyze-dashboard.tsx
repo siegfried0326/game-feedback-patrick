@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -10,7 +10,16 @@ import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
 import { uploadFileToStorage, analyzeDocumentDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
+import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+
+type Project = {
+  id: string
+  name: string
+  analysis_count: number
+  best_score: number | null
+}
 
 type AnalysisResult = {
   fileName: string
@@ -44,6 +53,9 @@ type FileStatus = {
 const MAX_FILES = 20
 
 export function AnalyzeDashboard() {
+  const searchParams = useSearchParams()
+  const preselectedProjectId = searchParams.get("projectId")
+
   const [files, setFiles] = useState<FileStatus[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [results, setResults] = useState<AnalysisResult[]>([])
@@ -59,23 +71,72 @@ export function AnalyzeDashboard() {
   } | null>(null)
   const [checkingAllowance, setCheckingAllowance] = useState(true)
 
-  // 페이지 로드 시 구독 상태 체크
+  // 프로젝트 관련 상태
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(preselectedProjectId)
+  const [showNewProject, setShowNewProject] = useState(false)
+  const [newProjectName, setNewProjectName] = useState("")
+  const [creatingProject, setCreatingProject] = useState(false)
+  const [canCreateProject, setCanCreateProject] = useState(true)
+
+  // 페이지 로드 시 구독 상태 + 프로젝트 목록 체크
   useEffect(() => {
-    async function checkAllowance() {
+    async function init() {
       try {
-        const result = await checkBeforeAnalysis()
-        setAllowanceInfo(result)
+        const [allowanceResult, projectsResult, projectAllowance] = await Promise.all([
+          checkBeforeAnalysis(),
+          getProjects(),
+          checkProjectAllowance(),
+        ])
+        setAllowanceInfo(allowanceResult)
+
+        if (projectsResult.data) {
+          setProjects(projectsResult.data as Project[])
+          // preselected가 없고 프로젝트가 1개면 자동 선택
+          if (!preselectedProjectId && projectsResult.data.length === 1) {
+            setSelectedProjectId(projectsResult.data[0].id)
+          }
+        }
+
+        setCanCreateProject(projectAllowance.allowed)
       } catch {
-        setAllowanceInfo({ allowed: true }) // 에러 시 허용 (서버에서 재검증)
+        setAllowanceInfo({ allowed: true })
       } finally {
         setCheckingAllowance(false)
       }
     }
-    checkAllowance()
-  }, [])
+    init()
+  }, [preselectedProjectId])
 
-  // 여러 파일 분석 (Supabase Storage + Gemini 직접 읽기)
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) return
+    setCreatingProject(true)
+    try {
+      const result = await createProject(newProjectName.trim())
+      if (result.data) {
+        const newProject = { ...result.data, analysis_count: 0, best_score: null } as Project
+        setProjects(prev => [newProject, ...prev])
+        setSelectedProjectId(result.data.id)
+        setShowNewProject(false)
+        setNewProjectName("")
+        setCanCreateProject(false) // 무료 플랜이면 더 이상 생성 불가
+      } else if (result.error) {
+        setError(result.error)
+      }
+    } catch {
+      setError("프로젝트 생성에 실패했습니다.")
+    } finally {
+      setCreatingProject(false)
+    }
+  }
+
+  // 여러 파일 분석
   const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[]) => {
+    if (!selectedProjectId) {
+      setError("프로젝트를 먼저 선택해 주세요.")
+      return
+    }
+
     setIsAnalyzing(true)
     setError(null)
     setResults([])
@@ -88,42 +149,39 @@ export function AnalyzeDashboard() {
       setCurrentIndex(i)
 
       try {
-        // 1단계: Supabase Storage에 업로드
         setStatusMessage("파일을 업로드하는 중...")
-        setFiles(prev => prev.map((f, idx) => 
+        setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "uploading" } : f
         ))
 
         const formData = new FormData()
         formData.append("file", fileStatus.file)
-        
+
         const uploadResult = await uploadFileToStorage(formData)
-        
+
         if (uploadResult.error) {
-          setFiles(prev => prev.map((f, idx) => 
+          setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "error", error: uploadResult.error } : f
           ))
           continue
         }
 
-        // 2단계: Gemini가 PDF를 직접 읽어서 분석
         setStatusMessage("AI가 문서를 분석하는 중...")
-        setFiles(prev => prev.map((f, idx) => 
+        setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "analyzing" } : f
         ))
-        
+
         const analysisResult = await analyzeDocumentDirect({
+          projectId: selectedProjectId,
           fileName: uploadResult.data!.fileName,
           fileUrl: uploadResult.data!.fileUrl,
           mimeType: uploadResult.data!.mimeType,
           filePath: uploadResult.data!.filePath,
         })
-        
+
         if (analysisResult.error) {
-          // 분석 실패 시 Storage 파일 삭제
           await deleteFileFromStorage(uploadResult.data!.filePath)
-          
-          setFiles(prev => prev.map((f, idx) => 
+          setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "error", error: analysisResult.error } : f
           ))
         } else {
@@ -131,22 +189,21 @@ export function AnalyzeDashboard() {
             ...analysisResult.data,
             fileName: fileStatus.file.name
           } as AnalysisResult
-          
+
           newResults.push(result)
           setResults([...newResults])
-          
-          setFiles(prev => prev.map((f, idx) => 
+
+          setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "success", result } : f
           ))
         }
       } catch (err) {
         console.error("Analysis error:", err)
-        setFiles(prev => prev.map((f, idx) => 
+        setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "error", error: "분석 실패" } : f
         ))
       }
 
-      // Rate limiting
       if (i < filesToAnalyze.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
@@ -157,24 +214,27 @@ export function AnalyzeDashboard() {
   }
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (!selectedProjectId) {
+      setError("프로젝트를 먼저 선택해 주세요.")
+      return
+    }
     if (acceptedFiles.length > 0) {
       const filesToAdd = acceptedFiles.slice(0, MAX_FILES)
-      
+
       const newFiles: FileStatus[] = filesToAdd.map(file => ({
         file,
         status: "pending" as const
       }))
-      
+
       setFiles(newFiles)
       setResults([])
       setError(null)
-      
-      // 파일 드롭 즉시 분석 시작
+
       setTimeout(() => {
         handleAnalyzeFiles(newFiles)
       }, 100)
     }
-  }, [])
+  }, [selectedProjectId])
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
@@ -188,7 +248,8 @@ export function AnalyzeDashboard() {
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
-    maxSize: 50 * 1024 * 1024, // 50MB
+    maxSize: 50 * 1024 * 1024,
+    disabled: !selectedProjectId,
   })
 
   return (
@@ -215,26 +276,15 @@ export function AnalyzeDashboard() {
           <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
             <CardContent className="pt-8 pb-8 text-center">
               <Lock className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-              {allowanceInfo.reason === "limit_reached" ? (
-                <>
-                  <h2 className="text-xl font-bold text-white mb-2">무료 체험 횟수를 모두 사용했습니다</h2>
-                  <p className="text-slate-400 mb-6">
-                    무제한 분석을 원하시면 구독을 시작해 주세요.
-                  </p>
-                </>
-              ) : allowanceInfo.reason === "expired" ? (
+              {allowanceInfo.reason === "expired" ? (
                 <>
                   <h2 className="text-xl font-bold text-white mb-2">구독이 만료되었습니다</h2>
-                  <p className="text-slate-400 mb-6">
-                    계속 이용하시려면 구독을 갱신해 주세요.
-                  </p>
+                  <p className="text-slate-400 mb-6">계속 이용하시려면 구독을 갱신해 주세요.</p>
                 </>
               ) : (
                 <>
                   <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
-                  <p className="text-slate-400 mb-6">
-                    문서 분석을 위해 로그인해 주세요.
-                  </p>
+                  <p className="text-slate-400 mb-6">문서 분석을 위해 로그인해 주세요.</p>
                 </>
               )}
               <div className="flex justify-center gap-3">
@@ -258,10 +308,10 @@ export function AnalyzeDashboard() {
             <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-amber-400">
-                무료 체험 중입니다. 남은 분석 횟수: <span className="font-bold">{allowanceInfo.remaining || 0}회</span>
+                무료 플랜은 <span className="font-bold">프로젝트 1개</span>만 생성할 수 있습니다. 프로젝트 안에서는 자유롭게 분석 가능합니다.
               </p>
               <p className="text-xs text-amber-400/70 mt-1">
-                무제한 분석을 원하시면{" "}
+                무제한 프로젝트를 원하시면{" "}
                 <Link href="/pricing" className="underline hover:text-amber-300">구독을 시작</Link>해 주세요.
               </p>
             </div>
@@ -281,7 +331,110 @@ export function AnalyzeDashboard() {
           </div>
         )}
 
-        {/* Upload Section - 결과가 없을 때만 표시 */}
+        {/* ========== 프로젝트 선택 ========== */}
+        {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
+          <Card className="mb-6 bg-slate-900/80 border-[#1e3a5f]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white text-base">
+                <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
+                프로젝트 선택
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {/* 기존 프로젝트 목록 */}
+                {projects.map(project => (
+                  <button
+                    key={project.id}
+                    onClick={() => { setSelectedProjectId(project.id); setShowNewProject(false) }}
+                    className={`w-full text-left p-3 rounded-lg border transition-all ${
+                      selectedProjectId === project.id
+                        ? "border-[#5B8DEF] bg-[#5B8DEF]/10"
+                        : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 bg-[#0d1b2a]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className={`w-4 h-4 ${selectedProjectId === project.id ? "text-[#5B8DEF]" : "text-slate-500"}`} />
+                        <span className="text-white text-sm font-medium">{project.name}</span>
+                      </div>
+                      <span className="text-xs text-slate-500">
+                        {project.analysis_count}개 분석
+                        {project.best_score !== null && ` · 최고 ${project.best_score}점`}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+
+                {/* 새 프로젝트 만들기 */}
+                {!showNewProject ? (
+                  <button
+                    onClick={() => {
+                      if (canCreateProject) {
+                        setShowNewProject(true)
+                        setSelectedProjectId(null)
+                      }
+                    }}
+                    className={`w-full text-left p-3 rounded-lg border border-dashed transition-all ${
+                      canCreateProject
+                        ? "border-[#1e3a5f] hover:border-[#5B8DEF]/50 cursor-pointer"
+                        : "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {canCreateProject ? (
+                          <Plus className="w-4 h-4 text-[#5B8DEF]" />
+                        ) : (
+                          <Lock className="w-4 h-4 text-slate-600" />
+                        )}
+                        <span className={canCreateProject ? "text-[#5B8DEF] text-sm" : "text-slate-600 text-sm"}>
+                          새 프로젝트 만들기
+                        </span>
+                      </div>
+                      {!canCreateProject && (
+                        <Link href="/pricing" className="text-xs text-amber-400 hover:underline" onClick={e => e.stopPropagation()}>
+                          구독 필요
+                        </Link>
+                      )}
+                    </div>
+                  </button>
+                ) : (
+                  <div className="p-3 rounded-lg border border-[#5B8DEF] bg-[#5B8DEF]/5">
+                    <p className="text-xs text-slate-400 mb-2">프로젝트 이름을 입력하세요</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newProjectName}
+                        onChange={e => setNewProjectName(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleCreateProject()}
+                        placeholder="예: 넥슨 포트폴리오"
+                        className="flex-1 bg-[#0d1b2a] border border-[#1e3a5f] rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#5B8DEF]"
+                        autoFocus
+                      />
+                      <Button
+                        onClick={handleCreateProject}
+                        disabled={creatingProject || !newProjectName.trim()}
+                        className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-sm px-4"
+                      >
+                        {creatingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : "생성"}
+                      </Button>
+                      <Button
+                        onClick={() => { setShowNewProject(false); setNewProjectName("") }}
+                        variant="outline"
+                        className="border-[#1e3a5f] text-slate-400 text-sm px-3"
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Upload Section */}
         {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
           <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
             <CardHeader>
@@ -293,27 +446,36 @@ export function AnalyzeDashboard() {
             <CardContent>
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-                  isDragActive
-                    ? "border-[#5B8DEF] bg-[#5B8DEF]/5"
-                    : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50"
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                  !selectedProjectId
+                    ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
+                    : isDragActive
+                    ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
+                    : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50 cursor-pointer"
                 }`}
               >
                 <input {...getInputProps()} />
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-slate-400" />
+                    {selectedProjectId ? (
+                      <Upload className="w-8 h-8 text-slate-400" />
+                    ) : (
+                      <Lock className="w-8 h-8 text-slate-600" />
+                    )}
                   </div>
                   <div>
-                    <p className="font-medium text-white">
-                      여러 문서를 한 번에 분석하세요
-                    </p>
-                    <p className="text-sm text-slate-400 mt-1">
-                      드래그 앤 드롭하거나 클릭하여 파일을 선택하세요
-                    </p>
-                    <p className="text-xs text-slate-500 mt-2">
-                      최대 50MB / 동시 20개까지
-                    </p>
+                    {selectedProjectId ? (
+                      <>
+                        <p className="font-medium text-white">여러 문서를 한 번에 분석하세요</p>
+                        <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium text-slate-500">위에서 프로젝트를 먼저 선택해 주세요</p>
+                        <p className="text-sm text-slate-600 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
+                      </>
+                    )}
+                    <p className="text-xs text-slate-500 mt-2">최대 50MB / 동시 20개까지</p>
                   </div>
                 </div>
               </div>
@@ -323,7 +485,7 @@ export function AnalyzeDashboard() {
                 <div className="mt-6 space-y-2">
                   <p className="text-sm text-slate-400 mb-3">선택된 파일 ({files.length}개)</p>
                   {files.map((fileStatus, index) => (
-                    <div 
+                    <div
                       key={index}
                       className={`flex items-center justify-between p-3 rounded-lg ${
                         fileStatus.status === "uploading" ? "bg-amber-500/10 border border-amber-500/30" :
@@ -349,13 +511,13 @@ export function AnalyzeDashboard() {
                           <p className="text-sm text-white truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
                           <p className="text-xs text-slate-500">
                             {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
-                            {fileStatus.result && ` • ${fileStatus.result.score}점`}
-                            {fileStatus.error && ` • ${fileStatus.error}`}
+                            {fileStatus.result && ` · ${fileStatus.result.score}점`}
+                            {fileStatus.error && ` · ${fileStatus.error}`}
                           </p>
                         </div>
                       </div>
                       {!isAnalyzing && (
-                        <button 
+                        <button
                           onClick={() => removeFile(index)}
                           className="text-slate-500 hover:text-red-400 transition-colors"
                         >
@@ -412,7 +574,6 @@ export function AnalyzeDashboard() {
               </Button>
             </div>
 
-            {/* 여러 문서일 때 탭 형태로 표시 */}
             {results.length > 1 && (
               <div className="flex gap-2 flex-wrap">
                 {results.map((r, idx) => (
@@ -420,8 +581,8 @@ export function AnalyzeDashboard() {
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
                     className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                      currentIndex === idx 
-                        ? "bg-[#5B8DEF] text-white" 
+                      currentIndex === idx
+                        ? "bg-[#5B8DEF] text-white"
                         : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                     }`}
                   >
@@ -432,7 +593,6 @@ export function AnalyzeDashboard() {
               </div>
             )}
 
-            {/* 현재 선택된 결과 표시 */}
             {results[currentIndex] && (
               <>
                 {results.length > 1 && (
@@ -446,7 +606,6 @@ export function AnalyzeDashboard() {
                   <RadarChartComponent data={results[currentIndex].categories} />
                 </div>
 
-                {/* Ranking Section */}
                 {results[currentIndex].ranking && results[currentIndex].ranking!.total > 0 && (
                   <Card className="bg-slate-900/80 border-[#1e3a5f]">
                     <CardHeader>
@@ -462,7 +621,7 @@ export function AnalyzeDashboard() {
                         <div className="text-center">
                           <p className="text-slate-400 text-sm mb-2">전체 랭킹</p>
                           <p className="text-5xl font-bold text-[#5B8DEF] mb-2">
-                            상위 {100 - results[currentIndex].ranking!.percentile}%
+                            상위 {Math.max(1, 100 - results[currentIndex].ranking!.percentile)}%
                           </p>
                           <p className="text-slate-400 text-sm">
                             {results[currentIndex].ranking!.total}개 합격 포트폴리오 중
@@ -476,7 +635,7 @@ export function AnalyzeDashboard() {
                                 <div key={idx} className="flex items-center gap-3">
                                   <span className="text-slate-300 text-sm w-24 truncate">{comp.company}</span>
                                   <div className="flex-1 bg-slate-800 rounded-full h-4 overflow-hidden">
-                                    <div 
+                                    <div
                                       className="h-full bg-slate-600 rounded-full relative"
                                       style={{ width: `${comp.avgScore}%` }}
                                     >
@@ -499,10 +658,9 @@ export function AnalyzeDashboard() {
                   </Card>
                 )}
 
-                {/* Feedback Section */}
-                <FeedbackCards 
-                  strengths={results[currentIndex].strengths} 
-                  weaknesses={results[currentIndex].weaknesses} 
+                <FeedbackCards
+                  strengths={results[currentIndex].strengths}
+                  weaknesses={results[currentIndex].weaknesses}
                 />
               </>
             )}

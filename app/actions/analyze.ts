@@ -96,6 +96,7 @@ export async function deleteFileFromStorage(filePath: string) {
 
 // PDF를 직접 Gemini에게 전달하여 분석 (inline_data 사용 - 파일시스템 불필요)
 export async function analyzeDocumentDirect(input: {
+  projectId: string
   fileName: string
   fileUrl: string  // Supabase Storage public URL
   mimeType: string
@@ -334,6 +335,7 @@ ${referenceStats}
 
       // 분석 이력 저장 (비동기, 실패해도 결과는 반환)
       saveAnalysisHistory({
+        projectId: input.projectId,
         fileName: input.fileName,
         score: analysis.score,
         categories: analysis.categories,

@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { AnalyzeDashboard } from "@/components/analyze-dashboard"
 import { AuthAnalyzeHeader } from "@/components/auth-analyze-header"
 
@@ -13,7 +14,9 @@ export default function AnalyzePage() {
   return (
     <main className="min-h-screen bg-background">
       <AuthAnalyzeHeader />
-      <AnalyzeDashboard />
+      <Suspense>
+        <AnalyzeDashboard />
+      </Suspense>
     </main>
   )
 }

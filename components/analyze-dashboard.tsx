@@ -549,6 +549,15 @@ export function AnalyzeDashboard() {
                   <p className="text-sm text-amber-400">{error}</p>
                 </div>
               )}
+              {/* 개인정보 안내 */}
+              <div className="mt-4 text-center space-y-1">
+                <p className="text-slate-500 text-xs">
+                  업로드 시 <span className="text-slate-400">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다.
+                </p>
+                <p className="text-slate-600 text-xs">
+                  🔒 업로드된 자료는 분석 후 즉시 서버에서 삭제됩니다.
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -556,24 +565,33 @@ export function AnalyzeDashboard() {
         {/* Analysis Results */}
         {results.length > 0 && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2 text-[#5B8DEF]">
                 <CheckCircle2 className="w-5 h-5" />
                 <span className="font-medium">
                   {results.length === 1 ? "분석 완료" : `${results.length}개 문서 분석 완료`}
                 </span>
               </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setResults([])
-                  setFiles([])
-                  setCurrentIndex(0)
-                }}
-                className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
-              >
-                새로운 분석 시작
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
+                >
+                  <Link href="/mypage">📂 이전 분석 보기</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setResults([])
+                    setFiles([])
+                    setCurrentIndex(0)
+                  }}
+                  className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
+                >
+                  새로운 분석 시작
+                </Button>
+              </div>
             </div>
 
             {results.length > 1 && (

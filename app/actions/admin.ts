@@ -187,7 +187,7 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
 
 **중요**: 이 문서를 읽고, 성공 요인을 구체적으로 분석하세요. 나중에 다른 포트폴리오 평가 시 이 패턴을 참고할 것입니다.`
 
-    // 파일 다운로드하여 base64로 변환
+    // 파일 다운로드
     const response = await fetch(input.fileUrl, {
       signal: AbortSignal.timeout(180000) // 3분 타임아웃
     })
@@ -195,19 +195,13 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
       throw new Error("파일을 다운로드할 수 없습니다.")
     }
     const fileBuffer = Buffer.from(await response.arrayBuffer())
-    const base64Data = fileBuffer.toString("base64")
+    const fileSizeMB = fileBuffer.length / (1024 * 1024)
 
-    // Base64 크기 체크 (Gemini inline 제한)
-    const maxInlineSize = 50 * 1024 * 1024 // 50MB까지 시도
-    const base64Size = base64Data.length * 0.75
-    if (base64Size > maxInlineSize) {
-      throw new Error(`파일이 너무 큽니다. (${Math.round(base64Size / 1024 / 1024)}MB) 50MB 이하의 파일을 사용해주세요.`)
-    }
+    console.log(`📏 파일 크기: ${fileSizeMB.toFixed(2)}MB`)
 
     try {
-      // Gemini API 호출 - inline_data로 전달
       const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ 
+      const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
         generationConfig: {
           temperature: 0.7,
@@ -215,15 +209,95 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
         }
       })
 
-      const result = await model.generateContent([
-        { text: prompt },
-        {
-          inlineData: {
-            mimeType: input.mimeType,
-            data: base64Data,
+      let result
+
+      if (fileSizeMB > 15) {
+        // 큰 파일: Gemini File API로 업로드 후 참조
+        console.log('📤 큰 파일 - Gemini File API 사용')
+
+        // 1. Gemini File API에 업로드 (REST 직접 호출)
+        const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'X-Goog-Upload-Command': 'upload, finalize',
+            'X-Goog-Upload-Header-Content-Length': String(fileBuffer.length),
+            'X-Goog-Upload-Header-Content-Type': input.mimeType,
+            'Content-Type': input.mimeType,
           },
-        },
-      ])
+          body: fileBuffer,
+          signal: AbortSignal.timeout(300000) // 5분 타임아웃
+        })
+
+        if (!uploadResponse.ok) {
+          const errText = await uploadResponse.text()
+          console.error('Gemini File API upload error:', errText)
+          throw new Error(`Gemini 파일 업로드 실패: ${uploadResponse.status}`)
+        }
+
+        const uploadResult = await uploadResponse.json()
+        const fileUri = uploadResult.file?.uri
+
+        if (!fileUri) {
+          throw new Error('Gemini 파일 업로드 후 URI를 받지 못했습니다.')
+        }
+
+        console.log('✅ Gemini File URI:', fileUri)
+
+        // 파일 처리 대기 (ACTIVE 상태가 될 때까지)
+        let fileState = uploadResult.file?.state
+        const fileName = uploadResult.file?.name
+        let retries = 0
+        while (fileState === 'PROCESSING' && retries < 30) {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          const statusResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`
+          )
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json()
+            fileState = statusData.state
+            console.log(`⏳ 파일 상태: ${fileState} (${retries + 1}/30)`)
+          }
+          retries++
+        }
+
+        if (fileState !== 'ACTIVE') {
+          throw new Error(`Gemini 파일 처리 실패 (상태: ${fileState})`)
+        }
+
+        // 2. fileData 참조로 generateContent 호출
+        result = await model.generateContent([
+          { text: prompt },
+          {
+            fileData: {
+              mimeType: input.mimeType,
+              fileUri: fileUri,
+            },
+          },
+        ])
+
+        // 3. Gemini에서 파일 삭제 (정리)
+        await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`,
+          { method: 'DELETE' }
+        ).catch(() => {})
+
+      } else {
+        // 작은 파일: 기존 inline_data 방식
+        console.log('📎 작은 파일 - inline_data 사용')
+        const base64Data = fileBuffer.toString("base64")
+
+        result = await model.generateContent([
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: input.mimeType,
+              data: base64Data,
+            },
+          },
+        ])
+      }
 
       const responseText = result.response.text()
 

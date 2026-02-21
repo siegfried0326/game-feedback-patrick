@@ -10,9 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import {
-  uploadAdminFile, analyzeAndSavePortfolio, getPortfolioList,
+  analyzeAndSavePortfolio, getPortfolioList,
   getCompanyStats, deletePortfolio, deleteMultiplePortfolios
 } from "@/app/actions/admin"
+import { createClient } from "@/lib/supabase/client"
+import { v4 as uuidv4 } from "uuid"
+import { extractCompanyFromFileName } from "@/lib/company-parser"
 
 interface TrainingFile {
   file: File
@@ -153,20 +156,35 @@ export default function TrainingPage() {
           idx === i ? { ...f, status: "uploading", message: "업로드 중..." } : f
         ))
 
-        const formData = new FormData()
-        formData.append("file", fileData.file)
+        // 클라이언트에서 직접 Supabase Storage에 업로드 (Vercel 4.5MB 제한 우회)
+        const supabase = createClient()
+        const fileExt = fileData.file.name.split(".").pop()
+        const uniqueFileName = `${uuidv4()}.${fileExt}`
+        const filePath = `admin/${uniqueFileName}`
 
-        const uploadResult = await uploadAdminFile(formData)
+        const { error: uploadError } = await supabase.storage
+          .from("resumes")
+          .upload(filePath, fileData.file, {
+            contentType: fileData.file.type,
+            upsert: false,
+          })
 
-        if (uploadResult.error) {
-          throw new Error(uploadResult.error)
+        if (uploadError) {
+          throw new Error(`업로드 실패: ${uploadError.message}`)
         }
+
+        const { data: urlData } = supabase.storage
+          .from("resumes")
+          .getPublicUrl(filePath)
+
+        // 회사명 추출
+        const extractedCompanies = extractCompanyFromFileName(fileData.file.name)
 
         setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "analyzing", message: "AI 분석 중..." } : f
         ))
 
-        let companies = (uploadResult.data as any)?.extractedCompanies || []
+        let companies = extractedCompanies.length > 0 ? extractedCompanies : []
 
         if (companies.length === 0) {
           const fileName = fileData.file.name
@@ -182,10 +200,10 @@ export default function TrainingPage() {
         }
 
         const result = await analyzeAndSavePortfolio({
-          fileName: uploadResult.data!.fileName,
-          fileUrl: uploadResult.data!.fileUrl,
-          mimeType: uploadResult.data!.mimeType,
-          filePath: uploadResult.data!.filePath,
+          fileName: fileData.file.name,
+          fileUrl: urlData.publicUrl,
+          mimeType: fileData.file.type,
+          filePath: filePath,
           companies: companies,
           year: new Date().getFullYear(),
           documentType: "학습데이터"

@@ -251,6 +251,14 @@ export default function TrainingPage() {
     setCompletedCount(0)
   }
 
+  const retryFailed = () => {
+    setFiles(prev => prev.map(f =>
+      f.status === "error" ? { ...f, status: "pending" as const, message: undefined } : f
+    ))
+    setProgress(0)
+    setCompletedCount(0)
+  }
+
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
@@ -573,6 +581,17 @@ export default function TrainingPage() {
                       {errorCount > 0 && ` (${errorCount}개 실패)`}
                     </p>
                   </div>
+                )}
+
+                {!isProcessing && errorCount > 0 && (
+                  <Button
+                    onClick={retryFailed}
+                    className="w-full mt-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 h-12"
+                    variant="outline"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    실패 {errorCount}개 재시도
+                  </Button>
                 )}
 
                 <p className="text-slate-500 text-xs text-center mt-4">

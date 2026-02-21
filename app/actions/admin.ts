@@ -552,11 +552,12 @@ export async function getCompanyStats() {
 
     // 회사별 카운트
     const stats: Record<string, number> = {}
-    
+
     const targetCompanies = [
       "엔씨소프트",
-      "넥슨", 
+      "넥슨",
       "넷마블",
+      "크래프톤",
       "네오위즈",
       "스마일게이트",
       "라이온하트",
@@ -569,15 +570,23 @@ export async function getCompanyStats() {
     targetCompanies.forEach(company => {
       stats[company] = 0
     })
+    stats["미분류"] = 0
 
     // 카운트
     portfolios?.forEach(portfolio => {
-      if (portfolio.companies && Array.isArray(portfolio.companies)) {
+      if (portfolio.companies && Array.isArray(portfolio.companies) && portfolio.companies.length > 0) {
+        let matched = false
         portfolio.companies.forEach((company: string) => {
           if (targetCompanies.includes(company)) {
             stats[company]++
+            matched = true
           }
         })
+        if (!matched) {
+          stats["미분류"]++
+        }
+      } else {
+        stats["미분류"]++
       }
     })
 

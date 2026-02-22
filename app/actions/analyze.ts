@@ -409,7 +409,7 @@ ${referenceStats}
 
     // 회사별 비교 데이터
     const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
-    const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트"]
+    const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스"]
     targetCompanies.forEach(company => {
       const matchedEntry = Object.entries(companyStats).find(([key]) =>
         key.includes(company) || company.includes(key)
@@ -766,7 +766,7 @@ ${referenceStats}
       const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
 
       // 실제 학습 데이터가 있는 회사만 추가
-      const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트"]
+      const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스"]
       targetCompanies.forEach(company => {
         const matchedEntry = Object.entries(companyStats).find(([key]) =>
           key.includes(company) || company.includes(key)

@@ -125,6 +125,39 @@ export function AnalyzeDashboard() {
   const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
 
+  // 분석 중 로딩 메시지 순환
+  const loadingMessages = [
+    "문서 내용을 꼼꼼히 살펴보는 중...",
+    "논리 구조와 흐름을 분석하는 중...",
+    "게임 디자인 역량을 평가하는 중...",
+    "문서의 레이아웃을 검토하는 중...",
+    "넥슨 합격자 포트폴리오와 비교하는 중...",
+    "크래프톤 합격자 포트폴리오와 비교하는 중...",
+    "넷마블 합격자 포트폴리오와 비교하는 중...",
+    "엔씨소프트 합격자 포트폴리오와 비교하는 중...",
+    "펄어비스 합격자 포트폴리오와 비교하는 중...",
+    "스마일게이트 합격자 포트폴리오와 비교하는 중...",
+    "네오위즈 합격자 포트폴리오와 비교하는 중...",
+    "웹젠 합격자 포트폴리오와 비교하는 중...",
+    "강점과 보완점을 정리하는 중...",
+    "최종 점수를 계산하는 중...",
+  ]
+
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setStatusMessage("")
+      return
+    }
+    let idx = 0
+    setStatusMessage(loadingMessages[0])
+    const timer = setInterval(() => {
+      idx = (idx + 1) % loadingMessages.length
+      setStatusMessage(loadingMessages[idx])
+    }, 3500)
+    return () => clearInterval(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAnalyzing])
+
   // 페이지 로드 시 구독 상태 + 프로젝트 목록 체크
   useEffect(() => {
     async function init() {
@@ -212,7 +245,7 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        setStatusMessage("AI가 문서를 분석하는 중...")
+        // 로딩 메시지는 useEffect에서 자동 순환
         setFiles(prev => prev.map((f, idx) =>
           idx === i ? { ...f, status: "analyzing" } : f
         ))
@@ -307,7 +340,7 @@ export function AnalyzeDashboard() {
     setIsAnalyzing(true)
     setError(null)
     setResults([])
-    setStatusMessage("웹 페이지를 가져오는 중...")
+    // 로딩 메시지는 useEffect에서 자동 순환
 
     try {
       const result = await analyzeUrlDirect({

@@ -194,8 +194,14 @@ export async function analyzeUrlDirect(input: {
       .limit(50)
 
     if (portfolioError) {
-      console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code)
+      console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code, portfolioError.details)
     }
+    console.log("Portfolio query result:", {
+      hasData: !!portfolios,
+      count: portfolios?.length ?? 0,
+      error: portfolioError?.message ?? null,
+      firstItem: portfolios?.[0] ? { file_name: portfolios[0].file_name, companies: portfolios[0].companies } : null,
+    })
 
     let referenceStats = ""
     const companyStats: Record<string, { total: number; count: number }> = {}
@@ -486,8 +492,14 @@ export async function analyzeDocumentDirect(input: {
       .limit(50)
 
     if (portfolioError) {
-      console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code)
+      console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code, portfolioError.details)
     }
+    console.log("Portfolio query result (document):", {
+      hasData: !!portfolios,
+      count: portfolios?.length ?? 0,
+      error: portfolioError?.message ?? null,
+      firstItem: portfolios?.[0] ? { file_name: portfolios[0].file_name, companies: portfolios[0].companies } : null,
+    })
 
     // 학습 데이터 통계 및 패턴 분석
     let referenceStats = ""

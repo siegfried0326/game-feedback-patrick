@@ -17,9 +17,12 @@ export function HeroSection() {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight mb-3 text-center">
-          <span className="text-[#5B8DEF]">DesignIt</span> — 게임 기획 AI 피드백
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-3 text-center">
+          <span className="text-[#5B8DEF] tracking-wider uppercase">DESIGN</span><span className="text-white tracking-wider uppercase">IT</span>
         </h1>
+        <p className="text-base md:text-lg text-slate-400 font-medium tracking-widest uppercase text-center mb-1">
+          Game Design Portfolio AI Feedback
+        </p>
 
         {/* Subtitle */}
         <p className="text-slate-400 mb-10 flex items-center justify-center gap-2">

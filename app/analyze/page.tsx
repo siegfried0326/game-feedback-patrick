@@ -6,7 +6,7 @@ import { AuthAnalyzeHeader } from "@/components/auth-analyze-header"
 export const maxDuration = 300
 
 export const metadata = {
-  title: "문서 분석하기 | 게임 기획 문서 피드백",
+  title: "문서 분석하기 | 디자이닛(DesignIt)",
   description: "게임 기획 문서를 업로드하고 AI 분석 결과를 확인하세요.",
 }
 

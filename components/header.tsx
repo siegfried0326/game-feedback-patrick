@@ -21,7 +21,7 @@ export function Header({ user }: HeaderProps) {
           <div className="w-8 h-8 rounded-lg bg-[#5B8DEF] flex items-center justify-center">
             <FileText className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-white">문서 피드백</span>
+          <span className="font-semibold text-white">DesignIt</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

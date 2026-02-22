@@ -18,7 +18,7 @@ export function HeroSection() {
 
         {/* Title */}
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight mb-3 text-center">
-          게임 기획 문서 <span className="text-[#5B8DEF]">AI 피드백</span>
+          <span className="text-[#5B8DEF]">DesignIt</span> — 게임 기획 AI 피드백
         </h1>
 
         {/* Subtitle */}

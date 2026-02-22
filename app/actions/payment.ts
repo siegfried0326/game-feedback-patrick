@@ -86,7 +86,7 @@ export async function processSubscriptionPayment(
 
   // 2. 첫 결제 승인
   const amount = plan === "monthly" ? 17900 : 49000
-  const orderName = plan === "monthly" ? "게임 기획 피드백 월 구독" : "게임 기획 피드백 3개월 패스"
+  const orderName = plan === "monthly" ? "디자이닛 월 구독" : "디자이닛 3개월 패스"
   const orderId = `SUB_${plan}_${user.id.slice(0, 8)}_${Date.now()}`
 
   const paymentResult = await approveBillingPayment(

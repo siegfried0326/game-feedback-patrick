@@ -11,7 +11,7 @@ export function Footer() {
               <FileText className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="font-semibold text-white">게임 기획 문서 피드백</span>
+              <span className="font-semibold text-white">DesignIt</span>
               <p className="text-xs text-slate-400">by 문라이트커리어랩</p>
             </div>
           </div>

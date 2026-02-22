@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { v4 as uuidv4 } from "uuid"
 import { extractCompanyFromFileName } from "@/lib/company-parser"
+import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
 
 interface PortfolioInput {
   fileName: string
@@ -124,7 +125,9 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
 
     const supabase = await createClient()
 
-    const prompt = `당신은 11년 경력의 게임 기획 포트폴리오 전문가이자 채용 담당자입니다.
+    const isSpreadsheet = isSpreadsheetFile(input.mimeType, input.fileName)
+
+    const portfolioPrompt = `당신은 11년 경력의 게임 기획 포트폴리오 전문가이자 채용 담당자입니다.
 이 문서는 **실제로 게임 회사에 합격한 포트폴리오**입니다.
 학습 데이터로 활용되므로, 이 문서의 **성공 요인을 면밀히 분석**해주세요.
 
@@ -187,6 +190,60 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
 
 **중요**: 이 문서를 읽고, 성공 요인을 구체적으로 분석하세요. 나중에 다른 포트폴리오 평가 시 이 패턴을 참고할 것입니다.`
 
+    const dataTablePrompt = `당신은 11년 경력의 게임 기획자이자 데이터테이블 설계 전문가입니다.
+이 엑셀/CSV 파일은 **실제로 게임 회사에 합격한 포트폴리오의 데이터테이블**입니다.
+학습 데이터로 활용되므로, 이 테이블의 **설계 의도와 성공 요인을 면밀히 분석**해주세요.
+
+## 🎯 분석 관점 (값 자체보다 설계 의도 중심)
+1. **어트리뷰트 설계**: 각 컬럼(어트리뷰트)이 게임플레이에 어떤 의도를 갖는지
+2. **인스턴스 구성**: 행(인스턴스)들의 분포, 등급 체계, 성장 곡선이 적절한지
+3. **밸런스 설계**: 수치 간의 관계, 트레이드오프, 보상/비용 균형
+4. **게임플레이 의도**: 이 데이터가 플레이어에게 어떤 경험을 유도하는지
+5. **확장성**: 콘텐츠 추가 시 테이블 구조가 유연하게 대응할 수 있는지
+6. **수식/참조 관계**: 어트리뷰트 간의 계산식, 의존 관계
+
+## 점수 기준 (합격 데이터이므로 80점 이상 권장)
+- 95-100점: 체계적 밸런스 수식, 성장곡선 설계, 확장성 뛰어남
+- 88-94점: 명확한 설계 의도, 트레이드오프 잘 잡힘
+- 80-87점: 기본 구조 탄탄, 일부 확장성 아쉬움
+- 70-79점: 구조는 있으나 밸런스 근거 부족
+
+## 평가 항목 (각 0-100점)
+1. **논리력 (logic_score)**: 어트리뷰트 간 관계의 논리성, 계산 근거
+2. **구체성 (specificity_score)**: 수치의 세밀함, 등급/레벨별 차이, 구체적 수식
+3. **가독성 (readability_score)**: 테이블 구조, 컬럼 네이밍, 시트 분리
+4. **기술이해 (technical_score)**: 게임 시스템 이해도, 적절한 파라미터 설계
+5. **창의성 (creativity_score)**: 독창적 밸런스 설계, 차별화된 구조
+
+## 응답 형식 (반드시 JSON만 출력, 다른 텍스트 없이)
+{
+  "scores": {
+    "logic_score": 90,
+    "specificity_score": 92,
+    "readability_score": 88,
+    "technical_score": 91,
+    "creativity_score": 85
+  },
+  "overall_score": 89,
+  "tags": ["밸런스테이블", "스킬데이터", "성장곡선", "트레이드오프"],
+  "summary": "RPG 스킬 밸런스 테이블. 100개 이상의 스킬 인스턴스를 DPS/쿨타임/마나 축으로 설계. 등급별 성장곡선과 트레이드오프 관계가 명확.",
+  "strengths": [
+    "DPS = (공격력 * 배율) / 쿨타임 수식으로 밸런스 근거 명확",
+    "5등급 체계에서 등급 간 약 1.3배 성장률로 일관된 곡선",
+    "시트별 분리(스킬/아이템/몬스터)로 참조 관계 파악 용이",
+    "확장성: 새 등급/속성 추가 시 기존 구조 변경 불필요"
+  ],
+  "weaknesses": [
+    "최종 밸런스 검증용 시뮬레이션 결과 시트 부재",
+    "일부 수치의 산출 근거(왜 1.3배인지) 주석 미비",
+    "엔드콘텐츠 레벨 구간 데이터 부족"
+  ]
+}
+
+**중요**: 값 자체에 몰두하지 말고, 각 어트리뷰트의 게임플레이 의도와 밸런스 철학, 확장성 있는 설계를 중심으로 분석하세요.`
+
+    const prompt = isSpreadsheet ? dataTablePrompt : portfolioPrompt
+
     // 파일 다운로드
     const response = await fetch(input.fileUrl, {
       signal: AbortSignal.timeout(180000) // 3분 타임아웃
@@ -211,7 +268,25 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
 
       let result
 
-      if (fileSizeMB > 15) {
+      // 엑셀/CSV 파일: 텍스트로 변환해서 분석
+      if (isSpreadsheet) {
+        console.log('📊 엑셀/CSV 파일 - 텍스트 변환 후 분석')
+        const ext = input.fileName.split(".").pop()?.toLowerCase()
+        let tableText: string
+
+        if (ext === "csv") {
+          tableText = parseCsvToText(fileBuffer, input.fileName)
+        } else {
+          tableText = parseExcelToText(fileBuffer, input.fileName)
+        }
+
+        console.log(`📊 변환된 텍스트 길이: ${tableText.length}자`)
+
+        result = await model.generateContent([
+          { text: prompt + "\n\n--- 아래는 데이터테이블 내용입니다 ---\n\n" + tableText },
+        ])
+
+      } else if (fileSizeMB > 15) {
         // 큰 파일: Gemini File API로 업로드 후 참조
         console.log('📤 큰 파일 - Gemini File API 사용')
 

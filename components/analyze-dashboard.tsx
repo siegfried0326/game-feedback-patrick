@@ -757,9 +757,6 @@ export function AnalyzeDashboard() {
                                   <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                       <span className="text-white font-medium text-sm">{comp.company}</span>
-                                      {comp.sampleCount && (
-                                        <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">{comp.sampleCount}개</span>
-                                      )}
                                     </div>
                                     <span className={`text-sm font-bold ${isAbove ? 'text-emerald-400' : 'text-amber-400'}`}>
                                       {isAbove ? '+' : ''}{diff}점

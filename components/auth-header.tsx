@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { isAdminEmail } from "@/lib/admin"
 import { Header } from "./header"
 
 export async function AuthHeader() {
@@ -9,6 +10,7 @@ export async function AuthHeader() {
     ? {
         email: user.email,
         name: user.user_metadata?.full_name || user.user_metadata?.name,
+        isAdmin: isAdminEmail(user.email),
       }
     : null
 

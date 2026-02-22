@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FileText, LogOut, User } from "lucide-react"
+import { FileText, LogOut, User, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PricingModal } from "@/components/pricing-modal"
 import { signOut } from "@/app/actions/auth"
@@ -10,6 +10,7 @@ type HeaderProps = {
   user?: {
     email?: string
     name?: string
+    isAdmin?: boolean
   } | null
 }
 
@@ -40,6 +41,15 @@ export function Header({ user }: HeaderProps) {
         <div className="flex items-center gap-3">
           {user ? (
             <>
+              {user.isAdmin && (
+                <Link
+                  href="/admin/training"
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-colors"
+                >
+                  <Shield className="w-3 h-3" />
+                  관리자
+                </Link>
+              )}
               <Link
                 href="/mypage"
                 className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"

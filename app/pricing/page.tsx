@@ -11,12 +11,14 @@ const plans = [
   {
     name: "무료 체험",
     price: "0",
-    period: "1회",
-    description: "처음 이용하시는 분들을 위한 무료 체험",
+    period: "무료",
+    description: "처음 이용하시는 분들을 위한 무료 체험 (총 2회)",
     features: [
-      "1회 문서 피드백",
+      "프로젝트 1개",
+      "총 2회 문서 분석",
       "5개 항목 점수 평가",
       "기본 피드백 제공",
+      "Claude Sonnet AI",
     ],
     cta: "무료로 시작하기",
     href: "/analyze",
@@ -28,11 +30,12 @@ const plans = [
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
     features: [
-      "무제한 문서 업로드",
-      "즉시 AI 분석 결과 제공",
+      "무제한 프로젝트",
+      "무제한 문서 분석",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
-      "수정본 재검토 무제한",
+      "버전별 점수 비교 분석",
+      "Claude Sonnet AI",
     ],
     cta: "구독 시작하기",
     href: "/payment/billing?plan=monthly",
@@ -43,15 +46,15 @@ const plans = [
     price: "49,000",
     originalPrice: "53,700",
     period: "3개월",
-    description: "장기 준비생을 위한 할인 패키지",
-    badge: "약 10% 할인",
+    description: "프리미엄 AI로 더 정밀한 분석",
+    badge: "프리미엄 AI",
     features: [
-      "무제한 문서 업로드",
-      "즉시 AI 분석 결과 제공",
+      "무제한 프로젝트",
+      "무제한 문서 분석",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
-      "수정본 재검토 무제한",
-      "우선 순위 피드백",
+      "버전별 점수 비교 분석",
+      "프리미엄 AI (Claude Opus)",
     ],
     cta: "3개월 패스 구매",
     href: "/payment/billing?plan=three_month",
@@ -76,7 +79,7 @@ export default function PricingPage() {
             합리적인 요금제
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            첫 1회는 무료로 체험해 보세요. 마음에 드시면 구독을 시작하시면 됩니다.
+            첫 2회는 무료로 체험해 보세요. 마음에 드시면 구독을 시작하시면 됩니다.
           </p>
         </div>
 

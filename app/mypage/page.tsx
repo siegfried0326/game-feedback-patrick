@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight } from "lucide-react"
+import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail } from "@/app/actions/subscription"
 import { getUser } from "@/app/actions/auth"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
+import { VersionComparison } from "@/components/version-comparison"
 
 type Subscription = {
   plan: string
@@ -68,6 +69,9 @@ export default function MyPage() {
   const [selectedProject, setSelectedProject] = useState<ProjectWithStats | null>(null)
   const [projectAnalyses, setProjectAnalyses] = useState<AnalysisItem[]>([])
   const [loadingAnalyses, setLoadingAnalyses] = useState(false)
+
+  // 버전 비교 토글
+  const [showComparison, setShowComparison] = useState(false)
 
   // Level 3: 분석 상세 모달
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisItem | null>(null)
@@ -245,8 +249,18 @@ export default function MyPage() {
               </div>
               {subscription.plan === "free" && (
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
-                  <p className="text-sm text-slate-300">무료 플랜은 프로젝트 1개를 생성할 수 있습니다. 무제한 프로젝트를 원하시면 구독을 시작해 주세요.</p>
+                  <p className="text-sm text-slate-300">무료 플랜은 프로젝트 1개, 총 2회 분석이 가능합니다. 무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.</p>
                   <Button asChild className="mt-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/pricing">요금제 보기</Link></Button>
+                </div>
+              )}
+              {subscription.plan === "monthly" && subscription.status === "active" && (
+                <div className="bg-[#5B8DEF]/5 rounded-lg p-3 border border-[#5B8DEF]/20">
+                  <p className="text-xs text-[#5B8DEF]">🤖 Claude Sonnet AI 사용 중</p>
+                </div>
+              )}
+              {subscription.plan === "three_month" && subscription.status === "active" && (
+                <div className="bg-purple-500/5 rounded-lg p-3 border border-purple-500/20">
+                  <p className="text-xs text-purple-400">✨ 프리미엄 Claude Opus AI 사용 중</p>
                 </div>
               )}
               {subscription.plan !== "free" && subscription.status === "active" && (
@@ -424,11 +438,26 @@ export default function MyPage() {
                     <p className="text-xs text-slate-500">{selectedProject.analysis_count}개 문서</p>
                   </div>
                 </div>
-                <Button asChild size="sm" className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs">
-                  <Link href={`/analyze?projectId=${selectedProject.id}`}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> 새 버전 분석
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  {projectAnalyses.length >= 2 && (
+                    <Button
+                      size="sm"
+                      variant={showComparison ? "default" : "outline"}
+                      onClick={() => setShowComparison(!showComparison)}
+                      className={showComparison
+                        ? "bg-purple-500 hover:bg-purple-600 text-white text-xs"
+                        : "border-purple-500/30 text-purple-400 hover:bg-purple-500/10 text-xs"
+                      }
+                    >
+                      <BarChart3 className="w-3.5 h-3.5 mr-1" /> 버전 비교
+                    </Button>
+                  )}
+                  <Button asChild size="sm" className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs">
+                    <Link href={`/analyze?projectId=${selectedProject.id}`}>
+                      <Plus className="w-3.5 h-3.5 mr-1" /> 새 버전 분석
+                    </Link>
+                  </Button>
+                </div>
               </div>
 
               {loadingAnalyses ? (
@@ -477,6 +506,36 @@ export default function MyPage() {
                   <Button asChild className="mt-4 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
                     <Link href={`/analyze?projectId=${selectedProject.id}`}>문서 분석하기</Link>
                   </Button>
+                </div>
+              )}
+
+              {/* 버전 비교 섹션 */}
+              {showComparison && projectAnalyses.length >= 2 && (
+                <div className="mt-6">
+                  {isPaidPlan ? (
+                    <div className="bg-slate-900/80 border border-purple-500/20 rounded-xl p-6">
+                      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-purple-400" />
+                        버전별 점수 비교
+                      </h3>
+                      <VersionComparison analyses={projectAnalyses} />
+                    </div>
+                  ) : (
+                    <div className="relative bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-8 text-center">
+                      <div className="absolute inset-0 bg-[#0d1b2a]/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10">
+                        <Lock className="w-8 h-8 text-slate-500 mb-3" />
+                        <p className="text-white font-medium mb-1">구독 시 이용 가능</p>
+                        <p className="text-slate-400 text-sm mb-4">버전별 점수 비교 기능은 구독자 전용입니다.</p>
+                        <Button asChild size="sm" className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                          <Link href="/pricing">요금제 보기</Link>
+                        </Button>
+                      </div>
+                      <div className="opacity-20">
+                        <div className="h-48 bg-slate-800 rounded-lg mb-4" />
+                        <div className="h-32 bg-slate-800 rounded-lg" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>

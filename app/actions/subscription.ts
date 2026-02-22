@@ -194,9 +194,18 @@ export async function checkAnalysisAllowance() {
     return { allowed: true, plan: subscription.plan, unlimited: true }
   }
 
-  // 무료 플랜: 프로젝트가 있으면 그 안에서 분석 가능
-  // (프로젝트 생성은 checkProjectAllowance에서 제한)
-  return { allowed: true, plan: "free" as const }
+  // 무료 플랜: 총 2회 분석 제한
+  const { count } = await supabase
+    .from("analysis_history")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+
+  const used = count || 0
+  const FREE_LIMIT = 2
+  if (used >= FREE_LIMIT) {
+    return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
+  }
+  return { allowed: true, plan: "free" as const, remaining: FREE_LIMIT - used }
 }
 
 export async function getProjectAnalyses(projectId: string) {

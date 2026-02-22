@@ -11,22 +11,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const CHANNEL_TALK_URL = "https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
-
 const plans = [
   {
     name: "무료 체험",
     price: "0",
-    period: "1회",
-    description: "처음 이용하시는 분들을 위한 무료 체험",
+    period: "무료",
+    description: "처음 이용하시는 분들을 위한 무료 체험 (총 2회)",
     features: [
-      "1회 문서 피드백",
+      "프로젝트 1개",
+      "총 2회 문서 분석",
       "5개 항목 점수 평가",
       "기본 피드백 제공",
+      "Claude Sonnet AI",
     ],
     cta: "무료로 시작하기",
     href: "/analyze",
-    isExternal: false,
     highlighted: false
   },
   {
@@ -35,15 +34,15 @@ const plans = [
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
     features: [
-      "무제한 문서 업로드",
-      "즉시 AI 분석 결과 제공",
+      "무제한 프로젝트",
+      "무제한 문서 분석",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
-      "수정본 재검토 무제한"
+      "버전별 점수 비교 분석",
+      "Claude Sonnet AI",
     ],
     cta: "구독 시작하기",
-    href: CHANNEL_TALK_URL,
-    isExternal: true,
+    href: "/payment/billing?plan=monthly",
     highlighted: true
   },
   {
@@ -51,19 +50,18 @@ const plans = [
     price: "49,000",
     originalPrice: "53,700",
     period: "3개월",
-    description: "장기 준비생을 위한 할인 패키지",
-    badge: "약 10% 할인",
+    description: "프리미엄 AI로 더 정밀한 분석",
+    badge: "프리미엄 AI",
     features: [
-      "무제한 문서 업로드",
-      "즉시 AI 분석 결과 제공",
+      "무제한 프로젝트",
+      "무제한 문서 분석",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
-      "수정본 재검토 무제한",
-      "우선 순위 피드백"
+      "버전별 점수 비교 분석",
+      "프리미엄 AI (Claude Opus)",
     ],
     cta: "3개월 패스 구매",
-    href: CHANNEL_TALK_URL,
-    isExternal: true,
+    href: "/payment/billing?plan=three_month",
     highlighted: false
   }
 ]
@@ -83,7 +81,7 @@ export function PricingModal() {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center mb-2">요금제 선택</DialogTitle>
           <p className="text-center text-muted-foreground text-sm">
-            첫 1회는 무료로 체험해 보세요
+            첫 2회는 무료로 체험해 보세요
           </p>
         </DialogHeader>
         
@@ -155,15 +153,9 @@ export function PricingModal() {
                     : "bg-secondary hover:bg-secondary/80 text-foreground"
                 }`}
               >
-                {plan.isExternal ? (
-                  <a href={plan.href} target="_blank" rel="noopener noreferrer">
-                    {plan.cta}
-                  </a>
-                ) : (
-                  <Link href={plan.href}>
-                    {plan.cta}
-                  </Link>
-                )}
+                <Link href={plan.href}>
+                  {plan.cta}
+                </Link>
               </Button>
             </div>
           ))}

@@ -10,7 +10,7 @@ export function CTASection() {
           지금 바로 시작하세요
         </h2>
         <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto text-pretty">
-          첫 1회는 무료입니다.<br className="hidden sm:block" />
+          첫 2회는 무료입니다.<br className="hidden sm:block" />
           부담 없이 피드백 품질을 경험해 보세요.
         </p>
 

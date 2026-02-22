@@ -296,6 +296,14 @@ export function AnalyzeDashboard() {
                   <h2 className="text-xl font-bold text-white mb-2">구독이 만료되었습니다</h2>
                   <p className="text-slate-400 mb-6">계속 이용하시려면 구독을 갱신해 주세요.</p>
                 </>
+              ) : allowanceInfo.reason === "limit_reached" ? (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
+                  <p className="text-slate-400 mb-6">
+                    무료 플랜은 총 2회 분석이 가능합니다.<br />
+                    무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.
+                  </p>
+                </>
               ) : (
                 <>
                   <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
@@ -323,10 +331,13 @@ export function AnalyzeDashboard() {
             <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-amber-400">
-                무료 플랜은 <span className="font-bold">프로젝트 1개</span>만 생성할 수 있습니다. 프로젝트 안에서는 자유롭게 분석 가능합니다.
+                무료 플랜은 총 <span className="font-bold">2회 분석</span>이 가능합니다.
+                {allowanceInfo.remaining !== undefined && (
+                  <> 현재 <span className="font-bold">{allowanceInfo.remaining}회</span> 남았습니다.</>
+                )}
               </p>
               <p className="text-xs text-amber-400/70 mt-1">
-                무제한 프로젝트를 원하시면{" "}
+                무제한 분석과 프리미엄 AI를 원하시면{" "}
                 <Link href="/pricing" className="underline hover:text-amber-300">구독을 시작</Link>해 주세요.
               </p>
             </div>

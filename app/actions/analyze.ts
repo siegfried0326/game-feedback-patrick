@@ -94,6 +94,35 @@ export async function deleteFileFromStorage(filePath: string) {
   }
 }
 
+// 사용자 구독 플랜에 따라 Claude 모델 선택
+async function getModelForUser(): Promise<string> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return "claude-sonnet-4-20250514"
+
+    const { data: subscription } = await supabase
+      .from("users_subscription")
+      .select("plan, status, expires_at")
+      .eq("user_id", user.id)
+      .single()
+
+    // 3개월 패스 (active, 미만료) → Claude Opus
+    if (
+      subscription?.plan === "three_month" &&
+      subscription.status === "active" &&
+      (!subscription.expires_at || new Date(subscription.expires_at) > new Date())
+    ) {
+      return "claude-opus-4-20250514"
+    }
+  } catch {
+    // fallback to sonnet
+  }
+
+  // free, monthly → Claude Sonnet
+  return "claude-sonnet-4-20250514"
+}
+
 // Claude API로 문서 분석
 export async function analyzeDocumentDirect(input: {
   projectId: string
@@ -300,11 +329,12 @@ ${referenceStats}
     }
 
     try {
-      // Claude API 호출
+      // Claude API 호출 (플랜에 따라 모델 선택)
       const anthropic = new Anthropic({ apiKey })
+      const selectedModel = await getModelForUser()
 
       const message = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: selectedModel,
         max_tokens: 4096,
         messages: [
           {

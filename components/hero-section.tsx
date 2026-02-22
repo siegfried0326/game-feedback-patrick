@@ -12,7 +12,7 @@ export function HeroSection() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium">
             <Sparkles className="w-4 h-4" />
-            첫 1회 무료
+            첫 2회 무료 분석
           </div>
         </div>
 
@@ -24,7 +24,7 @@ export function HeroSection() {
         {/* Subtitle */}
         <p className="text-slate-400 mb-10 flex items-center justify-center gap-2">
           <Database className="w-4 h-4 text-[#5B8DEF]" />
-          <span>실제 합격 포트폴리오 <span className="text-[#5B8DEF] font-semibold">187개</span>로 학습된 AI</span>
+          <span>실제 합격 포트폴리오 <span className="text-[#5B8DEF] font-semibold">187개</span>로 학습된 <span className="text-[#5B8DEF] font-semibold">Claude AI</span></span>
         </p>
 
         {/* 2-Column Layout - items-stretch로 높이 맞춤 */}

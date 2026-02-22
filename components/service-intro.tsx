@@ -35,7 +35,7 @@ export function ServiceIntro() {
             어떤 분석을 받을 수 있나요?
           </h2>
           <p className="text-slate-400 max-w-2xl mx-auto text-pretty">
-            합격 포트폴리오 187개를 학습한 AI가<br className="hidden sm:block" />
+            합격 포트폴리오 187개를 학습한 <span className="text-[#5B8DEF]">Claude AI</span>가<br className="hidden sm:block" />
             여러분의 기획서를 즉시 정밀 분석합니다.
           </p>
         </div>

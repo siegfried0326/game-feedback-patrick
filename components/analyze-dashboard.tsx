@@ -148,11 +148,10 @@ export function AnalyzeDashboard() {
       setStatusMessage("")
       return
     }
-    let idx = 0
-    setStatusMessage(loadingMessages[0])
+    const pick = () => loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
+    setStatusMessage(pick())
     const timer = setInterval(() => {
-      idx = (idx + 1) % loadingMessages.length
-      setStatusMessage(loadingMessages[idx])
+      setStatusMessage(pick())
     }, 3500)
     return () => clearInterval(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps

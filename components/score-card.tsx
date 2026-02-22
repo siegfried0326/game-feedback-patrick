@@ -41,7 +41,7 @@ export function ScoreCard({ score, ranking }: ScoreCardProps) {
   // 점수 기반 5단계 등급 (부등호 표시)
   const getRankGrade = (score: number): { label: string; color: string; emoji: string } => {
     if (score >= 90) return { label: "합격 가능", color: "text-purple-400", emoji: "🏆" }
-    if (score >= 80) return { label: "가능성 있음", color: "text-emerald-400", emoji: "✅" }
+    if (score >= 80) return { label: "경쟁력 있음", color: "text-emerald-400", emoji: "✅" }
     if (score >= 70) return { label: "보완 필요", color: "text-[#5B8DEF]", emoji: "📝" }
     if (score >= 60) return { label: "개선 필요", color: "text-amber-400", emoji: "⚠️" }
     return { label: "재작성 권장", color: "text-red-400", emoji: "🔄" }
@@ -102,7 +102,7 @@ export function ScoreCard({ score, ranking }: ScoreCardProps) {
                 {rankGrade.emoji} {rankGrade.label}
               </p>
               <p className="text-xs text-slate-500">
-                재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 가능성 있음 &lt; 합격 가능
+                재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 경쟁력 있음 &lt; 합격 가능
               </p>
             </div>
           )}

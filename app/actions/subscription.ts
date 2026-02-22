@@ -266,6 +266,7 @@ export async function saveAnalysisHistory(result: {
   strengths: string[]
   weaknesses: string[]
   ranking?: Record<string, unknown>
+  companyFeedback?: string
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -283,6 +284,7 @@ export async function saveAnalysisHistory(result: {
       strengths: result.strengths,
       weaknesses: result.weaknesses,
       ranking: result.ranking,
+      company_feedback: result.companyFeedback || "",
     })
 
   if (error) return { error: error.message }

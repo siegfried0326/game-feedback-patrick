@@ -1,10 +1,14 @@
+"use client"
+
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Gamepad2 } from "lucide-react"
+import { Gamepad2, ChevronDown } from "lucide-react"
 
 type CategoryData = {
   subject: string
   value: number
   fullMark: number
+  feedback?: string
 }
 
 type DesignScoresProps = {
@@ -29,6 +33,7 @@ function getBarColor(value: number): string {
 
 export function DesignScores({ data }: DesignScoresProps) {
   const designData = data.filter(d => !BASIC_SUBJECTS.includes(d.subject))
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
 
   if (designData.length === 0) return null
 
@@ -46,22 +51,37 @@ export function DesignScores({ data }: DesignScoresProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {designData.map((item, index) => (
             <div key={index}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-slate-300">{item.subject}</span>
-                <span className={`text-sm font-semibold ${getScoreColor(item.value)}`}>{item.value}점</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${getBarColor(item.value)}`}
-                  style={{ width: `${item.value}%` }}
-                />
-              </div>
+              <button
+                type="button"
+                className="w-full text-left cursor-pointer hover:bg-slate-800/50 rounded-lg p-2 -m-2 transition-colors"
+                onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-slate-300 flex items-center gap-1">
+                    {item.subject}
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${expandedIndex === index ? 'rotate-180' : ''}`} />
+                  </span>
+                  <span className={`text-sm font-semibold ${getScoreColor(item.value)}`}>{item.value}점</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${getBarColor(item.value)}`}
+                    style={{ width: `${item.value}%` }}
+                  />
+                </div>
+              </button>
+              {expandedIndex === index && item.feedback && (
+                <div className="mt-2 ml-2 p-3 bg-slate-800/60 border border-[#1e3a5f]/50 rounded-lg">
+                  <p className="text-sm text-slate-300 leading-relaxed">{item.feedback}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
+        <p className="text-xs text-slate-500 mt-4 text-center">각 항목을 눌러 세부 피드백을 확인하세요</p>
       </CardContent>
     </Card>
   )

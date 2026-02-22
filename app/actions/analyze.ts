@@ -299,6 +299,7 @@ ${referenceStats}
 2. **거짓 칭찬 금지**: 비교연구가 없으면 "비교연구가 우수하다"고 하지 마세요. 없는 것은 보완점에 넣으세요.
 3. **강점과 보완점이 모순되면 안 됩니다!** 강점에서 "수치 데이터 제시가 좋다"고 하고 보완점에서 "수치 데이터 부족"이라고 하면 안 됩니다. 하나의 주제는 강점 또는 보완점 중 하나에만 넣으세요.
 4. **"합격 사례 1번", "합격 사례 3번"처럼 특정 번호를 절대 언급하지 마세요.** 사용자는 학습 데이터를 볼 수 없습니다.
+4-1. **companyFeedback에서 "~사례처럼", "~처럼" 표현 절대 금지.** 사용자는 합격자 포트폴리오를 볼 수 없습니다. "넥슨 합격자들은 ~한 특징이 있습니다"처럼 합격자 특징을 주어로 서술하세요.
 5. **점수에 후하게 주지 마세요.** 부족한 부분은 확실히 낮은 점수를 주세요. 대부분의 문서는 60~80점대입니다.
 6. 강점/보완점은 반드시 **문서에서 실제로 확인된 구체적 내용**을 근거로 작성하세요.
 7. **강점 6개, 보완점 6개**를 반드시 작성하세요. 각각 서로 다른 관점이어야 합니다.
@@ -346,25 +347,25 @@ ${referenceStats}
 {
   "score": 72,
   "categories": [
-    { "subject": "논리력", "value": 75, "fullMark": 100 },
-    { "subject": "구체성", "value": 65, "fullMark": 100 },
-    { "subject": "가독성", "value": 78, "fullMark": 100 },
-    { "subject": "기술이해", "value": 70, "fullMark": 100 },
-    { "subject": "창의성", "value": 68, "fullMark": 100 },
-    { "subject": "핵심반복구조", "value": 60, "fullMark": 100 },
-    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100 },
-    { "subject": "재화흐름", "value": 40, "fullMark": 100 },
-    { "subject": "플레이경험", "value": 65, "fullMark": 100 },
-    { "subject": "수치데이터", "value": 30, "fullMark": 100 },
-    { "subject": "기능연결", "value": 50, "fullMark": 100 },
-    { "subject": "동기부여", "value": 45, "fullMark": 100 },
-    { "subject": "난이도균형", "value": 35, "fullMark": 100 },
-    { "subject": "화면조작", "value": 55, "fullMark": 100 },
-    { "subject": "개발일정", "value": 40, "fullMark": 100 }
+    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "문제 정의와 해결 과정의 논리적 흐름에 대한 1~2문장 구체적 피드백" },
+    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "수치, 데이터, KPI 포함 여부에 대한 1~2문장 구체적 피드백" },
+    { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "문서 구조와 정리 상태에 대한 1~2문장 구체적 피드백" },
+    { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "게임 개발 기술 이해도에 대한 1~2문장 구체적 피드백" },
+    { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "독창적 아이디어에 대한 1~2문장 구체적 피드백" },
+    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "핵심 반복 구조에 대한 1~2문장 구체적 피드백" },
+    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "콘텐츠 분류 체계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "재화 흐름 설계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "플레이 경험 목표에 대한 1~2문장 구체적 피드백" },
+    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "수치 데이터 정리에 대한 1~2문장 구체적 피드백" },
+    { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "기능 간 연결 관계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "동기 부여 설계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "난이도 균형에 대한 1~2문장 구체적 피드백" },
+    { "subject": "화면조작", "value": 55, "fullMark": 100, "feedback": "화면 및 조작 설계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "개발일정", "value": 40, "fullMark": 100, "feedback": "개발 일정 및 산출물에 대한 1~2문장 구체적 피드백" }
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "합격자들과 비교해서 이 문서에 가장 부족한 점을 3~4문장으로 설명. 어떤 회사의 합격 기준에 못 미치는지, 구체적으로 무엇을 보완해야 합격 수준에 도달할 수 있는지 실질적인 조언을 포함."
+  "companyFeedback": "회사별 합격자 특징을 주어로 시작하여 비교. 예: '넥슨 합격자들은 수치 기반 시스템 설계가 탄탄하고, 크래프톤 합격자들은 전투 경험 목표가 구체적입니다. 이 문서는 ~가 부족하여 합격 수준에 도달하려면 ~를 보완해야 합니다.' 3~4문장으로. 절대 '~사례처럼', '~처럼' 표현 금지. 사용자는 합격자 포트폴리오를 볼 수 없으므로 '합격자들은 ~한 특징이 있다'는 식으로 서술."
 }`
 
     const anthropic = new Anthropic({ apiKey })
@@ -413,19 +414,26 @@ ${referenceStats}
       rank = Math.max(1, Math.min(DISPLAY_TOTAL, DISPLAY_TOTAL - Math.round((percentile / 100) * DISPLAY_TOTAL)))
     }
 
-    // 회사별 비교 데이터
+    // 회사별 비교 데이터 - 모든 회사 항상 표시 (데이터 없으면 전체 평균 사용)
     const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
-    const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스"]
+    const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스", "엔씨소프트"]
     targetCompanies.forEach(company => {
       const matchedEntry = Object.entries(companyStats).find(([key]) =>
         key.includes(company) || company.includes(key)
       )
       if (matchedEntry && matchedEntry[1].count > 0) {
         companyComparison.push({
-          company: matchedEntry[0],
+          company,
           avgScore: Math.round(matchedEntry[1].total / matchedEntry[1].count),
           userScore: analysis.score,
           sampleCount: matchedEntry[1].count,
+        })
+      } else {
+        companyComparison.push({
+          company,
+          avgScore: avgScores.overall,
+          userScore: analysis.score,
+          sampleCount: 0,
         })
       }
     })
@@ -459,6 +467,7 @@ ${referenceStats}
       strengths: analysis.strengths,
       weaknesses: analysis.weaknesses,
       ranking: analysisData.ranking,
+      companyFeedback: analysis.companyFeedback || "",
     }).catch(() => {})
 
     return { data: analysisData }
@@ -603,6 +612,7 @@ ${referenceStats}
 2. **거짓 칭찬 금지**: 비교연구가 없으면 "비교연구가 우수하다"고 하지 마세요. 없는 것은 보완점에 넣으세요.
 3. **강점과 보완점이 모순되면 안 됩니다!** 강점에서 "수치 데이터 제시가 좋다"고 하고 보완점에서 "수치 데이터 부족"이라고 하면 안 됩니다. 하나의 주제는 강점 또는 보완점 중 하나에만 넣으세요. 해당 주제가 부분적으로 잘 되어있다면, 구체적으로 어떤 부분이 잘 되어있고 어떤 부분이 부족한지 다른 관점으로 나눠서 작성하세요.
 4. **"합격 사례 1번", "합격 사례 3번"처럼 특정 번호를 절대 언급하지 마세요.** 사용자는 학습 데이터를 볼 수 없습니다.
+4-1. **companyFeedback에서 "~사례처럼", "~처럼" 표현 절대 금지.** 사용자는 합격자 포트폴리오를 볼 수 없습니다. "넥슨 합격자들은 ~한 특징이 있습니다"처럼 합격자 특징을 주어로 서술하세요.
 5. **점수에 후하게 주지 마세요.** 부족한 부분은 확실히 낮은 점수를 주세요. 대부분의 문서는 60~80점대입니다.
 6. 강점/보완점은 반드시 **문서에서 실제로 확인된 구체적 내용**을 근거로 작성하세요.
 7. **강점 6개, 보완점 6개**를 반드시 작성하세요. 각각 서로 다른 관점이어야 합니다.
@@ -649,21 +659,21 @@ ${referenceStats}
 {
   "score": 72,
   "categories": [
-    { "subject": "논리력", "value": 75, "fullMark": 100 },
-    { "subject": "구체성", "value": 65, "fullMark": 100 },
-    { "subject": "가독성", "value": 78, "fullMark": 100 },
-    { "subject": "기술이해", "value": 70, "fullMark": 100 },
-    { "subject": "창의성", "value": 68, "fullMark": 100 },
-    { "subject": "핵심반복구조", "value": 60, "fullMark": 100 },
-    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100 },
-    { "subject": "재화흐름", "value": 40, "fullMark": 100 },
-    { "subject": "플레이경험", "value": 65, "fullMark": 100 },
-    { "subject": "수치데이터", "value": 30, "fullMark": 100 },
-    { "subject": "기능연결", "value": 50, "fullMark": 100 },
-    { "subject": "동기부여", "value": 45, "fullMark": 100 },
-    { "subject": "난이도균형", "value": 35, "fullMark": 100 },
-    { "subject": "화면조작", "value": 55, "fullMark": 100 },
-    { "subject": "개발일정", "value": 40, "fullMark": 100 }
+    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "문제 정의와 해결 과정의 논리적 흐름에 대한 1~2문장 구체적 피드백" },
+    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "수치, 데이터, KPI 포함 여부에 대한 1~2문장 구체적 피드백" },
+    { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "문서 구조와 정리 상태에 대한 1~2문장 구체적 피드백" },
+    { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "게임 개발 기술 이해도에 대한 1~2문장 구체적 피드백" },
+    { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "독창적 아이디어에 대한 1~2문장 구체적 피드백" },
+    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "핵심 반복 구조에 대한 1~2문장 구체적 피드백" },
+    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "콘텐츠 분류 체계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "재화 흐름 설계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "플레이 경험 목표에 대한 1~2문장 구체적 피드백" },
+    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "수치 데이터 정리에 대한 1~2문장 구체적 피드백" },
+    { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "기능 간 연결 관계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "동기 부여 설계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "난이도 균형에 대한 1~2문장 구체적 피드백" },
+    { "subject": "화면조작", "value": 55, "fullMark": 100, "feedback": "화면 및 조작 설계에 대한 1~2문장 구체적 피드백" },
+    { "subject": "개발일정", "value": 40, "fullMark": 100, "feedback": "개발 일정 및 산출물에 대한 1~2문장 구체적 피드백" }
   ],
   "strengths": [
     "강점1 - 구체적 근거 (예: 4가지 구역으로 기능별 분리한 맵 구조가 체계적)",
@@ -681,7 +691,7 @@ ${referenceStats}
     "보완점5 - 기술적 관점에서 부족한 점",
     "보완점6 - 개선 방향 제시"
   ],
-  "companyFeedback": "합격자들과 비교해서 이 문서에 가장 부족한 점을 3~4문장으로 설명. 어떤 회사의 합격 기준에 못 미치는지, 구체적으로 무엇을 보완해야 합격 수준에 도달할 수 있는지 실질적인 조언을 포함."
+  "companyFeedback": "회사별 합격자 특징을 주어로 시작하여 비교. 예: '넥슨 합격자들은 수치 기반 시스템 설계가 탄탄하고, 크래프톤 합격자들은 전투 경험 목표가 구체적입니다. 이 문서는 ~가 부족하여 합격 수준에 도달하려면 ~를 보완해야 합니다.' 3~4문장으로. 절대 '~사례처럼', '~처럼' 표현 금지. 사용자는 합격자 포트폴리오를 볼 수 없으므로 '합격자들은 ~한 특징이 있다'는 식으로 서술."
 }
 
 **핵심**: 문서를 꼼꼼히 읽고, 실제로 있는 내용만 강점으로, 실제로 없거나 부족한 내용은 보완점으로 작성하세요. 빈말 칭찬은 사용자에게 해롭습니다.`
@@ -774,26 +784,29 @@ ${referenceStats}
         rank = Math.max(1, Math.min(DISPLAY_TOTAL, DISPLAY_TOTAL - Math.round((percentile / 100) * DISPLAY_TOTAL)))
       }
 
-      // 회사별 비교 데이터 - 실제 데이터가 있는 회사만 표시 (일반게임회사 제외)
+      // 회사별 비교 데이터 - 모든 회사 항상 표시 (데이터 없으면 전체 평균 사용)
       const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
-
-      // 실제 학습 데이터가 있는 회사만 추가
-      const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스"]
+      const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스", "엔씨소프트"]
       targetCompanies.forEach(company => {
         const matchedEntry = Object.entries(companyStats).find(([key]) =>
           key.includes(company) || company.includes(key)
         )
         if (matchedEntry && matchedEntry[1].count > 0) {
           companyComparison.push({
-            company: matchedEntry[0],
+            company,
             avgScore: Math.round(matchedEntry[1].total / matchedEntry[1].count),
             userScore: analysis.score,
             sampleCount: matchedEntry[1].count,
           })
+        } else {
+          companyComparison.push({
+            company,
+            avgScore: avgScores.overall,
+            userScore: analysis.score,
+            sampleCount: 0,
+          })
         }
       })
-
-      // "전체 합격자" 항상 추가 (전체 평균)
       companyComparison.push({
         company: "전체 합격자",
         avgScore: avgScores.overall,
@@ -826,6 +839,7 @@ ${referenceStats}
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
         ranking: analysisData.ranking,
+        companyFeedback: analysis.companyFeedback || "",
       }).catch(() => {})
 
       return { data: analysisData }

@@ -9,6 +9,7 @@ import { getUser } from "@/app/actions/auth"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
+import { DesignScores } from "@/components/design-scores"
 import { VersionComparison } from "@/components/version-comparison"
 
 type Subscription = {
@@ -614,6 +615,14 @@ export default function MyPage() {
                   )}
                   {(detail.strengths?.length > 0 || detail.weaknesses?.length > 0) && (
                     <FeedbackCards strengths={detail.strengths || []} weaknesses={detail.weaknesses || []} />
+                  )}
+                  {detail.categories?.length > 0 && (
+                    <DesignScores data={detail.categories} />
+                  )}
+                  {detail.company_feedback && (
+                    <div className="p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
+                      <p className="text-sm text-slate-300 leading-relaxed">{detail.company_feedback}</p>
+                    </div>
                   )}
                   {/* 다시 분석하기 버튼 */}
                   {selectedProject && (

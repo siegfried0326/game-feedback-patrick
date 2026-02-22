@@ -29,6 +29,7 @@ type AnalysisResult = {
     subject: string
     value: number
     fullMark: number
+    feedback?: string
   }[]
   strengths: string[]
   weaknesses: string[]

@@ -35,8 +35,7 @@ const plans = [
       "수정본 재검토 무제한",
     ],
     cta: "구독 시작하기",
-    href: "https://desk.channel.io/#/channels/227321/team_chats/groups/536162",
-    isExternal: true,
+    href: "/payment/billing?plan=monthly",
     highlighted: true,
   },
   {
@@ -55,8 +54,7 @@ const plans = [
       "우선 순위 피드백",
     ],
     cta: "3개월 패스 구매",
-    href: "https://desk.channel.io/#/channels/227321/team_chats/groups/536162",
-    isExternal: true,
+    href: "/payment/billing?plan=three_month",
     highlighted: false,
   },
 ]
@@ -144,11 +142,7 @@ export default function PricingPage() {
                     : "bg-[#162a4a] hover:bg-[#1e3a5f] text-white"
                 }`}
               >
-                {plan.isExternal ? (
-                  <a href={plan.href} target="_blank" rel="noopener noreferrer">{plan.cta}</a>
-                ) : (
-                  <Link href={plan.href}>{plan.cta}</Link>
-                )}
+                <Link href={plan.href}>{plan.cta}</Link>
               </Button>
             </div>
           ))}

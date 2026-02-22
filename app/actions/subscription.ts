@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { deleteBillingKey } from "./payment"
 
 export async function getSubscription() {
   const supabase = await createClient()
@@ -46,12 +47,18 @@ export async function cancelSubscription() {
   if (subscription.plan === "free") return { error: "무료 체험은 해지할 수 없습니다." }
   if (subscription.status === "cancelled") return { error: "이미 해지된 구독입니다." }
 
+  // 빌링키가 있으면 토스페이먼츠에서 삭제
+  if (subscription.billing_key) {
+    await deleteBillingKey(subscription.billing_key)
+  }
+
   const { error } = await supabase
     .from("users_subscription")
     .update({
       status: "cancelled",
       cancelled_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      billing_key: null,
     })
     .eq("user_id", user.id)
 

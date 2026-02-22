@@ -556,6 +556,16 @@ export default function MyPage() {
                   {(detail.strengths?.length > 0 || detail.weaknesses?.length > 0) && (
                     <FeedbackCards strengths={detail.strengths || []} weaknesses={detail.weaknesses || []} />
                   )}
+                  {/* 다시 분석하기 버튼 */}
+                  {selectedProject && (
+                    <div className="flex justify-center pt-4">
+                      <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                        <Link href={`/analyze?projectId=${selectedProject.id}`} onClick={() => setSelectedAnalysis(null)}>
+                          수정본 다시 분석하기
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </>
               ) : <p className="text-slate-400 text-center py-8">데이터를 불러올 수 없습니다.</p>}
             </div>

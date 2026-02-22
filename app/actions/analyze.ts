@@ -362,44 +362,35 @@ ${referenceStats}
         rank = Math.max(1, Math.min(DISPLAY_TOTAL, DISPLAY_TOTAL - Math.round((percentile / 100) * DISPLAY_TOTAL)))
       }
 
+      // 일반게임회사(전체 합격자) 평균 계산 - 데이터 없는 회사의 fallback
+      const generalCompanyKey = Object.keys(companyStats).find(k => k.includes("일반게임회사"))
+      const generalAvg = generalCompanyKey
+        ? Math.round(companyStats[generalCompanyKey].total / companyStats[generalCompanyKey].count)
+        : avgScores.overall
+
       // 회사별 비교 데이터 - 6개 회사 고정 슬롯
       const fixedCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠"]
       const companyComparison = fixedCompanies.map(company => {
-        // 학습 데이터에서 해당 회사 찾기 (부분 매칭)
         const matchedEntry = Object.entries(companyStats).find(([key]) =>
           key.includes(company) || company.includes(key)
         )
-        if (matchedEntry) {
-          const [matchedName, stat] = matchedEntry
-          return {
-            company: matchedName,
-            avgScore: Math.round(stat.total / stat.count),
-            userScore: analysis.score,
-            sampleCount: stat.count,
-          }
-        }
-        // 데이터 없으면 null 표시용
         return {
-          company,
-          avgScore: 0,
+          company: matchedEntry ? matchedEntry[0] : company,
+          avgScore: matchedEntry
+            ? Math.round(matchedEntry[1].total / matchedEntry[1].count)
+            : generalAvg,
           userScore: analysis.score,
-          sampleCount: 0,
         }
       })
 
-      // 고정 6개 + 기타 데이터 있는 회사 추가
-      const otherCompanies = Object.entries(companyStats)
-        .filter(([key]) => !fixedCompanies.some(fc => key.includes(fc) || fc.includes(key)))
-        .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, 2)
-        .map(([company, stat]) => ({
-          company,
-          avgScore: Math.round(stat.total / stat.count),
-          userScore: analysis.score,
-          sampleCount: stat.count,
-        }))
+      // "전체 합격자" 슬롯 추가
+      companyComparison.push({
+        company: "전체 합격자",
+        avgScore: generalAvg,
+        userScore: analysis.score,
+      })
 
-      const allCompanyComparison = [...companyComparison, ...otherCompanies]
+      const allCompanyComparison = companyComparison
 
       const analysisData = {
         score: analysis.score,

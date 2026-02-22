@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -54,6 +54,14 @@ type FileStatus = {
 
 const MAX_FILES = 20
 
+function getGrade(score: number): { grade: string; color: string } {
+  if (score >= 90) return { grade: "S", color: "bg-purple-500" }
+  if (score >= 80) return { grade: "A", color: "bg-emerald-500" }
+  if (score >= 70) return { grade: "B", color: "bg-blue-500" }
+  if (score >= 60) return { grade: "C", color: "bg-amber-500" }
+  return { grade: "D", color: "bg-red-500" }
+}
+
 export function AnalyzeDashboard() {
   const searchParams = useSearchParams()
   const preselectedProjectId = searchParams.get("projectId")
@@ -80,6 +88,7 @@ export function AnalyzeDashboard() {
   const [newProjectName, setNewProjectName] = useState("")
   const [creatingProject, setCreatingProject] = useState(false)
   const [canCreateProject, setCanCreateProject] = useState(true)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   // 페이지 로드 시 구독 상태 + 프로젝트 목록 체크
   useEffect(() => {
@@ -213,6 +222,10 @@ export function AnalyzeDashboard() {
 
     setStatusMessage("")
     setIsAnalyzing(false)
+    // 결과 영역으로 스크롤
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 200)
   }
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -336,6 +349,30 @@ export function AnalyzeDashboard() {
         {/* ========== 프로젝트 선택 ========== */}
         {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
           <Card className="mb-6 bg-slate-900/80 border-[#1e3a5f]">
+            {/* 프로젝트 1개 + 선택됨: 간소화 표시 */}
+            {projects.length === 1 && selectedProjectId ? (
+              <CardContent className="py-4 px-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FolderOpen className="w-4 h-4 text-[#5B8DEF]" />
+                    <span className="text-white text-sm font-medium">{projects[0].name}</span>
+                    <span className="text-xs text-slate-500">
+                      {projects[0].analysis_count}개 분석
+                      {projects[0].best_score !== null && ` · 최고 ${projects[0].best_score}점`}
+                    </span>
+                  </div>
+                  {canCreateProject && (
+                    <button
+                      onClick={() => { setShowNewProject(true); setSelectedProjectId(null) }}
+                      className="text-xs text-[#5B8DEF] hover:underline"
+                    >
+                      + 새 프로젝트
+                    </button>
+                  )}
+                </div>
+              </CardContent>
+            ) : (
+            <>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white text-base">
                 <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
@@ -433,6 +470,8 @@ export function AnalyzeDashboard() {
                 )}
               </div>
             </CardContent>
+            </>
+            )}
           </Card>
         )}
 
@@ -564,7 +603,7 @@ export function AnalyzeDashboard() {
 
         {/* Analysis Results */}
         {results.length > 0 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div ref={resultsRef} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2 text-[#5B8DEF]">
                 <CheckCircle2 className="w-5 h-5" />
@@ -600,14 +639,17 @@ export function AnalyzeDashboard() {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
                       currentIndex === idx
                         ? "bg-[#5B8DEF] text-white"
                         : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                     }`}
                   >
+                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-bold text-white ${getGrade(r.score).color}`}>
+                      {getGrade(r.score).grade}
+                    </span>
                     <span className="truncate max-w-[150px] inline-block align-middle">{r.fileName}</span>
-                    <span className="ml-2 text-xs opacity-70">{r.score}점</span>
+                    <span className="text-xs opacity-70">{r.score}점</span>
                   </button>
                 ))}
               </div>
@@ -688,26 +730,6 @@ export function AnalyzeDashboard() {
                           <p className="text-white font-semibold text-base mb-4">회사별 합격자 평균 vs 내 점수</p>
                           <div className="grid sm:grid-cols-2 gap-3">
                             {ranking.companyComparison.map((comp, idx) => {
-                              const hasData = comp.sampleCount && comp.sampleCount > 0
-                              if (!hasData) {
-                                return (
-                                  <div key={idx} className="p-4 rounded-xl border border-slate-700/50 bg-slate-800/30">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className="text-slate-400 font-medium text-sm">{comp.company}</span>
-                                      <span className="text-xs text-slate-600 bg-slate-700/50 px-2 py-0.5 rounded">준비중</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <div className="flex-1">
-                                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                                          <div className="h-full rounded-full bg-slate-700 w-0" />
-                                        </div>
-                                      </div>
-                                      <span className="text-xs text-slate-600 w-16 text-right">- 점</span>
-                                    </div>
-                                    <p className="text-xs text-slate-700 mt-1">데이터 수집중</p>
-                                  </div>
-                                )
-                              }
                               const diff = results[currentIndex].score - comp.avgScore
                               const isAbove = diff >= 0
                               return (
@@ -729,7 +751,6 @@ export function AnalyzeDashboard() {
                                     </div>
                                     <span className="text-xs text-slate-400 w-16 text-right">평균 {comp.avgScore}점</span>
                                   </div>
-                                  <p className="text-xs text-slate-600 mt-1">{comp.sampleCount}개 합격 샘플</p>
                                 </div>
                               )
                             })}

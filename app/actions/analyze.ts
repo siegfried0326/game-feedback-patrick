@@ -123,6 +123,313 @@ async function getModelForUser(): Promise<string> {
   return "claude-sonnet-4-20250514"
 }
 
+// URL 웹페이지 크롤링 → Claude 분석
+export async function analyzeUrlDirect(input: {
+  projectId: string
+  url: string
+}) {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
+  }
+
+  try {
+    const supabase = await createClient()
+
+    // 웹페이지 HTML 가져오기
+    let pageContent = ""
+    try {
+      const response = await fetch(input.url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; GameFeedbackBot/1.0)",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        signal: AbortSignal.timeout(30000),
+      })
+
+      if (!response.ok) {
+        return { error: `웹 페이지를 가져올 수 없습니다. (HTTP ${response.status})` }
+      }
+
+      const html = await response.text()
+
+      // HTML에서 텍스트 추출 (간단한 태그 제거)
+      pageContent = html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
+        .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "")
+        .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim()
+
+      // 너무 짧으면 오류
+      if (pageContent.length < 100) {
+        return { error: "페이지에서 충분한 텍스트를 추출할 수 없습니다. 공개 접근이 가능한 URL인지 확인해 주세요." }
+      }
+
+      // 너무 길면 잘라내기 (Claude 컨텍스트 제한)
+      if (pageContent.length > 100000) {
+        pageContent = pageContent.substring(0, 100000)
+      }
+    } catch (fetchError: unknown) {
+      if (fetchError instanceof Error && fetchError.name === "TimeoutError") {
+        return { error: "웹 페이지 응답 시간이 초과되었습니다. URL을 다시 확인해 주세요." }
+      }
+      return { error: "웹 페이지를 가져올 수 없습니다. URL이 올바르고 공개 접근이 가능한지 확인해 주세요." }
+    }
+
+    // 이하 분석 로직은 analyzeDocumentDirect와 동일한 패턴
+    const { data: portfolios } = await supabase
+      .from("portfolios")
+      .select("file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type")
+      .order("overall_score", { ascending: false })
+      .limit(50)
+
+    let referenceStats = ""
+    const companyStats: Record<string, { total: number; count: number }> = {}
+
+    let avgScores = {
+      overall: 85, logic: 85, specificity: 85, readability: 85, technical: 85, creativity: 85,
+    }
+
+    if (portfolios && portfolios.length > 0) {
+      avgScores = {
+        overall: Math.round(portfolios.reduce((a, b) => a + (b.overall_score || 0), 0) / portfolios.length),
+        logic: Math.round(portfolios.reduce((a, b) => a + (b.logic_score || 0), 0) / portfolios.length),
+        specificity: Math.round(portfolios.reduce((a, b) => a + (b.specificity_score || 0), 0) / portfolios.length),
+        readability: Math.round(portfolios.reduce((a, b) => a + (b.readability_score || 0), 0) / portfolios.length),
+        technical: Math.round(portfolios.reduce((a, b) => a + (b.technical_score || 0), 0) / portfolios.length),
+        creativity: Math.round(portfolios.reduce((a, b) => a + (b.creativity_score || 0), 0) / portfolios.length),
+      }
+
+      portfolios.forEach(p => {
+        (p.companies as string[] || []).forEach((company: string) => {
+          if (!companyStats[company]) {
+            companyStats[company] = { total: 0, count: 0 }
+          }
+          companyStats[company].total += p.overall_score || 0
+          companyStats[company].count += 1
+        })
+      })
+
+      const allTags = portfolios.flatMap(p => p.tags || [])
+      const tagCounts = allTags.reduce((acc: Record<string, number>, tag: string) => {
+        acc[tag] = (acc[tag] || 0) + 1
+        return acc
+      }, {})
+      const topTags = Object.entries(tagCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([tag]) => tag)
+
+      const topExamples = portfolios.slice(0, 10).map((p, idx) => {
+        const strengthsList = (p.strengths || []).slice(0, 3).map(s => `  · ${s}`).join("\n")
+        const weaknessesList = (p.weaknesses || []).slice(0, 2).map(w => `  · ${w}`).join("\n")
+        return `
+### 합격 사례 ${idx + 1}: ${p.file_name} (${p.overall_score}점)
+- 지원사: ${(p.companies || []).join(", ")}
+- 문서유형: ${p.document_type || "포트폴리오"}
+- 점수: 논리 ${p.logic_score}점 | 구체성 ${p.specificity_score}점 | 가독성 ${p.readability_score}점 | 기술이해 ${p.technical_score}점 | 창의성 ${p.creativity_score}점
+- 핵심 강점:
+${strengthsList}
+${weaknessesList ? `- 개선 필요:
+${weaknessesList}` : ""}
+- 요약: ${p.summary || "N/A"}
+`
+      }).join("\n")
+
+      referenceStats = `
+## 📊 학습 데이터 기반 비교 분석 (실제 합격 포트폴리오 ${portfolios.length}개)
+
+### 전체 통계
+- 전체 평균: ${avgScores.overall}점
+- 논리력 평균: ${avgScores.logic}점 | 구체성 평균: ${avgScores.specificity}점
+- 가독성 평균: ${avgScores.readability}점 | 기술이해 평균: ${avgScores.technical}점
+- 창의성 평균: ${avgScores.creativity}점
+- 주요 키워드: ${topTags.join(", ")}
+
+### 회사별 평균 점수
+${Object.entries(companyStats).slice(0, 8).map(([company, stat]) =>
+  `- ${company}: ${Math.round(stat.total / stat.count)}점 (${stat.count}개 샘플)`
+).join("\n")}
+
+---
+
+## 🎯 실제 합격 포트폴리오 패턴 분석
+${topExamples}
+
+---
+
+## ⚠️ 평가 시 주의사항
+위 합격 사례들의 **공통 패턴**, **강점 요소**, **문서 구조**를 참고하여 현재 문서를 평가하세요.
+특히 다음을 확인:
+1. 합격 사례들이 공통적으로 가진 강점을 현재 문서도 갖추었는가?
+2. 합격 사례들의 평균 점수 대비 현재 문서의 수준은?
+3. 같은 회사 지원 사례가 있다면, 그 수준과 비교했을 때?
+`
+    }
+
+    const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
+${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
+
+${referenceStats}
+
+---
+
+## 🚨 절대 규칙 (반드시 지켜야 함!)
+1. **문서에 실제로 있는 내용만 언급하세요.** 문서에 없는 내용을 있다고 하면 안 됩니다.
+2. **거짓 칭찬 금지**: 비교연구가 없으면 "비교연구가 우수하다"고 하지 마세요. 없는 것은 보완점에 넣으세요.
+3. **강점과 보완점이 모순되면 안 됩니다!** 강점에서 "수치 데이터 제시가 좋다"고 하고 보완점에서 "수치 데이터 부족"이라고 하면 안 됩니다. 하나의 주제는 강점 또는 보완점 중 하나에만 넣으세요.
+4. **"합격 사례 1번", "합격 사례 3번"처럼 특정 번호를 절대 언급하지 마세요.** 사용자는 학습 데이터를 볼 수 없습니다.
+5. **점수에 후하게 주지 마세요.** 부족한 부분은 확실히 낮은 점수를 주세요. 대부분의 문서는 60~80점대입니다.
+6. 강점/보완점은 반드시 **문서에서 실제로 확인된 구체적 내용**을 근거로 작성하세요.
+7. **강점 6개, 보완점 6개**를 반드시 작성하세요. 각각 서로 다른 관점이어야 합니다.
+8. **이 문서는 웹 페이지(URL)에서 추출된 텍스트입니다.** 원본은 웹 페이지이므로 시각적 요소(이미지, 레이아웃)는 평가할 수 없습니다. 텍스트 내용 중심으로 평가하세요.
+
+## 📋 평가 방법
+합격 사례들의 공통 패턴과 비교하여 현재 문서를 평가하세요:
+1. **문서 구조**: 합격 문서들은 체계적 구조를 가짐. 현재 문서는?
+2. **수치/데이터**: 합격 문서들은 구체적 KPI, 수치 목표가 있음. 현재 문서는?
+3. **비교 분석**: 합격 문서들은 레퍼런스 분석, 경쟁 타이틀 비교가 있음. 현재 문서는?
+4. **기술적 깊이**: 합격 문서들은 기술 구현 방안, 제약사항을 다룸. 현재 문서는?
+5. **콘텐츠 깊이**: 내용의 전문성과 깊이가 합격 수준인지?
+
+## 평가 항목 (각 0-100점, 엄격하게!)
+1. **논리력**: 문제 정의 → 가설 → 해결 → 결과의 논리적 흐름.
+2. **구체성**: 수치, 데이터, KPI 포함 여부.
+3. **가독성**: 문서 구조, 정리 상태.
+4. **기술이해**: 게임 개발 기술, 용어, 파이프라인에 대한 이해도.
+5. **창의성**: 독창적인 아이디어, 차별화 요소.
+
+## 점수 기준 (합격자 평균: ${avgScores.overall}점)
+- 90-100점: 즉시 합격 수준
+- 80-89점: 합격 가능 수준
+- 70-79점: 보완 필요
+- 60-69점: 상당한 보완 필요
+- 60점 미만: 전면 재작성 권장
+
+## 응답 형식 (반드시 JSON만 출력, 다른 텍스트 없이)
+{
+  "score": 72,
+  "categories": [
+    { "subject": "논리력", "value": 75, "fullMark": 100 },
+    { "subject": "구체성", "value": 65, "fullMark": 100 },
+    { "subject": "가독성", "value": 78, "fullMark": 100 },
+    { "subject": "기술이해", "value": 70, "fullMark": 100 },
+    { "subject": "창의성", "value": 68, "fullMark": 100 }
+  ],
+  "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
+  "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"]
+}`
+
+    const anthropic = new Anthropic({ apiKey })
+    const selectedModel = await getModelForUser()
+
+    const message = await anthropic.messages.create({
+      model: selectedModel,
+      max_tokens: 4096,
+      messages: [
+        {
+          role: "user",
+          content: `아래는 웹 페이지(${input.url})에서 추출한 텍스트 내용입니다. 이 내용을 게임 기획 포트폴리오로서 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요.\n\n---\n\n${pageContent}`,
+        },
+      ],
+      system: systemPrompt,
+    })
+
+    // 응답 텍스트 추출
+    const responseText = message.content
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map(block => block.text)
+      .join("")
+
+    // JSON 파싱
+    let jsonStr = responseText
+    const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      jsonStr = jsonMatch[1]
+    } else {
+      const objectMatch = responseText.match(/\{[\s\S]*\}/)
+      if (objectMatch) {
+        jsonStr = objectMatch[0]
+      }
+    }
+
+    const analysis = JSON.parse(jsonStr)
+
+    // 랭킹 계산
+    const DISPLAY_TOTAL = 187
+    const actualTotal = portfolios?.length || 0
+    let percentile = 50
+    let rank = Math.round(DISPLAY_TOTAL / 2)
+    if (actualTotal > 0) {
+      const betterThan = portfolios!.filter(p => (p.overall_score || 0) < analysis.score).length
+      percentile = Math.round((betterThan / actualTotal) * 100)
+      rank = Math.max(1, Math.min(DISPLAY_TOTAL, DISPLAY_TOTAL - Math.round((percentile / 100) * DISPLAY_TOTAL)))
+    }
+
+    // 회사별 비교 데이터
+    const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
+    const targetCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠", "엔씨소프트", "스마일게이트", "매드엔진"]
+    targetCompanies.forEach(company => {
+      const matchedEntry = Object.entries(companyStats).find(([key]) =>
+        key.includes(company) || company.includes(key)
+      )
+      if (matchedEntry && matchedEntry[1].count > 0) {
+        companyComparison.push({
+          company: matchedEntry[0],
+          avgScore: Math.round(matchedEntry[1].total / matchedEntry[1].count),
+          userScore: analysis.score,
+          sampleCount: matchedEntry[1].count,
+        })
+      }
+    })
+    companyComparison.push({
+      company: "전체 합격자",
+      avgScore: avgScores.overall,
+      userScore: analysis.score,
+      sampleCount: portfolios?.length || 0,
+    })
+
+    const analysisData = {
+      score: analysis.score,
+      categories: analysis.categories,
+      strengths: analysis.strengths,
+      weaknesses: analysis.weaknesses,
+      ranking: {
+        total: DISPLAY_TOTAL,
+        percentile,
+        rank,
+        companyComparison,
+      }
+    }
+
+    // 분석 이력 저장
+    saveAnalysisHistory({
+      projectId: input.projectId,
+      fileName: input.url,
+      score: analysis.score,
+      categories: analysis.categories,
+      strengths: analysis.strengths,
+      weaknesses: analysis.weaknesses,
+      ranking: analysisData.ranking,
+    }).catch(() => {})
+
+    return { data: analysisData }
+  } catch (error) {
+    console.error("URL Analysis error:", error)
+    return { error: "URL 분석 중 오류가 발생했습니다. 다시 시도해 주세요." }
+  }
+}
+
 // Claude API로 문서 분석
 export async function analyzeDocumentDirect(input: {
   projectId: string

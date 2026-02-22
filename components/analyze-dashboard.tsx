@@ -2,14 +2,14 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Link2, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
-import { uploadFileToStorage, analyzeDocumentDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
+import { uploadFileToStorage, analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -88,6 +88,9 @@ export function AnalyzeDashboard() {
   const [newProjectName, setNewProjectName] = useState("")
   const [creatingProject, setCreatingProject] = useState(false)
   const [canCreateProject, setCanCreateProject] = useState(true)
+  const [uploadMode, setUploadMode] = useState<"file" | "url">("file")
+  const [urlInput, setUrlInput] = useState("")
+  const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   // 페이지 로드 시 구독 상태 + 프로젝트 목록 체크
@@ -251,6 +254,57 @@ export function AnalyzeDashboard() {
     }
   }, [selectedProjectId])
 
+  // URL 분석
+  const handleAnalyzeUrl = async () => {
+    if (!selectedProjectId) {
+      setError("프로젝트를 먼저 선택해 주세요.")
+      return
+    }
+    if (!urlInput.trim()) {
+      setError("URL을 입력해 주세요.")
+      return
+    }
+
+    // URL 유효성 간단 체크
+    let url = urlInput.trim()
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url
+    }
+
+    setIsAnalyzingUrl(true)
+    setIsAnalyzing(true)
+    setError(null)
+    setResults([])
+    setStatusMessage("웹 페이지를 가져오는 중...")
+
+    try {
+      const result = await analyzeUrlDirect({
+        projectId: selectedProjectId,
+        url,
+      })
+
+      if (result.error) {
+        setError(result.error)
+      } else if (result.data) {
+        const analysisResult = {
+          ...result.data,
+          fileName: url,
+        } as AnalysisResult
+        setResults([analysisResult])
+      }
+    } catch (err) {
+      console.error("URL analysis error:", err)
+      setError("URL 분석 중 오류가 발생했습니다. 다시 시도해 주세요.")
+    } finally {
+      setIsAnalyzingUrl(false)
+      setIsAnalyzing(false)
+      setStatusMessage("")
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 200)
+    }
+  }
+
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
@@ -260,6 +314,10 @@ export function AnalyzeDashboard() {
     accept: {
       "application/pdf": [".pdf"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
+      "application/vnd.ms-powerpoint": [".ppt"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+      "application/vnd.ms-excel": [".xls"],
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
@@ -492,92 +550,158 @@ export function AnalyzeDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Upload className="w-5 h-5 text-[#5B8DEF]" />
-                문서 업로드
+                문서 분석
               </CardTitle>
+              {/* 파일 / URL 탭 */}
+              <div className="flex gap-1 mt-3 bg-slate-800/50 rounded-lg p-1">
+                <button
+                  onClick={() => setUploadMode("file")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    uploadMode === "file"
+                      ? "bg-[#5B8DEF] text-white"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  파일 업로드
+                </button>
+                <button
+                  onClick={() => setUploadMode("url")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    uploadMode === "url"
+                      ? "bg-[#5B8DEF] text-white"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Globe className="w-4 h-4" />
+                  URL 링크
+                </button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                  !selectedProjectId
-                    ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
-                    : isDragActive
-                    ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
-                    : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50 cursor-pointer"
-                }`}
-              >
-                <input {...getInputProps()} />
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-                    {selectedProjectId ? (
-                      <Upload className="w-8 h-8 text-slate-400" />
-                    ) : (
-                      <Lock className="w-8 h-8 text-slate-600" />
-                    )}
-                  </div>
-                  <div>
-                    {selectedProjectId ? (
-                      <>
-                        <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
-                        <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-medium text-slate-500">위에서 프로젝트를 먼저 선택해 주세요</p>
-                        <p className="text-sm text-slate-600 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
-                      </>
-                    )}
-                    <p className="text-xs text-slate-500 mt-2">PDF, DOCX, TXT · 최대 500MB</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 선택된 파일 목록 */}
-              {files.length > 0 && (
-                <div className="mt-6 space-y-2">
-                  <p className="text-sm text-slate-400 mb-3">선택된 파일</p>
-                  {files.map((fileStatus, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        fileStatus.status === "uploading" ? "bg-amber-500/10 border border-amber-500/30" :
-                        fileStatus.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30" :
-                        fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
-                        fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
-                        "bg-slate-800/50 border border-transparent"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {fileStatus.status === "uploading" ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                        ) : fileStatus.status === "analyzing" ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-[#5B8DEF]" />
-                        ) : fileStatus.status === "success" ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        ) : fileStatus.status === "error" ? (
-                          <AlertCircle className="w-4 h-4 text-red-400" />
+              {/* 파일 업로드 모드 */}
+              {uploadMode === "file" && (
+                <>
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                      !selectedProjectId
+                        ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
+                        : isDragActive
+                        ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
+                        : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50 cursor-pointer"
+                    }`}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
+                        {selectedProjectId ? (
+                          <Upload className="w-8 h-8 text-slate-400" />
                         ) : (
-                          <FileText className="w-4 h-4 text-slate-400" />
+                          <Lock className="w-8 h-8 text-slate-600" />
                         )}
-                        <div>
-                          <p className="text-sm text-white truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
-                          <p className="text-xs text-slate-500">
-                            {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
-                            {fileStatus.result && ` · ${fileStatus.result.score}점`}
-                            {fileStatus.error && ` · ${fileStatus.error}`}
-                          </p>
-                        </div>
                       </div>
-                      {!isAnalyzing && (
-                        <button
-                          onClick={() => removeFile(index)}
-                          className="text-slate-500 hover:text-red-400 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
+                      <div>
+                        {selectedProjectId ? (
+                          <>
+                            <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
+                            <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-medium text-slate-500">위에서 프로젝트를 먼저 선택해 주세요</p>
+                            <p className="text-sm text-slate-600 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
+                          </>
+                        )}
+                        <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 500MB</p>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* 선택된 파일 목록 */}
+                  {files.length > 0 && (
+                    <div className="mt-6 space-y-2">
+                      <p className="text-sm text-slate-400 mb-3">선택된 파일</p>
+                      {files.map((fileStatus, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-between p-3 rounded-lg ${
+                            fileStatus.status === "uploading" ? "bg-amber-500/10 border border-amber-500/30" :
+                            fileStatus.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30" :
+                            fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
+                            fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
+                            "bg-slate-800/50 border border-transparent"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {fileStatus.status === "uploading" ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                            ) : fileStatus.status === "analyzing" ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-[#5B8DEF]" />
+                            ) : fileStatus.status === "success" ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                            ) : fileStatus.status === "error" ? (
+                              <AlertCircle className="w-4 h-4 text-red-400" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-slate-400" />
+                            )}
+                            <div>
+                              <p className="text-sm text-white truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
+                              <p className="text-xs text-slate-500">
+                                {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
+                                {fileStatus.result && ` · ${fileStatus.result.score}점`}
+                                {fileStatus.error && ` · ${fileStatus.error}`}
+                              </p>
+                            </div>
+                          </div>
+                          {!isAnalyzing && (
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="text-slate-500 hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* URL 링크 모드 */}
+              {uploadMode === "url" && (
+                <div className={`${!selectedProjectId ? "opacity-50 pointer-events-none" : ""}`}>
+                  <div className="border-2 border-dashed border-[#1e3a5f] rounded-xl p-8">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
+                        <Link2 className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-medium text-white">웹 페이지 URL을 입력하세요</p>
+                        <p className="text-sm text-slate-400 mt-1">노션, 웹 포트폴리오, 블로그 등의 링크를 분석합니다</p>
+                      </div>
+                      <div className="w-full max-w-lg flex gap-2 mt-2">
+                        <input
+                          type="url"
+                          value={urlInput}
+                          onChange={e => setUrlInput(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && !isAnalyzingUrl && handleAnalyzeUrl()}
+                          placeholder="https://notion.so/... 또는 포트폴리오 URL"
+                          className="flex-1 bg-[#0d1b2a] border border-[#1e3a5f] rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#5B8DEF]"
+                          disabled={isAnalyzingUrl}
+                        />
+                        <Button
+                          onClick={handleAnalyzeUrl}
+                          disabled={isAnalyzingUrl || !urlInput.trim() || !selectedProjectId}
+                          className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-6"
+                        >
+                          {isAnalyzingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : "분석"}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-slate-500">Notion, 개인 웹사이트, 블로그, Google Docs(공개) 등</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -589,7 +713,7 @@ export function AnalyzeDashboard() {
                       {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
                     </span>
                   </div>
-                  <Progress value={((currentIndex + 1) / files.length) * 100} className="h-2" />
+                  <Progress value={isAnalyzingUrl ? 50 : ((currentIndex + 1) / Math.max(files.length, 1)) * 100} className="h-2" />
                 </div>
               )}
 

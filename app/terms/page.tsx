@@ -45,7 +45,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-white mb-3">제3조 (서비스 이용)</h2>
             <ul className="list-disc list-inside space-y-1">
               <li>서비스는 웹사이트를 통해 제공됩니다.</li>
-              <li>이용자는 PDF, DOCX, PPTX 등의 형식으로 문서를 업로드할 수 있습니다.</li>
+              <li>이용자는 PDF, DOCX, PPTX, XLSX 등의 파일을 업로드하거나 URL 링크를 입력하여 분석을 받을 수 있습니다.</li>
               <li>AI 분석 결과는 업로드 후 즉시 제공됩니다.</li>
               <li>최대 업로드 파일 크기는 500MB입니다.</li>
             </ul>
@@ -54,7 +54,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">제4조 (요금 및 결제)</h2>
             <ul className="list-disc list-inside space-y-1">
-              <li>무료 체험: 1회 무료 분석 제공</li>
+              <li>무료 체험: 총 2회 무료 분석 제공</li>
               <li>월 구독: 월 17,900원 - 무제한 문서 분석</li>
               <li>3개월 패스: 49,000원 - 3개월간 무제한 문서 분석</li>
               <li>결제는 토스페이먼츠를 통해 처리됩니다.</li>

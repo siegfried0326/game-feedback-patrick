@@ -2,8 +2,6 @@ import Link from "next/link"
 import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-const CHANNEL_TALK_URL = "https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
-
 const plans = [
   {
     name: "무료 체험",
@@ -17,7 +15,6 @@ const plans = [
     ],
     cta: "무료로 시작하기",
     href: "/analyze",
-    isExternal: false,
     highlighted: false
   },
   {
@@ -33,8 +30,7 @@ const plans = [
       "수정본 재검토 무제한"
     ],
     cta: "구독 시작하기",
-    href: CHANNEL_TALK_URL,
-    isExternal: true,
+    href: "/payment/billing?plan=monthly",
     highlighted: true
   },
   {
@@ -53,8 +49,7 @@ const plans = [
       "우선 순위 피드백"
     ],
     cta: "3개월 패스 구매",
-    href: CHANNEL_TALK_URL,
-    isExternal: true,
+    href: "/payment/billing?plan=three_month",
     highlighted: false
   }
 ]
@@ -78,11 +73,11 @@ export function PricingSection() {
 
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {plans.map((plan, index) => (
-            <div 
+            <div
               key={index}
               className={`relative bg-slate-900/80 rounded-2xl p-8 border transition-all duration-300 ${
-                plan.highlighted 
-                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10 scale-[1.02]" 
+                plan.highlighted
+                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10 scale-[1.02]"
                   : "border-[#1e3a5f] hover:border-[#5B8DEF]/30"
               }`}
             >
@@ -101,7 +96,7 @@ export function PricingSection() {
                   </span>
                 </div>
               )}
-              
+
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {plan.name}
@@ -143,15 +138,9 @@ export function PricingSection() {
                     : "bg-[#162a4a] hover:bg-[#1e3a5f] text-white"
                 }`}
               >
-                {plan.isExternal ? (
-                  <a href={plan.href} target="_blank" rel="noopener noreferrer">
-                    {plan.cta}
-                  </a>
-                ) : (
-                  <Link href={plan.href}>
-                    {plan.cta}
-                  </Link>
-                )}
+                <Link href={plan.href}>
+                  {plan.cta}
+                </Link>
               </Button>
             </div>
           ))}

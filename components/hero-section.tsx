@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Upload, Sparkles, Database, XCircle, CheckCircle2, ArrowRight } from "lucide-react"
+import { Upload, Sparkles, Database, XCircle, CheckCircle2, ArrowRight, BarChart3 } from "lucide-react"
 import Link from "next/link"
 
 export function HeroSection() {
@@ -27,12 +27,39 @@ export function HeroSection() {
           <span>실제 합격 포트폴리오 <span className="text-[#5B8DEF] font-semibold">187개</span>로 학습된 AI</span>
         </p>
 
-        {/* 2-Column Layout */}
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
+        {/* 2-Column Layout - items-stretch로 높이 맞춤 */}
+        <div className="grid lg:grid-cols-2 gap-8 items-stretch">
 
-          {/* LEFT: 차별점 — "제미나이랑 뭐가 다른데?" 반박 */}
-          <div className="space-y-5">
-            <div className="bg-slate-900/60 border border-[#1e3a5f] rounded-2xl p-6">
+          {/* LEFT: 차별점 */}
+          <div className="flex flex-col gap-4">
+            {/* 이 서비스는? — 위로 올림 */}
+            <div className="bg-[#5B8DEF]/5 border border-[#5B8DEF]/30 rounded-2xl p-6 flex-1">
+              <p className="text-[#5B8DEF] font-bold text-sm mb-4 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                이 서비스는?
+              </p>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-300"><span className="text-white font-medium">187개 합격 포트폴리오</span>를 기준으로 비교</p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-300">넥슨·넷마블·크래프톤 등 <span className="text-white font-medium">회사별 합격자 평균</span>과 비교</p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-300">문서에 없는 내용은 <span className="text-white font-medium">절대 칭찬하지 않음</span></p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <BarChart3 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-300"><span className="text-white font-medium">합격자와 점수 비교</span>를 통해 객관적인 피드백 진행</p>
+                </div>
+              </div>
+            </div>
+
+            {/* GPT/Gemini 비교 — 아래로 */}
+            <div className="bg-slate-900/60 border border-[#1e3a5f] rounded-2xl p-6 flex-1">
               <p className="text-red-400 font-bold text-sm mb-4 flex items-center gap-2">
                 <XCircle className="w-4 h-4" />
                 GPT / Gemini에 넣으면?
@@ -53,36 +80,15 @@ export function HeroSection() {
               </div>
             </div>
 
-            <div className="bg-[#5B8DEF]/5 border border-[#5B8DEF]/30 rounded-2xl p-6">
-              <p className="text-[#5B8DEF] font-bold text-sm mb-4 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
-                이 서비스는?
-              </p>
-              <div className="space-y-2.5">
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300"><span className="text-white font-medium">187개 합격 포트폴리오</span>를 기준으로 비교</p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">넥슨·넷마블·크래프톤 등 <span className="text-white font-medium">회사별 합격자 평균</span>과 비교</p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">문서에 없는 내용은 <span className="text-white font-medium">절대 칭찬하지 않음</span></p>
-                </div>
-              </div>
-            </div>
-
             <p className="text-xs text-slate-600 text-center">
               11년차 현업 게임 기획자가 만든 학습 데이터 기반 AI
             </p>
           </div>
 
-          {/* RIGHT: 업로드 영역 */}
-          <div>
-            <Link href="/analyze">
-              <div className="relative bg-slate-900/80 border-2 border-dashed rounded-2xl p-8 md:p-10 transition-all duration-300 cursor-pointer group border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-900">
+          {/* RIGHT: 업로드 영역 - flex로 높이 맞춤 */}
+          <div className="flex flex-col">
+            <Link href="/analyze" className="flex-1 flex">
+              <div className="relative bg-slate-900/80 border-2 border-dashed rounded-2xl p-8 md:p-10 transition-all duration-300 cursor-pointer group border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-900 w-full flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors bg-[#5B8DEF]/10 group-hover:bg-[#5B8DEF]/20">
                     <Upload className="w-8 h-8 text-[#5B8DEF]" />

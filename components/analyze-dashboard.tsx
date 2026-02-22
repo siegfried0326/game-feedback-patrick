@@ -106,8 +106,8 @@ export function AnalyzeDashboard() {
 
         if (projectsResult.data) {
           setProjects(projectsResult.data as Project[])
-          // preselected가 없고 프로젝트가 1개면 자동 선택
-          if (!preselectedProjectId && projectsResult.data.length === 1) {
+          // preselected가 없으면 가장 최근(첫 번째) 프로젝트 자동 선택
+          if (!preselectedProjectId && projectsResult.data.length > 0) {
             setSelectedProjectId(projectsResult.data[0].id)
           }
         }
@@ -402,19 +402,6 @@ export function AnalyzeDashboard() {
           </div>
         )}
 
-        {/* 데이터 보호 안내 */}
-        {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
-          <div className="mb-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-start gap-3">
-            <Shield className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm text-emerald-400 font-medium">당신의 데이터는 안전합니다</p>
-              <p className="text-xs text-emerald-400/70 mt-1">
-                업로드된 문서는 분석 즉시 서버에서 완전히 삭제됩니다. 분석 결과는 본인만 조회할 수 있으며, 관리자를 포함한 그 누구도 열람할 수 없습니다.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* ========== 프로젝트 선택 ========== */}
         {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
           <Card className="mb-6 bg-slate-900/80 border-[#1e3a5f]">
@@ -552,6 +539,13 @@ export function AnalyzeDashboard() {
                 <Upload className="w-5 h-5 text-[#5B8DEF]" />
                 문서 분석
               </CardTitle>
+              {/* 데이터 보호 안내 */}
+              <div className="mt-2 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                <p className="text-xs text-emerald-400/80">
+                  업로드된 문서는 분석 즉시 서버에서 완전 삭제됩니다. 분석 결과는 본인만 조회 가능합니다.
+                </p>
+              </div>
               {/* 파일 / URL 탭 */}
               <div className="flex gap-1 mt-3 bg-slate-800/50 rounded-lg p-1">
                 <button
@@ -609,8 +603,8 @@ export function AnalyzeDashboard() {
                           </>
                         ) : (
                           <>
-                            <p className="font-medium text-slate-500">위에서 프로젝트를 먼저 선택해 주세요</p>
-                            <p className="text-sm text-slate-600 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
+                            <p className="font-medium text-slate-300">위에서 프로젝트를 먼저 선택해 주세요</p>
+                            <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                           </>
                         )}
                         <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 500MB</p>

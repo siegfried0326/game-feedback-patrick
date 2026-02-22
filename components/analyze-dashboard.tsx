@@ -15,7 +15,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { uploadFileToStorage, analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 
 type Project = {
   id: string
@@ -96,6 +96,7 @@ function getGrade(score: number): { grade: string; color: string } {
 
 export function AnalyzeDashboard() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const preselectedProjectId = searchParams.get("projectId")
 
   const [files, setFiles] = useState<FileStatus[]>([])
@@ -124,6 +125,7 @@ export function AnalyzeDashboard() {
   const [urlInput, setUrlInput] = useState("")
   const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
+  const isLoggedIn = allowanceInfo?.reason !== "login_required"
 
   // 분석 중 로딩 메시지 순환
   const loadingMessages = [
@@ -161,12 +163,21 @@ export function AnalyzeDashboard() {
   useEffect(() => {
     async function init() {
       try {
-        const [allowanceResult, projectsResult, projectAllowance] = await Promise.all([
-          checkBeforeAnalysis(),
+        const allowanceResult = await checkBeforeAnalysis()
+
+        if (allowanceResult.reason === "login_required") {
+          // 비로그인: 페이지는 보여주되 분석 시 로그인 유도
+          setAllowanceInfo({ allowed: false, reason: "login_required" })
+          setCheckingAllowance(false)
+          return
+        }
+
+        setAllowanceInfo(allowanceResult)
+
+        const [projectsResult, projectAllowance] = await Promise.all([
           getProjects(),
           checkProjectAllowance(),
         ])
-        setAllowanceInfo(allowanceResult)
 
         if (projectsResult.data) {
           setProjects(projectsResult.data as Project[])
@@ -296,6 +307,10 @@ export function AnalyzeDashboard() {
   }
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (!isLoggedIn) {
+      router.push("/login?redirect=/analyze")
+      return
+    }
     if (!selectedProjectId) {
       setError("프로젝트를 먼저 선택해 주세요.")
       return
@@ -316,10 +331,14 @@ export function AnalyzeDashboard() {
         handleAnalyzeFiles(newFiles)
       }, 100)
     }
-  }, [selectedProjectId])
+  }, [selectedProjectId, isLoggedIn, router])
 
   // URL 분석
   const handleAnalyzeUrl = async () => {
+    if (!isLoggedIn) {
+      router.push("/login?redirect=/analyze")
+      return
+    }
     if (!selectedProjectId) {
       setError("프로젝트를 먼저 선택해 주세요.")
       return
@@ -386,7 +405,7 @@ export function AnalyzeDashboard() {
     },
     maxFiles: MAX_FILES,
     maxSize: 500 * 1024 * 1024,
-    disabled: !selectedProjectId,
+    disabled: isLoggedIn && !selectedProjectId,
   })
 
   return (
@@ -408,8 +427,8 @@ export function AnalyzeDashboard() {
           </div>
         )}
 
-        {/* 구독 제한 안내 */}
-        {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && (
+        {/* 구독 제한 안내 (로그인은 됐지만 횟수 초과/만료) */}
+        {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && allowanceInfo.reason !== "login_required" && (
           <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
             <CardContent className="pt-8 pb-8 text-center">
               <Lock className="w-12 h-12 text-slate-500 mx-auto mb-4" />
@@ -418,7 +437,7 @@ export function AnalyzeDashboard() {
                   <h2 className="text-xl font-bold text-white mb-2">구독이 만료되었습니다</h2>
                   <p className="text-slate-400 mb-6">계속 이용하시려면 구독을 갱신해 주세요.</p>
                 </>
-              ) : allowanceInfo.reason === "limit_reached" ? (
+              ) : (
                 <>
                   <h2 className="text-xl font-bold text-white mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
                   <p className="text-slate-400 mb-6">
@@ -426,22 +445,11 @@ export function AnalyzeDashboard() {
                     무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.
                   </p>
                 </>
-              ) : (
-                <>
-                  <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
-                  <p className="text-slate-400 mb-6">문서 분석을 위해 로그인해 주세요.</p>
-                </>
               )}
               <div className="flex justify-center gap-3">
-                {allowanceInfo.reason === "login_required" ? (
-                  <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                    <Link href="/login?redirect=/analyze">로그인하기</Link>
-                  </Button>
-                ) : (
-                  <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                    <Link href="/pricing">요금제 보기</Link>
-                  </Button>
-                )}
+                <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                  <Link href="/pricing">요금제 보기</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -466,8 +474,8 @@ export function AnalyzeDashboard() {
           </div>
         )}
 
-        {/* ========== 프로젝트 선택 ========== */}
-        {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
+        {/* ========== 프로젝트 선택 (로그인한 유저만) ========== */}
+        {!checkingAllowance && isLoggedIn && allowanceInfo?.allowed && results.length === 0 && (
           <Card className="mb-6 bg-slate-900/80 border-[#1e3a5f]">
             {/* 프로젝트 1개 + 선택됨: 간소화 표시 */}
             {projects.length === 1 && selectedProjectId ? (
@@ -595,8 +603,8 @@ export function AnalyzeDashboard() {
           </Card>
         )}
 
-        {/* Upload Section */}
-        {!checkingAllowance && allowanceInfo?.allowed && results.length === 0 && (
+        {/* Upload Section - 비로그인도 보여줌, 분석 시작 시 로그인 유도 */}
+        {!checkingAllowance && (allowanceInfo?.allowed || allowanceInfo?.reason === "login_required") && results.length === 0 && (
           <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
@@ -643,7 +651,7 @@ export function AnalyzeDashboard() {
                   <div
                     {...getRootProps()}
                     className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                      !selectedProjectId
+                      isLoggedIn && !selectedProjectId
                         ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
                         : isDragActive
                         ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
@@ -653,14 +661,15 @@ export function AnalyzeDashboard() {
                     <input {...getInputProps()} />
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-                        {selectedProjectId ? (
-                          <Upload className="w-8 h-8 text-slate-400" />
-                        ) : (
-                          <Lock className="w-8 h-8 text-slate-600" />
-                        )}
+                        <Upload className="w-8 h-8 text-slate-400" />
                       </div>
                       <div>
-                        {selectedProjectId ? (
+                        {!isLoggedIn ? (
+                          <>
+                            <p className="font-medium text-white">무료로 문서를 분석해 보세요</p>
+                            <p className="text-sm text-slate-400 mt-1">파일을 올리면 로그인 후 바로 분석이 시작됩니다</p>
+                          </>
+                        ) : selectedProjectId ? (
                           <>
                             <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
                             <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
@@ -729,15 +738,19 @@ export function AnalyzeDashboard() {
 
               {/* URL 링크 모드 */}
               {uploadMode === "url" && (
-                <div className={`${!selectedProjectId ? "opacity-50 pointer-events-none" : ""}`}>
+                <div className={`${isLoggedIn && !selectedProjectId ? "opacity-50 pointer-events-none" : ""}`}>
                   <div className="border-2 border-dashed border-[#1e3a5f] rounded-xl p-8">
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
                         <Link2 className="w-8 h-8 text-slate-400" />
                       </div>
                       <div className="text-center">
-                        <p className="font-medium text-white">웹 페이지 URL을 입력하세요</p>
-                        <p className="text-sm text-slate-400 mt-1">노션, 웹 포트폴리오, 블로그 등의 링크를 분석합니다</p>
+                        <p className="font-medium text-white">
+                          {!isLoggedIn ? "무료로 URL을 분석해 보세요" : "웹 페이지 URL을 입력하세요"}
+                        </p>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {!isLoggedIn ? "URL을 입력하고 분석 버튼을 누르면 로그인 후 바로 분석됩니다" : "노션, 웹 포트폴리오, 블로그 등의 링크를 분석합니다"}
+                        </p>
                       </div>
                       <div className="w-full max-w-lg flex gap-2 mt-2">
                         <input
@@ -751,7 +764,7 @@ export function AnalyzeDashboard() {
                         />
                         <Button
                           onClick={handleAnalyzeUrl}
-                          disabled={isAnalyzingUrl || !urlInput.trim() || !selectedProjectId}
+                          disabled={isAnalyzingUrl || !urlInput.trim() || (isLoggedIn && !selectedProjectId)}
                           className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-6"
                         >
                           {isAnalyzingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : "분석"}

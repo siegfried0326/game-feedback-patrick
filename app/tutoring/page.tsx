@@ -1,52 +1,88 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Loader2, GraduationCap, Lock } from "lucide-react"
+import { ArrowLeft, Loader2, GraduationCap, Lock, KeyRound, CheckCircle2, BookOpen, Target } from "lucide-react"
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk"
 import { Button } from "@/components/ui/button"
-import { checkTutoringAccess, createTutoringOrder } from "@/app/actions/tutoring"
+import { checkTutoringAccess, validateTutoringCode, createTutoringOrder } from "@/app/actions/tutoring"
 import { createClient } from "@/lib/supabase/client"
 
 const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_4vZnjEJeQVxJzDoab4d8PmOoBN0k"
 
 const PACKAGES = [
-  { key: "1session", name: "1회 과외", price: 0, description: "1회 1:1 과외 세션" },
-  { key: "3sessions", name: "3회 과외", price: 0, description: "3회 1:1 과외 패키지" },
-  { key: "5sessions", name: "5회 과외", price: 0, description: "5회 1:1 과외 패키지" },
+  {
+    key: "tutoring_1h",
+    name: "1:1 과외 (1타임)",
+    price: 120000,
+    description: "게임 기획 전문가의 1:1 맞춤 과외 1회",
+    details: ["포트폴리오 심층 리뷰", "실무 노하우 전수", "질의응답 무제한"],
+    emoji: "📚",
+    icon: BookOpen,
+  },
+  {
+    key: "mock_interview",
+    name: "모의면접 / 단기 피드백",
+    price: 200000,
+    description: "실전 모의면접 또는 포트폴리오 집중 피드백 1회",
+    details: ["실전형 모의면접 진행", "면접 피드백 리포트 제공", "합격 전략 컨설팅"],
+    emoji: "🎯",
+    icon: Target,
+  },
 ] as const
 
 export default function TutoringPage() {
-  const router = useRouter()
   const [accessChecked, setAccessChecked] = useState(false)
-  const [hasAccess, setHasAccess] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [accessError, setAccessError] = useState("")
-  const [selectedPackage, setSelectedPackage] = useState<string>("1session")
+
+  // 코드 인증 상태
+  const [codeInput, setCodeInput] = useState("")
+  const [codeVerified, setCodeVerified] = useState(false)
+  const [codeLoading, setCodeLoading] = useState(false)
+  const [codeError, setCodeError] = useState("")
+
+  // 결제 상태
+  const [selectedPackage, setSelectedPackage] = useState<string>("tutoring_1h")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [widgetsReady, setWidgetsReady] = useState(false)
   const [widgetsInstance, setWidgetsInstance] = useState<any>(null)
 
-  // 접근 권한 확인
+  // 접근 권한 확인 (로그인만)
   useEffect(() => {
     async function check() {
       const result = await checkTutoringAccess()
-      setHasAccess(result.allowed)
-      if (!result.allowed) setAccessError(result.error || "접근 권한이 없습니다.")
+      setIsLoggedIn(result.allowed)
+      if (!result.allowed) setAccessError(result.error || "로그인이 필요합니다.")
       setAccessChecked(true)
     }
     check()
   }, [])
 
+  // 코드 검증
+  async function handleCodeVerify() {
+    if (!codeInput.trim()) return
+    setCodeLoading(true)
+    setCodeError("")
+
+    try {
+      const result = await validateTutoringCode(codeInput)
+      if (result.valid) {
+        setCodeVerified(true)
+      } else {
+        setCodeError(result.error || "유효하지 않은 코드입니다.")
+      }
+    } catch {
+      setCodeError("코드 확인 중 오류가 발생했습니다.")
+    } finally {
+      setCodeLoading(false)
+    }
+  }
+
   const pkg = PACKAGES.find(p => p.key === selectedPackage) || PACKAGES[0]
 
   async function handlePayment() {
-    if (pkg.price <= 0) {
-      setError("가격이 아직 설정되지 않았습니다. 관리자에게 문의해주세요.")
-      return
-    }
-
     setLoading(true)
     setError("")
 
@@ -97,9 +133,6 @@ export default function TutoringPage() {
     setLoading(true)
 
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
       const orderResult = await createTutoringOrder(selectedPackage, pkg.price)
       if (orderResult.error) {
         setError(orderResult.error)
@@ -120,6 +153,7 @@ export default function TutoringPage() {
     }
   }
 
+  // 로딩
   if (!accessChecked) {
     return (
       <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
@@ -128,17 +162,16 @@ export default function TutoringPage() {
     )
   }
 
-  if (!hasAccess) {
+  // 비로그인
+  if (!isLoggedIn) {
     return (
       <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
           <Lock className="w-16 h-16 text-slate-500 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-2">접근 권한이 없습니다</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">로그인이 필요합니다</h1>
           <p className="text-slate-400 mb-6">{accessError}</p>
           <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-            <a href="https://open.kakao.com/o/sLz0kgBf" target="_blank" rel="noopener noreferrer">
-              1:1 상담 신청하기
-            </a>
+            <Link href="/login?redirect=/tutoring">로그인하기</Link>
           </Button>
         </div>
       </main>
@@ -149,85 +182,161 @@ export default function TutoringPage() {
     <main className="min-h-screen bg-[#0d1b2a]">
       <div className="max-w-lg mx-auto px-6 py-16">
         <Link
-          href="/analyze"
+          href="/"
           className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          돌아가기
+          홈으로 돌아가기
         </Link>
 
         <div className="flex items-center gap-3 mb-2">
           <GraduationCap className="w-8 h-8 text-[#5B8DEF]" />
-          <h1 className="text-2xl font-bold text-white">1:1 과외 결제</h1>
+          <h1 className="text-2xl font-bold text-white">1:1 과외 · 모의면접</h1>
         </div>
-        <p className="text-slate-400 mb-8">전문가의 1:1 맞춤 피드백을 받아보세요.</p>
+        <p className="text-slate-400 mb-8">게임 업계 11년차 현업 기획자의 1:1 맞춤 피드백</p>
 
-        {/* 패키지 선택 */}
-        <div className="space-y-3 mb-8">
-          {PACKAGES.map(p => (
-            <button
-              key={p.key}
-              onClick={() => {
-                setSelectedPackage(p.key)
-                setWidgetsReady(false)
-              }}
-              className={`w-full p-4 rounded-xl border text-left transition-all ${
-                selectedPackage === p.key
-                  ? "border-[#5B8DEF] bg-[#5B8DEF]/10"
-                  : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
-              }`}
+        {/* ========== 코드 입력 영역 ========== */}
+        {!codeVerified && (
+          <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-6 mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <KeyRound className="w-5 h-5 text-[#5B8DEF]" />
+              <h2 className="text-white font-semibold">상담 코드 입력</h2>
+            </div>
+            <p className="text-sm text-slate-400 mb-4">
+              카카오톡 상담 후 받은 코드를 입력해 주세요.<br />
+              코드가 없으시면 먼저 상담을 신청해 주세요.
+            </p>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={codeInput}
+                onChange={e => setCodeInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !codeLoading && handleCodeVerify()}
+                placeholder="상담 코드 입력"
+                className="flex-1 bg-[#0d1b2a] border border-[#1e3a5f] rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#5B8DEF] uppercase tracking-widest"
+                disabled={codeLoading}
+              />
+              <Button
+                onClick={handleCodeVerify}
+                disabled={codeLoading || !codeInput.trim()}
+                className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-6"
+              >
+                {codeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "확인"}
+              </Button>
+            </div>
+            {codeError && (
+              <p className="text-sm text-red-400 mb-3">{codeError}</p>
+            )}
+            <a
+              href="https://open.kakao.com/o/sLz0kgBf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-[#5B8DEF] hover:underline"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white font-medium">{p.name}</p>
-                  <p className="text-sm text-slate-400">{p.description}</p>
-                </div>
-                <div className="text-right">
-                  {p.price > 0 ? (
-                    <p className="text-white font-bold">{p.price.toLocaleString()}원</p>
-                  ) : (
-                    <p className="text-slate-500 text-sm">가격 미정</p>
-                  )}
-                </div>
+              아직 코드가 없으신가요? 카카오톡 상담 신청하기 →
+            </a>
+          </div>
+        )}
+
+        {/* ========== 코드 인증 완료 → 상품 선택 + 결제 ========== */}
+        {codeVerified && (
+          <>
+            {/* 인증 완료 배지 */}
+            <div className="flex items-center gap-2 mb-6 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <span className="text-sm text-emerald-400 font-medium">코드 인증 완료</span>
+            </div>
+
+            {/* 상품 선택 */}
+            <div className="space-y-4 mb-8">
+              {PACKAGES.map(p => {
+                const Icon = p.icon
+                return (
+                  <button
+                    key={p.key}
+                    onClick={() => {
+                      setSelectedPackage(p.key)
+                      setWidgetsReady(false)
+                      setError("")
+                    }}
+                    className={`w-full p-5 rounded-xl border text-left transition-all ${
+                      selectedPackage === p.key
+                        ? "border-[#5B8DEF] bg-[#5B8DEF]/10"
+                        : "border-[#1e3a5f] bg-slate-800/50 hover:border-[#5B8DEF]/50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedPackage === p.key ? "bg-[#5B8DEF]/20" : "bg-slate-700/50"
+                      }`}>
+                        <Icon className={`w-6 h-6 ${selectedPackage === p.key ? "text-[#5B8DEF]" : "text-slate-400"}`} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-white font-semibold">{p.name}</p>
+                          <p className="text-white font-bold text-lg">{p.price.toLocaleString()}<span className="text-sm text-slate-400">원</span></p>
+                        </div>
+                        <p className="text-sm text-slate-400 mb-3">{p.description}</p>
+                        <ul className="space-y-1">
+                          {p.details.map((d, i) => (
+                            <li key={i} className="text-xs text-slate-500 flex items-center gap-1.5">
+                              <span className="w-1 h-1 rounded-full bg-[#5B8DEF] shrink-0" />
+                              {d}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 mb-6 text-sm">
+                {error}
               </div>
-            </button>
-          ))}
-        </div>
+            )}
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 mb-6 text-sm">
-            {error}
-          </div>
-        )}
+            {/* 결제 위젯 영역 */}
+            {widgetsReady && (
+              <div className="mb-6">
+                <div id="payment-method" className="mb-4" />
+                <div id="agreement" />
+              </div>
+            )}
 
-        {/* 결제 위젯 영역 */}
-        {widgetsReady && (
-          <div className="mb-6">
-            <div id="payment-method" className="mb-4" />
-            <div id="agreement" />
-          </div>
-        )}
+            {!widgetsReady ? (
+              <Button
+                onClick={handlePayment}
+                disabled={loading}
+                className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
+              >
+                {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
+                {pkg.price.toLocaleString()}원 결제하기
+              </Button>
+            ) : (
+              <Button
+                onClick={handleRequestPayment}
+                disabled={loading}
+                className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
+              >
+                {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
+                결제하기
+              </Button>
+            )}
 
-        {!widgetsReady ? (
-          <Button
-            onClick={handlePayment}
-            disabled={loading || pkg.price <= 0}
-            className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin mr-2" />
-            ) : null}
-            {pkg.price > 0 ? `${pkg.price.toLocaleString()}원 결제하기` : "가격 미정"}
-          </Button>
-        ) : (
-          <Button
-            onClick={handleRequestPayment}
-            disabled={loading}
-            className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
-          >
-            {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
-            결제하기
-          </Button>
+            {/* 안내 */}
+            <div className="mt-6 text-center space-y-1">
+              <p className="text-xs text-slate-500">결제 후 카카오톡으로 일정을 안내드립니다.</p>
+              <p className="text-xs text-slate-600">
+                문의:{" "}
+                <a href="https://open.kakao.com/o/sLz0kgBf" target="_blank" rel="noopener noreferrer" className="text-[#5B8DEF] hover:underline">
+                  카카오톡 상담
+                </a>
+              </p>
+            </div>
+          </>
         )}
       </div>
     </main>

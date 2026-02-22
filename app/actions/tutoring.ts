@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { confirmPayment } from "./payment"
 
 /**
- * 과외 접근 권한 확인
+ * 과외 접근 권한 확인 (로그인만 체크)
  */
 export async function checkTutoringAccess() {
   const supabase = await createClient()
@@ -12,17 +12,29 @@ export async function checkTutoringAccess() {
 
   if (!user) return { allowed: false, error: "로그인이 필요합니다." }
 
-  const { data: subscription } = await supabase
-    .from("users_subscription")
-    .select("tutoring_enabled")
-    .eq("user_id", user.id)
-    .single()
+  return { allowed: true }
+}
 
-  if (!subscription?.tutoring_enabled) {
-    return { allowed: false, error: "과외 결제 권한이 없습니다. 1:1 상담을 먼저 진행해주세요." }
+/**
+ * 상담 코드 검증
+ */
+export async function validateTutoringCode(code: string) {
+  if (!code || !code.trim()) {
+    return { valid: false, error: "코드를 입력해 주세요." }
   }
 
-  return { allowed: true }
+  const trimmedCode = code.trim().toUpperCase()
+
+  // 환경변수에서 유효한 코드 목록 가져오기
+  const validCodes = (process.env.TUTORING_ACCESS_CODES || "GAME2025,WELCOME")
+    .split(",")
+    .map(c => c.trim().toUpperCase())
+
+  if (validCodes.includes(trimmedCode)) {
+    return { valid: true }
+  }
+
+  return { valid: false, error: "유효하지 않은 코드입니다. 상담을 통해 코드를 받아주세요." }
 }
 
 /**

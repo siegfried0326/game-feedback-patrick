@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
+import { DesignScores } from "@/components/design-scores"
 import { uploadFileToStorage, analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import Link from "next/link"
@@ -32,6 +33,7 @@ type AnalysisResult = {
   strengths: string[]
   weaknesses: string[]
   detailedFeedback?: string
+  companyFeedback?: string
   ranking?: {
     total: number
     percentile: number
@@ -862,39 +864,48 @@ export function AnalyzeDashboard() {
                         </p>
                       </div>
 
-                      {/* 회사별 합격자 비교 - 실제 데이터 있는 회사만 */}
+                      {/* 회사별 합격자 비교 - 테이블 형태 */}
                       {ranking.companyComparison && ranking.companyComparison.length > 0 && (
                         <div>
                           <p className="text-white font-semibold text-base mb-4">회사별 합격자 평균 vs 내 점수</p>
-                          <div className="grid sm:grid-cols-2 gap-3">
-                            {ranking.companyComparison.map((comp, idx) => {
-                              const diff = userScore - comp.avgScore
-                              const isAbove = diff >= 0
-                              return (
-                                <div key={idx} className={`p-4 rounded-xl border ${isAbove ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-amber-500/5 border-amber-500/20'}`}>
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-white font-medium text-sm">{comp.company}</span>
-                                    </div>
-                                    <span className={`text-sm font-bold ${isAbove ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                      {isAbove ? '+' : ''}{diff}점
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1">
-                                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                                        <div
-                                          className={`h-full rounded-full ${isAbove ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                                          style={{ width: `${Math.min(comp.avgScore, 100)}%` }}
-                                        />
-                                      </div>
-                                    </div>
-                                    <span className="text-xs text-slate-400 w-20 text-right">평균 {comp.avgScore}점</span>
-                                  </div>
-                                </div>
-                              )
-                            })}
+                          <div className="overflow-hidden rounded-xl border border-[#1e3a5f]">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-slate-800/80">
+                                  <th className="text-left px-4 py-3 text-slate-400 font-medium">회사</th>
+                                  <th className="text-center px-4 py-3 text-slate-400 font-medium">합격 평균</th>
+                                  <th className="text-center px-4 py-3 text-slate-400 font-medium">내 점수</th>
+                                  <th className="text-center px-4 py-3 text-slate-400 font-medium">차이</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {ranking.companyComparison.map((comp, idx) => {
+                                  const diff = userScore - comp.avgScore
+                                  const isAbove = diff >= 0
+                                  return (
+                                    <tr key={idx} className="border-t border-[#1e3a5f]/50">
+                                      <td className="px-4 py-3 text-white font-medium">{comp.company}</td>
+                                      <td className="text-center px-4 py-3 text-slate-300">{comp.avgScore}점</td>
+                                      <td className="text-center px-4 py-3 text-white font-semibold">{userScore}점</td>
+                                      <td className={`text-center px-4 py-3 font-bold ${isAbove ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                        {isAbove ? '+' : ''}{diff}점
+                                      </td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
                           </div>
+
+                          {/* AI 합격자 비교 피드백 */}
+                          {results[currentIndex].companyFeedback && (
+                            <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
+                              <p className="text-sm text-slate-300 leading-relaxed">
+                                {results[currentIndex].companyFeedback}
+                              </p>
+                            </div>
+                          )}
+
                           <p className="text-xs text-slate-500 mt-4 text-center">
                             * 실제 합격 포트폴리오 점수 평균과 비교 · 데이터는 지속 업데이트됩니다
                           </p>
@@ -909,6 +920,9 @@ export function AnalyzeDashboard() {
                   strengths={results[currentIndex].strengths}
                   weaknesses={results[currentIndex].weaknesses}
                 />
+
+                {/* 게임 디자인 역량 점수 */}
+                <DesignScores data={results[currentIndex].categories} />
 
                 {/* 더 정확한 피드백이 필요하다면 */}
                 <Card className="bg-slate-900/80 border-[#1e3a5f]">

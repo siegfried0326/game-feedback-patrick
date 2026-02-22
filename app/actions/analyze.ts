@@ -187,11 +187,15 @@ export async function analyzeUrlDirect(input: {
     }
 
     // 이하 분석 로직은 analyzeDocumentDirect와 동일한 패턴
-    const { data: portfolios } = await supabase
+    const { data: portfolios, error: portfolioError } = await supabase
       .from("portfolios")
       .select("file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type")
       .order("overall_score", { ascending: false })
       .limit(50)
+
+    if (portfolioError) {
+      console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code)
+    }
 
     let referenceStats = ""
     const companyStats: Record<string, { total: number; count: number }> = {}
@@ -353,7 +357,8 @@ ${referenceStats}
     { "subject": "개발일정", "value": 40, "fullMark": 100 }
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
-  "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"]
+  "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
+  "companyFeedback": "합격자들과 비교해서 이 문서에 가장 부족한 점을 3~4문장으로 설명. 어떤 회사의 합격 기준에 못 미치는지, 구체적으로 무엇을 보완해야 합격 수준에 도달할 수 있는지 실질적인 조언을 포함."
 }`
 
     const anthropic = new Anthropic({ apiKey })
@@ -365,7 +370,7 @@ ${referenceStats}
       messages: [
         {
           role: "user",
-          content: `아래는 웹 페이지(${input.url})에서 추출한 텍스트 내용입니다. 이 내용을 게임 기획 포트폴리오로서 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories를 모두 포함해야 합니다.\n\n---\n\n${pageContent}`,
+          content: `아래는 웹 페이지(${input.url})에서 추출한 텍스트 내용입니다. 이 내용을 게임 기획 포트폴리오로서 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories와 companyFeedback을 모두 포함해야 합니다.\n\n---\n\n${pageContent}`,
         },
       ],
       system: systemPrompt,
@@ -404,7 +409,7 @@ ${referenceStats}
 
     // 회사별 비교 데이터
     const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
-    const targetCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠", "엔씨소프트", "스마일게이트", "매드엔진"]
+    const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트"]
     targetCompanies.forEach(company => {
       const matchedEntry = Object.entries(companyStats).find(([key]) =>
         key.includes(company) || company.includes(key)
@@ -430,6 +435,7 @@ ${referenceStats}
       categories: analysis.categories,
       strengths: analysis.strengths,
       weaknesses: analysis.weaknesses,
+      companyFeedback: analysis.companyFeedback || "",
       ranking: {
         total: DISPLAY_TOTAL,
         percentile,
@@ -473,11 +479,15 @@ export async function analyzeDocumentDirect(input: {
     const supabase = await createClient()
 
     // 학습된 포트폴리오 데이터 가져오기
-    const { data: portfolios } = await supabase
+    const { data: portfolios, error: portfolioError } = await supabase
       .from("portfolios")
       .select("file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type")
       .order("overall_score", { ascending: false })
       .limit(50)
+
+    if (portfolioError) {
+      console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code)
+    }
 
     // 학습 데이터 통계 및 패턴 분석
     let referenceStats = ""
@@ -658,7 +668,8 @@ ${referenceStats}
     "보완점4 - 합격자 평균 대비 부족한 점",
     "보완점5 - 기술적 관점에서 부족한 점",
     "보완점6 - 개선 방향 제시"
-  ]
+  ],
+  "companyFeedback": "합격자들과 비교해서 이 문서에 가장 부족한 점을 3~4문장으로 설명. 어떤 회사의 합격 기준에 못 미치는지, 구체적으로 무엇을 보완해야 합격 수준에 도달할 수 있는지 실질적인 조언을 포함."
 }
 
 **핵심**: 문서를 꼼꼼히 읽고, 실제로 있는 내용만 강점으로, 실제로 없거나 부족한 내용은 보완점으로 작성하세요. 빈말 칭찬은 사용자에게 해롭습니다.`
@@ -709,7 +720,7 @@ ${referenceStats}
               },
               {
                 type: "text",
-                text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories를 모두 포함해야 합니다.",
+                text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories와 companyFeedback을 모두 포함해야 합니다.",
               },
             ],
           },
@@ -755,7 +766,7 @@ ${referenceStats}
       const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
 
       // 실제 학습 데이터가 있는 회사만 추가
-      const targetCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠", "엔씨소프트", "스마일게이트", "매드엔진"]
+      const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트"]
       targetCompanies.forEach(company => {
         const matchedEntry = Object.entries(companyStats).find(([key]) =>
           key.includes(company) || company.includes(key)
@@ -785,6 +796,7 @@ ${referenceStats}
         categories: analysis.categories,
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
+        companyFeedback: analysis.companyFeedback || "",
         ranking: {
           total: DISPLAY_TOTAL,
           percentile,

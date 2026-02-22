@@ -26,7 +26,7 @@ export async function validateTutoringCode(code: string) {
   const trimmedCode = code.trim().toUpperCase()
 
   // 환경변수에서 유효한 코드 목록 가져오기
-  const validCodes = (process.env.TUTORING_ACCESS_CODES || "GAME2025,WELCOME")
+  const validCodes = (process.env.TUTORING_ACCESS_CODES || "GAMEFB,WELCOME")
     .split(",")
     .map(c => c.trim().toUpperCase())
 

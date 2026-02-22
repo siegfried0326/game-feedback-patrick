@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/progress"
 import {
   analyzeAndSavePortfolio, getPortfolioList,
-  getCompanyStats, deletePortfolio, deleteMultiplePortfolios
+  getCompanyStats, deletePortfolio, deleteMultiplePortfolios,
+  reclassifyAllCompanies
 } from "@/app/actions/admin"
 import { createClient } from "@/lib/supabase/client"
 import { v4 as uuidv4 } from "uuid"
@@ -33,6 +34,7 @@ export default function TrainingPage() {
   // ── 공통 상태 ──
   const [companyStats, setCompanyStats] = useState<Record<string, number>>({})
   const [isLoadingStats, setIsLoadingStats] = useState(false)
+  const [isReclassifying, setIsReclassifying] = useState(false)
 
   // ── 업로드 탭 상태 ──
   const [files, setFiles] = useState<TrainingFile[]>([])
@@ -339,19 +341,44 @@ export default function TrainingPage() {
               합격 포트폴리오를 업로드하고, 학습된 데이터를 관리하세요.
             </p>
           </div>
-          <Button
-            onClick={loadAll}
-            disabled={isLoadingStats || isLoadingData}
-            variant="outline"
-            className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
-          >
-            {(isLoadingStats || isLoadingData) ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
-            )}
-            새로고침
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={async () => {
+                setIsReclassifying(true)
+                const result = await reclassifyAllCompanies()
+                if (result.success) {
+                  alert(`재분류 완료! ${result.total}개 중 ${result.updated}개 수정됨`)
+                  await loadAll()
+                } else {
+                  alert("재분류 실패: " + result.error)
+                }
+                setIsReclassifying(false)
+              }}
+              disabled={isReclassifying}
+              variant="outline"
+              className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+            >
+              {isReclassifying ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              회사 재분류
+            </Button>
+            <Button
+              onClick={loadAll}
+              disabled={isLoadingStats || isLoadingData}
+              variant="outline"
+              className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
+            >
+              {(isLoadingStats || isLoadingData) ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              새로고침
+            </Button>
+          </div>
         </div>
 
         {/* 회사별 학습 데이터 통계 (공통) */}

@@ -601,3 +601,56 @@ export async function getCompanyStats() {
     return { error: error instanceof Error ? error.message : "회사별 통계 조회 실패" }
   }
 }
+
+// 전체 포트폴리오 회사 재분류 (파일명 기준)
+export async function reclassifyAllCompanies() {
+  try {
+    const supabase = await createClient()
+
+    const { data: portfolios, error } = await supabase
+      .from("portfolios")
+      .select("id, file_name, companies")
+
+    if (error) throw error
+    if (!portfolios || portfolios.length === 0) return { success: true, updated: 0 }
+
+    const targetCompanies = ["넥슨", "넷마블", "크래프톤", "엔씨소프트", "스마일게이트", "네오위즈", "펄어비스", "웹젠"]
+
+    let updated = 0
+    const changes: { fileName: string; before: string[]; after: string[] }[] = []
+
+    for (const p of portfolios) {
+      const extracted = extractCompanyFromFileName(p.file_name)
+      // 8개 회사만 필터
+      const filtered = extracted.filter(c => targetCompanies.includes(c))
+
+      const currentCompanies = (p.companies as string[]) || []
+      const currentFiltered = currentCompanies.filter(c => targetCompanies.includes(c))
+
+      // 달라졌으면 업데이트
+      const isDifferent =
+        filtered.length !== currentFiltered.length ||
+        filtered.some(c => !currentFiltered.includes(c))
+
+      if (isDifferent) {
+        const { error: updateError } = await supabase
+          .from("portfolios")
+          .update({ companies: filtered.length > 0 ? filtered : [] })
+          .eq("id", p.id)
+
+        if (!updateError) {
+          updated++
+          changes.push({
+            fileName: p.file_name,
+            before: currentCompanies,
+            after: filtered,
+          })
+        }
+      }
+    }
+
+    return { success: true, total: portfolios.length, updated, changes: changes.slice(0, 50) }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "재분류 실패" }
+  }
+}

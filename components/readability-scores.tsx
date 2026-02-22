@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Gamepad2, ChevronDown } from "lucide-react"
+import { Eye, ChevronDown } from "lucide-react"
 
 type CategoryData = {
   subject: string
@@ -11,48 +11,46 @@ type CategoryData = {
   feedback?: string
 }
 
-type DesignScoresProps = {
+type ReadabilityScoresProps = {
   data: CategoryData[]
 }
 
-const BASIC_SUBJECTS = ["논리력", "구체성", "가독성", "기술이해", "창의성"]
-
 function getScoreColor(value: number): string {
   if (value >= 80) return "text-emerald-400"
-  if (value >= 60) return "text-[#5B8DEF]"
+  if (value >= 60) return "text-cyan-400"
   if (value >= 40) return "text-amber-400"
   return "text-red-400"
 }
 
 function getBarColor(value: number): string {
   if (value >= 80) return "bg-emerald-500"
-  if (value >= 60) return "bg-[#5B8DEF]"
+  if (value >= 60) return "bg-cyan-500"
   if (value >= 40) return "bg-amber-500"
   return "bg-red-500"
 }
 
-export function DesignScores({ data }: DesignScoresProps) {
-  const designData = data.filter(d => !BASIC_SUBJECTS.includes(d.subject))
+export function ReadabilityScores({ data }: ReadabilityScoresProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
 
-  if (designData.length === 0) return null
+  if (!data || data.length === 0) return null
 
-  const avg = Math.round(designData.reduce((a, b) => a + b.value, 0) / designData.length)
+  const avg = Math.round(data.reduce((a, b) => a + b.value, 0) / data.length)
 
   return (
     <Card className="bg-slate-900/80 border-[#1e3a5f]">
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-white">
           <span className="flex items-center gap-2">
-            <Gamepad2 className="w-5 h-5 text-purple-400" />
-            게임 디자인 역량
+            <Eye className="w-5 h-5 text-cyan-400" />
+            문서 가독성
           </span>
           <span className={`text-lg ${getScoreColor(avg)}`}>평균 {avg}점</span>
         </CardTitle>
+        <p className="text-xs text-slate-500">PDF 문서의 시각적 구성을 분석한 결과입니다</p>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {designData.map((item, index) => (
+          {data.map((item, index) => (
             <div key={index}>
               <button
                 type="button"
@@ -74,30 +72,8 @@ export function DesignScores({ data }: DesignScoresProps) {
                 </div>
               </button>
               {expandedIndex === index && item.feedback && (
-                <div className="mt-2 ml-2 p-3 bg-slate-800/60 border border-[#1e3a5f]/50 rounded-lg space-y-2">
-                  {item.feedback.split('\n').map((line, i) => {
-                    const trimmed = line.trim()
-                    if (!trimmed) return null
-                    if (trimmed.startsWith('[강점]')) {
-                      return (
-                        <p key={i} className="text-sm leading-relaxed text-emerald-400">
-                          {trimmed}
-                        </p>
-                      )
-                    }
-                    if (trimmed.startsWith('[보완]')) {
-                      return (
-                        <p key={i} className="text-sm leading-relaxed text-amber-400">
-                          {trimmed}
-                        </p>
-                      )
-                    }
-                    return (
-                      <p key={i} className="text-sm text-slate-300 leading-relaxed">
-                        {trimmed}
-                      </p>
-                    )
-                  })}
+                <div className="mt-2 ml-2 p-3 bg-slate-800/60 border border-[#1e3a5f]/50 rounded-lg">
+                  <p className="text-sm text-slate-300 leading-relaxed">{item.feedback}</p>
                 </div>
               )}
             </div>

@@ -343,25 +343,30 @@ ${referenceStats}
 
 **게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 0점, 간접적으로라도 언급이 있으면 그 수준에 맞게 채점하세요.
 
+**게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 합격자 자료와 비교하여 [강점]과 [보완]을 구분해서 작성하세요.
+- [강점]으로 시작하는 줄: 이 문서에서 해당 항목이 잘 된 부분
+- [보완]으로 시작하는 줄: 합격자들과 비교했을 때 부족한 부분과 구체적 개선 방향
+- 해당 항목이 전혀 없으면 [보완]만 작성하되, 합격자들은 어떻게 하는지 설명
+
 ## 응답 형식 (반드시 JSON만 출력, 다른 텍스트 없이)
 {
   "score": 72,
   "categories": [
-    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "문제 정의와 해결 과정의 논리적 흐름에 대한 1~2문장 구체적 피드백" },
-    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "수치, 데이터, KPI 포함 여부에 대한 1~2문장 구체적 피드백" },
-    { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "문서 구조와 정리 상태에 대한 1~2문장 구체적 피드백" },
-    { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "게임 개발 기술 이해도에 대한 1~2문장 구체적 피드백" },
-    { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "독창적 아이디어에 대한 1~2문장 구체적 피드백" },
-    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "핵심 반복 구조에 대한 1~2문장 구체적 피드백" },
-    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "콘텐츠 분류 체계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "재화 흐름 설계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "플레이 경험 목표에 대한 1~2문장 구체적 피드백" },
-    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "수치 데이터 정리에 대한 1~2문장 구체적 피드백" },
-    { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "기능 간 연결 관계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "동기 부여 설계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "난이도 균형에 대한 1~2문장 구체적 피드백" },
-    { "subject": "화면조작", "value": 55, "fullMark": 100, "feedback": "화면 및 조작 설계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "개발일정", "value": 40, "fullMark": 100, "feedback": "개발 일정 및 산출물에 대한 1~2문장 구체적 피드백" }
+    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "[강점] 잘 된 부분 설명.\\n[보완] 합격자들과 비교하여 부족한 점과 개선 방향. 3줄 이상 작성." },
+    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 합격자 비교 부족한 점. 3줄 이상." },
+    { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "[강점] 이동→전투→보상의 기본 순환이 정의됨.\\n[보완] 합격자들은 각 단계별 소요 시간과 보상 비율까지 구체적으로 설계합니다. 이 문서는 흐름만 있고 수치가 없어 실무 적용이 어렵습니다." },
+    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 합격자 비교 부족한 점. 3줄 이상." },
+    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "[보완] 합격자들은 재화 획득/소비/소멸 경로를 도표로 정리합니다. 이 문서에는 재화 흐름 관련 내용이 없습니다." },
+    { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "[보완] 합격자들은 캐릭터/아이템/몬스터 수치를 표로 정리합니다. 이 문서에는 수치 테이블이 없습니다." },
+    { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "[보완] 부족한 점. 3줄 이상." },
+    { "subject": "화면조작", "value": 55, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "개발일정", "value": 40, "fullMark": 100, "feedback": "[보완] 부족한 점. 3줄 이상." }
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
@@ -450,6 +455,7 @@ ${referenceStats}
       strengths: analysis.strengths,
       weaknesses: analysis.weaknesses,
       companyFeedback: analysis.companyFeedback || "",
+      analysisSource: "url" as const,
       ranking: {
         total: DISPLAY_TOTAL,
         percentile,
@@ -468,6 +474,7 @@ ${referenceStats}
       weaknesses: analysis.weaknesses,
       ranking: analysisData.ranking,
       companyFeedback: analysis.companyFeedback || "",
+      analysisSource: "url",
     }).catch(() => {})
 
     return { data: analysisData }
@@ -655,46 +662,77 @@ ${referenceStats}
 
 **게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 0점, 간접적으로라도 언급이 있으면 그 수준에 맞게 채점하세요.
 
+**게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 합격자 자료와 비교하여 [강점]과 [보완]을 구분해서 작성하세요.
+- [강점]으로 시작하는 줄: 이 문서에서 해당 항목이 잘 된 부분
+- [보완]으로 시작하는 줄: 합격자들과 비교했을 때 부족한 부분과 구체적 개선 방향
+- 해당 항목이 전혀 없으면 [보완]만 작성하되, 합격자들은 어떻게 하는지 설명
+
+### 문서 가독성 평가 (10개) - PDF 문서 전용
+이 문서는 PDF로 업로드되었으므로, 문서의 시각적 상태를 직접 보고 평가하세요.
+16. **글자 크기 구분**: 제목, 소제목, 본문의 글자 크기가 확실히 다른가. 한눈에 무엇이 제목이고 무엇이 본문인지 알 수 있는가.
+17. **문단 나누기**: 내용이 적절한 길이로 문단이 나뉘어 있는가. 한 문단이 너무 길지 않은가. 관련 있는 내용끼리 묶여 있는가.
+18. **여백 활용**: 글과 글 사이, 그림과 글 사이에 충분한 여백이 있는가. 페이지가 너무 빽빽하지 않은가.
+19. **색상 활용**: 색을 써서 중요한 부분을 구분하거나 강조했는가. 배경과 글자의 색 차이가 충분한가.
+20. **표와 그림 배치**: 표, 차트, 이미지가 관련 내용 근처에 적절한 크기로 배치되어 있는가. 너무 크거나 작지 않은가.
+21. **페이지 구성**: 각 페이지가 깔끔하게 구성되어 있는가. 페이지마다 요소 배치가 일관적인가.
+22. **읽는 순서**: 어디서부터 읽어야 하는지 자연스럽게 알 수 있는가. 시선의 흐름이 자연스러운가.
+23. **강조 표현**: 중요한 내용을 굵은 글씨, 색상, 박스 등으로 눈에 띄게 했는가. 강조가 일관성 있게 사용되었는가.
+24. **목차와 번호**: 목차, 페이지 번호, 섹션 번호가 있어 원하는 내용을 빨리 찾을 수 있는가.
+25. **전체 통일감**: 문서 전체에서 글꼴, 색상, 간격이 일관적인가. 처음부터 끝까지 하나의 문서로 느껴지는가.
+
+### 레이아웃 개선 제안 (3곳)
+문서에서 가장 개선이 필요한 페이지/섹션 3곳을 골라서 현재 상태와 개선 방향을 설명하세요.
+각 제안에는 현재 레이아웃과 개선 후 레이아웃을 좌표로 표현하세요.
+좌표: x는 왼쪽에서의 위치(%), y는 위에서의 위치(%), w는 너비(%), h는 높이(%).
+색상 팔레트: 제목=#5B8DEF, 본문=#64748b, 표/데이터=#22c55e, 이미지=#f59e0b, 요약/강조=#a855f7, 여백=#1e293b
+
 ## 응답 형식 (반드시 JSON만 출력, 다른 텍스트 없이)
 {
   "score": 72,
   "categories": [
-    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "문제 정의와 해결 과정의 논리적 흐름에 대한 1~2문장 구체적 피드백" },
-    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "수치, 데이터, KPI 포함 여부에 대한 1~2문장 구체적 피드백" },
-    { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "문서 구조와 정리 상태에 대한 1~2문장 구체적 피드백" },
-    { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "게임 개발 기술 이해도에 대한 1~2문장 구체적 피드백" },
-    { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "독창적 아이디어에 대한 1~2문장 구체적 피드백" },
-    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "핵심 반복 구조에 대한 1~2문장 구체적 피드백" },
-    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "콘텐츠 분류 체계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "재화 흐름 설계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "플레이 경험 목표에 대한 1~2문장 구체적 피드백" },
-    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "수치 데이터 정리에 대한 1~2문장 구체적 피드백" },
-    { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "기능 간 연결 관계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "동기 부여 설계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "난이도 균형에 대한 1~2문장 구체적 피드백" },
-    { "subject": "화면조작", "value": 55, "fullMark": 100, "feedback": "화면 및 조작 설계에 대한 1~2문장 구체적 피드백" },
-    { "subject": "개발일정", "value": 40, "fullMark": 100, "feedback": "개발 일정 및 산출물에 대한 1~2문장 구체적 피드백" }
+    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "[강점] 잘 된 부분 설명.\\n[보완] 합격자들과 비교하여 부족한 점과 개선 방향. 3줄 이상 작성." },
+    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 합격자 비교 부족한 점. 3줄 이상." },
+    { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "[강점] 이동→전투→보상의 기본 순환이 정의됨.\\n[보완] 합격자들은 각 단계별 소요 시간과 보상 비율까지 구체적으로 설계합니다. 이 문서는 흐름만 있고 수치가 없어 실무 적용이 어렵습니다." },
+    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 합격자 비교 부족한 점. 3줄 이상." },
+    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "[보완] 합격자들은 재화 획득/소비/소멸 경로를 도표로 정리합니다. 이 문서에는 재화 흐름 관련 내용이 없습니다." },
+    { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "[보완] 합격자들은 캐릭터/아이템/몬스터 수치를 표로 정리합니다. 이 문서에는 수치 테이블이 없습니다." },
+    { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "[보완] 부족한 점. 3줄 이상." },
+    { "subject": "화면조작", "value": 55, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
+    { "subject": "개발일정", "value": 40, "fullMark": 100, "feedback": "[보완] 부족한 점. 3줄 이상." }
   ],
-  "strengths": [
-    "강점1 - 구체적 근거 (예: 4가지 구역으로 기능별 분리한 맵 구조가 체계적)",
-    "강점2 - 다른 관점 (예: 200m x 200m 등 구체적 수치 명시)",
-    "강점3 - 또 다른 관점 (예: 플로우차트로 플레이어 동선을 시각화)",
-    "강점4 - 합격자 평균과 비교한 관점",
-    "강점5 - 기술적 관점",
-    "강점6 - 차별화 요소"
+  "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
+  "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
+  "companyFeedback": "회사별 합격자 특징을 주어로 시작하여 비교. 예: '넥슨 합격자들은 수치 기반 시스템 설계가 탄탄하고, 크래프톤 합격자들은 전투 경험 목표가 구체적입니다. 이 문서는 ~가 부족하여 합격 수준에 도달하려면 ~를 보완해야 합니다.' 3~4문장으로. 절대 '~사례처럼', '~처럼' 표현 금지. 사용자는 합격자 포트폴리오를 볼 수 없으므로 '합격자들은 ~한 특징이 있다'는 식으로 서술.",
+  "readabilityCategories": [
+    { "subject": "글자크기구분", "value": 70, "fullMark": 100, "feedback": "제목과 본문의 크기 차이에 대한 구체적 피드백" },
+    { "subject": "문단나누기", "value": 65, "fullMark": 100, "feedback": "문단 구성에 대한 피드백" },
+    { "subject": "여백활용", "value": 55, "fullMark": 100, "feedback": "여백 상태에 대한 피드백" },
+    { "subject": "색상활용", "value": 72, "fullMark": 100, "feedback": "색상 사용에 대한 피드백" },
+    { "subject": "표와그림배치", "value": 60, "fullMark": 100, "feedback": "표/그림 배치에 대한 피드백" },
+    { "subject": "페이지구성", "value": 68, "fullMark": 100, "feedback": "페이지 구성에 대한 피드백" },
+    { "subject": "읽는순서", "value": 75, "fullMark": 100, "feedback": "읽는 순서에 대한 피드백" },
+    { "subject": "강조표현", "value": 50, "fullMark": 100, "feedback": "강조 표현에 대한 피드백" },
+    { "subject": "목차와번호", "value": 40, "fullMark": 100, "feedback": "목차/번호에 대한 피드백" },
+    { "subject": "전체통일감", "value": 62, "fullMark": 100, "feedback": "전체 통일감에 대한 피드백" }
   ],
-  "weaknesses": [
-    "보완점1 - 구체적 부족 사항 (예: KPI나 성과 목표 수치가 없음)",
-    "보완점2 - 다른 관점 (예: 경쟁 타이틀 비교 분석이 없음)",
-    "보완점3 - 또 다른 관점 (예: 밸런스 수치 테이블이 빠져있음)",
-    "보완점4 - 합격자 평균 대비 부족한 점",
-    "보완점5 - 기술적 관점에서 부족한 점",
-    "보완점6 - 개선 방향 제시"
-  ],
-  "companyFeedback": "회사별 합격자 특징을 주어로 시작하여 비교. 예: '넥슨 합격자들은 수치 기반 시스템 설계가 탄탄하고, 크래프톤 합격자들은 전투 경험 목표가 구체적입니다. 이 문서는 ~가 부족하여 합격 수준에 도달하려면 ~를 보완해야 합니다.' 3~4문장으로. 절대 '~사례처럼', '~처럼' 표현 금지. 사용자는 합격자 포트폴리오를 볼 수 없으므로 '합격자들은 ~한 특징이 있다'는 식으로 서술."
+  "layoutRecommendations": [
+    {
+      "pageOrSection": "3페이지 - 시스템 설계",
+      "currentDescription": "현재 상태를 2~3문장으로 설명",
+      "recommendedDescription": "개선 후 모습을 2~3문장으로 설명",
+      "currentLayout": { "sections": [{ "label": "제목", "x": 5, "y": 2, "w": 90, "h": 6, "color": "#5B8DEF" }, { "label": "본문", "x": 5, "y": 10, "w": 90, "h": 85, "color": "#64748b" }] },
+      "recommendedLayout": { "sections": [{ "label": "제목", "x": 5, "y": 3, "w": 90, "h": 8, "color": "#5B8DEF" }, { "label": "본문", "x": 5, "y": 14, "w": 42, "h": 50, "color": "#64748b" }, { "label": "표", "x": 52, "y": 14, "w": 43, "h": 50, "color": "#22c55e" }] }
+    }
+  ]
 }
 
-**핵심**: 문서를 꼼꼼히 읽고, 실제로 있는 내용만 강점으로, 실제로 없거나 부족한 내용은 보완점으로 작성하세요. 빈말 칭찬은 사용자에게 해롭습니다.`
+**핵심**: 문서를 꼼꼼히 읽고, 실제로 있는 내용만 강점으로, 실제로 없거나 부족한 내용은 보완점으로 작성하세요. 빈말 칭찬은 사용자에게 해롭습니다. categories의 각 feedback은 반드시 [강점]/[보완]을 구분하여 3줄 이상 작성하세요. readabilityCategories와 layoutRecommendations도 반드시 포함하세요.`
 
     // 파일 다운로드하여 base64로 변환
     const response = await fetch(input.fileUrl)
@@ -727,7 +765,7 @@ ${referenceStats}
 
       const message = await anthropic.messages.create({
         model: selectedModel,
-        max_tokens: 4096,
+        max_tokens: 8192,
         messages: [
           {
             role: "user",
@@ -742,7 +780,7 @@ ${referenceStats}
               },
               {
                 type: "text",
-                text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories와 companyFeedback을 모두 포함해야 합니다.",
+                text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다.",
               },
             ],
           },
@@ -822,6 +860,9 @@ ${referenceStats}
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
         companyFeedback: analysis.companyFeedback || "",
+        analysisSource: "pdf" as const,
+        readabilityCategories: analysis.readabilityCategories || [],
+        layoutRecommendations: analysis.layoutRecommendations || [],
         ranking: {
           total: DISPLAY_TOTAL,
           percentile,
@@ -840,6 +881,9 @@ ${referenceStats}
         weaknesses: analysis.weaknesses,
         ranking: analysisData.ranking,
         companyFeedback: analysis.companyFeedback || "",
+        analysisSource: "pdf",
+        readabilityCategories: analysis.readabilityCategories || [],
+        layoutRecommendations: analysis.layoutRecommendations || [],
       }).catch(() => {})
 
       return { data: analysisData }

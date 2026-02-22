@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Link2, Globe } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Link2, Globe, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -10,6 +10,8 @@ import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
+import { ReadabilityScores } from "@/components/readability-scores"
+import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { uploadFileToStorage, analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import Link from "next/link"
@@ -20,6 +22,30 @@ type Project = {
   name: string
   analysis_count: number
   best_score: number | null
+}
+
+type ReadabilityCategory = {
+  subject: string
+  value: number
+  fullMark: number
+  feedback?: string
+}
+
+type LayoutSection = {
+  label: string
+  x: number
+  y: number
+  w: number
+  h: number
+  color: string
+}
+
+type LayoutRecommendation = {
+  pageOrSection: string
+  currentDescription: string
+  recommendedDescription: string
+  currentLayout: { sections: LayoutSection[] }
+  recommendedLayout: { sections: LayoutSection[] }
 }
 
 type AnalysisResult = {
@@ -35,6 +61,9 @@ type AnalysisResult = {
   weaknesses: string[]
   detailedFeedback?: string
   companyFeedback?: string
+  analysisSource?: "pdf" | "url"
+  readabilityCategories?: ReadabilityCategory[]
+  layoutRecommendations?: LayoutRecommendation[]
   ranking?: {
     total: number
     percentile: number
@@ -924,6 +953,23 @@ export function AnalyzeDashboard() {
 
                 {/* 게임 디자인 역량 점수 */}
                 <DesignScores data={results[currentIndex].categories} />
+
+                {/* 문서 가독성 (PDF만) */}
+                {results[currentIndex].analysisSource === "pdf" && results[currentIndex].readabilityCategories && results[currentIndex].readabilityCategories!.length > 0 ? (
+                  <>
+                    <ReadabilityScores data={results[currentIndex].readabilityCategories!} />
+                    {results[currentIndex].layoutRecommendations && results[currentIndex].layoutRecommendations!.length > 0 && (
+                      <LayoutRecommendations data={results[currentIndex].layoutRecommendations!} />
+                    )}
+                  </>
+                ) : results[currentIndex].analysisSource === "url" ? (
+                  <Card className="bg-slate-900/80 border-[#1e3a5f]">
+                    <CardContent className="p-6 text-center">
+                      <Eye className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                      <p className="text-slate-400 text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
+                    </CardContent>
+                  </Card>
+                ) : null}
 
                 {/* 더 정확한 피드백이 필요하다면 */}
                 <Card className="bg-slate-900/80 border-[#1e3a5f]">

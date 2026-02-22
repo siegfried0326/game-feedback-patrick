@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3 } from "lucide-react"
+import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail } from "@/app/actions/subscription"
 import { getUser } from "@/app/actions/auth"
@@ -10,6 +10,8 @@ import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
+import { ReadabilityScores } from "@/components/readability-scores"
+import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { VersionComparison } from "@/components/version-comparison"
 
 type Subscription = {
@@ -38,9 +40,19 @@ type AnalysisItem = {
   file_name: string
   overall_score: number
   analyzed_at: string
-  categories: { subject: string; value: number; fullMark: number }[]
+  categories: { subject: string; value: number; fullMark: number; feedback?: string }[]
   strengths: string[]
   weaknesses: string[]
+  company_feedback?: string
+  analysis_source?: string
+  readability_categories?: { subject: string; value: number; fullMark: number; feedback?: string }[]
+  layout_recommendations?: {
+    pageOrSection: string
+    currentDescription: string
+    recommendedDescription: string
+    currentLayout: { sections: { label: string; x: number; y: number; w: number; h: number; color: string }[] }
+    recommendedLayout: { sections: { label: string; x: number; y: number; w: number; h: number; color: string }[] }
+  }[]
   ranking?: {
     total: number
     percentile: number
@@ -619,6 +631,20 @@ export default function MyPage() {
                   {detail.categories?.length > 0 && (
                     <DesignScores data={detail.categories} />
                   )}
+                  {/* 문서 가독성 + 레이아웃 (PDF만) */}
+                  {detail.analysis_source === "pdf" && detail.readability_categories && detail.readability_categories.length > 0 ? (
+                    <>
+                      <ReadabilityScores data={detail.readability_categories} />
+                      {detail.layout_recommendations && detail.layout_recommendations.length > 0 && (
+                        <LayoutRecommendations data={detail.layout_recommendations} />
+                      )}
+                    </>
+                  ) : detail.analysis_source === "url" ? (
+                    <div className="p-4 bg-slate-900/80 border border-[#1e3a5f] rounded-xl text-center">
+                      <Eye className="w-6 h-6 text-slate-600 mx-auto mb-2" />
+                      <p className="text-slate-400 text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
+                    </div>
+                  ) : null}
                   {detail.company_feedback && (
                     <div className="p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
                       <p className="text-sm text-slate-300 leading-relaxed">{detail.company_feedback}</p>

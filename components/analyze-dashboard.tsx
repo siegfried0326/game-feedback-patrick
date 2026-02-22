@@ -52,7 +52,7 @@ type FileStatus = {
   error?: string
 }
 
-const MAX_FILES = 20
+const MAX_FILES = 1
 
 function getGrade(score: number): { grade: string; color: string } {
   if (score >= 90) return { grade: "S", color: "bg-purple-500" }
@@ -518,7 +518,7 @@ export function AnalyzeDashboard() {
                   <div>
                     {selectedProjectId ? (
                       <>
-                        <p className="font-medium text-white">여러 문서를 한 번에 분석하세요</p>
+                        <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
                         <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
                       </>
                     ) : (
@@ -527,7 +527,7 @@ export function AnalyzeDashboard() {
                         <p className="text-sm text-slate-600 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                       </>
                     )}
-                    <p className="text-xs text-slate-500 mt-2">최대 500MB / 동시 20개까지</p>
+                    <p className="text-xs text-slate-500 mt-2">PDF, DOCX, TXT · 최대 500MB</p>
                   </div>
                 </div>
               </div>
@@ -535,7 +535,7 @@ export function AnalyzeDashboard() {
               {/* 선택된 파일 목록 */}
               {files.length > 0 && (
                 <div className="mt-6 space-y-2">
-                  <p className="text-sm text-slate-400 mb-3">선택된 파일 ({files.length}개)</p>
+                  <p className="text-sm text-slate-400 mb-3">선택된 파일</p>
                   {files.map((fileStatus, index) => (
                     <div
                       key={index}
@@ -586,7 +586,7 @@ export function AnalyzeDashboard() {
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Loader2 className="w-4 h-4 animate-spin text-[#5B8DEF]" />
                     <span className="text-sm text-slate-400">
-                      {statusMessage || `AI가 PDF를 직접 읽고 분석 중... (${currentIndex + 1}/${files.length})`}
+                      {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
                     </span>
                   </div>
                   <Progress value={((currentIndex + 1) / files.length) * 100} className="h-2" />

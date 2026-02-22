@@ -33,9 +33,9 @@ export async function uploadFileToStorage(formData: FormData) {
       return { error: "파일이 없습니다." }
     }
 
-    // 파일 크기 체크 (50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      return { error: "파일 크기는 50MB를 초과할 수 없습니다." }
+    // 파일 크기 체크 (500MB)
+    if (file.size > 500 * 1024 * 1024) {
+      return { error: "파일 크기는 500MB를 초과할 수 없습니다." }
     }
 
     const supabase = await createClient()
@@ -392,32 +392,31 @@ ${referenceStats}
         rank = Math.max(1, Math.min(DISPLAY_TOTAL, DISPLAY_TOTAL - Math.round((percentile / 100) * DISPLAY_TOTAL)))
       }
 
-      // 일반게임회사(전체 합격자) 평균 계산 - 데이터 없는 회사의 fallback
-      const generalCompanyKey = Object.keys(companyStats).find(k => k.includes("일반게임회사"))
-      const generalAvg = generalCompanyKey
-        ? Math.round(companyStats[generalCompanyKey].total / companyStats[generalCompanyKey].count)
-        : avgScores.overall
+      // 회사별 비교 데이터 - 실제 데이터가 있는 회사만 표시 (일반게임회사 제외)
+      const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
 
-      // 회사별 비교 데이터 - 6개 회사 고정 슬롯
-      const fixedCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠"]
-      const companyComparison = fixedCompanies.map(company => {
+      // 실제 학습 데이터가 있는 회사만 추가
+      const targetCompanies = ["넥슨", "넷마블", "크래프톤", "라이온하트스튜디오", "네오위즈", "웹젠", "엔씨소프트", "스마일게이트", "매드엔진"]
+      targetCompanies.forEach(company => {
         const matchedEntry = Object.entries(companyStats).find(([key]) =>
           key.includes(company) || company.includes(key)
         )
-        return {
-          company: matchedEntry ? matchedEntry[0] : company,
-          avgScore: matchedEntry
-            ? Math.round(matchedEntry[1].total / matchedEntry[1].count)
-            : generalAvg,
-          userScore: analysis.score,
+        if (matchedEntry && matchedEntry[1].count > 0) {
+          companyComparison.push({
+            company: matchedEntry[0],
+            avgScore: Math.round(matchedEntry[1].total / matchedEntry[1].count),
+            userScore: analysis.score,
+            sampleCount: matchedEntry[1].count,
+          })
         }
       })
 
-      // "전체 합격자" 슬롯 추가
+      // "전체 합격자" 항상 추가 (전체 평균)
       companyComparison.push({
         company: "전체 합격자",
-        avgScore: generalAvg,
+        avgScore: avgScores.overall,
         userScore: analysis.score,
+        sampleCount: portfolios?.length || 0,
       })
 
       const allCompanyComparison = companyComparison

@@ -98,7 +98,7 @@ export function HeroSection() {
                     문서를 업로드하고 분석받기
                   </p>
                   <p className="text-slate-500 text-sm mb-4">
-                    PDF, DOCX, TXT (최대 50MB)
+                    PDF, DOCX, TXT (최대 500MB)
                   </p>
 
                   <div className="inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm">

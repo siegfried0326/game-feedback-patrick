@@ -263,7 +263,7 @@ export function AnalyzeDashboard() {
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
-    maxSize: 50 * 1024 * 1024,
+    maxSize: 500 * 1024 * 1024,
     disabled: !selectedProjectId,
   })
 
@@ -527,7 +527,7 @@ export function AnalyzeDashboard() {
                         <p className="text-sm text-slate-600 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                       </>
                     )}
-                    <p className="text-xs text-slate-500 mt-2">최대 50MB / 동시 20개까지</p>
+                    <p className="text-xs text-slate-500 mt-2">최대 500MB / 동시 20개까지</p>
                   </div>
                 </div>
               </div>
@@ -682,7 +682,16 @@ export function AnalyzeDashboard() {
                 {/* 합격자 포트폴리오 사이 랭킹 */}
                 {results[currentIndex].ranking && results[currentIndex].ranking!.total > 0 && (() => {
                   const ranking = results[currentIndex].ranking!
-                  const topPercent = Math.max(1, Math.round((ranking.rank || 1) / ranking.total * 100))
+                  const userScore = results[currentIndex].score
+                  // 점수 기반 5단계 등급
+                  const getRankGrade = (s: number) => {
+                    if (s >= 90) return { label: "합격 유력", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
+                    if (s >= 80) return { label: "합격 가능", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
+                    if (s >= 70) return { label: "보완 필요", color: "text-[#5B8DEF]", bg: "bg-[#5B8DEF]/10 border-[#5B8DEF]/20", emoji: "📝" }
+                    if (s >= 60) return { label: "개선 필요", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
+                    return { label: "재작성 권장", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
+                  }
+                  const grade = getRankGrade(userScore)
                   return (
                   <Card className="bg-gradient-to-br from-slate-900/80 to-[#0d1b2a] border-[#5B8DEF]/30">
                     <CardHeader>
@@ -699,54 +708,59 @@ export function AnalyzeDashboard() {
                         <div className="text-center p-5 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
                           <p className="text-xs text-slate-400 mb-2">내 점수</p>
                           <p className="text-4xl font-bold text-[#5B8DEF]">
-                            {results[currentIndex].score}<span className="text-lg text-slate-400">점</span>
+                            {userScore}<span className="text-lg text-slate-400">점</span>
                           </p>
                         </div>
-                        <div className={`text-center p-5 border rounded-xl ${topPercent <= 30 ? 'bg-emerald-500/10 border-emerald-500/20' : topPercent <= 60 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                          <p className="text-xs text-slate-400 mb-2">{ranking.total}개 중 순위</p>
-                          <p className={`text-4xl font-bold ${topPercent <= 30 ? 'text-emerald-400' : topPercent <= 60 ? 'text-amber-400' : 'text-red-400'}`}>
-                            상위 {topPercent}<span className="text-lg">%</span>
+                        <div className={`text-center p-5 border rounded-xl ${grade.bg}`}>
+                          <p className="text-xs text-slate-400 mb-2">{ranking.total}개 기준 평가</p>
+                          <p className={`text-3xl font-bold ${grade.color}`}>
+                            {grade.emoji} {grade.label}
                           </p>
                         </div>
                       </div>
 
-                      {/* 점수 분포 바 */}
+                      {/* 5단계 등급 스케일 */}
                       <div className="mb-8">
-                        <p className="text-slate-400 text-sm mb-3">합격 포트폴리오 점수 분포에서 내 위치</p>
-                        <div className="relative">
-                          <div className="w-full bg-slate-800 rounded-full h-8 overflow-hidden flex">
-                            <div className="h-full bg-red-500/30 flex items-center justify-center text-xs text-red-300" style={{ width: '15%' }}>~70</div>
-                            <div className="h-full bg-amber-500/30 flex items-center justify-center text-xs text-amber-300" style={{ width: '20%' }}>70~80</div>
-                            <div className="h-full bg-[#5B8DEF]/30 flex items-center justify-center text-xs text-blue-300" style={{ width: '30%' }}>80~88</div>
-                            <div className="h-full bg-emerald-500/30 flex items-center justify-center text-xs text-emerald-300" style={{ width: '25%' }}>88~95</div>
-                            <div className="h-full bg-purple-500/30 flex items-center justify-center text-xs text-purple-300" style={{ width: '10%' }}>95+</div>
-                          </div>
-                          {/* 내 점수 위치 표시 */}
-                          <div
-                            className="absolute -top-1 flex flex-col items-center"
-                            style={{ left: `${Math.min(Math.max(results[currentIndex].score, 5), 98)}%`, transform: 'translateX(-50%)' }}
-                          >
-                            <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white" />
-                            <div className="w-0.5 h-10 bg-white/60" />
-                          </div>
+                        <p className="text-slate-400 text-sm mb-3">합격 가능성 등급</p>
+                        <div className="flex gap-1">
+                          {[
+                            { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-300", min: 0, max: 59 },
+                            { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-300", min: 60, max: 69 },
+                            { label: "보완 필요", range: "70~79", color: "bg-[#5B8DEF]/30", textColor: "text-blue-300", min: 70, max: 79 },
+                            { label: "합격 가능", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-300", min: 80, max: 89 },
+                            { label: "합격 유력", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-300", min: 90, max: 100 },
+                          ].map((g, i) => (
+                            <div
+                              key={i}
+                              className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}
+                            >
+                              <span className="hidden sm:inline">{g.label}</span>
+                              <span className="sm:hidden">{g.range}</span>
+                            </div>
+                          ))}
                         </div>
                         <p className="text-xs text-slate-500 mt-2 text-center">
-                          내 점수 {results[currentIndex].score}점
+                          내 점수 {userScore}점 · 재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 합격 가능 &lt; 합격 유력
                         </p>
                       </div>
 
-                      {/* 회사별 합격자 비교 - 고정 슬롯 */}
+                      {/* 회사별 합격자 비교 - 실제 데이터 있는 회사만 */}
                       {ranking.companyComparison && ranking.companyComparison.length > 0 && (
                         <div>
                           <p className="text-white font-semibold text-base mb-4">회사별 합격자 평균 vs 내 점수</p>
                           <div className="grid sm:grid-cols-2 gap-3">
                             {ranking.companyComparison.map((comp, idx) => {
-                              const diff = results[currentIndex].score - comp.avgScore
+                              const diff = userScore - comp.avgScore
                               const isAbove = diff >= 0
                               return (
                                 <div key={idx} className={`p-4 rounded-xl border ${isAbove ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-amber-500/5 border-amber-500/20'}`}>
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className="text-white font-medium text-sm">{comp.company}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-white font-medium text-sm">{comp.company}</span>
+                                      {comp.sampleCount && (
+                                        <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">{comp.sampleCount}개</span>
+                                      )}
+                                    </div>
                                     <span className={`text-sm font-bold ${isAbove ? 'text-emerald-400' : 'text-amber-400'}`}>
                                       {isAbove ? '+' : ''}{diff}점
                                     </span>
@@ -760,7 +774,7 @@ export function AnalyzeDashboard() {
                                         />
                                       </div>
                                     </div>
-                                    <span className="text-xs text-slate-400 w-16 text-right">평균 {comp.avgScore}점</span>
+                                    <span className="text-xs text-slate-400 w-20 text-right">평균 {comp.avgScore}점</span>
                                   </div>
                                 </div>
                               )

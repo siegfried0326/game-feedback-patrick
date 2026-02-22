@@ -38,11 +38,16 @@ export function ScoreCard({ score, ranking }: ScoreCardProps) {
     return "보완 필요"
   }
 
-  const topPercent = ranking && ranking.total > 0 && ranking.rank
-    ? Math.max(1, Math.round((ranking.rank / ranking.total) * 100))
-    : ranking && ranking.total > 0
-    ? Math.max(1, 100 - ranking.percentile)
-    : null
+  // 점수 기반 5단계 등급 (부등호 표시)
+  const getRankGrade = (score: number): { label: string; color: string; emoji: string } => {
+    if (score >= 90) return { label: "합격 유력", color: "text-purple-400", emoji: "🏆" }
+    if (score >= 80) return { label: "합격 가능", color: "text-emerald-400", emoji: "✅" }
+    if (score >= 70) return { label: "보완 필요", color: "text-[#5B8DEF]", emoji: "📝" }
+    if (score >= 60) return { label: "개선 필요", color: "text-amber-400", emoji: "⚠️" }
+    return { label: "재작성 권장", color: "text-red-400", emoji: "🔄" }
+  }
+
+  const rankGrade = getRankGrade(score)
 
   return (
     <Card className="bg-slate-900/80 border-[#1e3a5f]">
@@ -85,12 +90,19 @@ export function ScoreCard({ score, ranking }: ScoreCardProps) {
           >
             {getScoreLabel(score)}
           </span>
-          {topPercent !== null && (
-            <div className="flex items-center justify-center gap-1.5 mt-3">
-              <Trophy className="w-4 h-4 text-amber-400" />
-              <p className="text-sm text-slate-300">
-                합격 포트폴리오 <span className="text-white font-semibold">{ranking!.total}개</span> 기준{" "}
-                <span className="text-[#5B8DEF] font-bold">상위 {topPercent}%</span>
+          {ranking && ranking.total > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-center gap-1.5">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <p className="text-sm text-slate-300">
+                  합격 포트폴리오 <span className="text-white font-semibold">{ranking.total}개</span> 기준
+                </p>
+              </div>
+              <p className={`text-lg font-bold ${rankGrade.color}`}>
+                {rankGrade.emoji} {rankGrade.label}
+              </p>
+              <p className="text-xs text-slate-500">
+                재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 합격 가능 &lt; 합격 유력
               </p>
             </div>
           )}

@@ -9,7 +9,7 @@ const nextConfig = {
   // 큰 파일 업로드를 위한 설정
   experimental: {
     serverActions: {
-      bodySizeLimit: '50mb',
+      bodySizeLimit: '500mb',
     },
   },
 }

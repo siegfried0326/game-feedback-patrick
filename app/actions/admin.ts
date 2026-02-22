@@ -23,8 +23,8 @@ export async function uploadAdminFile(formData: FormData) {
       return { error: "파일이 없습니다." }
     }
 
-    // Gemini inline 제한 고려
-    const maxSize = 50 * 1024 * 1024 // 50MB
+    // 파일 크기 제한
+    const maxSize = 500 * 1024 * 1024 // 500MB
     if (file.size > maxSize) {
       return { error: `파일 크기는 ${Math.round(maxSize / 1024 / 1024)}MB를 초과할 수 없습니다. (현재: ${Math.round(file.size / 1024 / 1024)}MB)` }
     }
@@ -550,7 +550,7 @@ export async function getCompanyStats() {
       return { error: error.message }
     }
 
-    // 회사별 카운트
+    // 회사별 카운트 - 포트폴리오 기준 (한 포트폴리오는 한 번만 카운트)
     const stats: Record<string, number> = {}
 
     const targetCompanies = [
@@ -572,14 +572,24 @@ export async function getCompanyStats() {
     })
     stats["미분류"] = 0
 
-    // 카운트
+    // 카운트 - 유연한 매칭 (부분 문자열 포함)
     portfolios?.forEach(portfolio => {
       if (portfolio.companies && Array.isArray(portfolio.companies) && portfolio.companies.length > 0) {
         let matched = false
         portfolio.companies.forEach((company: string) => {
+          // 정확 매칭 우선
           if (targetCompanies.includes(company)) {
             stats[company]++
             matched = true
+          } else {
+            // 부분 매칭 (라이온하트스튜디오 → 라이온하트 등)
+            const partialMatch = targetCompanies.find(t =>
+              company.includes(t) || t.includes(company)
+            )
+            if (partialMatch) {
+              stats[partialMatch]++
+              matched = true
+            }
           }
         })
         if (!matched) {
@@ -590,7 +600,7 @@ export async function getCompanyStats() {
       }
     })
 
-    return { data: stats }
+    return { data: stats, total: portfolios?.length || 0 }
   } catch (error) {
     console.error("Get company stats error:", error)
     return { error: error instanceof Error ? error.message : "회사별 통계 조회 실패" }

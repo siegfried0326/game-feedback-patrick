@@ -47,7 +47,7 @@ export default function TermsPage() {
               <li>서비스는 웹사이트를 통해 제공됩니다.</li>
               <li>이용자는 PDF, DOCX, PPTX 등의 형식으로 문서를 업로드할 수 있습니다.</li>
               <li>AI 분석 결과는 업로드 후 즉시 제공됩니다.</li>
-              <li>최대 업로드 파일 크기는 50MB입니다.</li>
+              <li>최대 업로드 파일 크기는 500MB입니다.</li>
             </ul>
           </section>
 

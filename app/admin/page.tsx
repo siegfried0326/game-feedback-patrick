@@ -245,7 +245,7 @@ export default function AdminPage() {
               PDF 파일 업로드
             </CardTitle>
             <CardDescription className="text-slate-400">
-              합격 포트폴리오 PDF를 드래그하거나 클릭하여 업로드하세요. 여러 개 가능합니다. (최대 50MB)
+              합격 포트폴리오 PDF를 드래그하거나 클릭하여 업로드하세요. 여러 개 가능합니다. (최대 500MB)
             </CardDescription>
           </CardHeader>
           <CardContent>

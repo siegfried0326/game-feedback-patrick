@@ -12,7 +12,7 @@ const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_4vZn
 
 const PACKAGES = [
   {
-    key: "tutoring_4h",
+    key: "tutoring_1h",
     name: "1:1 과외 (4타임)",
     price: 480000,
     description: "타임당 12만원 × 4회 = 총 48만원",
@@ -43,7 +43,7 @@ export default function TutoringPage() {
   const [codeError, setCodeError] = useState("")
 
   // 결제 상태
-  const [selectedPackage, setSelectedPackage] = useState<string>("tutoring_4h")
+  const [selectedPackage, setSelectedPackage] = useState<string>("tutoring_1h")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [widgetsReady, setWidgetsReady] = useState(false)

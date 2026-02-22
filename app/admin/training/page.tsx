@@ -121,7 +121,10 @@ export default function TrainingPage() {
       "application/pdf": [".pdf"],
       "text/plain": [".txt"],
       "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"]
+      "image/png": [".png"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+      "application/vnd.ms-excel": [".xls"],
+      "text/csv": [".csv"],
     },
     multiple: true,
     maxSize: 200 * 1024 * 1024
@@ -480,7 +483,7 @@ export default function TrainingPage() {
                   파일 선택
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  PDF, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 200MB)
+                  PDF, Excel, CSV, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 200MB)
                 </CardDescription>
               </CardHeader>
               <CardContent>

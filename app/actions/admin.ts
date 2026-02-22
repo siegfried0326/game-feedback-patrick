@@ -554,51 +554,46 @@ export async function getCompanyStats() {
     const stats: Record<string, number> = {}
 
     const targetCompanies = [
-      "엔씨소프트",
       "넥슨",
       "넷마블",
       "크래프톤",
-      "네오위즈",
+      "엔씨소프트",
       "스마일게이트",
-      "라이온하트",
-      "매드엔진",
+      "네오위즈",
+      "펄어비스",
       "웹젠",
-      "일반게임회사"
     ]
 
     // 초기화
     targetCompanies.forEach(company => {
       stats[company] = 0
     })
-    stats["미분류"] = 0
 
     // 카운트 - 유연한 매칭 (부분 문자열 포함)
+    let totalMatched = 0
     portfolios?.forEach(portfolio => {
       if (portfolio.companies && Array.isArray(portfolio.companies) && portfolio.companies.length > 0) {
-        let matched = false
         portfolio.companies.forEach((company: string) => {
           // 정확 매칭 우선
           if (targetCompanies.includes(company)) {
             stats[company]++
-            matched = true
+            totalMatched++
           } else {
-            // 부분 매칭 (라이온하트스튜디오 → 라이온하트 등)
+            // 부분 매칭 (엔씨 → 엔씨소프트 등)
             const partialMatch = targetCompanies.find(t =>
               company.includes(t) || t.includes(company)
             )
             if (partialMatch) {
               stats[partialMatch]++
-              matched = true
+              totalMatched++
             }
           }
         })
-        if (!matched) {
-          stats["미분류"]++
-        }
-      } else {
-        stats["미분류"]++
       }
     })
+
+    // 전체 합격자 = 전체 포트폴리오 수
+    stats["전체 합격자"] = portfolios?.length || 0
 
     return { data: stats, total: portfolios?.length || 0 }
   } catch (error) {

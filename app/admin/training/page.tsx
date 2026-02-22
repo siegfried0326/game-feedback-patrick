@@ -312,19 +312,17 @@ export default function TrainingPage() {
     )
   }
 
-  // ── 회사별 색상 맵 ──
+  // ── 회사별 색상 맵 (8개 + 전체) ──
   const companyColors: Record<string, string> = {
-    "엔씨소프트": "from-green-500 to-emerald-600",
     "넥슨": "from-blue-500 to-cyan-600",
     "넷마블": "from-red-500 to-rose-600",
     "크래프톤": "from-yellow-500 to-orange-600",
-    "네오위즈": "from-purple-500 to-violet-600",
+    "엔씨소프트": "from-green-500 to-emerald-600",
     "스마일게이트": "from-orange-500 to-amber-600",
-    "라이온하트": "from-pink-500 to-fuchsia-600",
-    "매드엔진": "from-indigo-500 to-blue-600",
+    "네오위즈": "from-purple-500 to-violet-600",
+    "펄어비스": "from-indigo-500 to-blue-600",
     "웹젠": "from-teal-500 to-cyan-600",
-    "일반게임회사": "from-slate-500 to-gray-600",
-    "미분류": "from-gray-600 to-gray-700"
+    "전체 합격자": "from-[#5B8DEF] to-blue-600",
   }
 
   return (

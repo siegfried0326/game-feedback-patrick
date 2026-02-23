@@ -1,6 +1,6 @@
 "use client"
 
-import { Database, ShieldCheck, BarChart3, ArrowRight, MessageSquare } from "lucide-react"
+import { Database, ShieldCheck, BarChart3, ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 
@@ -130,32 +130,49 @@ export function WhyChooseUs() {
             분석 결과 미리보기
           </h3>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* 점수 카드 */}
-            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col items-center justify-center">
-              <div className="text-6xl font-bold text-[#5B8DEF] mb-2">85</div>
-              <div className="text-slate-400 text-sm mb-4">종합 점수</div>
-              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium">
-                A등급 · 상위 12%
-              </div>
+          <div className="space-y-6">
+            {/* 1행: 종합점수 + 레이더차트 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/preview-score.png"
+                alt="종합 점수 및 레이더 차트 분석 결과"
+                width={2176}
+                height={1142}
+                className="w-full h-auto"
+              />
             </div>
 
-            {/* 레이더 차트 */}
-            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col items-center justify-center">
-              <BarChart3 className="w-16 h-16 text-[#5B8DEF] mb-4" />
-              <p className="text-white font-medium mb-2">5개 영역 레이더 분석</p>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                구조 · 논리 · 창의성 · 실현성 · 표현력
-              </p>
+            {/* 2행: 회사별 합격자 비교 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/preview-ranking.png"
+                alt="회사별 합격자 평균 vs 내 점수 비교"
+                width={2178}
+                height={2054}
+                className="w-full h-auto"
+              />
             </div>
 
-            {/* 피드백 카드 */}
-            <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col items-center justify-center">
-              <MessageSquare className="w-16 h-16 text-emerald-400 mb-4" />
-              <p className="text-white font-medium mb-2">항목별 상세 피드백</p>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                각 영역별 강점, 약점, 구체적 개선 방향 제시
-              </p>
+            {/* 3행: 강점/약점 + 게임디자인 역량 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/preview-feedback.png"
+                alt="강점, 약점 분석 및 게임 디자인 역량 평가"
+                width={2178}
+                height={2054}
+                className="w-full h-auto"
+              />
+            </div>
+
+            {/* 4행: 문서 가독성 + 레이아웃 개선 제안 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/preview-readability.png"
+                alt="문서 가독성 분석 및 레이아웃 개선 제안"
+                width={2140}
+                height={2352}
+                className="w-full h-auto"
+              />
             </div>
           </div>
 

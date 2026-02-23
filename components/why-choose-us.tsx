@@ -11,12 +11,12 @@ export function WhyChooseUs() {
         {/* Hero Text */}
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
-            AI 첨삭 받고도 왜{" "}
-            <span className="text-red-400">서류에서 떨어졌을까요?</span>
+            &quot;핵심 루프를 잘 설계하세요.&quot;<br />
+            <span className="text-red-400">그래서 어쩌라고요?</span>
           </h2>
           <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-            할루시네이션(거짓 정보)과 뻔한 조언에 지치셨나요?<br />
-            인터넷 긁어온 AI로는 합격할 수 없습니다.
+            GPT에게 기획서를 넣으면 돌아오는 건 게임디자인 교과서 요약뿐.<br />
+            <span className="text-slate-300">당신의 문서에만 해당하는 피드백</span>은 단 한 줄도 없습니다.
           </p>
         </div>
 

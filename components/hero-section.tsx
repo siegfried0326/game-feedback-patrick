@@ -70,15 +70,15 @@ export function HeroSection() {
               <div className="space-y-2.5">
                 <div className="flex items-start gap-2.5">
                   <XCircle className="w-4 h-4 text-red-400/60 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-500">&quot;문서 구조가 좋습니다&quot; — 뻔한 말</p>
+                  <p className="text-sm text-slate-500">&quot;핵심 루프를 잘 설계하세요&quot; — <span className="text-red-400/80">누구나 아는 교과서 말</span></p>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <XCircle className="w-4 h-4 text-red-400/60 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-500">&quot;리더십을 더 강조하세요&quot; — 근거 없음</p>
+                  <p className="text-sm text-slate-500">&quot;밸런싱을 고려하세요&quot; — <span className="text-red-400/80">뭘 어떻게?</span></p>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <XCircle className="w-4 h-4 text-red-400/60 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-500">합격 기준을 모름 → 할루시네이션</p>
+                  <p className="text-sm text-slate-500">&quot;유저 경험을 개선하세요&quot; — <span className="text-red-400/80">합격 기준 모름</span></p>
                 </div>
               </div>
             </div>

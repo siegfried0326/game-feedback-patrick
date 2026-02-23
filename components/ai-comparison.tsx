@@ -90,16 +90,19 @@ export function AIComparison() {
                 <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">&quot;문서 구조가 좋습니다&quot; (뻔한 말)</p>
+                  <p className="text-sm text-slate-400">&quot;핵심 반복 루프가 잘 설계되어 있습니다&quot;</p>
                 </div>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">&quot;리더십을 더 강조하세요&quot; (근거 없음)</p>
+                  <p className="text-sm text-slate-400">&quot;난이도 밸런싱을 더 고려해보세요&quot;</p>
                 </div>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">할루시네이션 (거짓 정보)</p>
+                  <p className="text-sm text-slate-400">&quot;유저 리텐션을 위한 보상 설계가 필요합니다&quot;</p>
                 </div>
+                <p className="text-xs text-red-400/60 text-center pt-2">
+                  ↑ 어떤 문서를 넣어도 똑같은 말 — 교과서 복붙
+                </p>
               </div>
             </div>
           </div>
@@ -180,16 +183,19 @@ export function AIComparison() {
                 <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">&quot;3번 문단의 수치 표현이 합격자 대비 구체성 부족&quot;</p>
+                  <p className="text-sm text-slate-300">&quot;자동사냥권→전투 루프의 연결고리가 불분명. 넥슨 합격자는 전투-보상-성장 순환을 수치로 설계함&quot;</p>
                 </div>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">&quot;A사 합격자 문서와 비교 시 기술 스택 설명 방식 개선 필요&quot;</p>
+                  <p className="text-sm text-slate-300">&quot;재화 흐름 테이블 누락 — 크래프톤 합격자 대비 구체성 25점 하락 요인&quot;</p>
                 </div>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">&quot;상위 20% 합격자 평균 점수: 82점, 현재 점수: 67점&quot;</p>
+                  <p className="text-sm text-slate-300">&quot;현재 58점 → 넥슨 합격 평균 92점. 재화 흐름과 수치 설계 보완 시 +15점 예상&quot;</p>
                 </div>
+                <p className="text-xs text-[#5B8DEF]/60 text-center pt-2">
+                  ↑ 당신의 문서만을 위한 맞춤 피드백
+                </p>
               </div>
             </div>
           </div>

@@ -41,18 +41,16 @@ export function WhyChooseUs() {
           {/* Image Right - 실제 포트폴리오 데이터 */}
           <div className="relative">
             <div className="relative bg-slate-900/80 border border-[#1e3a5f] rounded-2xl overflow-hidden">
-              {/* 실제 스크린샷 - 문서 리스트 보이게 + 이름만 블러 */}
+              {/* 학습 데이터 관리 스크린샷 - 회사별 현황 보이게 + 파일명 블러 */}
               <div className="relative aspect-[4/3]">
                 <Image
                   src="/portfolio-data.png"
-                  alt="합격자 포트폴리오 데이터"
+                  alt="합격자 포트폴리오 학습 데이터"
                   fill
-                  className="object-cover object-left-top opacity-90"
+                  className="object-cover object-top opacity-90"
                 />
-                {/* 파일명(개인정보) 가리는 세로 블러 스트립 - 텍스트 영역 */}
-                <div className="absolute top-0 left-[15%] w-[45%] h-full backdrop-blur-md bg-[#0d1f3c]/30" />
-                {/* 오른쪽 정보 영역 살짝 블러 */}
-                <div className="absolute top-0 right-0 w-[40%] h-full backdrop-blur-sm bg-[#0d1f3c]/20" />
+                {/* 하단 파일 목록 영역 강한 블러 (개인정보 보호) */}
+                <div className="absolute bottom-0 left-0 right-0 h-[55%] backdrop-blur-md bg-[#0d1f3c]/40" />
                 {/* 하단 그라데이션 */}
                 <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0d1f3c] to-transparent" />
                 {/* 하단 187개 강조 오버레이 */}

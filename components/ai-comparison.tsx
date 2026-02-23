@@ -32,14 +32,14 @@ export function AIComparison() {
         </div>
 
         {/* Comparison Infographic */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
 
           {/* LEFT: Generic AI (Bad) */}
-          <div className="relative">
-            <div className="absolute -top-3 left-6 px-4 py-1 bg-red-500/20 border border-red-500/30 rounded-full text-red-400 text-sm font-medium">
+          <div className="relative flex flex-col">
+            <div className="absolute -top-3 left-6 px-4 py-1 bg-red-500/20 border border-red-500/30 rounded-full text-red-400 text-sm font-medium z-10">
               일반적인 AI 첨삭
             </div>
-            <div className="bg-slate-900/80 border border-red-500/30 rounded-2xl p-8 pt-12">
+            <div className="bg-slate-900/80 border border-red-500/30 rounded-2xl p-8 pt-12 flex-1 flex flex-col">
 
               {/* Data Input Section */}
               <div className="mb-8">
@@ -86,7 +86,7 @@ export function AIComparison() {
               </div>
 
               {/* Output */}
-              <div className="space-y-3">
+              <div className="space-y-3 mt-auto">
                 <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
                 <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
                   <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
@@ -105,11 +105,11 @@ export function AIComparison() {
           </div>
 
           {/* RIGHT: Our AI (Good) */}
-          <div className="relative">
-            <div className="absolute -top-3 left-6 px-4 py-1 bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 rounded-full text-[#5B8DEF] text-sm font-medium">
+          <div className="relative flex flex-col">
+            <div className="absolute -top-3 left-6 px-4 py-1 bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 rounded-full text-[#5B8DEF] text-sm font-medium z-10">
               이 서비스의 AI 첨삭
             </div>
-            <div className="bg-slate-900/80 border border-[#5B8DEF]/30 rounded-2xl p-8 pt-12">
+            <div className="bg-slate-900/80 border border-[#5B8DEF]/30 rounded-2xl p-8 pt-12 flex-1 flex flex-col">
 
               {/* Data Input Section - Yearly Stats */}
               <div className="mb-8">
@@ -176,7 +176,7 @@ export function AIComparison() {
               </div>
 
               {/* Output */}
-              <div className="space-y-3">
+              <div className="space-y-3 mt-auto">
                 <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
                 <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />

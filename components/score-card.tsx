@@ -50,11 +50,11 @@ export function ScoreCard({ score, ranking }: ScoreCardProps) {
   const rankGrade = getRankGrade(score)
 
   return (
-    <Card className="bg-slate-900/80 border-[#1e3a5f]">
+    <Card className="bg-slate-900/80 border-[#1e3a5f] h-full flex flex-col">
       <CardHeader>
         <CardTitle className="text-white">종합 점수 (AI Score)</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center py-8">
+      <CardContent className="flex flex-col items-center justify-center py-8 flex-1">
         <div className="relative w-40 h-40">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
             <circle

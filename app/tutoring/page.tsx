@@ -335,8 +335,25 @@ export default function TutoringPage() {
               </Button>
             )}
 
+            {/* 환불규정 안내 */}
+            <div className="mt-8 bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white mb-3">컨설팅 환불규정 안내</h3>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>• 잔여 회차 기준으로 환불됩니다.</li>
+                <li>• 등록일로부터 <span className="text-slate-300 font-medium">4주 이내</span> 모든 회차를 소진해야 합니다.</li>
+                <li>• 4주 종료 후 <span className="text-slate-300 font-medium">2주 서비스 연장</span>이 무료 제공되나, 연장 기간 중 환불은 불가합니다.</li>
+                <li>• 강사 사정으로 수업이 미진행된 경우 <span className="text-slate-300 font-medium">무료 자동 연장</span>됩니다.</li>
+              </ul>
+              <Link
+                href="/refund-policy"
+                className="inline-block mt-3 text-xs text-[#5B8DEF] hover:underline"
+              >
+                전체 환불규정 보기 →
+              </Link>
+            </div>
+
             {/* 안내 */}
-            <div className="mt-6 text-center space-y-1">
+            <div className="mt-4 text-center space-y-1">
               <p className="text-xs text-slate-500">결제 후 카카오톡으로 일정을 안내드립니다.</p>
               <p className="text-xs text-slate-600">
                 문의:{" "}

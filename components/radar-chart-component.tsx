@@ -27,11 +27,11 @@ export function RadarChartComponent({ data }: RadarChartProps) {
   const chartData = basicData.length > 0 ? basicData : data.slice(0, 5)
 
   return (
-    <Card className="bg-slate-900/80 border-[#1e3a5f]">
+    <Card className="bg-slate-900/80 border-[#1e3a5f] h-full flex flex-col">
       <CardHeader>
         <CardTitle className="text-white">기본 역량 분석</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>

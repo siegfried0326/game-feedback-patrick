@@ -91,7 +91,7 @@ export function PricingSection() {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative bg-slate-900/80 rounded-2xl p-8 border transition-all duration-300 ${
+              className={`relative bg-slate-900/80 rounded-2xl p-8 border transition-all duration-300 flex flex-col ${
                 plan.highlighted
                   ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10 scale-[1.02]"
                   : "border-[#1e3a5f] hover:border-[#5B8DEF]/30"
@@ -140,7 +140,7 @@ export function PricingSection() {
                 )}
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start gap-3 text-sm">
                     <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />

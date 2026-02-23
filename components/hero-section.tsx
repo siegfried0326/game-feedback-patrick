@@ -34,9 +34,9 @@ export function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-8 items-stretch">
 
           {/* LEFT: 차별점 */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 min-h-full">
             {/* 이 서비스는? — 위로 올림 */}
-            <div className="bg-[#5B8DEF]/5 border border-[#5B8DEF]/30 rounded-2xl p-6 flex-1">
+            <div className="bg-[#5B8DEF]/5 border border-[#5B8DEF]/30 rounded-2xl p-6">
               <p className="text-[#5B8DEF] font-bold text-sm mb-4 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
                 이 서비스는?
@@ -62,7 +62,7 @@ export function HeroSection() {
             </div>
 
             {/* GPT/Gemini 비교 — 아래로 */}
-            <div className="bg-slate-900/60 border border-[#1e3a5f] rounded-2xl p-6 flex-1">
+            <div className="bg-slate-900/60 border border-[#1e3a5f] rounded-2xl p-6">
               <p className="text-red-400 font-bold text-sm mb-4 flex items-center gap-2">
                 <XCircle className="w-4 h-4" />
                 GPT / Gemini에 넣으면?

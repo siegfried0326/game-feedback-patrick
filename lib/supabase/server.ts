@@ -20,7 +20,13 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, {
+                ...options,
+                // 세션 쿠키 수명 30일 유지 (자동 로그인)
+                maxAge: 60 * 60 * 24 * 30,
+                sameSite: "lax" as const,
+                secure: process.env.NODE_ENV === "production",
+              }),
             )
           } catch {
             // The "setAll" method was called from a Server Component.

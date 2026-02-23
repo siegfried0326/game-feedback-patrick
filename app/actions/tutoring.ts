@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { confirmPayment } from "./payment"
 
 /**
- * 과외 접근 권한 확인 (로그인만 체크)
+ * 컨설팅 접근 권한 확인 (로그인만 체크)
  */
 export async function checkTutoringAccess() {
   const supabase = await createClient()
@@ -38,7 +38,7 @@ export async function validateTutoringCode(code: string) {
 }
 
 /**
- * 과외 주문 생성
+ * 컨설팅 주문 생성
  */
 export async function createTutoringOrder(packageType: string, amount: number) {
   const supabase = await createClient()
@@ -64,7 +64,7 @@ export async function createTutoringOrder(packageType: string, amount: number) {
 }
 
 /**
- * 과외 결제 확인 (토스페이먼츠 결제 승인)
+ * 컨설팅 결제 확인 (토스페이먼츠 결제 승인)
  */
 export async function confirmTutoringPayment(paymentKey: string, orderId: string, amount: number) {
   const supabase = await createClient()

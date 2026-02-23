@@ -13,7 +13,7 @@ const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_4vZn
 const PACKAGES = [
   {
     key: "tutoring_1h",
-    name: "1:1 과외 (4타임)",
+    name: "1:1 컨설팅 (4타임)",
     price: 480000,
     description: "타임당 12만원 × 4회 = 총 48만원",
     details: ["포트폴리오 심층 리뷰", "실무 노하우 전수", "질의응답 무제한", "4회 맞춤 커리큘럼 제공"],
@@ -31,10 +31,10 @@ const PACKAGES = [
   },
   {
     key: "group_tutoring",
-    name: "그룹과외 (1타임)",
+    name: "그룹 컨설팅 (1타임)",
     price: 90000,
     description: "타임당 9만원 · 소규모 그룹 형태",
-    details: ["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 과외", "커리큘럼 맞춤 조정"],
+    details: ["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 컨설팅", "커리큘럼 맞춤 조정"],
     emoji: "👥",
     icon: Users,
   },
@@ -200,9 +200,9 @@ export default function TutoringPage() {
 
         <div className="flex items-center gap-3 mb-2">
           <GraduationCap className="w-8 h-8 text-[#5B8DEF]" />
-          <h1 className="text-2xl font-bold text-white">1:1 과외 · 모의면접</h1>
+          <h1 className="text-2xl font-bold text-white">1:1 컨설팅 · 모의면접</h1>
         </div>
-        <p className="text-slate-400 mb-8">게임 업계 11년차 현업 기획자의 1:1 맞춤 피드백</p>
+        <p className="text-slate-400 mb-8">게임 업계 11년차 현업 기획자의 1:1 맞춤 컨설팅</p>
 
         {/* ========== 코드 입력 영역 ========== */}
         {!codeVerified && (

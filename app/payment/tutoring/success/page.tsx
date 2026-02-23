@@ -57,7 +57,7 @@ function TutoringSuccessContent() {
             <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
             <h1 className="text-2xl font-bold text-white mb-2">결제가 완료되었습니다!</h1>
             <p className="text-slate-400 mb-6">
-              과외 일정은 카카오톡 상담을 통해 안내드리겠습니다.
+              컨설팅 일정은 카카오톡 상담을 통해 안내드리겠습니다.
               <br />
               잠시 후 마이페이지로 이동합니다.
             </p>

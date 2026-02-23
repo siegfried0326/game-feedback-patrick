@@ -70,7 +70,7 @@ export default function TermsPage() {
               <div>
                 <h3 className="font-medium text-white mb-1">1. AI 문서 분석 서비스</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>무료 체험: 총 2회 무료 분석 제공</li>
+                  <li>무료 체험: 총 1회 무료 분석 제공</li>
                   <li>월 구독: 월 17,900원 - 무제한 문서 분석</li>
                   <li>3개월 패스: 49,000원 - 3개월간 무제한 문서 분석</li>
                   <li>구독은 언제든지 해지할 수 있으며, 해지 시 다음 결제일부터 과금이 중단됩니다.</li>

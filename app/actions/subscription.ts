@@ -194,14 +194,14 @@ export async function checkAnalysisAllowance() {
     return { allowed: true, plan: subscription.plan, unlimited: true }
   }
 
-  // 무료 플랜: 총 2회 분석 제한
+  // 무료 플랜: 총 1회 분석 제한
   const { count } = await supabase
     .from("analysis_history")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id)
 
   const used = count || 0
-  const FREE_LIMIT = 2
+  const FREE_LIMIT = 1
   if (used >= FREE_LIMIT) {
     return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
   }

@@ -28,10 +28,10 @@ const plans: {
     name: "무료 체험",
     price: "0",
     period: "무료",
-    description: "처음 이용하시는 분들을 위한 무료 체험 (총 2회)",
+    description: "처음 이용하시는 분들을 위한 무료 체험 (총 1회)",
     features: [
       "프로젝트 1개",
-      "총 2회 문서 분석",
+      "총 1회 문서 분석",
       "5개 항목 점수 평가",
       "기본 피드백 제공",
       "Claude Sonnet AI",
@@ -94,7 +94,7 @@ export function PricingModal() {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center mb-2">요금제 선택</DialogTitle>
           <p className="text-center text-muted-foreground text-sm">
-            첫 2회는 무료로 체험해 보세요
+            첫 1회는 무료로 체험해 보세요
           </p>
         </DialogHeader>
         

@@ -59,8 +59,12 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
     return entry
   })
 
-  // 카테고리 이름 추출
-  const categoryNames = sorted[0]?.categories?.map((c) => c.name) || []
+  // 모든 버전에서 카테고리 이름 통합 추출 (순서 유지)
+  const categoryNameSet = new Set<string>()
+  sorted.forEach((item) => {
+    item.categories?.forEach((c) => categoryNameSet.add(c.name))
+  })
+  const categoryNames = Array.from(categoryNameSet)
 
   // 최신 vs 이전 비교
   const latest = sorted[sorted.length - 1]
@@ -195,18 +199,24 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
                 <tr key={catName} className="border-b border-slate-800/50">
                   <td className="text-slate-300 py-2 pr-4">{catName}</td>
                   {sorted.map((item, idx) => {
-                    const score = item.categories?.find((c) => c.name === catName)?.score || 0
-                    const prevScore = idx > 0
-                      ? sorted[idx - 1].categories?.find((c) => c.name === catName)?.score || 0
-                      : null
-                    const diff = prevScore !== null ? score - prevScore : null
+                    const cat = item.categories?.find((c) => c.name === catName)
+                    const score = cat?.score
+                    const prevCat = idx > 0 ? sorted[idx - 1].categories?.find((c) => c.name === catName) : null
+                    const prevScore = prevCat?.score
+                    const diff = score != null && prevScore != null ? score - prevScore : null
                     return (
                       <td key={item.id} className="text-center py-2 px-2">
-                        <span className="text-slate-300">{score}</span>
-                        {diff !== null && diff !== 0 && (
-                          <span className={`text-xs ml-1 ${diff > 0 ? "text-emerald-400" : "text-red-400"}`}>
-                            {diff > 0 ? "+" : ""}{diff}
-                          </span>
+                        {score != null ? (
+                          <>
+                            <span className="text-slate-300">{score}</span>
+                            {diff !== null && diff !== 0 && (
+                              <span className={`text-xs ml-1 ${diff > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                {diff > 0 ? "+" : ""}{diff}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-slate-600">-</span>
                         )}
                       </td>
                     )

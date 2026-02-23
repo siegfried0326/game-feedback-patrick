@@ -262,7 +262,7 @@ export default function MyPage() {
               </div>
               {subscription.plan === "free" && (
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
-                  <p className="text-sm text-slate-300">무료 플랜은 프로젝트 1개, 총 2회 분석이 가능합니다. 무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.</p>
+                  <p className="text-sm text-slate-300">무료 플랜은 프로젝트 1개, 총 1회 분석이 가능합니다. 무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.</p>
                   <Button asChild className="mt-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/pricing">요금제 보기</Link></Button>
                 </div>
               )}

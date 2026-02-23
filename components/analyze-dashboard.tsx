@@ -441,7 +441,7 @@ export function AnalyzeDashboard() {
                 <>
                   <h2 className="text-xl font-bold text-white mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
                   <p className="text-slate-400 mb-6">
-                    무료 플랜은 총 2회 분석이 가능합니다.<br />
+                    무료 플랜은 총 1회 분석이 가능합니다.<br />
                     무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.
                   </p>
                 </>
@@ -461,7 +461,7 @@ export function AnalyzeDashboard() {
             <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-amber-400">
-                무료 플랜은 총 <span className="font-bold">2회 분석</span>이 가능합니다.
+                무료 플랜은 총 <span className="font-bold">1회 분석</span>이 가능합니다.
                 {allowanceInfo.remaining !== undefined && (
                   <> 현재 <span className="font-bold">{allowanceInfo.remaining}회</span> 남았습니다.</>
                 )}

@@ -1,20 +1,26 @@
-import { FileSearch, BarChart3, Target, Zap } from "lucide-react"
+import { FileSearch, BarChart3, Target, Zap, History } from "lucide-react"
+import Image from "next/image"
 
 const features = [
   {
     icon: FileSearch,
-    title: "5개 영역 정밀 분석",
-    description: "구조, 논리, 창의성, 실현성, 표현력 — 5개 핵심 영역을 레이더 차트로 분석합니다."
+    title: "15개 영역 정밀 분석",
+    description: "기본 5개 + 게임디자인 10개 영역을 점수화하여 합격자와 비교합니다."
   },
   {
     icon: BarChart3,
-    title: "점수 · 등급 · 랭킹",
-    description: "종합 점수와 S~D 등급을 부여하고, 다른 지원자 대비 상위 몇 %인지 보여줍니다."
+    title: "점수 · 등급 · 회사별 비교",
+    description: "종합 점수와 합격 가능성 등급, 넥슨·크래프톤 등 회사별 합격 평균과 비교합니다."
   },
   {
     icon: Target,
     title: "맞춤 개선 피드백",
     description: "각 영역별 강점과 약점을 분석하고, 구체적인 개선 방향을 제시합니다."
+  },
+  {
+    icon: History,
+    title: "버전별 점수 추적",
+    description: "수정할 때마다 다시 분석하면 점수 변화를 그래프로 추적할 수 있습니다."
   },
   {
     icon: Zap,
@@ -40,7 +46,7 @@ export function ServiceIntro() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -57,6 +63,48 @@ export function ServiceIntro() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* 버전별 점수 추적 스크린샷 */}
+        <div className="mt-12 bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-8 md:p-12">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-4">
+                <History className="w-3 h-3" />
+                버전 관리
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">
+                수정할 때마다<br />점수가 오르는 걸 확인하세요
+              </h3>
+              <p className="text-slate-400 leading-relaxed mb-4">
+                문서를 수정하고 다시 분석하면, 이전 버전과 점수를 비교할 수 있습니다.
+                어떤 수정이 점수를 올렸는지 한눈에 파악하세요.
+              </p>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#5B8DEF]" />
+                  종합 점수 변화 그래프
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  영역별 점수 변화 추적
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  버전별 상세 비교 테이블
+                </li>
+              </ul>
+            </div>
+            <div className="relative rounded-xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/preview-history.png"
+                alt="버전별 점수 비교 기능"
+                width={2002}
+                height={780}
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-16 bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-8 md:p-12">
@@ -92,7 +140,7 @@ export function ServiceIntro() {
                   <p className="text-slate-400 text-xs">분석 완료 시간</p>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-white">5개</div>
+                  <div className="text-2xl font-bold text-white">15개</div>
                   <p className="text-slate-400 text-xs">분석 영역</p>
                 </div>
               </div>

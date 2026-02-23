@@ -41,7 +41,7 @@ export default function FeedbackLandingPage() {
 
       <MarketingBreak
         headline="시작은 무료. 결과는 확실하게."
-        sub="첫 2회 분석은 무료입니다. 직접 확인해보세요."
+        sub="첫 1회 분석은 무료입니다. 직접 확인해보세요."
         accent="white"
       />
 

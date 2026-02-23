@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Loader2, GraduationCap, Lock, KeyRound, CheckCircle2, BookOpen, Target } from "lucide-react"
+import { ArrowLeft, Loader2, GraduationCap, Lock, KeyRound, CheckCircle2, BookOpen, Target, Users } from "lucide-react"
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk"
 import { Button } from "@/components/ui/button"
 import { checkTutoringAccess, validateTutoringCode, createTutoringOrder } from "@/app/actions/tutoring"
@@ -28,6 +28,15 @@ const PACKAGES = [
     details: ["실전형 모의면접 진행", "면접 피드백 리포트 제공", "합격 전략 컨설팅"],
     emoji: "🎯",
     icon: Target,
+  },
+  {
+    key: "group_tutoring",
+    name: "그룹과외 (1타임)",
+    price: 90000,
+    description: "타임당 9만원 · 소규모 그룹 형태",
+    details: ["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 과외", "커리큘럼 맞춤 조정"],
+    emoji: "👥",
+    icon: Users,
   },
 ] as const
 

@@ -66,12 +66,38 @@ export async function approveBillingPayment(
 }
 
 /**
+ * 게임캔버스 할인 코드 검증
+ */
+export async function validateGamecanvasCode(code: string) {
+  if (!code || !code.trim()) {
+    return { valid: false, error: "코드를 입력해 주세요." }
+  }
+
+  const trimmedCode = code.trim().toUpperCase()
+  const validCodes = (process.env.GAMECANVAS_DISCOUNT_CODES || "")
+    .split(",")
+    .map(c => c.trim().toUpperCase())
+    .filter(c => c.length > 0)
+
+  if (validCodes.length === 0) {
+    return { valid: false, error: "할인 코드가 설정되지 않았습니다." }
+  }
+
+  if (validCodes.includes(trimmedCode)) {
+    return { valid: true }
+  }
+
+  return { valid: false, error: "유효하지 않은 할인 코드입니다." }
+}
+
+/**
  * 구독 결제 처리 (빌링키 발급 → 첫 결제 → DB 활성화)
  */
 export async function processSubscriptionPayment(
   authKey: string,
   customerKey: string,
   plan: "monthly" | "three_month",
+  discountCode?: string,
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -84,9 +110,19 @@ export async function processSubscriptionPayment(
 
   const billingKey = billingResult.data.billingKey
 
-  // 2. 첫 결제 승인
-  const amount = plan === "monthly" ? 17900 : 49000
-  const orderName = plan === "monthly" ? "디자이닛 월 구독" : "디자이닛 3개월 패스"
+  // 2. 첫 결제 승인 — 금액 결정
+  let amount = plan === "monthly" ? 17900 : 49000
+  let orderName = plan === "monthly" ? "디자이닛 월 구독" : "디자이닛 3개월 패스"
+
+  // 게임캔버스 할인 적용 (monthly만)
+  if (discountCode && plan === "monthly") {
+    const codeResult = await validateGamecanvasCode(discountCode)
+    if (codeResult.valid) {
+      amount = 5900
+      orderName = "디자이닛 월 구독 (게임캔버스)"
+    }
+  }
+
   const orderId = `SUB_${plan}_${user.id.slice(0, 8)}_${Date.now()}`
 
   const paymentResult = await approveBillingPayment(
@@ -120,6 +156,7 @@ export async function processSubscriptionPayment(
       started_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       updated_at: now.toISOString(),
+      discount_code: discountCode || null,
     }, { onConflict: "user_id" })
 
   if (dbError) return { error: dbError.message }

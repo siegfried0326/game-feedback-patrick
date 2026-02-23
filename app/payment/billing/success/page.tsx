@@ -17,6 +17,7 @@ function BillingSuccessContent() {
     const customerKey = searchParams.get("customerKey")
     const authKey = searchParams.get("authKey")
     const plan = searchParams.get("plan") as "monthly" | "three_month"
+    const discountCode = searchParams.get("discountCode")
 
     if (!customerKey || !authKey || !plan) {
       setStatus("error")
@@ -25,7 +26,7 @@ function BillingSuccessContent() {
     }
 
     async function processBilling() {
-      const result = await processSubscriptionPayment(authKey!, customerKey!, plan)
+      const result = await processSubscriptionPayment(authKey!, customerKey!, plan, discountCode || undefined)
 
       if (result.error) {
         setStatus("error")

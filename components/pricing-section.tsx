@@ -2,7 +2,19 @@ import Link from "next/link"
 import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-const plans = [
+const plans: {
+  name: string
+  price: string
+  period: string
+  description: string
+  features: string[]
+  cta: string
+  href: string
+  highlighted: boolean
+  originalPrice?: string
+  badge?: string
+  discountNote?: string
+}[] = [
   {
     name: "무료 체험",
     price: "0",
@@ -24,6 +36,7 @@ const plans = [
     price: "17,900",
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
+    discountNote: "게임캔버스 수강생 월 5,900원",
     features: [
       "무제한 프로젝트",
       "무제한 문서 분석",
@@ -122,6 +135,9 @@ export function PricingSection() {
                   <span className="text-slate-400">원</span>
                   <span className="text-slate-400 text-sm">/ {plan.period}</span>
                 </div>
+                {plan.discountNote && (
+                  <p className="text-xs text-emerald-400 mt-2">{plan.discountNote}</p>
+                )}
               </div>
 
               <ul className="space-y-3 mb-8">

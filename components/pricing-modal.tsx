@@ -11,7 +11,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const plans = [
+const plans: {
+  name: string
+  price: string
+  period: string
+  description: string
+  features: string[]
+  cta: string
+  href: string
+  highlighted: boolean
+  originalPrice?: string
+  badge?: string
+  discountNote?: string
+}[] = [
   {
     name: "무료 체험",
     price: "0",
@@ -33,6 +45,7 @@ const plans = [
     price: "17,900",
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
+    discountNote: "게임캔버스 수강생 월 5,900원",
     features: [
       "무제한 프로젝트",
       "무제한 문서 분석",
@@ -133,6 +146,9 @@ export function PricingModal() {
                   <span className="text-muted-foreground text-sm">원</span>
                   <span className="text-muted-foreground text-xs">/ {plan.period}</span>
                 </div>
+                {plan.discountNote && (
+                  <p className="text-xs text-emerald-400 mt-1.5">{plan.discountNote}</p>
+                )}
               </div>
 
               <ul className="space-y-2 mb-6">

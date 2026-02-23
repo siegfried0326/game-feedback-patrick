@@ -25,8 +25,8 @@ export function WhyChooseUs() {
           {/* Text Left */}
           <div className="space-y-6">
             <p className="text-xl md:text-2xl text-white leading-relaxed">
-              여러분은 합격 포트폴리오 단 하나를 구하기 위해<br />
-              목을 매지만,
+              여러분은 합격 포트폴리오 단 하나도<br />
+              구하기 어렵지만,
             </p>
             <p className="text-xl md:text-2xl text-white leading-relaxed">
               제게는 제 손을 거쳐 취업한<br />

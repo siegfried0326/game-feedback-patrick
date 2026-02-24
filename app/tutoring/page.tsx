@@ -237,7 +237,7 @@ export default function TutoringPage() {
               <p className="text-sm text-red-400 mb-3">{codeError}</p>
             )}
             <a
-              href="https://open.kakao.com/o/sLz0kgBf"
+              href="http://pf.kakao.com/_bXgIX"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-[#5B8DEF] hover:underline"
@@ -357,7 +357,7 @@ export default function TutoringPage() {
               <p className="text-xs text-slate-500">결제 후 카카오톡으로 일정을 안내드립니다.</p>
               <p className="text-xs text-slate-600">
                 문의:{" "}
-                <a href="https://open.kakao.com/o/sLz0kgBf" target="_blank" rel="noopener noreferrer" className="text-[#5B8DEF] hover:underline">
+                <a href="http://pf.kakao.com/_bXgIX" target="_blank" rel="noopener noreferrer" className="text-[#5B8DEF] hover:underline">
                   카카오톡 상담
                 </a>
               </p>

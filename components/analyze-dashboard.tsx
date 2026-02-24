@@ -1045,7 +1045,7 @@ export function AnalyzeDashboard() {
                       <p className="text-sm text-slate-400">1:1 상담을 통해 더 자세한 피드백을 받아보세요.</p>
                     </div>
                     <a
-                      href="https://open.kakao.com/o/sLz0kgBf"
+                      href="http://pf.kakao.com/_bXgIX"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm"

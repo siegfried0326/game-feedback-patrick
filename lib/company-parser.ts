@@ -25,7 +25,7 @@ const GAME_COMPANIES = [
   "블리자드", "BLIZZARD", "Blizzard",
   "미호요", "MIHOYO", "HoYoverse", "Hoyoverse",
   "슈퍼셀", "SUPERCELL", "Supercell",
-  "에픽게임즈", "에픽", "EPIC", "Epic Games",
+  "에픽게임즈", "EPIC", "Epic Games",
   
   // 중견사
   "게임빌", "GAMEVIL", "Gamevil",

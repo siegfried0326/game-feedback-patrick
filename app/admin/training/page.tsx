@@ -408,9 +408,6 @@ export default function TrainingPage() {
             <CardTitle className="text-lg text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-[#5B8DEF]" />
               회사별 학습 데이터 현황
-              <span className="text-sm font-normal text-slate-400 ml-2">
-                총 {portfolios.length}개 포트폴리오 (1개가 여러 회사에 해당 가능)
-              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -211,7 +211,7 @@ export default function PricingPage() {
           <p>
             결제 관련 문의:{" "}
             <a
-              href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
+              href="http://pf.kakao.com/_bXgIX"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#5B8DEF] hover:underline"

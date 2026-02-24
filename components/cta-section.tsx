@@ -31,7 +31,7 @@ export function CTASection() {
             size="lg"
             className="border-[#1e3a5f] text-slate-300 hover:bg-[#162a4a] hover:text-white px-8 h-12 text-base bg-transparent"
           >
-            <a href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162" target="_blank" rel="noopener noreferrer">
+            <a href="http://pf.kakao.com/_bXgIX" target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-2 w-4 h-4" />
               문의하기
             </a>

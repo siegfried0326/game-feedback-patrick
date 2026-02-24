@@ -149,7 +149,7 @@ export default function RefundPolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">제6조 (환불 절차)</h2>
             <ol className="list-decimal list-inside space-y-1">
-              <li>아래 채널톡을 통해 환불 요청</li>
+              <li>아래 카카오톡 채널을 통해 환불 요청</li>
               <li>환불 사유 및 이용 이력 확인 (영업일 기준 1~2일)</li>
               <li>환불 승인 후 결제 수단에 따라 3~7영업일 이내 환불 처리</li>
             </ol>
@@ -162,9 +162,9 @@ export default function RefundPolicyPage() {
             </p>
             <ul className="list-disc list-inside space-y-1 mt-2">
               <li>
-                채널톡:{" "}
+                카카오톡 채널:{" "}
                 <a
-                  href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
+                  href="http://pf.kakao.com/_bXgIX"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#5B8DEF] hover:underline"

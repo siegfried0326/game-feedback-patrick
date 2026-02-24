@@ -169,9 +169,9 @@ export default function TermsPage() {
             <p>서비스 이용 관련 문의는 아래 채널을 통해 접수해주세요.</p>
             <ul className="list-disc list-inside space-y-1 mt-2">
               <li>
-                채널톡:{" "}
+                카카오톡 채널:{" "}
                 <a
-                  href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
+                  href="http://pf.kakao.com/_bXgIX"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#5B8DEF] hover:underline"

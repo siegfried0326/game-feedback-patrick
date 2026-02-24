@@ -30,7 +30,7 @@ export function Footer() {
               환불정책
             </Link>
             <a
-              href="https://desk.channel.io/#/channels/227321/team_chats/groups/536162"
+              href="http://pf.kakao.com/_bXgIX"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"

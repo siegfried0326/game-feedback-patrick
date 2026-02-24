@@ -19,18 +19,28 @@ interface PortfolioInput {
 // 관리자용: Supabase Storage에 파일 업로드
 export async function uploadAdminFile(formData: FormData) {
   try {
+    const supabase = await createClient()
+
+    // 관리자 인증 확인
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: "로그인이 필요합니다." }
+    }
+    const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean)
+    if (!adminEmails.includes(user.email?.toLowerCase() || "")) {
+      return { error: "관리자 권한이 필요합니다." }
+    }
+
     const file = formData.get("file") as File
     if (!file) {
       return { error: "파일이 없습니다." }
     }
 
-    // 파일 크기 제한
-    const maxSize = 500 * 1024 * 1024 // 500MB
+    // 파일 크기 제한 (50MB)
+    const maxSize = 50 * 1024 * 1024
     if (file.size > maxSize) {
       return { error: `파일 크기는 ${Math.round(maxSize / 1024 / 1024)}MB를 초과할 수 없습니다. (현재: ${Math.round(file.size / 1024 / 1024)}MB)` }
     }
-
-    const supabase = await createClient()
     
     const fileExt = file.name.split(".").pop()
     const uniqueFileName = `${uuidv4()}.${fileExt}`

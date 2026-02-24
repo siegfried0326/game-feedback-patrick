@@ -72,6 +72,17 @@ export async function confirmTutoringPayment(paymentKey: string, orderId: string
 
   if (!user) return { error: "로그인이 필요합니다." }
 
+  // 서버에서 주문 금액 확인 (클라이언트 값 신뢰하지 않음)
+  const { data: order } = await supabase
+    .from("tutoring_orders")
+    .select("amount")
+    .eq("order_id", orderId)
+    .eq("user_id", user.id)
+    .single()
+
+  if (!order) return { error: "주문 정보를 찾을 수 없습니다." }
+  if (order.amount !== amount) return { error: "결제 금액이 일치하지 않습니다." }
+
   // 토스페이먼츠 결제 확인
   const result = await confirmPayment(paymentKey, orderId, amount)
   if (result.error) return { error: result.error }

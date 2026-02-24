@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { validateGamecanvasCode } from "@/app/actions/payment"
 
-const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_4vZnjEJeQVxJzDoab4d8PmOoBN0k"
+const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? ""
 
 const PLANS = {
   monthly: { name: "월 구독", price: "17,900", amount: 17900, period: "월", description: "무제한 분석 + 버전 비교 + Claude Sonnet" },

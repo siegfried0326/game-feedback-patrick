@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { checkTutoringAccess, validateTutoringCode, createTutoringOrder } from "@/app/actions/tutoring"
 import { createClient } from "@/lib/supabase/client"
 
-const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_4vZnjEJeQVxJzDoab4d8PmOoBN0k"
+const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? ""
 
 const PACKAGES = [
   {

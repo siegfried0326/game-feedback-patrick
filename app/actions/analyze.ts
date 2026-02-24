@@ -28,17 +28,27 @@ export async function checkBeforeAnalysis() {
 // Supabase Storage에 파일 업로드
 export async function uploadFileToStorage(formData: FormData) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: "로그인이 필요합니다." }
+    }
+
     const file = formData.get("file") as File
     if (!file) {
       return { error: "파일이 없습니다." }
     }
 
-    // 파일 크기 체크 (500MB)
-    if (file.size > 500 * 1024 * 1024) {
-      return { error: "파일 크기는 500MB를 초과할 수 없습니다." }
+    // 허용된 파일 타입만
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"]
+    if (!allowedTypes.includes(file.type)) {
+      return { error: "PDF, JPG, PNG, WebP 파일만 업로드할 수 있습니다." }
     }
 
-    const supabase = await createClient()
+    // 파일 크기 체크 (50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      return { error: "파일 크기는 50MB를 초과할 수 없습니다." }
+    }
 
     // 고유한 파일명 생성
     const fileExt = file.name.split(".").pop()
@@ -86,6 +96,10 @@ export async function uploadFileToStorage(formData: FormData) {
 export async function deleteFileFromStorage(filePath: string) {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: "로그인이 필요합니다." }
+    }
     await supabase.storage.from("resumes").remove([filePath])
     return { success: true }
   } catch (error) {
@@ -123,6 +137,31 @@ async function getModelForUser(): Promise<string> {
   return "claude-sonnet-4-20250514"
 }
 
+// URL이 내부 네트워크를 가리키는지 검사 (SSRF 방어)
+function isInternalUrl(urlStr: string): boolean {
+  try {
+    const url = new URL(urlStr)
+    const hostname = url.hostname.toLowerCase()
+    // 내부 IP / localhost 차단
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("172.") ||
+      hostname.startsWith("192.168.") ||
+      hostname.endsWith(".local") ||
+      hostname === "[::1]" ||
+      url.protocol === "file:"
+    ) {
+      return true
+    }
+    return false
+  } catch {
+    return true // 파싱 실패 시 차단
+  }
+}
+
 // URL 웹페이지 크롤링 → Claude 분석
 export async function analyzeUrlDirect(input: {
   projectId: string
@@ -131,6 +170,11 @@ export async function analyzeUrlDirect(input: {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
+  }
+
+  // URL 검증
+  if (isInternalUrl(input.url)) {
+    return { error: "허용되지 않는 URL입니다." }
   }
 
   try {

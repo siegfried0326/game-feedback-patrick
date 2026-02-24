@@ -2,11 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server"
 
-const TOSS_SECRET_KEY = process.env.TOSS_SECRET_KEY || "test_sk_XjExPeJWYVQR12P55agr49R5gvNL"
 const TOSS_API_BASE = "https://api.tosspayments.com/v1"
 
 function getAuthHeader() {
-  const encoded = Buffer.from(`${TOSS_SECRET_KEY}:`).toString("base64")
+  const key = process.env.TOSS_SECRET_KEY
+  if (!key) throw new Error("TOSS_SECRET_KEY 환경변수가 설정되지 않았습니다.")
+  const encoded = Buffer.from(`${key}:`).toString("base64")
   return `Basic ${encoded}`
 }
 

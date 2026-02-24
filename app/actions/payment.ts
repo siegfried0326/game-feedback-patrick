@@ -153,9 +153,9 @@ export async function processSubscriptionPayment(
     expiresAt = new Date(now)
     expiresAt.setMonth(expiresAt.getMonth() + 1)
   } else if (existingSub && existingSub.status === "active" && new Date(existingSub.expires_at) > now) {
-    // 기존 활성 구독이 있는 유저: 만료일에서 2개월 연장
+    // 기존 활성 구독이 있는 유저: 만료일에서 1개월 연장
     expiresAt = new Date(existingSub.expires_at)
-    expiresAt.setMonth(expiresAt.getMonth() + 2)
+    expiresAt.setMonth(expiresAt.getMonth() + 1)
   } else {
     // 신규 또는 만료된 유저: 정상 기간 부여
     expiresAt = new Date(now)

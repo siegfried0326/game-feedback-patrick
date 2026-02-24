@@ -98,13 +98,13 @@ export function PricingModal() {
           </p>
         </DialogHeader>
         
-        <div className="grid md:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           {plans.map((plan, index) => (
-            <div 
+            <div
               key={index}
-              className={`relative bg-card rounded-xl p-6 border transition-all duration-300 ${
-                plan.highlighted 
-                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10" 
+              className={`relative bg-card rounded-xl p-5 border transition-all duration-300 flex flex-col ${
+                plan.highlighted
+                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
                   : "border-border hover:border-[#5B8DEF]/30"
               }`}
             >
@@ -123,18 +123,18 @@ export function PricingModal() {
                   </span>
                 </div>
               )}
-              
-              <div className="mb-4">
+
+              <div className="mb-3">
                 <h3 className="text-base font-semibold text-foreground mb-1">
                   {plan.name}
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground min-h-[2rem]">
                   {plan.description}
                 </p>
               </div>
 
               <div className="mb-4">
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 flex-wrap">
                   {plan.originalPrice && (
                     <span className="text-sm text-muted-foreground line-through mr-1">
                       {plan.originalPrice}원
@@ -151,7 +151,7 @@ export function PricingModal() {
                 )}
               </div>
 
-              <ul className="space-y-2 mb-6">
+              <ul className="space-y-2 mb-6 flex-1">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start gap-2 text-xs">
                     <Check className="w-3.5 h-3.5 text-[#5B8DEF] mt-0.5 shrink-0" />
@@ -163,7 +163,7 @@ export function PricingModal() {
               <Button
                 asChild
                 size="sm"
-                className={`w-full ${
+                className={`w-full mt-auto ${
                   plan.highlighted
                     ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
                     : "bg-secondary hover:bg-secondary/80 text-foreground"

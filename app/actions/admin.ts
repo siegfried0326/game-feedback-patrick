@@ -36,8 +36,8 @@ export async function uploadAdminFile(formData: FormData) {
       return { error: "파일이 없습니다." }
     }
 
-    // 파일 크기 제한 (50MB)
-    const maxSize = 50 * 1024 * 1024
+    // 파일 크기 제한 (500MB)
+    const maxSize = 500 * 1024 * 1024
     if (file.size > maxSize) {
       return { error: `파일 크기는 ${Math.round(maxSize / 1024 / 1024)}MB를 초과할 수 없습니다. (현재: ${Math.round(file.size / 1024 / 1024)}MB)` }
     }

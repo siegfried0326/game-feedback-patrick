@@ -45,9 +45,9 @@ export async function uploadFileToStorage(formData: FormData) {
       return { error: "PDF, JPG, PNG, WebP 파일만 업로드할 수 있습니다." }
     }
 
-    // 파일 크기 체크 (50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      return { error: "파일 크기는 50MB를 초과할 수 없습니다." }
+    // 파일 크기 체크 (500MB)
+    if (file.size > 500 * 1024 * 1024) {
+      return { error: "파일 크기는 500MB를 초과할 수 없습니다." }
     }
 
     // 고유한 파일명 생성

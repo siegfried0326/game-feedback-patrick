@@ -25,25 +25,36 @@ type LayoutRecommendationsProps = {
   data: LayoutRecommendation[]
 }
 
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v))
+}
+
 function LayoutPreview({ sections }: { sections: LayoutSection[] }) {
   return (
     <div className="relative bg-slate-950 border border-slate-700 rounded-lg overflow-hidden" style={{ aspectRatio: "210/297", width: "100%" }}>
-      {sections.map((section, i) => (
-        <div
-          key={i}
-          className="absolute flex items-center justify-center text-[10px] font-medium text-white/90 rounded-sm overflow-hidden"
-          style={{
-            left: `${section.x}%`,
-            top: `${section.y}%`,
-            width: `${section.w}%`,
-            height: `${section.h}%`,
-            backgroundColor: section.color + "33",
-            border: `1.5px solid ${section.color}`,
-          }}
-        >
-          <span className="truncate px-1">{section.label}</span>
-        </div>
-      ))}
+      {sections.map((section, i) => {
+        // 좌표 보정: 영역 밖으로 나가지 않게
+        const x = clamp(section.x, 0, 95)
+        const y = clamp(section.y, 0, 95)
+        const w = clamp(section.w, 5, 100 - x)
+        const h = clamp(section.h, 3, 100 - y)
+        return (
+          <div
+            key={i}
+            className="absolute flex items-center justify-center text-[10px] font-medium text-white/90 rounded-sm overflow-hidden"
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              width: `${w}%`,
+              height: `${h}%`,
+              backgroundColor: section.color + "33",
+              border: `1.5px solid ${section.color}`,
+            }}
+          >
+            <span className="truncate px-1">{section.label}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }

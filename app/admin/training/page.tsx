@@ -192,16 +192,23 @@ export default function TrainingPage() {
         let companies = extractedCompanies.length > 0 ? extractedCompanies : []
 
         if (companies.length === 0) {
-          const fileName = fileData.file.name
+          const fileName = fileData.file.name.normalize('NFC')
           if (fileName.includes('넷마블')) companies.push('넷마블')
           if (fileName.includes('넥슨')) companies.push('넥슨')
           if (fileName.includes('네오위즈')) companies.push('네오위즈')
-          if (fileName.includes('엔씨')) companies.push('엔씨소프트')
+          if (fileName.includes('엔씨소프트')) companies.push('엔씨소프트')
+          else if (fileName.includes('엔씨')) companies.push('엔씨소프트')
           if (fileName.includes('스마일게이트')) companies.push('스마일게이트')
           if (fileName.includes('크래프톤')) companies.push('크래프톤')
+          if (fileName.includes('펄어비스')) companies.push('펄어비스')
           if (fileName.includes('라이온하트')) companies.push('라이온하트')
           if (fileName.includes('매드엔진')) companies.push('매드엔진')
           if (fileName.includes('웹젠')) companies.push('웹젠')
+          if (fileName.includes('컴투스')) companies.push('컴투스')
+          if (fileName.includes('위메이드')) companies.push('위메이드')
+          if (fileName.includes('카카오')) companies.push('카카오게임즈')
+          if (fileName.includes('데브시스터즈')) companies.push('데브시스터즈')
+          if (fileName.includes('시프트업')) companies.push('시프트업')
         }
 
         const result = await analyzeAndSavePortfolio({
@@ -317,7 +324,7 @@ export default function TrainingPage() {
     )
   }
 
-  // ── 회사별 색상 맵 (8개 + 전체) ──
+  // ── 회사별 색상 맵 ──
   const companyColors: Record<string, string> = {
     "넥슨": "from-blue-500 to-cyan-600",
     "넷마블": "from-red-500 to-rose-600",
@@ -327,6 +334,17 @@ export default function TrainingPage() {
     "네오위즈": "from-purple-500 to-violet-600",
     "펄어비스": "from-indigo-500 to-blue-600",
     "웹젠": "from-teal-500 to-cyan-600",
+    "컴투스": "from-pink-500 to-rose-600",
+    "위메이드": "from-lime-500 to-green-600",
+    "카카오게임즈": "from-amber-500 to-yellow-600",
+    "데브시스터즈": "from-fuchsia-500 to-purple-600",
+    "시프트업": "from-sky-500 to-blue-600",
+    "라이온하트": "from-rose-500 to-pink-600",
+    "매드엔진": "from-violet-500 to-indigo-600",
+    "라이엇게임즈": "from-red-600 to-orange-600",
+    "블리자드": "from-blue-600 to-indigo-600",
+    "미호요": "from-cyan-500 to-teal-600",
+    "일반게임회사": "from-slate-500 to-gray-600",
     "전체 합격자": "from-[#5B8DEF] to-blue-600",
   }
 

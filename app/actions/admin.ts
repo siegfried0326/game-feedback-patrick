@@ -79,42 +79,32 @@ export async function uploadAdminFile(formData: FormData) {
 
 // 포트폴리오 분석 및 저장 (inline_data 사용 - 파일시스템 불필요)
 export async function analyzeAndSavePortfolio(input: PortfolioInput) {
-  console.log('⭐⭐⭐ analyzeAndSavePortfolio 호출됨!')
-  console.log('⭐ 입력 companies:', input.companies)
-  console.log('⭐ 입력 fileName:', input.fileName)
-  
   try {
-    // 🔥 강제: 파일명에서 회사명 직접 추출
-    console.log('⭐ companies.length:', input.companies.length)
+    // 파일명에서 회사명 직접 추출 (폴백)
     if (input.companies.length === 0) {
-      console.log('⭐⭐⭐ 강제 추출 시작!')
-      // 유니코드 정규화
       const fileName = input.fileName.normalize('NFC')
       const detectedCompanies: string[] = []
       
-      console.log('⭐ 정규화된 fileName:', fileName)
-      
-      // 정규식으로 매칭 (더 안전)
-      if (/넷마블/u.test(fileName)) {
-        console.log('⭐ 넷마블 발견!')
-        detectedCompanies.push('넷마블')
-      }
+      // 정규식으로 매칭
+      if (/넷마블/u.test(fileName)) detectedCompanies.push('넷마블')
       if (/넥슨/u.test(fileName)) detectedCompanies.push('넥슨')
       if (/네오위즈/u.test(fileName)) detectedCompanies.push('네오위즈')
-      if (/엔씨/u.test(fileName)) detectedCompanies.push('엔씨소프트')
+      if (/엔씨소프트/u.test(fileName)) detectedCompanies.push('엔씨소프트')
+      else if (/엔씨/u.test(fileName)) detectedCompanies.push('엔씨소프트')
       if (/스마일게이트/u.test(fileName)) detectedCompanies.push('스마일게이트')
       if (/크래프톤/u.test(fileName)) detectedCompanies.push('크래프톤')
+      if (/펄어비스/u.test(fileName)) detectedCompanies.push('펄어비스')
       if (/라이온하트/u.test(fileName)) detectedCompanies.push('라이온하트')
       if (/매드엔진/u.test(fileName)) detectedCompanies.push('매드엔진')
       if (/웹젠/u.test(fileName)) detectedCompanies.push('웹젠')
-      
-      console.log('⭐ detectedCompanies:', detectedCompanies)
+      if (/컴투스/u.test(fileName)) detectedCompanies.push('컴투스')
+      if (/위메이드/u.test(fileName)) detectedCompanies.push('위메이드')
+      if (/카카오/u.test(fileName)) detectedCompanies.push('카카오게임즈')
+      if (/데브시스터즈/u.test(fileName)) detectedCompanies.push('데브시스터즈')
+      if (/시프트업/u.test(fileName)) detectedCompanies.push('시프트업')
       
       if (detectedCompanies.length > 0) {
-        console.log('🔥🔥🔥 강제 추출 성공:', detectedCompanies)
         input.companies = detectedCompanies
-      } else {
-        console.log('❌ detectedCompanies가 비어있음!')
       }
     }
     
@@ -401,9 +391,6 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
         return 0
       }
 
-      console.log('💾 DB 저장 - 파일명:', input.fileName)
-      console.log('💾 DB 저장 - 회사:', input.companies)
-
       // DB에 저장
       const { error: dbError } = await supabase
         .from("portfolios")
@@ -610,11 +597,11 @@ export async function deleteMultiplePortfolios(ids: string[]) {
   }
 }
 
-// 회사별 학습 데이터 통계
+// 회사별 학습 데이터 통계 (실제 데이터에서 동적으로 추출)
 export async function getCompanyStats() {
   try {
     const supabase = await createClient()
-    
+
     // 전체 포트폴리오 가져오기
     const { data: portfolios, error } = await supabase
       .from("portfolios")
@@ -625,43 +612,14 @@ export async function getCompanyStats() {
       return { error: error.message }
     }
 
-    // 회사별 카운트 - 포트폴리오 기준 (한 포트폴리오는 한 번만 카운트)
+    // 회사별 카운트 — 실제 데이터에서 동적 추출
     const stats: Record<string, number> = {}
 
-    const targetCompanies = [
-      "넥슨",
-      "넷마블",
-      "크래프톤",
-      "엔씨소프트",
-      "스마일게이트",
-      "네오위즈",
-      "펄어비스",
-      "웹젠",
-    ]
-
-    // 초기화
-    targetCompanies.forEach(company => {
-      stats[company] = 0
-    })
-
-    // 카운트 - 유연한 매칭 (부분 문자열 포함)
-    let totalMatched = 0
     portfolios?.forEach(portfolio => {
       if (portfolio.companies && Array.isArray(portfolio.companies) && portfolio.companies.length > 0) {
         portfolio.companies.forEach((company: string) => {
-          // 정확 매칭 우선
-          if (targetCompanies.includes(company)) {
-            stats[company]++
-            totalMatched++
-          } else {
-            // 부분 매칭 (엔씨 → 엔씨소프트 등)
-            const partialMatch = targetCompanies.find(t =>
-              company.includes(t) || t.includes(company)
-            )
-            if (partialMatch) {
-              stats[partialMatch]++
-              totalMatched++
-            }
+          if (company && company.trim()) {
+            stats[company] = (stats[company] || 0) + 1
           }
         })
       }
@@ -677,7 +635,7 @@ export async function getCompanyStats() {
   }
 }
 
-// 전체 포트폴리오 회사 재분류 (파일명 기준)
+// 전체 포트폴리오 회사 재분류 (파일명 기준 — 모든 회사 대상)
 export async function reclassifyAllCompanies() {
   try {
     const supabase = await createClient()
@@ -689,28 +647,22 @@ export async function reclassifyAllCompanies() {
     if (error) throw error
     if (!portfolios || portfolios.length === 0) return { success: true, updated: 0 }
 
-    const targetCompanies = ["넥슨", "넷마블", "크래프톤", "엔씨소프트", "스마일게이트", "네오위즈", "펄어비스", "웹젠"]
-
     let updated = 0
     const changes: { fileName: string; before: string[]; after: string[] }[] = []
 
     for (const p of portfolios) {
       const extracted = extractCompanyFromFileName(p.file_name)
-      // 8개 회사만 필터
-      const filtered = extracted.filter(c => targetCompanies.includes(c))
-
       const currentCompanies = (p.companies as string[]) || []
-      const currentFiltered = currentCompanies.filter(c => targetCompanies.includes(c))
 
       // 달라졌으면 업데이트
       const isDifferent =
-        filtered.length !== currentFiltered.length ||
-        filtered.some(c => !currentFiltered.includes(c))
+        extracted.length !== currentCompanies.length ||
+        extracted.some(c => !currentCompanies.includes(c))
 
       if (isDifferent) {
         const { error: updateError } = await supabase
           .from("portfolios")
-          .update({ companies: filtered.length > 0 ? filtered : [] })
+          .update({ companies: extracted.length > 0 ? extracted : [] })
           .eq("id", p.id)
 
         if (!updateError) {
@@ -718,7 +670,7 @@ export async function reclassifyAllCompanies() {
           changes.push({
             fileName: p.file_name,
             before: currentCompanies,
-            after: filtered,
+            after: extracted,
           })
         }
       }

@@ -159,68 +159,40 @@ const COMPANY_ALIASES: Record<string, string> = {
  * extractCompanyFromFileName("포트폴리오.pdf") // []
  */
 export function extractCompanyFromFileName(fileName: string): string[] {
-  console.log('🔍🔍🔍 NEW CODE 파일명:', fileName)
-  
-  // 하드코딩 테스트
-  if (fileName.includes('넷마블')) {
-    console.log('✅✅✅ 넷마블 발견! 하드코딩 리턴')
-    return ['넷마블']
-  }
-  if (fileName.includes('넥슨')) {
-    return ['넥슨']
-  }
-  if (fileName.includes('네오위즈')) {
-    return ['네오위즈']
-  }
-  if (fileName.includes('엔씨')) {
-    return ['엔씨소프트']
-  }
-  
+  // 유니코드 정규화
+  const normalized = fileName.normalize('NFC')
+
   // 파일 확장자 제거
-  const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "")
-  
-  // 구분자로 분리 (_, -, 공백, [, ], (, ))
-  const parts = nameWithoutExt.split(/[_\-\s\[\]\(\)]+/).filter(p => p)
-  
-  console.log('🔍 파일명 분리:', parts)
-  
+  const nameWithoutExt = normalized.replace(/\.[^/.]+$/, "")
+
   const foundCompanies = new Set<string>()
-  
-  // 각 부분을 회사 리스트와 매칭
-  for (const part of parts) {
-    console.log('  🔎 검사 중:', part)
-    
-    // 정확히 일치하는 회사명 찾기
-    for (const company of GAME_COMPANIES) {
-      if (part.toLowerCase().trim() === company.toLowerCase().trim()) {
-        // 정규화된 이름으로 변환
-        const normalized = COMPANY_ALIASES[company] || company
-        console.log('  ✅ 정확 매칭:', part, '→', normalized)
-        foundCompanies.add(normalized)
-        break
-      }
+
+  // 1단계: 전체 파일명에서 회사명 직접 검색 (구분자 분리 전)
+  // 긴 이름부터 매칭해서 "엔씨소프트"가 "엔씨"보다 먼저 잡히도록
+  const sortedCompanies = [...GAME_COMPANIES].sort((a, b) => b.length - a.length)
+  for (const company of sortedCompanies) {
+    if (nameWithoutExt.toLowerCase().includes(company.toLowerCase())) {
+      const normalizedName = COMPANY_ALIASES[company] || company
+      foundCompanies.add(normalizedName)
     }
   }
-  
-  // 정확 매칭이 없으면 부분 일치 시도
+
+  // 2단계: 직접 검색 결과 없으면 구분자 분리 후 매칭
   if (foundCompanies.size === 0) {
+    const parts = nameWithoutExt.split(/[_\-\s\[\]\(\)]+/).filter(p => p)
+
     for (const part of parts) {
-      const sortedCompanies = [...GAME_COMPANIES].sort((a, b) => b.length - a.length)
       for (const company of sortedCompanies) {
-        if (part.toLowerCase().includes(company.toLowerCase())) {
-          const normalized = COMPANY_ALIASES[company] || company
-          console.log('  ✅ 부분 매칭:', part, '→', normalized)
-          foundCompanies.add(normalized)
+        if (part.toLowerCase().trim() === company.toLowerCase().trim()) {
+          const normalizedName = COMPANY_ALIASES[company] || company
+          foundCompanies.add(normalizedName)
           break
         }
       }
-      if (foundCompanies.size > 0) break
     }
   }
-  
-  const result = Array.from(foundCompanies)
-  console.log('🎯 최종 결과:', result)
-  return result
+
+  return Array.from(foundCompanies)
 }
 
 /**

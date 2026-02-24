@@ -137,11 +137,33 @@ export async function processSubscriptionPayment(
 
   // 3. DB 구독 활성화
   const now = new Date()
-  const expiresAt = new Date(now)
-  if (plan === "monthly") {
+  const isTestAccount = user.email === "tossreview@gmail.com"
+
+  // 기존 구독 확인
+  const { data: existingSub } = await supabase
+    .from("users_subscription")
+    .select("expires_at, status")
+    .eq("user_id", user.id)
+    .single()
+
+  let expiresAt: Date
+
+  if (isTestAccount) {
+    // 테스터 계정: 항상 새로 시작 (1개월)
+    expiresAt = new Date(now)
     expiresAt.setMonth(expiresAt.getMonth() + 1)
+  } else if (existingSub && existingSub.status === "active" && new Date(existingSub.expires_at) > now) {
+    // 기존 활성 구독이 있는 유저: 만료일에서 2개월 연장
+    expiresAt = new Date(existingSub.expires_at)
+    expiresAt.setMonth(expiresAt.getMonth() + 2)
   } else {
-    expiresAt.setMonth(expiresAt.getMonth() + 3)
+    // 신규 또는 만료된 유저: 정상 기간 부여
+    expiresAt = new Date(now)
+    if (plan === "monthly") {
+      expiresAt.setMonth(expiresAt.getMonth() + 1)
+    } else {
+      expiresAt.setMonth(expiresAt.getMonth() + 3)
+    }
   }
 
   const { error: dbError } = await supabase

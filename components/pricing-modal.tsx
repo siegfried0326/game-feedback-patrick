@@ -90,7 +90,7 @@ export function PricingModal() {
           가격표
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] md:max-w-5xl lg:max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center mb-2">요금제 선택</DialogTitle>
           <p className="text-center text-muted-foreground text-sm">
@@ -98,11 +98,11 @@ export function PricingModal() {
           </p>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative bg-card rounded-xl p-5 border transition-all duration-300 flex flex-col ${
+              className={`relative bg-card rounded-xl p-6 border transition-all duration-300 flex flex-col ${
                 plan.highlighted
                   ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
                   : "border-border hover:border-[#5B8DEF]/30"
@@ -134,17 +134,16 @@ export function PricingModal() {
               </div>
 
               <div className="mb-4">
-                <div className="flex items-baseline gap-1 flex-wrap">
-                  {plan.originalPrice && (
-                    <span className="text-sm text-muted-foreground line-through mr-1">
-                      {plan.originalPrice}원
-                    </span>
-                  )}
-                  <span className="text-2xl font-bold text-foreground">
+                {plan.originalPrice && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    {plan.originalPrice}원
+                  </span>
+                )}
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-foreground whitespace-nowrap">
                     {plan.price}
                   </span>
-                  <span className="text-muted-foreground text-sm">원</span>
-                  <span className="text-muted-foreground text-xs">/ {plan.period}</span>
+                  <span className="text-muted-foreground text-sm whitespace-nowrap">원 / {plan.period}</span>
                 </div>
                 {plan.discountNote && (
                   <p className="text-xs text-emerald-400 mt-1.5">{plan.discountNote}</p>

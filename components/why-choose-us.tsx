@@ -175,6 +175,17 @@ export function WhyChooseUs() {
                 className="w-full h-auto"
               />
             </div>
+
+            {/* 5행: 버전별 점수 비교 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/preview-history.png"
+                alt="버전별 점수 변화 추적 및 비교"
+                width={2002}
+                height={780}
+                className="w-full h-auto"
+              />
+            </div>
           </div>
 
           <a

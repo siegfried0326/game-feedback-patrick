@@ -53,12 +53,31 @@ export function AIComparison() {
                     <FileWarning className="w-6 h-6 text-red-400/60 mx-auto mb-2" />
                     <p className="text-xs text-slate-500">인터넷<br/>검색 결과</p>
                   </div>
-                  <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-center opacity-40">
-                    <div className="w-6 h-6 border-2 border-dashed border-slate-600 rounded mx-auto mb-2" />
-                    <p className="text-xs text-slate-600">자료 없음</p>
+                  <div className="bg-slate-800 border border-dashed border-slate-600 rounded-lg p-3 text-center">
+                    <div className="w-6 h-6 border-2 border-dashed border-slate-500 rounded mx-auto mb-2" />
+                    <p className="text-xs text-slate-400">자료 없음</p>
                   </div>
                 </div>
                 <p className="text-center text-slate-500 text-sm mt-3">겨우 2~3개의 검증되지 않은 자료</p>
+
+                {/* 빈 공간 채우기 — 오른쪽 연도별 데이터와 높이 맞춤 */}
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-3 opacity-30">
+                    <span className="text-sm font-mono w-12 text-slate-600">—</span>
+                    <div className="flex-1 bg-slate-800 rounded-full h-6" />
+                    <span className="text-xs w-20 text-slate-700 text-right">데이터 없음</span>
+                  </div>
+                  <div className="flex items-center gap-3 opacity-20">
+                    <span className="text-sm font-mono w-12 text-slate-600">—</span>
+                    <div className="flex-1 bg-slate-800 rounded-full h-6" />
+                    <span className="text-xs w-20 text-slate-700 text-right">데이터 없음</span>
+                  </div>
+                  <div className="flex items-center gap-3 opacity-10">
+                    <span className="text-sm font-mono w-12 text-slate-600">—</span>
+                    <div className="flex-1 bg-slate-800 rounded-full h-6" />
+                    <span className="text-xs w-20 text-slate-700 text-right">데이터 없음</span>
+                  </div>
+                </div>
               </div>
 
               {/* Arrow */}

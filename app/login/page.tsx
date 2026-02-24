@@ -1,15 +1,23 @@
 "use client"
 
+import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Link from "next/link"
-import { FileText } from "lucide-react"
+import { FileText, Mail, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 function LoginContent() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get("redirect") || "/"
   const error = searchParams.get("error")
+
+  // 이메일 로그인 상태
+  const [showEmailLogin, setShowEmailLogin] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSocialLogin = async (provider: "google" | "kakao" | "apple") => {
     const supabase = createClient()
@@ -22,6 +30,30 @@ function LoginContent() {
         redirectTo: redirectUrl,
       },
     })
+  }
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setEmailError("")
+    setIsLoading(true)
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        setEmailError("이메일 또는 비밀번호가 올바르지 않습니다.")
+      } else {
+        window.location.href = redirectTo
+      }
+    } catch {
+      setEmailError("로그인 중 오류가 발생했습니다.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -89,6 +121,58 @@ function LoginContent() {
               </svg>
               Apple로 계속하기
             </button>
+
+            {/* 구분선 */}
+            <div className="flex items-center gap-3 py-2">
+              <div className="flex-1 h-px bg-[#1e3a5f]" />
+              <span className="text-xs text-slate-500">또는</span>
+              <div className="flex-1 h-px bg-[#1e3a5f]" />
+            </div>
+
+            {/* 이메일 로그인 토글 */}
+            {!showEmailLogin ? (
+              <button
+                onClick={() => setShowEmailLogin(true)}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors border border-[#1e3a5f]"
+              >
+                <Mail className="w-5 h-5" />
+                이메일로 로그인
+              </button>
+            ) : (
+              <form onSubmit={handleEmailLogin} className="space-y-3">
+                <input
+                  type="email"
+                  placeholder="이메일"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-[#1e3a5f] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-[#5B8DEF]"
+                />
+                <input
+                  type="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-[#1e3a5f] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-[#5B8DEF]"
+                />
+                {emailError && (
+                  <p className="text-red-400 text-xs text-center">{emailError}</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-medium transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
+                  로그인
+                </button>
+              </form>
+            )}
           </div>
         </div>
 

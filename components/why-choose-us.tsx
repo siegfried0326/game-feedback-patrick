@@ -66,9 +66,6 @@ export function WhyChooseUs() {
                 </div>
               </div>
             </div>
-            <div className="absolute -bottom-4 -right-4 bg-[#5B8DEF] text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
-              📄 187개 실전 데이터
-            </div>
           </div>
         </div>
 

@@ -40,9 +40,18 @@ export async function uploadFileToStorage(formData: FormData) {
     }
 
     // 허용된 파일 타입만
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"]
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg", "image/png", "image/webp",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // docx
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation", // pptx
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // xlsx
+      "application/vnd.ms-excel", // xls
+      "application/vnd.ms-powerpoint", // ppt
+      "text/plain", // txt
+    ]
     if (!allowedTypes.includes(file.type)) {
-      return { error: "PDF, JPG, PNG, WebP 파일만 업로드할 수 있습니다." }
+      return { error: "지원하지 않는 파일 형식입니다. (PDF, DOCX, PPTX, XLSX, TXT, 이미지)" }
     }
 
     // 파일 크기 체크 (500MB)

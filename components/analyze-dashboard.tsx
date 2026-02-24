@@ -648,90 +648,110 @@ export function AnalyzeDashboard() {
               {/* 파일 업로드 모드 */}
               {uploadMode === "file" && (
                 <>
-                  <div
-                    {...getRootProps()}
-                    className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                      isLoggedIn && !selectedProjectId
-                        ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
-                        : isDragActive
-                        ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
-                        : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50 cursor-pointer"
-                    }`}
-                  >
-                    <input {...getInputProps()} />
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-slate-400" />
-                      </div>
-                      <div>
-                        {!isLoggedIn ? (
-                          <>
-                            <p className="font-medium text-white">무료로 문서를 분석해 보세요</p>
-                            <p className="text-sm text-slate-400 mt-1">파일을 올리면 로그인 후 바로 분석이 시작됩니다</p>
-                          </>
-                        ) : selectedProjectId ? (
-                          <>
-                            <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
-                            <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-medium text-slate-300">위에서 프로젝트를 먼저 선택해 주세요</p>
-                            <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
-                          </>
-                        )}
-                        <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 500MB</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 선택된 파일 목록 */}
-                  {files.length > 0 && (
-                    <div className="mt-6 space-y-2">
-                      <p className="text-sm text-slate-400 mb-3">선택된 파일</p>
-                      {files.map((fileStatus, index) => (
-                        <div
-                          key={index}
-                          className={`flex items-center justify-between p-3 rounded-lg ${
-                            fileStatus.status === "uploading" ? "bg-amber-500/10 border border-amber-500/30" :
-                            fileStatus.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30" :
-                            fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
-                            fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
-                            "bg-slate-800/50 border border-transparent"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            {fileStatus.status === "uploading" ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                            ) : fileStatus.status === "analyzing" ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-[#5B8DEF]" />
-                            ) : fileStatus.status === "success" ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                            ) : fileStatus.status === "error" ? (
-                              <AlertCircle className="w-4 h-4 text-red-400" />
-                            ) : (
-                              <FileText className="w-4 h-4 text-slate-400" />
-                            )}
-                            <div>
-                              <p className="text-sm text-white truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
-                              <p className="text-xs text-slate-500">
-                                {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
-                                {fileStatus.result && ` · ${fileStatus.result.score}점`}
-                                {fileStatus.error && ` · ${fileStatus.error}`}
-                              </p>
-                            </div>
-                          </div>
-                          {!isAnalyzing && (
-                            <button
-                              onClick={() => removeFile(index)}
-                              className="text-slate-500 hover:text-red-400 transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
+                  {isAnalyzing ? (
+                    /* 분석 진행 중 — 드롭존을 로딩 화면으로 대체 */
+                    <div className="border-2 border-[#5B8DEF]/40 rounded-xl p-12 text-center bg-[#5B8DEF]/5">
+                      <div className="flex flex-col items-center gap-5">
+                        <div className="w-20 h-20 rounded-full bg-[#5B8DEF]/10 border-2 border-[#5B8DEF]/30 flex items-center justify-center">
+                          <Loader2 className="w-10 h-10 animate-spin text-[#5B8DEF]" />
                         </div>
-                      ))}
+                        {files.length > 0 && (
+                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/80 rounded-lg">
+                            <FileText className="w-4 h-4 text-[#5B8DEF]" />
+                            <span className="text-sm text-white truncate max-w-[250px]">{files[0].file.name}</span>
+                            <span className="text-xs text-slate-500">{(files[0].file.size / 1024 / 1024).toFixed(1)} MB</span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-white text-lg">
+                            {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
+                          </p>
+                          <p className="text-sm text-slate-400 mt-2">보통 30초~1분 정도 소요됩니다</p>
+                        </div>
+                        <Progress value={((currentIndex + 1) / Math.max(files.length, 1)) * 100} className="h-2 w-full max-w-sm" />
+                      </div>
                     </div>
+                  ) : (
+                    /* 평소 — 파일 드롭존 */
+                    <>
+                      <div
+                        {...getRootProps()}
+                        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                          isLoggedIn && !selectedProjectId
+                            ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
+                            : isDragActive
+                            ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
+                            : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50 cursor-pointer"
+                        }`}
+                      >
+                        <input {...getInputProps()} />
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
+                            <Upload className="w-8 h-8 text-slate-400" />
+                          </div>
+                          <div>
+                            {!isLoggedIn ? (
+                              <>
+                                <p className="font-medium text-white">무료로 문서를 분석해 보세요</p>
+                                <p className="text-sm text-slate-400 mt-1">파일을 올리면 로그인 후 바로 분석이 시작됩니다</p>
+                              </>
+                            ) : selectedProjectId ? (
+                              <>
+                                <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
+                                <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="font-medium text-slate-300">위에서 프로젝트를 먼저 선택해 주세요</p>
+                                <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
+                              </>
+                            )}
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 500MB</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 선택된 파일 목록 (에러/완료 상태) */}
+                      {files.length > 0 && (
+                        <div className="mt-6 space-y-2">
+                          <p className="text-sm text-slate-400 mb-3">선택된 파일</p>
+                          {files.map((fileStatus, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-center justify-between p-3 rounded-lg ${
+                                fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
+                                fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
+                                "bg-slate-800/50 border border-transparent"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {fileStatus.status === "success" ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                ) : fileStatus.status === "error" ? (
+                                  <AlertCircle className="w-4 h-4 text-red-400" />
+                                ) : (
+                                  <FileText className="w-4 h-4 text-slate-400" />
+                                )}
+                                <div>
+                                  <p className="text-sm text-white truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
+                                  <p className="text-xs text-slate-500">
+                                    {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
+                                    {fileStatus.result && ` · ${fileStatus.result.score}점`}
+                                    {fileStatus.error && ` · ${fileStatus.error}`}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => removeFile(index)}
+                                className="text-slate-500 hover:text-red-400 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -776,7 +796,8 @@ export function AnalyzeDashboard() {
                 </div>
               )}
 
-              {isAnalyzing && (
+              {/* URL 분석 중 로딩 (파일 분석은 드롭존 안에 표시) */}
+              {isAnalyzing && isAnalyzingUrl && (
                 <div className="mt-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Loader2 className="w-4 h-4 animate-spin text-[#5B8DEF]" />
@@ -784,7 +805,7 @@ export function AnalyzeDashboard() {
                       {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
                     </span>
                   </div>
-                  <Progress value={isAnalyzingUrl ? 50 : ((currentIndex + 1) / Math.max(files.length, 1)) * 100} className="h-2" />
+                  <Progress value={50} className="h-2" />
                 </div>
               )}
 

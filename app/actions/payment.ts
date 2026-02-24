@@ -156,7 +156,6 @@ export async function processSubscriptionPayment(
       started_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       updated_at: now.toISOString(),
-      discount_code: discountCode || null,
     }, { onConflict: "user_id" })
 
   if (dbError) return { error: dbError.message }

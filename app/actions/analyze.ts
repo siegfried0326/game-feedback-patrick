@@ -612,6 +612,13 @@ ${referenceStats}
     return { data: analysisData }
   } catch (error) {
     console.error("URL Analysis error:", error)
+    const errMsg = error instanceof Error ? error.message : String(error)
+    if (errMsg.includes("credit balance") || errMsg.includes("insufficient_quota") || errMsg.includes("billing")) {
+      return { error: "CREDIT_LIMIT_EXCEEDED" }
+    }
+    if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
+      return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+    }
     return { error: "URL 분석 중 오류가 발생했습니다. 다시 시도해 주세요." }
   }
 }
@@ -1087,6 +1094,9 @@ ${referenceStats}
   } catch (error) {
     console.error("Analysis error:", error)
     const errMsg = error instanceof Error ? error.message : String(error)
+    if (errMsg.includes("credit balance") || errMsg.includes("insufficient_quota") || errMsg.includes("billing")) {
+      return { error: "CREDIT_LIMIT_EXCEEDED" }
+    }
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
       return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
     }

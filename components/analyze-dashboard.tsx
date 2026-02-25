@@ -104,6 +104,7 @@ export function AnalyzeDashboard() {
   const [results, setResults] = useState<AnalysisResult[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [showCreditError, setShowCreditError] = useState(false)
   const [statusMessage, setStatusMessage] = useState("")
   const [allowanceInfo, setAllowanceInfo] = useState<{
     allowed: boolean
@@ -290,6 +291,13 @@ export function AnalyzeDashboard() {
 
         if (analysisResult.error) {
           await deleteFileFromStorage(uploadResult.data!.filePath)
+          if (analysisResult.error === "CREDIT_LIMIT_EXCEEDED") {
+            setShowCreditError(true)
+            setFiles(prev => prev.map((f, idx) =>
+              idx === i ? { ...f, status: "error", error: "서비스 점검 중" } : f
+            ))
+            break
+          }
           setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "error", error: analysisResult.error } : f
           ))
@@ -389,7 +397,11 @@ export function AnalyzeDashboard() {
       })
 
       if (result.error) {
-        setError(result.error)
+        if (result.error === "CREDIT_LIMIT_EXCEEDED") {
+          setShowCreditError(true)
+        } else {
+          setError(result.error)
+        }
       } else if (result.data) {
         const analysisResult = {
           ...result.data,
@@ -1061,6 +1073,28 @@ export function AnalyzeDashboard() {
           </div>
         )}
       </div>
+
+      {/* 크레딧 한도 초과 팝업 */}
+      {showCreditError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
+            <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-7 h-7 text-amber-400" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">서비스 일시 점검 중</h3>
+            <p className="text-slate-400 text-sm mb-6">
+              현재 AI 분석 서비스가 일시적으로 중단되었습니다.<br />
+              관리자에게 문의해 주세요.
+            </p>
+            <button
+              onClick={() => setShowCreditError(false)}
+              className="w-full py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

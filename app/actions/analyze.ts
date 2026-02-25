@@ -189,25 +189,9 @@ export async function analyzeUrlDirect(input: {
   try {
     const supabase = await createClient()
 
-    // 웹페이지 HTML 가져오기
-    let pageContent = ""
-    try {
-      const response = await fetch(input.url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; GameFeedbackBot/1.0)",
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        },
-        signal: AbortSignal.timeout(30000),
-      })
-
-      if (!response.ok) {
-        return { error: `웹 페이지를 가져올 수 없습니다. (HTTP ${response.status})` }
-      }
-
-      const html = await response.text()
-
-      // HTML에서 텍스트 추출 (간단한 태그 제거)
-      pageContent = html
+    // 웹페이지 텍스트 추출 함수
+    const extractTextFromHtml = (html: string) => {
+      return html
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
         .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
@@ -222,10 +206,50 @@ export async function analyzeUrlDirect(input: {
         .replace(/&#39;/g, "'")
         .replace(/\s+/g, " ")
         .trim()
+    }
 
-      // 너무 짧으면 오류
+    let pageContent = ""
+    try {
+      // 1차 시도: 직접 fetch
+      const response = await fetch(input.url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; GameFeedbackBot/1.0)",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        signal: AbortSignal.timeout(30000),
+      })
+
+      if (!response.ok) {
+        return { error: `웹 페이지를 가져올 수 없습니다. (HTTP ${response.status})` }
+      }
+
+      const html = await response.text()
+      pageContent = extractTextFromHtml(html)
+
+      // 2차 시도: 텍스트가 부족하면 Jina AI Reader로 재시도 (SPA/자바스크립트 페이지 대응)
+      if (pageContent.length < 200) {
+        try {
+          const jinaResponse = await fetch(`https://r.jina.ai/${input.url}`, {
+            headers: {
+              "Accept": "text/plain",
+              "X-No-Cache": "true",
+            },
+            signal: AbortSignal.timeout(30000),
+          })
+          if (jinaResponse.ok) {
+            const jinaText = await jinaResponse.text()
+            if (jinaText.length > pageContent.length) {
+              pageContent = jinaText
+            }
+          }
+        } catch {
+          // Jina 실패해도 기존 텍스트로 진행
+        }
+      }
+
+      // 그래도 부족하면 오류
       if (pageContent.length < 100) {
-        return { error: "페이지에서 충분한 텍스트를 추출할 수 없습니다. 공개 접근이 가능한 URL인지 확인해 주세요." }
+        return { error: "페이지에서 충분한 텍스트를 추출할 수 없습니다. 자바스크립트로만 동작하는 페이지이거나, 공개 접근이 불가능한 URL일 수 있습니다. 파일 업로드를 이용해 주세요." }
       }
 
       // 너무 길면 잘라내기 (Claude 컨텍스트 제한)

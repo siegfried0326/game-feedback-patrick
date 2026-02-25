@@ -22,6 +22,11 @@ function LoginContent() {
   const handleSocialLogin = async (provider: "google" | "kakao" | "apple") => {
     const supabase = createClient()
 
+    // OAuth 과정에서 next 파라미터가 사라질 수 있으므로 쿠키에 백업
+    if (redirectTo && redirectTo !== "/") {
+      document.cookie = `redirect_after_login=${encodeURIComponent(redirectTo)}; path=/; max-age=600; samesite=lax`
+    }
+
     const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`
 
     await supabase.auth.signInWithOAuth({

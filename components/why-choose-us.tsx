@@ -45,7 +45,7 @@ export function WhyChooseUs() {
               {/* 학습 데이터 관리 스크린샷 - 이미 블러된 이미지 사용 */}
               <div className="relative aspect-[4/3]">
                 <Image
-                  src="/portfolio-data.png"
+                  src="/training-data-management.png"
                   alt="합격자 포트폴리오 학습 데이터"
                   fill
                   className="object-cover object-top opacity-90"

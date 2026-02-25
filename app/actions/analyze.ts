@@ -423,7 +423,7 @@ ${referenceStats}
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "회사별 합격자 특징을 주어로 시작하여 비교. 예: '넥슨 합격자들은 수치 기반 시스템 설계가 탄탄하고, 크래프톤 합격자들은 전투 경험 목표가 구체적입니다. 이 문서는 ~가 부족하여 합격 수준에 도달하려면 ~를 보완해야 합니다.' 3~4문장으로. 절대 '~사례처럼', '~처럼' 표현 금지. 사용자는 합격자 포트폴리오를 볼 수 없으므로 '합격자들은 ~한 특징이 있다'는 식으로 서술."
+  "companyFeedback": "회사별 합격자 포트폴리오의 주요 특징과 이 문서와의 비교를 상세히 서술. 반드시 **넥슨**, **엔씨소프트**, **넷마블** 순서로 먼저 시작하고 이후 다른 회사 추가. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 이렇게 회사마다 줄바꿈(\\n\\n)으로 구분. 총 5~8개 회사 비교. 절대 '~사례처럼' 표현 금지."
 }`
 
     const anthropic = new Anthropic({ apiKey })
@@ -474,7 +474,7 @@ ${referenceStats}
 
     // 회사별 비교 데이터 - 모든 회사 항상 표시 (데이터 없으면 전체 평균 사용)
     const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
-    const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스", "엔씨소프트"]
+    const targetCompanies = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "웹젠", "스마일게이트", "네오위즈", "펄어비스"]
     targetCompanies.forEach(company => {
       const matchedEntry = Object.entries(companyStats).find(([key]) =>
         key.includes(company) || company.includes(key)
@@ -766,7 +766,7 @@ ${referenceStats}
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "회사별 합격자 특징을 주어로 시작하여 비교. 예: '넥슨 합격자들은 수치 기반 시스템 설계가 탄탄하고, 크래프톤 합격자들은 전투 경험 목표가 구체적입니다. 이 문서는 ~가 부족하여 합격 수준에 도달하려면 ~를 보완해야 합니다.' 3~4문장으로. 절대 '~사례처럼', '~처럼' 표현 금지. 사용자는 합격자 포트폴리오를 볼 수 없으므로 '합격자들은 ~한 특징이 있다'는 식으로 서술.",
+  "companyFeedback": "회사별 합격자 포트폴리오의 주요 특징과 이 문서와의 비교를 상세히 서술. 반드시 **넥슨**, **엔씨소프트**, **넷마블** 순서로 먼저 시작하고 이후 다른 회사 추가. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 이렇게 회사마다 줄바꿈(\\n\\n)으로 구분. 총 5~8개 회사 비교. 절대 '~사례처럼' 표현 금지.",
   "readabilityCategories": [
     { "subject": "글자크기구분", "value": 70, "fullMark": 100, "feedback": "제목과 본문의 크기 차이에 대한 구체적 피드백" },
     { "subject": "문단나누기", "value": 65, "fullMark": 100, "feedback": "문단 구성에 대한 피드백" },
@@ -882,7 +882,7 @@ ${referenceStats}
 
       // 회사별 비교 데이터 - 모든 회사 항상 표시 (데이터 없으면 전체 평균 사용)
       const companyComparison: { company: string; avgScore: number; userScore: number; sampleCount: number }[] = []
-      const targetCompanies = ["넥슨", "넷마블", "웹젠", "크래프톤", "스마일게이트", "네오위즈", "펄어비스", "엔씨소프트"]
+      const targetCompanies = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "웹젠", "스마일게이트", "네오위즈", "펄어비스"]
       targetCompanies.forEach(company => {
         const matchedEntry = Object.entries(companyStats).find(([key]) =>
           key.includes(company) || company.includes(key)

@@ -960,50 +960,29 @@ export function AnalyzeDashboard() {
                         </p>
                       </div>
 
-                      {/* 회사별 합격자 비교 - 테이블 형태 */}
-                      {ranking.companyComparison && ranking.companyComparison.length > 0 && (
+                      {/* 회사별 합격자 비교 - 텍스트 코멘트 */}
+                      {results[currentIndex].companyFeedback && (
                         <div>
-                          <p className="text-white font-semibold text-base mb-4">회사별 합격자 평균 vs 내 점수</p>
-                          <div className="overflow-hidden rounded-xl border border-[#1e3a5f]">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="bg-slate-800/80">
-                                  <th className="text-left px-4 py-3 text-slate-400 font-medium">회사</th>
-                                  <th className="text-center px-4 py-3 text-slate-400 font-medium">합격 평균</th>
-                                  <th className="text-center px-4 py-3 text-slate-400 font-medium">내 점수</th>
-                                  <th className="text-center px-4 py-3 text-slate-400 font-medium">차이</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {ranking.companyComparison.map((comp, idx) => {
-                                  const diff = userScore - comp.avgScore
-                                  const isAbove = diff >= 0
-                                  return (
-                                    <tr key={idx} className="border-t border-[#1e3a5f]/50">
-                                      <td className="px-4 py-3 text-white font-medium">{comp.company}</td>
-                                      <td className="text-center px-4 py-3 text-slate-300">{comp.avgScore}점</td>
-                                      <td className="text-center px-4 py-3 text-white font-semibold">{userScore}점</td>
-                                      <td className={`text-center px-4 py-3 font-bold ${isAbove ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                        {isAbove ? '+' : ''}{diff}점
-                                      </td>
-                                    </tr>
-                                  )
-                                })}
-                              </tbody>
-                            </table>
+                          <p className="text-white font-semibold text-base mb-4">회사별 합격자 포트폴리오 특징 비교</p>
+                          <div className="space-y-3">
+                            {results[currentIndex].companyFeedback!.split('\n\n').filter(Boolean).map((paragraph, idx) => {
+                              // **회사명** 패턴을 찾아서 강조
+                              const parts = paragraph.split(/\*\*(.*?)\*\*/)
+                              return (
+                                <div key={idx} className="p-4 bg-slate-800/50 border border-[#1e3a5f]/50 rounded-xl">
+                                  <p className="text-sm text-slate-300 leading-relaxed">
+                                    {parts.map((part, i) =>
+                                      i % 2 === 1
+                                        ? <span key={i} className="text-[#5B8DEF] font-semibold">{part}</span>
+                                        : <span key={i}>{part}</span>
+                                    )}
+                                  </p>
+                                </div>
+                              )
+                            })}
                           </div>
-
-                          {/* AI 합격자 비교 피드백 */}
-                          {results[currentIndex].companyFeedback && (
-                            <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
-                              <p className="text-sm text-slate-300 leading-relaxed">
-                                {results[currentIndex].companyFeedback}
-                              </p>
-                            </div>
-                          )}
-
                           <p className="text-xs text-slate-500 mt-4 text-center">
-                            * 실제 합격 포트폴리오 점수 평균과 비교 · 데이터는 지속 업데이트됩니다
+                            * 실제 합격 포트폴리오와 비교 분석 · 데이터는 지속 업데이트됩니다
                           </p>
                         </div>
                       )}

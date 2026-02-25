@@ -127,35 +127,55 @@ export function AnalyzeDashboard() {
   const resultsRef = useRef<HTMLDivElement>(null)
   const isLoggedIn = allowanceInfo?.reason !== "login_required"
 
-  // 분석 중 로딩 메시지 순환
+  // 분석 중 로딩 메시지 (순서대로 표시)
   const loadingMessages = [
     "문서 내용을 꼼꼼히 살펴보는 중...",
     "논리 구조와 흐름을 분석하는 중...",
     "게임 디자인 역량을 평가하는 중...",
-    "문서의 레이아웃을 검토하는 중...",
     "넥슨 합격자 포트폴리오와 비교하는 중...",
-    "크래프톤 합격자 포트폴리오와 비교하는 중...",
-    "넷마블 합격자 포트폴리오와 비교하는 중...",
     "엔씨소프트 합격자 포트폴리오와 비교하는 중...",
+    "넷마블 합격자 포트폴리오와 비교하는 중...",
+    "크래프톤 합격자 포트폴리오와 비교하는 중...",
     "펄어비스 합격자 포트폴리오와 비교하는 중...",
     "스마일게이트 합격자 포트폴리오와 비교하는 중...",
-    "네오위즈 합격자 포트폴리오와 비교하는 중...",
-    "웹젠 합격자 포트폴리오와 비교하는 중...",
     "강점과 보완점을 정리하는 중...",
     "최종 점수를 계산하는 중...",
   ]
 
+  // 시간 기반 진행률 (0~90%까지 천천히, 완료 시 100%)
+  const [fakeProgress, setFakeProgress] = useState(0)
+
   useEffect(() => {
     if (!isAnalyzing) {
       setStatusMessage("")
+      setFakeProgress(0)
       return
     }
-    const pick = () => loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
-    setStatusMessage(pick())
-    const timer = setInterval(() => {
-      setStatusMessage(pick())
-    }, 3500)
-    return () => clearInterval(timer)
+    // 메시지를 순서대로 표시
+    let msgIndex = 0
+    setStatusMessage(loadingMessages[0])
+    const msgTimer = setInterval(() => {
+      msgIndex++
+      if (msgIndex < loadingMessages.length) {
+        setStatusMessage(loadingMessages[msgIndex])
+      }
+    }, 5000)
+
+    // 진행률: 0 → 90%까지 60초에 걸쳐 서서히 증가
+    setFakeProgress(5)
+    const progressTimer = setInterval(() => {
+      setFakeProgress(prev => {
+        if (prev >= 90) return 90 // 90%에서 멈춤 (완료 전까지)
+        // 처음엔 빠르게, 나중엔 느리게
+        const increment = prev < 30 ? 3 : prev < 60 ? 2 : 0.5
+        return Math.min(prev + increment, 90)
+      })
+    }, 1000)
+
+    return () => {
+      clearInterval(msgTimer)
+      clearInterval(progressTimer)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAnalyzing])
 
@@ -668,7 +688,7 @@ export function AnalyzeDashboard() {
                           </p>
                           <p className="text-sm text-slate-400 mt-2">보통 30초~1분 정도 소요됩니다</p>
                         </div>
-                        <Progress value={((currentIndex + 1) / Math.max(files.length, 1)) * 100} className="h-2 w-full max-w-sm" />
+                        <Progress value={fakeProgress} className="h-2 w-full max-w-sm" />
                       </div>
                     </div>
                   ) : (
@@ -805,7 +825,7 @@ export function AnalyzeDashboard() {
                       {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
                     </span>
                   </div>
-                  <Progress value={50} className="h-2" />
+                  <Progress value={fakeProgress} className="h-2" />
                 </div>
               )}
 

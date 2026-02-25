@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
-import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3, Eye } from "lucide-react"
+import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail } from "@/app/actions/subscription"
+import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject } from "@/app/actions/subscription"
 import { getUser } from "@/app/actions/auth"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
@@ -13,6 +13,15 @@ import { DesignScores } from "@/components/design-scores"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { VersionComparison } from "@/components/version-comparison"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type Subscription = {
   plan: string
@@ -91,6 +100,12 @@ export default function MyPage() {
   const [detailData, setDetailData] = useState<Record<string, AnalysisItem>>({})
   const [loadingDetail, setLoadingDetail] = useState(false)
 
+  // 삭제/이름변경 상태
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "project" | "analysis"; id: string; name: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState("")
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -128,6 +143,7 @@ export default function MyPage() {
   const handleOpenProject = async (project: ProjectWithStats) => {
     setSelectedProject(project)
     setLoadingAnalyses(true)
+    setShowComparison(false)
     try {
       const result = await getProjectAnalyses(project.id)
       if (result.data) {
@@ -171,6 +187,81 @@ export default function MyPage() {
     setCancelling(false)
     setShowCancelConfirm(false)
   }
+
+  // 삭제 처리
+  const handleDelete = async () => {
+    if (!deleteConfirm) return
+    setDeleting(true)
+
+    if (deleteConfirm.type === "analysis") {
+      const result = await deleteAnalysis(deleteConfirm.id)
+      if (result.error) {
+        setMessage({ type: "error", text: result.error })
+      } else {
+        setProjectAnalyses(prev => prev.filter(a => a.id !== deleteConfirm.id))
+        // 프로젝트 통계 갱신
+        const projectsResult = await getProjects()
+        if (projectsResult.data) {
+          setProjects(projectsResult.data as ProjectWithStats[])
+          // 현재 선택된 프로젝트도 갱신
+          if (selectedProject) {
+            const updated = (projectsResult.data as ProjectWithStats[]).find(p => p.id === selectedProject.id)
+            if (updated) setSelectedProject(updated)
+          }
+        }
+        setMessage({ type: "success", text: "분석 결과가 삭제되었습니다." })
+      }
+    } else {
+      const result = await deleteProject(deleteConfirm.id)
+      if (result.error) {
+        setMessage({ type: "error", text: result.error })
+      } else {
+        setProjects(prev => prev.filter(p => p.id !== deleteConfirm.id))
+        setSelectedProject(null)
+        setProjectAnalyses([])
+        setMessage({ type: "success", text: "프로젝트가 삭제되었습니다." })
+      }
+    }
+
+    setDeleting(false)
+    setDeleteConfirm(null)
+  }
+
+  // 이름변경 처리
+  const handleRename = async (projectId: string) => {
+    if (!renameValue.trim()) return
+    const result = await renameProject(projectId, renameValue.trim())
+    if (result.error) {
+      setMessage({ type: "error", text: result.error })
+    } else {
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, name: renameValue.trim() } : p))
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(prev => prev ? { ...prev, name: renameValue.trim() } : prev)
+      }
+    }
+    setRenamingProjectId(null)
+    setRenameValue("")
+  }
+
+  // 같은 파일명 그룹핑
+  const groupedAnalyses = useMemo(() => {
+    const groups: Record<string, AnalysisItem[]> = {}
+    projectAnalyses.forEach(item => {
+      const baseName = item.file_name.replace(/\.(pdf|docx|txt)$/i, "")
+      if (!groups[baseName]) groups[baseName] = []
+      groups[baseName].push(item)
+    })
+    // 그룹 내 날짜순 정렬 (오래된 것 = v1)
+    Object.values(groups).forEach(group => {
+      group.sort((a, b) => new Date(a.analyzed_at).getTime() - new Date(b.analyzed_at).getTime())
+    })
+    // 그룹 간: 최신 분석 기준 내림차순
+    return Object.entries(groups).sort((a, b) => {
+      const latestA = a[1][a[1].length - 1].analyzed_at
+      const latestB = b[1][b[1].length - 1].analyzed_at
+      return new Date(latestB).getTime() - new Date(latestA).getTime()
+    })
+  }, [projectAnalyses])
 
   const getPlanLabel = (plan: string) => {
     switch (plan) { case "free": return "무료 체험"; case "monthly": return "월 구독"; case "three_month": return "3개월 패스"; case "tutoring": return "과외 수강생"; default: return plan }
@@ -341,12 +432,12 @@ export default function MyPage() {
                 {/* 프로젝트 카드들 */}
                 {projects.map(project => {
                   const grade = project.best_score !== null ? getGrade(project.best_score) : null
+                  const isRenaming = renamingProjectId === project.id
                   return (
-                    <button
+                    <div
                       key={project.id}
-                      onClick={() => handleOpenProject(project)}
                       className={`group relative bg-[#0d1b2a] rounded-xl border-2 ${grade ? grade.border : "border-[#1e3a5f]"} p-4
-                        hover:shadow-lg ${grade ? grade.glow : ""} hover:scale-[1.03] transition-all duration-200
+                        hover:shadow-lg ${grade ? grade.glow : ""} transition-all duration-200
                         text-left flex flex-col min-h-[160px]`}
                     >
                       {/* 등급 배지 */}
@@ -357,36 +448,99 @@ export default function MyPage() {
                         </div>
                       )}
 
-                      {/* 폴더 아이콘 */}
-                      <div className={`w-10 h-10 rounded-lg ${grade ? grade.bg : "bg-slate-800"} flex items-center justify-center mb-3`}>
-                        <FolderOpen className={`w-5 h-5 ${grade ? grade.text : "text-slate-500"}`} />
+                      {/* ⋯ 메뉴 */}
+                      <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1 rounded-md hover:bg-slate-800 text-slate-500 hover:text-white transition-colors"
+                              onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-[#0f1d32] border-[#1e3a5f] text-white min-w-[140px]">
+                            <DropdownMenuItem
+                              className="text-slate-300 hover:text-white focus:text-white focus:bg-slate-800 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setRenamingProjectId(project.id)
+                                setRenameValue(project.name)
+                              }}
+                            >
+                              <Pencil className="w-3.5 h-3.5 mr-2" /> 이름 변경
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-[#1e3a5f]" />
+                            <DropdownMenuItem
+                              className="text-red-400 hover:text-red-300 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setDeleteConfirm({ type: "project", id: project.id, name: project.name })
+                              }}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-2" /> 삭제
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
 
-                      {/* 프로젝트 이름 */}
-                      <p className="text-white text-xs font-medium truncate w-full mb-1 pr-4">
-                        {project.name}
-                      </p>
-
-                      {/* 통계 */}
-                      <div className="flex items-center gap-1 mb-1">
-                        <FileText className="w-3 h-3 text-slate-500" />
-                        <span className="text-xs text-slate-500">{project.analysis_count}개 문서</span>
-                      </div>
-
-                      {project.best_score !== null && (
-                        <div className="flex items-center gap-1 mb-1">
-                          <Star className={`w-3.5 h-3.5 ${grade ? grade.text : "text-slate-500"}`} />
-                          <span className={`font-bold text-sm ${grade ? grade.text : "text-slate-400"}`}>{project.best_score}</span>
-                          <span className="text-slate-600 text-xs">최고</span>
+                      {/* 카드 내용 (클릭 → 프로젝트 열기) */}
+                      <button
+                        onClick={() => !isRenaming && handleOpenProject(project)}
+                        className="flex flex-col flex-1 text-left w-full"
+                        disabled={isRenaming}
+                      >
+                        {/* 폴더 아이콘 */}
+                        <div className={`w-10 h-10 rounded-lg ${grade ? grade.bg : "bg-slate-800"} flex items-center justify-center mb-3`}>
+                          <FolderOpen className={`w-5 h-5 ${grade ? grade.text : "text-slate-500"}`} />
                         </div>
-                      )}
 
-                      {/* 화살표 */}
-                      <div className="mt-auto flex items-center gap-1 text-[10px] text-slate-600 group-hover:text-[#5B8DEF] transition-colors">
-                        <span>열기</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </div>
-                    </button>
+                        {/* 프로젝트 이름 (수정 모드 또는 일반) */}
+                        {isRenaming ? (
+                          <div className="flex items-center gap-1 mb-1 w-full" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="text"
+                              value={renameValue}
+                              onChange={(e) => setRenameValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleRename(project.id)
+                                if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") }
+                              }}
+                              autoFocus
+                              className="bg-slate-800 text-white text-xs rounded px-2 py-1 border border-[#5B8DEF] outline-none w-full"
+                            />
+                            <button
+                              onClick={() => handleRename(project.id)}
+                              className="p-1 rounded hover:bg-slate-800 text-[#5B8DEF]"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-white text-xs font-medium truncate w-full mb-1 pr-4">
+                            {project.name}
+                          </p>
+                        )}
+
+                        {/* 통계 */}
+                        <div className="flex items-center gap-1 mb-1">
+                          <FileText className="w-3 h-3 text-slate-500" />
+                          <span className="text-xs text-slate-500">{project.analysis_count}개 문서</span>
+                        </div>
+
+                        {project.best_score !== null && (
+                          <div className="flex items-center gap-1 mb-1">
+                            <Star className={`w-3.5 h-3.5 ${grade ? grade.text : "text-slate-500"}`} />
+                            <span className={`font-bold text-sm ${grade ? grade.text : "text-slate-400"}`}>{project.best_score}</span>
+                            <span className="text-slate-600 text-xs">최고</span>
+                          </div>
+                        )}
+
+                        {/* 화살표 */}
+                        <div className="mt-auto flex items-center gap-1 text-[10px] text-slate-600 group-hover:text-[#5B8DEF] transition-colors">
+                          <span>열기</span>
+                          <ChevronRight className="w-3 h-3" />
+                        </div>
+                      </button>
+                    </div>
                   )
                 })}
 
@@ -438,17 +592,58 @@ export default function MyPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }}
+                    onClick={() => { setSelectedProject(null); setProjectAnalyses([]); setShowComparison(false) }}
                     className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
-                      {selectedProject.name}
-                    </h2>
-                    <p className="text-xs text-slate-500">{selectedProject.analysis_count}개 문서</p>
+                  <div className="flex items-center gap-2">
+                    {renamingProjectId === selectedProject.id ? (
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
+                        <input
+                          type="text"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleRename(selectedProject.id)
+                            if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") }
+                          }}
+                          autoFocus
+                          className="bg-slate-800 text-white text-lg font-semibold rounded px-2 py-1 border border-[#5B8DEF] outline-none"
+                        />
+                        <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded hover:bg-slate-800 text-[#5B8DEF]">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded hover:bg-slate-800 text-slate-500">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                            <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
+                            {selectedProject.name}
+                          </h2>
+                          <button
+                            onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }}
+                            className="p-1 rounded hover:bg-slate-800 text-slate-600 hover:text-slate-300 transition-colors"
+                            title="이름 변경"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })}
+                            className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-colors"
+                            title="프로젝트 삭제"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-500">{projectAnalyses.length}개 문서</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -478,39 +673,81 @@ export default function MyPage() {
                   <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
                 </div>
               ) : projectAnalyses.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {projectAnalyses.map(item => {
-                    const grade = getGrade(item.overall_score)
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => handleOpenAnalysis(item)}
-                        className={`group relative bg-[#0d1b2a] rounded-xl border-2 ${grade.border} p-4
-                          hover:shadow-lg ${grade.glow} hover:scale-[1.03] transition-all duration-200
-                          text-left flex flex-col`}
-                      >
-                        <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color}
-                          flex items-center justify-center text-white font-black text-sm shadow-lg`}>
-                          {grade.label}
+                <div className="space-y-4">
+                  {groupedAnalyses.map(([groupName, items]) => (
+                    <div key={groupName}>
+                      {/* 그룹 헤더 (같은 파일 2개 이상일 때만 표시) */}
+                      {items.length >= 2 && (
+                        <div className="flex items-center gap-2 mb-2 px-1">
+                          <FileText className="w-3.5 h-3.5 text-slate-500" />
+                          <span className="text-xs text-slate-400 font-medium">{groupName}</span>
+                          <span className="text-[10px] text-slate-600">(v1~v{items.length})</span>
                         </div>
-                        <div className={`w-10 h-10 rounded-lg ${grade.bg} flex items-center justify-center mb-3`}>
-                          <FileText className={`w-5 h-5 ${grade.text}`} />
-                        </div>
-                        <p className="text-white text-xs font-medium truncate w-full mb-2 pr-4">
-                          {item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}
-                        </p>
-                        <div className="flex items-center gap-1 mb-1">
-                          <Star className={`w-3.5 h-3.5 ${grade.text}`} />
-                          <span className={`font-bold text-lg ${grade.text}`}>{item.overall_score}</span>
-                          <span className="text-slate-600 text-xs">/100</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-600 mt-auto">
-                          <Calendar className="w-2.5 h-2.5" />
-                          {formatShortDate(item.analyzed_at)}
-                        </div>
-                      </button>
-                    )
-                  })}
+                      )}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {items.map((item, versionIdx) => {
+                          const grade = getGrade(item.overall_score)
+                          return (
+                            <div
+                              key={item.id}
+                              className={`group/card relative bg-[#0d1b2a] rounded-xl border-2 ${grade.border} p-4
+                                hover:shadow-lg ${grade.glow} hover:scale-[1.03] transition-all duration-200
+                                text-left flex flex-col`}
+                            >
+                              {/* 등급 배지 */}
+                              <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color}
+                                flex items-center justify-center text-white font-black text-sm shadow-lg`}>
+                                {grade.label}
+                              </div>
+
+                              {/* 삭제 버튼 */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name })
+                                }}
+                                className="absolute top-2 left-2 opacity-0 group-hover/card:opacity-100 p-1 rounded-md
+                                  hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all z-10"
+                                title="삭제"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* 카드 내용 */}
+                              <button
+                                onClick={() => handleOpenAnalysis(item)}
+                                className="flex flex-col flex-1 text-left w-full"
+                              >
+                                <div className={`w-10 h-10 rounded-lg ${grade.bg} flex items-center justify-center mb-3`}>
+                                  <FileText className={`w-5 h-5 ${grade.text}`} />
+                                </div>
+                                <p className="text-white text-xs font-medium truncate w-full mb-2 pr-4">
+                                  {items.length >= 2
+                                    ? `v${versionIdx + 1}`
+                                    : item.file_name.replace(/\.(pdf|docx|txt)$/i, "")
+                                  }
+                                </p>
+                                {items.length >= 2 && (
+                                  <p className="text-slate-500 text-[10px] truncate w-full mb-1">
+                                    {item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}
+                                  </p>
+                                )}
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Star className={`w-3.5 h-3.5 ${grade.text}`} />
+                                  <span className={`font-bold text-lg ${grade.text}`}>{item.overall_score}</span>
+                                  <span className="text-slate-600 text-xs">/100</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-[10px] text-slate-600 mt-auto">
+                                  <Calendar className="w-2.5 h-2.5" />
+                                  {formatShortDate(item.analyzed_at)}
+                                </div>
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -555,6 +792,36 @@ export default function MyPage() {
           )}
         </div>
       </div>
+
+      {/* ========== 삭제 확인 다이얼로그 ========== */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent className="bg-[#0f1d32] border-[#1e3a5f] text-white max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              {deleteConfirm?.type === "project" ? "프로젝트를 삭제하시겠습니까?" : "분석 결과를 삭제하시겠습니까?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              {deleteConfirm?.type === "project"
+                ? `'${deleteConfirm?.name}' 프로젝트와 포함된 모든 분석 결과가 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`
+                : `'${deleteConfirm?.name}' 분석 결과가 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-[#1e3a5f] text-slate-400 hover:text-white hover:bg-slate-800">
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {deleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ========== 분석 상세 모달 ========== */}
       {selectedAnalysis && (

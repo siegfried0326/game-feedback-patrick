@@ -304,3 +304,65 @@ export async function saveAnalysisHistory(result: {
 
   return { success: true }
 }
+
+// ========== 프로젝트/분석 관리 (삭제, 이름변경) ==========
+
+export async function deleteAnalysis(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  const { error } = await supabase
+    .from("analysis_history")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function deleteProject(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  // 하위 분석 먼저 삭제
+  const { error: analysisError } = await supabase
+    .from("analysis_history")
+    .delete()
+    .eq("project_id", id)
+    .eq("user_id", user.id)
+
+  if (analysisError) return { error: analysisError.message }
+
+  // 프로젝트 삭제
+  const { error: projectError } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+
+  if (projectError) return { error: projectError.message }
+  return { success: true }
+}
+
+export async function renameProject(id: string, newName: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  if (!newName.trim()) return { error: "프로젝트 이름을 입력해 주세요." }
+
+  const { error } = await supabase
+    .from("projects")
+    .update({ name: newName.trim(), updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}

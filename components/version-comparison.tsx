@@ -8,8 +8,10 @@ interface AnalysisItem {
   file_name: string
   overall_score: number
   categories: Array<{
-    name: string
-    score: number
+    subject: string
+    value: number
+    fullMark?: number
+    feedback?: string
   }>
   analyzed_at: string
 }
@@ -18,12 +20,25 @@ interface VersionComparisonProps {
   analyses: AnalysisItem[]
 }
 
+// 기본 5개 카테고리 (라인차트에 표시)
+const BASIC_SUBJECTS = ["논리력", "구체성", "가독성", "기술이해", "창의성"]
+
 const CATEGORY_COLORS: Record<string, string> = {
   "논리력": "#5B8DEF",
   "구체성": "#10B981",
   "가독성": "#F59E0B",
   "기술이해": "#8B5CF6",
   "창의성": "#EF4444",
+  "시스템기획": "#06B6D4",
+  "전투설계": "#F472B6",
+  "경제설계": "#A78BFA",
+  "레벨디자인": "#34D399",
+  "UX설계": "#FB923C",
+  "밸런스설계": "#818CF8",
+  "내러티브": "#2DD4BF",
+  "모바일최적화": "#E879F9",
+  "라이브운영": "#FCD34D",
+  "개발일정": "#4ADE80",
 }
 
 export function VersionComparison({ analyses }: VersionComparisonProps) {
@@ -53,18 +68,21 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
     }
     if (item.categories && Array.isArray(item.categories)) {
       item.categories.forEach((cat) => {
-        entry[cat.name] = cat.score
+        entry[cat.subject] = cat.value
       })
     }
     return entry
   })
 
-  // 모든 버전에서 카테고리 이름 통합 추출 (순서 유지)
+  // 모든 버전에서 카테고리 이름 통합 추출
   const categoryNameSet = new Set<string>()
   sorted.forEach((item) => {
-    item.categories?.forEach((c) => categoryNameSet.add(c.name))
+    item.categories?.forEach((c) => categoryNameSet.add(c.subject))
   })
-  const categoryNames = Array.from(categoryNameSet)
+  const allCategoryNames = Array.from(categoryNameSet)
+
+  // 라인차트용: 기본 5개만
+  const basicCategoryNames = allCategoryNames.filter(n => BASIC_SUBJECTS.includes(n))
 
   // 최신 vs 이전 비교
   const latest = sorted[sorted.length - 1]
@@ -127,10 +145,10 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
         </div>
       </div>
 
-      {/* 카테고리별 점수 변화 */}
-      {categoryNames.length > 0 && (
+      {/* 기본 역량 5개 점수 변화 */}
+      {basicCategoryNames.length > 0 && (
         <div>
-          <p className="text-sm text-slate-400 mb-3">영역별 점수 변화</p>
+          <p className="text-sm text-slate-400 mb-3">기본 역량 점수 변화</p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
@@ -146,7 +164,7 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px" }} />
-                {categoryNames.map((name) => (
+                {basicCategoryNames.map((name) => (
                   <Line
                     key={name}
                     type="monotone"
@@ -162,7 +180,7 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
         </div>
       )}
 
-      {/* 버전별 점수 테이블 */}
+      {/* 버전별 점수 테이블 (전체 카테고리) */}
       <div>
         <p className="text-sm text-slate-400 mb-3">버전별 상세</p>
         <div className="overflow-x-auto">
@@ -195,14 +213,14 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
                   )
                 })}
               </tr>
-              {categoryNames.map((catName) => (
+              {allCategoryNames.map((catName) => (
                 <tr key={catName} className="border-b border-slate-800/50">
                   <td className="text-slate-300 py-2 pr-4">{catName}</td>
                   {sorted.map((item, idx) => {
-                    const cat = item.categories?.find((c) => c.name === catName)
-                    const score = cat?.score
-                    const prevCat = idx > 0 ? sorted[idx - 1].categories?.find((c) => c.name === catName) : null
-                    const prevScore = prevCat?.score
+                    const cat = item.categories?.find((c) => c.subject === catName)
+                    const score = cat?.value
+                    const prevCat = idx > 0 ? sorted[idx - 1].categories?.find((c) => c.subject === catName) : null
+                    const prevScore = prevCat?.value
                     const diff = score != null && prevScore != null ? score - prevScore : null
                     return (
                       <td key={item.id} className="text-center py-2 px-2">

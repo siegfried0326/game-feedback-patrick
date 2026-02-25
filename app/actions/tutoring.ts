@@ -99,5 +99,32 @@ export async function confirmTutoringPayment(paymentKey: string, orderId: string
     .eq("user_id", user.id)
 
   if (error) return { error: error.message }
+
+  // 과외 수강생에게 1개월 구독(무제한 분석) 부여
+  const now = new Date()
+  const { data: existing } = await supabase
+    .from("users_subscription")
+    .select("*")
+    .eq("user_id", user.id)
+    .single()
+
+  let expiresAt: Date
+  if (existing && existing.plan !== "free" && existing.expires_at && new Date(existing.expires_at) > now) {
+    // 기존 구독이 남아있으면 만료일에서 +1개월
+    expiresAt = new Date(existing.expires_at)
+  } else {
+    expiresAt = new Date(now)
+  }
+  expiresAt.setMonth(expiresAt.getMonth() + 1)
+
+  await supabase.from("users_subscription").upsert({
+    user_id: user.id,
+    plan: "tutoring",
+    status: "active",
+    started_at: now.toISOString(),
+    expires_at: expiresAt.toISOString(),
+    updated_at: now.toISOString(),
+  }, { onConflict: "user_id" })
+
   return { success: true }
 }

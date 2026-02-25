@@ -121,8 +121,8 @@ export function WhyChooseUs() {
             <span className="text-red-400">그래서 어쩌라고요?</span>
           </h2>
           <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-            GPT에게 기획서를 넣으면 돌아오는 건 게임디자인 교과서 요약뿐.<br />
-            <span className="text-slate-300">당신의 문서에만 해당하는 피드백</span>은 단 한 줄도 없습니다.
+            GPT에게 기획서를 넣으면 돌아오는 건 교과서 요약뿐.<br />
+            <span className="text-slate-300">당신의 문서에 해당하는 피드백</span>은 단 한 줄도 없습니다.
           </p>
         </div>
 

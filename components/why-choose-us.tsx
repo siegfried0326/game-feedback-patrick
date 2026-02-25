@@ -146,31 +146,26 @@ export function WhyChooseUs() {
           </div>
 
           {/* Image Right - 실제 포트폴리오 데이터 */}
-          <div className="relative">
-            <div className="relative bg-slate-900/80 border border-[#1e3a5f] rounded-2xl overflow-hidden">
-              {/* 학습 데이터 관리 스크린샷 - 이미 블러된 이미지 사용 */}
-              <div className="relative aspect-[4/3]">
-                <Image
-                  src="/training-data-management.png"
-                  alt="합격자 포트폴리오 학습 데이터"
-                  fill
-                  className="object-cover object-top opacity-90"
-                />
-                {/* 하단 그라데이션 */}
-                <div className="absolute bottom-0 left-0 right-0 h-2/5 bg-gradient-to-t from-[#0d1f3c] via-[#0d1f3c]/80 to-transparent" />
-                {/* 하단 187개 + 용량 강조 오버레이 */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
-                  <div>
-                    <div className="text-6xl md:text-7xl font-black text-[#5B8DEF] drop-shadow-2xl leading-none">187</div>
-                    <p className="text-white text-base font-bold mt-2 drop-shadow-lg">합격자 포트폴리오</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">1.34<span className="text-lg ml-0.5">GB</span></p>
-                    <p className="text-slate-300 text-sm drop-shadow-lg mt-1">187개의 실전 문서</p>
-                    <p className="text-slate-400 text-xs drop-shadow-lg mt-0.5">실제 데이터로 학습된 AI</p>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-4">
+            {/* 회사별 학습 데이터 현황 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/training-data-management1.png"
+                alt="회사별 학습 데이터 현황"
+                width={1560}
+                height={600}
+                className="w-full h-auto"
+              />
+            </div>
+            {/* 학습 데이터 목록 */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
+              <Image
+                src="/training-data-management2.png"
+                alt="학습 데이터 목록"
+                width={1024}
+                height={560}
+                className="w-full h-auto"
+              />
             </div>
           </div>
         </div>

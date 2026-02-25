@@ -123,10 +123,10 @@ const COMPANY_ALIASES: Record<string, string> = {
   "Devsisters": "데브시스터즈",
   "devsisters": "데브시스터즈",
   
-  "매드엔진": "매드엔진",
-  "MADENGINE": "매드엔진",
-  "MadEngine": "매드엔진",
-  "madengine": "매드엔진",
+  "매드엔진": "일반게임회사",
+  "MADENGINE": "일반게임회사",
+  "MadEngine": "일반게임회사",
+  "madengine": "일반게임회사",
   
   "라이온하트": "라이온하트",
   "LIONHEART": "라이온하트",

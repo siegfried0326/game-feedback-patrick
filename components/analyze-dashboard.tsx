@@ -327,6 +327,7 @@ export function AnalyzeDashboard() {
   }
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (isAnalyzing) return // 분석 중에는 새 파일 업로드 차단
     if (!isLoggedIn) {
       router.push("/login?redirect=/analyze")
       return
@@ -355,6 +356,7 @@ export function AnalyzeDashboard() {
 
   // URL 분석
   const handleAnalyzeUrl = async () => {
+    if (isAnalyzing) return // 분석 중에는 중복 실행 차단
     if (!isLoggedIn) {
       router.push("/login?redirect=/analyze")
       return
@@ -797,14 +799,14 @@ export function AnalyzeDashboard() {
                           type="url"
                           value={urlInput}
                           onChange={e => setUrlInput(e.target.value)}
-                          onKeyDown={e => e.key === "Enter" && !isAnalyzingUrl && handleAnalyzeUrl()}
+                          onKeyDown={e => e.key === "Enter" && !isAnalyzing && handleAnalyzeUrl()}
                           placeholder="https://notion.so/... 또는 포트폴리오 URL"
                           className="flex-1 bg-[#0d1b2a] border border-[#1e3a5f] rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#5B8DEF]"
-                          disabled={isAnalyzingUrl}
+                          disabled={isAnalyzing}
                         />
                         <Button
                           onClick={handleAnalyzeUrl}
-                          disabled={isAnalyzingUrl || !urlInput.trim() || (isLoggedIn && !selectedProjectId)}
+                          disabled={isAnalyzing || !urlInput.trim() || (isLoggedIn && !selectedProjectId)}
                           className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-6"
                         >
                           {isAnalyzingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : "분석"}

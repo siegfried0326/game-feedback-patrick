@@ -1,5 +1,8 @@
 "use server"
 
+// Vercel 함수 타임아웃 (초) - 큰 PDF 분석 시 시간 필요
+export const maxDuration = 120
+
 import { createClient } from "@/lib/supabase/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
@@ -333,9 +336,9 @@ export async function analyzeUrlDirect(input: {
         }
       }
 
-      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 16개)
+      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 12개)
       for (const p of portfolios) {
-        if (selectedExamples.length >= 16) break
+        if (selectedExamples.length >= 12) break
         if (!usedIds.has(p.file_name)) {
           selectedExamples.push(p)
           usedIds.add(p.file_name)
@@ -708,9 +711,9 @@ export async function analyzeDocumentDirect(input: {
         }
       }
 
-      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 16개)
+      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 12개)
       for (const p of portfolios) {
-        if (selectedExamples.length >= 16) break
+        if (selectedExamples.length >= 12) break
         if (!usedIds.has(p.file_name)) {
           selectedExamples.push(p)
           usedIds.add(p.file_name)
@@ -1086,6 +1089,13 @@ ${referenceStats}
     }
   } catch (error) {
     console.error("Analysis error:", error)
-    return { error: "분석 중 오류가 발생했습니다. 다시 시도해 주세요." }
+    const errMsg = error instanceof Error ? error.message : String(error)
+    if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
+      return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+    }
+    if (errMsg.includes("too many tokens") || errMsg.includes("context_length")) {
+      return { error: "파일 내용이 너무 많아 분석할 수 없습니다. 더 짧은 문서로 시도해 주세요." }
+    }
+    return { error: `분석 중 오류가 발생했습니다. 다시 시도해 주세요. (${errMsg.slice(0, 100)})` }
   }
 }

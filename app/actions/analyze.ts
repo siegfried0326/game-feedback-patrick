@@ -1,8 +1,5 @@
 "use server"
 
-// Vercel 함수 타임아웃 (초) - 큰 PDF 분석 시 시간 필요
-export const maxDuration = 120
-
 import { createClient } from "@/lib/supabase/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"

@@ -293,7 +293,32 @@ export async function analyzeUrlDirect(input: {
         .slice(0, 15)
         .map(([tag]) => tag)
 
-      const topExamples = portfolios.slice(0, 10).map((p, idx) => {
+      // 회사별 균형 잡힌 샘플링: 주요 회사별 최대 2개씩 + 나머지
+      const priorityCompanies = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "스마일게이트", "펄어비스", "네오위즈", "웹젠"]
+      const selectedExamples: typeof portfolios = []
+      const usedIds = new Set<string>()
+
+      // 1단계: 주요 회사별 상위 2개씩 선택
+      for (const company of priorityCompanies) {
+        const companyPortfolios = portfolios.filter(p =>
+          (p.companies as string[] || []).some((c: string) => c === company) && !usedIds.has(p.file_name)
+        )
+        for (const p of companyPortfolios.slice(0, 2)) {
+          selectedExamples.push(p)
+          usedIds.add(p.file_name)
+        }
+      }
+
+      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 16개)
+      for (const p of portfolios) {
+        if (selectedExamples.length >= 16) break
+        if (!usedIds.has(p.file_name)) {
+          selectedExamples.push(p)
+          usedIds.add(p.file_name)
+        }
+      }
+
+      const topExamples = selectedExamples.map((p, idx) => {
         const strengthsList = (p.strengths || []).slice(0, 3).map(s => `  · ${s}`).join("\n")
         const weaknessesList = (p.weaknesses || []).slice(0, 2).map(w => `  · ${w}`).join("\n")
         return `
@@ -308,6 +333,32 @@ ${weaknessesList}` : ""}
 - 요약: ${p.summary || "N/A"}
 `
       }).join("\n")
+
+      // 회사별 강점/약점 패턴 요약 (companyFeedback 정확도 향상용)
+      const companyPatterns = Object.entries(companyStats)
+        .filter(([, stat]) => stat.count >= 2)
+        .slice(0, 8)
+        .map(([company]) => {
+          const companyPortfolios = portfolios.filter(p =>
+            (p.companies as string[] || []).some((c: string) => c === company)
+          )
+          const allStrengths = companyPortfolios.flatMap(p => p.strengths || [])
+          const allWeaknesses = companyPortfolios.flatMap(p => p.weaknesses || [])
+          const strengthCounts: Record<string, number> = {}
+          allStrengths.forEach(s => { strengthCounts[s] = (strengthCounts[s] || 0) + 1 })
+          const weaknessCounts: Record<string, number> = {}
+          allWeaknesses.forEach(w => { weaknessCounts[w] = (weaknessCounts[w] || 0) + 1 })
+          const topStrengths = Object.entries(strengthCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s]) => s)
+          const topWeaknesses = Object.entries(weaknessCounts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([w]) => w)
+          const companyTags = companyPortfolios.flatMap(p => p.tags || [])
+          const tagCounts2: Record<string, number> = {}
+          companyTags.forEach(t => { tagCounts2[t] = (tagCounts2[t] || 0) + 1 })
+          const topCompanyTags = Object.entries(tagCounts2).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t]) => t)
+          return `- **${company}** (${companyPortfolios.length}개 샘플, 평균 ${Math.round(companyPortfolios.reduce((a, b) => a + (b.overall_score || 0), 0) / companyPortfolios.length)}점)
+  · 공통 강점: ${topStrengths.join(", ") || "데이터 부족"}
+  · 공통 약점: ${topWeaknesses.join(", ") || "데이터 부족"}
+  · 주요 키워드: ${topCompanyTags.join(", ") || "데이터 부족"}`
+        }).join("\n")
 
       referenceStats = `
 ## 📊 학습 데이터 기반 비교 분석 (실제 합격 포트폴리오 ${portfolios.length}개)
@@ -324,9 +375,12 @@ ${Object.entries(companyStats).slice(0, 8).map(([company, stat]) =>
   `- ${company}: ${Math.round(stat.total / stat.count)}점 (${stat.count}개 샘플)`
 ).join("\n")}
 
+### 회사별 합격자 포트폴리오 공통 패턴
+${companyPatterns}
+
 ---
 
-## 🎯 실제 합격 포트폴리오 패턴 분석
+## 🎯 실제 합격 포트폴리오 패턴 분석 (회사별 균형 샘플링)
 ${topExamples}
 
 ---
@@ -613,7 +667,32 @@ export async function analyzeDocumentDirect(input: {
         .slice(0, 15)
         .map(([tag]) => tag)
 
-      const topExamples = portfolios.slice(0, 10).map((p, idx) => {
+      // 회사별 균형 잡힌 샘플링: 주요 회사별 최대 2개씩 + 나머지
+      const priorityCompanies = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "스마일게이트", "펄어비스", "네오위즈", "웹젠"]
+      const selectedExamples: typeof portfolios = []
+      const usedIds = new Set<string>()
+
+      // 1단계: 주요 회사별 상위 2개씩 선택
+      for (const company of priorityCompanies) {
+        const companyPortfolios = portfolios.filter(p =>
+          (p.companies as string[] || []).some((c: string) => c === company) && !usedIds.has(p.file_name)
+        )
+        for (const p of companyPortfolios.slice(0, 2)) {
+          selectedExamples.push(p)
+          usedIds.add(p.file_name)
+        }
+      }
+
+      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 16개)
+      for (const p of portfolios) {
+        if (selectedExamples.length >= 16) break
+        if (!usedIds.has(p.file_name)) {
+          selectedExamples.push(p)
+          usedIds.add(p.file_name)
+        }
+      }
+
+      const topExamples = selectedExamples.map((p, idx) => {
         const strengthsList = (p.strengths || []).slice(0, 3).map(s => `  · ${s}`).join("\n")
         const weaknessesList = (p.weaknesses || []).slice(0, 2).map(w => `  · ${w}`).join("\n")
         return `
@@ -628,6 +707,32 @@ ${weaknessesList}` : ""}
 - 요약: ${p.summary || "N/A"}
 `
       }).join("\n")
+
+      // 회사별 강점/약점 패턴 요약 (companyFeedback 정확도 향상용)
+      const companyPatterns = Object.entries(companyStats)
+        .filter(([, stat]) => stat.count >= 2)
+        .slice(0, 8)
+        .map(([company]) => {
+          const companyPortfolios = portfolios.filter(p =>
+            (p.companies as string[] || []).some((c: string) => c === company)
+          )
+          const allStrengths = companyPortfolios.flatMap(p => p.strengths || [])
+          const allWeaknesses = companyPortfolios.flatMap(p => p.weaknesses || [])
+          const strengthCounts: Record<string, number> = {}
+          allStrengths.forEach(s => { strengthCounts[s] = (strengthCounts[s] || 0) + 1 })
+          const weaknessCounts: Record<string, number> = {}
+          allWeaknesses.forEach(w => { weaknessCounts[w] = (weaknessCounts[w] || 0) + 1 })
+          const topStrengths = Object.entries(strengthCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s]) => s)
+          const topWeaknesses = Object.entries(weaknessCounts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([w]) => w)
+          const companyTags = companyPortfolios.flatMap(p => p.tags || [])
+          const tagCounts2: Record<string, number> = {}
+          companyTags.forEach(t => { tagCounts2[t] = (tagCounts2[t] || 0) + 1 })
+          const topCompanyTags = Object.entries(tagCounts2).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t]) => t)
+          return `- **${company}** (${companyPortfolios.length}개 샘플, 평균 ${Math.round(companyPortfolios.reduce((a, b) => a + (b.overall_score || 0), 0) / companyPortfolios.length)}점)
+  · 공통 강점: ${topStrengths.join(", ") || "데이터 부족"}
+  · 공통 약점: ${topWeaknesses.join(", ") || "데이터 부족"}
+  · 주요 키워드: ${topCompanyTags.join(", ") || "데이터 부족"}`
+        }).join("\n")
 
       referenceStats = `
 ## 📊 학습 데이터 기반 비교 분석 (실제 합격 포트폴리오 ${portfolios.length}개)
@@ -644,9 +749,12 @@ ${Object.entries(companyStats).slice(0, 8).map(([company, stat]) =>
   `- ${company}: ${Math.round(stat.total / stat.count)}점 (${stat.count}개 샘플)`
 ).join("\n")}
 
+### 회사별 합격자 포트폴리오 공통 패턴
+${companyPatterns}
+
 ---
 
-## 🎯 실제 합격 포트폴리오 패턴 분석
+## 🎯 실제 합격 포트폴리오 패턴 분석 (회사별 균형 샘플링)
 ${topExamples}
 
 ---

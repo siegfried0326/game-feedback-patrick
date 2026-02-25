@@ -38,25 +38,25 @@ function StickyPreview() {
   }, [])
 
   return (
-    // 외부 컨테이너: 슬라이드 수 × 100vh로 스크롤 공간 확보
+    // 외부 컨테이너: 슬라이드 수 × 100dvh로 스크롤 공간 확보 (dvh = 모바일 주소창 대응)
     <div
       ref={containerRef}
-      style={{ height: `${PREVIEW_SLIDES.length * 100}vh` }}
+      style={{ height: `${PREVIEW_SLIDES.length * 100}dvh` }}
     >
       {/* 고정 뷰포트 */}
-      <div className="sticky top-0 h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
+      <div className="sticky top-0 flex flex-col items-center justify-center px-4 md:px-6 overflow-hidden" style={{ height: "100dvh" }}>
         {/* 헤더 */}
-        <div className="text-center mb-6 md:mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 text-[#5B8DEF] text-sm font-medium mb-4">
+        <div className="text-center mb-4 md:mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 text-[#5B8DEF] text-xs md:text-sm font-medium mb-3 md:mb-4">
             AI가 이렇게 분석합니다
           </div>
-          <h3 className="text-2xl md:text-3xl font-bold text-white">
+          <h3 className="text-xl md:text-3xl font-bold text-white">
             분석 결과 미리보기
           </h3>
         </div>
 
         {/* 이미지 영역 */}
-        <div className="relative w-full max-w-4xl flex-1 min-h-0 mb-4 md:mb-6">
+        <div className="relative w-full max-w-4xl flex-1 min-h-0 mb-3 md:mb-6">
           {PREVIEW_SLIDES.map((slide, i) => (
             <div
               key={slide.src}
@@ -66,12 +66,12 @@ function StickyPreview() {
                 transform: i === activeIndex
                   ? "translateY(0) scale(1)"
                   : i < activeIndex
-                    ? "translateY(-40px) scale(0.95)"
-                    : "translateY(40px) scale(0.95)",
+                    ? "translateY(-20px) scale(0.97)"
+                    : "translateY(20px) scale(0.97)",
                 pointerEvents: i === activeIndex ? "auto" : "none",
               }}
             >
-              <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f] w-full max-h-[60vh] md:max-h-[65vh]">
+              <div className="relative rounded-xl md:rounded-2xl overflow-hidden border border-[#1e3a5f] w-full max-h-[45dvh] sm:max-h-[55dvh] md:max-h-[65dvh]">
                 <Image
                   src={slide.src}
                   alt={slide.alt}
@@ -85,21 +85,21 @@ function StickyPreview() {
         </div>
 
         {/* 하단 인디케이터 + 레이블 */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 md:gap-2">
             {PREVIEW_SLIDES.map((slide, i) => (
               <button
                 key={i}
                 className={`transition-all duration-300 rounded-full ${
                   i === activeIndex
-                    ? "w-8 h-2.5 bg-[#5B8DEF]"
-                    : "w-2.5 h-2.5 bg-slate-600 hover:bg-slate-500"
+                    ? "w-6 md:w-8 h-2 md:h-2.5 bg-[#5B8DEF]"
+                    : "w-2 md:w-2.5 h-2 md:h-2.5 bg-slate-600"
                 }`}
                 aria-label={slide.label}
               />
             ))}
           </div>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs md:text-sm text-slate-400">
             {PREVIEW_SLIDES[activeIndex].label}
             <span className="text-slate-600 ml-2">{activeIndex + 1} / {PREVIEW_SLIDES.length}</span>
           </p>

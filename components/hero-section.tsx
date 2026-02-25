@@ -6,7 +6,7 @@ import Link from "next/link"
 
 export function HeroSection() {
   return (
-    <section className="min-h-[85vh] flex items-center px-6 bg-gradient-to-b from-[#0a1628] to-[#0d1f3c] pt-20 pb-12">
+    <section className="min-h-[85dvh] flex items-center px-4 md:px-6 bg-gradient-to-b from-[#0a1628] to-[#0d1f3c] pt-16 md:pt-20 pb-10 md:pb-12">
       <div className="max-w-6xl mx-auto w-full">
         {/* Badge */}
         <div className="text-center mb-8">
@@ -17,7 +17,7 @@ export function HeroSection() {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-3 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-3 text-center">
           <span className="text-[#5B8DEF] tracking-wider uppercase">DESIGN</span><span className="text-white tracking-wider uppercase">IT</span>
         </h1>
         <p className="text-base md:text-lg text-slate-400 font-medium tracking-widest uppercase text-center mb-1">

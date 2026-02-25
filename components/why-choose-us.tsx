@@ -1,11 +1,117 @@
 "use client"
 
+import { useRef, useState, useEffect } from "react"
 import { Database, ShieldCheck, BarChart3, ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 
+const PREVIEW_SLIDES = [
+  { src: "/preview-score.png", alt: "종합 점수 및 레이더 차트 분석 결과", label: "종합 점수" },
+  { src: "/preview-ranking.png", alt: "회사별 합격자 평균 vs 내 점수 비교", label: "합격자 비교" },
+  { src: "/preview-feedback.png", alt: "강점, 약점 분석 및 게임 디자인 역량 평가", label: "강점/약점 분석" },
+  { src: "/preview-readability.png", alt: "문서 가독성 분석 및 레이아웃 개선 제안", label: "가독성 분석" },
+  { src: "/preview-history.png", alt: "버전별 점수 변화 추적 및 비교", label: "점수 변화" },
+]
+
+function StickyPreview() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const containerHeight = containerRef.current.offsetHeight
+      const viewportHeight = window.innerHeight
+      // 컨테이너가 화면 위로 얼마나 지나갔는지 (0 ~ 1)
+      const scrolled = -rect.top / (containerHeight - viewportHeight)
+      const clamped = Math.max(0, Math.min(1, scrolled))
+      const index = Math.min(
+        PREVIEW_SLIDES.length - 1,
+        Math.floor(clamped * PREVIEW_SLIDES.length)
+      )
+      setActiveIndex(index)
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  return (
+    // 외부 컨테이너: 슬라이드 수 × 100vh로 스크롤 공간 확보
+    <div
+      ref={containerRef}
+      style={{ height: `${PREVIEW_SLIDES.length * 100}vh` }}
+    >
+      {/* 고정 뷰포트 */}
+      <div className="sticky top-0 h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
+        {/* 헤더 */}
+        <div className="text-center mb-6 md:mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 text-[#5B8DEF] text-sm font-medium mb-4">
+            AI가 이렇게 분석합니다
+          </div>
+          <h3 className="text-2xl md:text-3xl font-bold text-white">
+            분석 결과 미리보기
+          </h3>
+        </div>
+
+        {/* 이미지 영역 */}
+        <div className="relative w-full max-w-4xl flex-1 min-h-0 mb-4 md:mb-6">
+          {PREVIEW_SLIDES.map((slide, i) => (
+            <div
+              key={slide.src}
+              className="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
+              style={{
+                opacity: i === activeIndex ? 1 : 0,
+                transform: i === activeIndex
+                  ? "translateY(0) scale(1)"
+                  : i < activeIndex
+                    ? "translateY(-40px) scale(0.95)"
+                    : "translateY(40px) scale(0.95)",
+                pointerEvents: i === activeIndex ? "auto" : "none",
+              }}
+            >
+              <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f] w-full max-h-[60vh] md:max-h-[65vh]">
+                <Image
+                  src={slide.src}
+                  alt={slide.alt}
+                  width={2178}
+                  height={2054}
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 하단 인디케이터 + 레이블 */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+            {PREVIEW_SLIDES.map((slide, i) => (
+              <button
+                key={i}
+                className={`transition-all duration-300 rounded-full ${
+                  i === activeIndex
+                    ? "w-8 h-2.5 bg-[#5B8DEF]"
+                    : "w-2.5 h-2.5 bg-slate-600 hover:bg-slate-500"
+                }`}
+                aria-label={slide.label}
+              />
+            ))}
+          </div>
+          <p className="text-sm text-slate-400">
+            {PREVIEW_SLIDES[activeIndex].label}
+            <span className="text-slate-600 ml-2">{activeIndex + 1} / {PREVIEW_SLIDES.length}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function WhyChooseUs() {
   return (
+    <>
     <section className="py-24 bg-[#0d1f3c]">
       <div className="max-w-6xl mx-auto px-6">
         {/* Hero Text */}
@@ -117,82 +223,22 @@ export function WhyChooseUs() {
           </Card>
         </div>
 
-        {/* AI 분석 결과 미리보기 */}
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 text-[#5B8DEF] text-sm font-medium mb-8">
-            AI가 이렇게 분석합니다
-          </div>
-
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-12">
-            분석 결과 미리보기
-          </h3>
-
-          <div className="space-y-6">
-            {/* 1행: 종합점수 + 레이더차트 */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
-              <Image
-                src="/preview-score.png"
-                alt="종합 점수 및 레이더 차트 분석 결과"
-                width={2176}
-                height={1142}
-                className="w-full h-auto"
-              />
-            </div>
-
-            {/* 2행: 회사별 합격자 비교 */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
-              <Image
-                src="/preview-ranking.png"
-                alt="회사별 합격자 평균 vs 내 점수 비교"
-                width={2178}
-                height={2054}
-                className="w-full h-auto"
-              />
-            </div>
-
-            {/* 3행: 강점/약점 + 게임디자인 역량 */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
-              <Image
-                src="/preview-feedback.png"
-                alt="강점, 약점 분석 및 게임 디자인 역량 평가"
-                width={2178}
-                height={2054}
-                className="w-full h-auto"
-              />
-            </div>
-
-            {/* 4행: 문서 가독성 + 레이아웃 개선 제안 */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
-              <Image
-                src="/preview-readability.png"
-                alt="문서 가독성 분석 및 레이아웃 개선 제안"
-                width={2140}
-                height={2352}
-                className="w-full h-auto"
-              />
-            </div>
-
-            {/* 5행: 버전별 점수 비교 */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#1e3a5f]">
-              <Image
-                src="/preview-history.png"
-                alt="버전별 점수 변화 추적 및 비교"
-                width={2002}
-                height={780}
-                className="w-full h-auto"
-              />
-            </div>
-          </div>
-
-          <a
-            href="/analyze"
-            className="inline-flex items-center gap-2 mt-12 text-[#5B8DEF] hover:text-[#7aa5f5] font-medium transition-colors"
-          >
-            지금 바로 분석해보기
-            <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
       </div>
     </section>
+
+    {/* AI 분석 결과 미리보기 - Sticky Scroll */}
+    <section className="bg-[#0d1f3c]">
+      <StickyPreview />
+      <div className="text-center pb-24">
+        <a
+          href="/analyze"
+          className="inline-flex items-center gap-2 text-[#5B8DEF] hover:text-[#7aa5f5] font-medium transition-colors"
+        >
+          지금 바로 분석해보기
+          <ArrowRight className="w-4 h-4" />
+        </a>
+      </div>
+    </section>
+    </>
   )
 }

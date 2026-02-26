@@ -16,28 +16,6 @@ export async function checkTutoringAccess() {
 }
 
 /**
- * 상담 코드 검증
- */
-export async function validateTutoringCode(code: string) {
-  if (!code || !code.trim()) {
-    return { valid: false, error: "코드를 입력해 주세요." }
-  }
-
-  const trimmedCode = code.trim().toUpperCase()
-
-  // 환경변수에서 유효한 코드 목록 가져오기
-  const validCodes = (process.env.TUTORING_ACCESS_CODES || "GAMEFB,WELCOME")
-    .split(",")
-    .map(c => c.trim().toUpperCase())
-
-  if (validCodes.includes(trimmedCode)) {
-    return { valid: true }
-  }
-
-  return { valid: false, error: "유효하지 않은 코드입니다. 상담을 통해 코드를 받아주세요." }
-}
-
-/**
  * 컨설팅 주문 생성
  */
 export async function createTutoringOrder(packageType: string, amount: number) {

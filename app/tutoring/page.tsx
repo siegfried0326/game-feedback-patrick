@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, GraduationCap, Lock, BookOpen, Users } from "lucide-react"
@@ -43,6 +43,18 @@ const PACKAGES = [
 ]
 
 export default function TutoringPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      </main>
+    }>
+      <TutoringContent />
+    </Suspense>
+  )
+}
+
+function TutoringContent() {
   const searchParams = useSearchParams()
   const [accessChecked, setAccessChecked] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)

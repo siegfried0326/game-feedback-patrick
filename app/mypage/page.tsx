@@ -860,38 +860,91 @@ export default function MyPage() {
                     <ScoreCard score={detail.overall_score} ranking={detail.ranking} />
                     {detail.categories?.length > 0 && <RadarChartComponent data={detail.categories} />}
                   </div>
-                  {detail.ranking && detail.ranking.total > 0 && (
-                    <div className="bg-slate-900/80 rounded-xl border border-[#1e3a5f] p-6">
+                  {detail.ranking && detail.ranking.total > 0 && (() => {
+                    const userScore = detail.overall_score
+                    const getRankGrade = (s: number) => {
+                      if (s >= 90) return { label: "합격 가능", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
+                      if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
+                      if (s >= 70) return { label: "보완 필요", color: "text-[#5B8DEF]", bg: "bg-[#5B8DEF]/10 border-[#5B8DEF]/20", emoji: "📝" }
+                      if (s >= 60) return { label: "개선 필요", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
+                      return { label: "재작성 권장", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
+                    }
+                    const rankGrade = getRankGrade(userScore)
+                    return (
+                    <div className="bg-gradient-to-br from-slate-900/80 to-[#0d1b2a] rounded-xl border border-[#5B8DEF]/30 p-6">
                       <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-amber-400" /> 합격 포트폴리오 {detail.ranking.total}개 기준 랭킹
+                        <Trophy className="w-5 h-5 text-amber-400" /> 합격자 포트폴리오 {detail.ranking.total}개 중 내 위치
                       </h4>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="text-center py-4">
-                          <p className="text-slate-400 text-sm mb-2">전체 랭킹</p>
-                          <p className="text-5xl font-bold text-[#5B8DEF] mb-1">상위 {Math.max(1, 100 - detail.ranking.percentile)}%</p>
+
+                      {/* 점수 + 등급 2컬럼 */}
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="text-center p-4 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
+                          <p className="text-xs text-slate-400 mb-2">내 점수</p>
+                          <p className="text-3xl font-bold text-[#5B8DEF]">
+                            {userScore}<span className="text-base text-slate-400">점</span>
+                          </p>
                         </div>
-                        {detail.ranking.companyComparison?.length ? (
-                          <div>
-                            <p className="text-slate-400 text-sm mb-3">회사별 합격자 평균 비교</p>
-                            <div className="space-y-2.5">
-                              {detail.ranking.companyComparison.map((comp, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                  <span className="text-slate-300 text-xs w-20 truncate">{comp.company}</span>
-                                  <div className="flex-1 bg-slate-800 rounded-full h-5 overflow-hidden relative">
-                                    <div className="h-full bg-slate-600 rounded-full" style={{ width: `${Math.min(100, comp.avgScore)}%` }} />
-                                    <span className="absolute inset-0 flex items-center justify-center text-[10px] text-slate-300 font-medium">평균 {comp.avgScore}점</span>
-                                  </div>
-                                  <span className={`text-xs font-bold min-w-[40px] text-right ${detail.overall_score - comp.avgScore >= 0 ? "text-emerald-400" : "text-amber-400"}`}>
-                                    {detail.overall_score - comp.avgScore >= 0 ? "+" : ""}{detail.overall_score - comp.avgScore}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null}
+                        <div className={`text-center p-4 border rounded-xl ${rankGrade.bg}`}>
+                          <p className="text-xs text-slate-400 mb-2">{detail.ranking.total}개 기준 평가</p>
+                          <p className={`text-2xl font-bold ${rankGrade.color}`}>
+                            {rankGrade.emoji} {rankGrade.label}
+                          </p>
+                        </div>
                       </div>
+
+                      {/* 5단계 등급 스케일 */}
+                      <div className="mb-6">
+                        <p className="text-slate-400 text-sm mb-3">합격 가능성 등급</p>
+                        <div className="flex gap-1">
+                          {[
+                            { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-300", min: 0, max: 59 },
+                            { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-300", min: 60, max: 69 },
+                            { label: "보완 필요", range: "70~79", color: "bg-[#5B8DEF]/30", textColor: "text-blue-300", min: 70, max: 79 },
+                            { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-300", min: 80, max: 89 },
+                            { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-300", min: 90, max: 100 },
+                          ].map((g, i) => (
+                            <div
+                              key={i}
+                              className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}
+                            >
+                              <span className="hidden sm:inline">{g.label}</span>
+                              <span className="sm:hidden">{g.range}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2 text-center">
+                          내 점수 {userScore}점 · 재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 경쟁력 있음 &lt; 합격 가능
+                        </p>
+                      </div>
+
+                      {/* 회사별 합격자 피드백 (텍스트) */}
+                      {detail.company_feedback && (
+                        <div>
+                          <p className="text-white font-semibold text-sm mb-3">회사별 합격자 포트폴리오 특징 비교</p>
+                          <div className="space-y-2">
+                            {detail.company_feedback.split('\n\n').filter(Boolean).map((paragraph, idx) => {
+                              const parts = paragraph.split(/\*\*(.*?)\*\*/)
+                              return (
+                                <div key={idx} className="p-3 bg-slate-800/50 border border-[#1e3a5f]/50 rounded-xl">
+                                  <p className="text-sm text-slate-300 leading-relaxed">
+                                    {parts.map((part, i) =>
+                                      i % 2 === 1
+                                        ? <span key={i} className="text-[#5B8DEF] font-semibold">{part}</span>
+                                        : <span key={i}>{part}</span>
+                                    )}
+                                  </p>
+                                </div>
+                              )
+                            })}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-3 text-center">
+                            * 실제 합격 포트폴리오와 비교 분석 · 데이터는 지속 업데이트됩니다
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
+                    )
+                  })()}
                   {(detail.strengths?.length > 0 || detail.weaknesses?.length > 0) && (
                     <FeedbackCards strengths={detail.strengths || []} weaknesses={detail.weaknesses || []} />
                   )}
@@ -912,11 +965,7 @@ export default function MyPage() {
                       <p className="text-slate-400 text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
                     </div>
                   ) : null}
-                  {detail.company_feedback && (
-                    <div className="p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
-                      <p className="text-sm text-slate-300 leading-relaxed">{detail.company_feedback}</p>
-                    </div>
-                  )}
+                  {/* company_feedback는 랭킹 섹션에 포함됨 */}
                   {/* 다시 분석하기 버튼 */}
                   {selectedProject && (
                     <div className="flex justify-center pt-4">

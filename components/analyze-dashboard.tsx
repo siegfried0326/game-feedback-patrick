@@ -873,13 +873,17 @@ export function AnalyzeDashboard() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
-                >
-                  <Link href="/mypage">📂 이전 분석 보기</Link>
-                </Button>
+                {selectedProjectId && (
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="border-[#5B8DEF]/30 text-[#5B8DEF] hover:bg-[#5B8DEF]/10 bg-transparent"
+                  >
+                    <Link href="/mypage">
+                      <FolderOpen className="w-3.5 h-3.5 mr-1" /> 프로젝트로 가기
+                    </Link>
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -1050,24 +1054,79 @@ export function AnalyzeDashboard() {
                   </Card>
                 ) : null}
 
-                {/* 더 정확한 피드백이 필요하다면 */}
-                <Card className="bg-slate-900/80 border-[#1e3a5f]">
-                  <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                      <p className="text-white font-semibold mb-1">AI 분석 결과에 대해 궁금한 점이 있으신가요?</p>
-                      <p className="text-sm text-slate-400">1:1 상담을 통해 더 자세한 피드백을 받아보세요.</p>
-                    </div>
-                    <a
-                      href="http://pf.kakao.com/_bXgIX"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm"
-                    >
-                      1:1 상담 신청
-                      <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </CardContent>
-                </Card>
+                {/* 하단 CTA 영역 */}
+                <div className="space-y-4">
+                  {/* 프로젝트로 가기 + 새로운 분석 (구독자) */}
+                  {allowanceInfo?.plan && allowanceInfo.plan !== "free" && selectedProjectId && (
+                    <Card className="bg-gradient-to-r from-[#5B8DEF]/10 to-purple-500/10 border-[#5B8DEF]/30">
+                      <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                          <p className="text-white font-semibold mb-1">분석 결과가 저장되었습니다</p>
+                          <p className="text-sm text-slate-400">프로젝트에서 버전별 비교와 이전 분석을 확인하세요.</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                            <Link href="/mypage">
+                              <FolderOpen className="w-4 h-4 mr-1" /> 프로젝트로 가기
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => { setResults([]); setFiles([]); setCurrentIndex(0) }}
+                            className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
+                          >
+                            새로운 분석
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* 구독 유도 (무료 사용자) */}
+                  {(!allowanceInfo?.plan || allowanceInfo.plan === "free") && (
+                    <Card className="bg-gradient-to-r from-amber-500/10 to-purple-500/10 border-amber-400/30">
+                      <CardContent className="p-6">
+                        <p className="text-white font-semibold mb-1">더 많은 분석이 필요하신가요?</p>
+                        <p className="text-sm text-slate-400 mb-4">구독하면 무제한 분석, 버전 비교, 프리미엄 AI를 사용할 수 있습니다.</p>
+                        <div className="flex items-center gap-3">
+                          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                            <Link href="/pricing">구독하기</Link>
+                          </Button>
+                          <a
+                            href="http://pf.kakao.com/_bXgIX"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 border border-[#1e3a5f] text-slate-300 hover:bg-slate-800 rounded-lg transition-colors text-sm"
+                          >
+                            1:1 상담 신청
+                            <ArrowRight className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* 1:1 상담 카드 (구독자용) */}
+                  {allowanceInfo?.plan && allowanceInfo.plan !== "free" && (
+                    <Card className="bg-slate-900/80 border-[#1e3a5f]">
+                      <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                          <p className="text-white font-semibold mb-1">AI 분석 결과에 대해 궁금한 점이 있으신가요?</p>
+                          <p className="text-sm text-slate-400">1:1 상담을 통해 더 자세한 피드백을 받아보세요.</p>
+                        </div>
+                        <a
+                          href="http://pf.kakao.com/_bXgIX"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm"
+                        >
+                          1:1 상담 신청
+                          <ArrowRight className="w-4 h-4" />
+                        </a>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </>
             )}
           </div>

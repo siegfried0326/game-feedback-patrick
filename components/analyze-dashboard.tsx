@@ -16,6 +16,7 @@ import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBe
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
+import { compressPdf } from "@/lib/pdf-compress"
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -303,66 +304,143 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        // 대용량 PDF (30MB 초과): 텍스트 추출 → 텍스트 기반 분석
+        // 대용량 파일 처리
         const LARGE_FILE_THRESHOLD = 30 * 1024 * 1024 // 30MB
         const isLargePdf = fileStatus.file.size > LARGE_FILE_THRESHOLD && fileStatus.file.type === "application/pdf"
 
-        // 대용량 비-PDF 파일은 아직 텍스트 추출 미지원
+        // 대용량 비-PDF 파일은 압축 미지원
         if (fileStatus.file.size > LARGE_FILE_THRESHOLD && fileStatus.file.type !== "application/pdf") {
           const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 분석 가능 크기(30MB)를 초과합니다. 현재 대용량 텍스트 추출은 PDF만 지원합니다. 파일을 PDF로 변환하거나 용량을 줄여주세요.` } : f
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 분석 가능 크기(30MB)를 초과합니다. PDF로 변환하면 자동 압축 후 분석됩니다.` } : f
           ))
           continue
         }
 
-        let analysisResult
+        // 분석할 파일 결정 (대용량 PDF는 압축)
+        let fileToUpload = fileStatus.file
 
         if (isLargePdf) {
-          // === 대용량 PDF: 클라이언트 텍스트 추출 → 서버 분석 ===
           setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "analyzing" } : f
           ))
-          setStatusMessage("대용량 PDF 텍스트 추출 중...")
 
           try {
-            const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
-              setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+            // 1단계: 클라이언트에서 PDF 이미지 압축
+            const compressedFile = await compressPdf(fileStatus.file, (current, total) => {
+              setStatusMessage(`PDF 압축 중... (${current}/${total} 페이지)`)
             })
 
-            if (extractedText.length < 100) {
-              setFiles(prev => prev.map((f, idx) =>
-                idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지로만 구성된 문서는 30MB 이하로 압축하여 원본 분석을 이용해 주세요." } : f
-              ))
-              continue
+            const compressedMB = (compressedFile.size / (1024 * 1024)).toFixed(1)
+            const originalMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
+            console.log(`PDF 압축 완료: ${originalMB}MB → ${compressedMB}MB`)
+
+            // 압축 후에도 30MB 초과하면 텍스트 추출로 폴백
+            if (compressedFile.size > LARGE_FILE_THRESHOLD) {
+              setStatusMessage("압축 후에도 크기가 큽니다. 텍스트 기반 분석으로 전환...")
+              try {
+                const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
+                  setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+                })
+                if (extractedText.length < 100) {
+                  setFiles(prev => prev.map((f, idx) =>
+                    idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지 문서일 수 있습니다." } : f
+                  ))
+                  continue
+                }
+                setStatusMessage("AI 분석 중...")
+                const textResult = await analyzeUrlDirect({
+                  projectId: selectedProjectId,
+                  extractedText,
+                  fileName: fileStatus.file.name,
+                })
+                // 텍스트 분석 결과 처리
+                if (textResult.error) {
+                  if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
+                    setShowCreditError(true)
+                    setFiles(prev => prev.map((f, idx) =>
+                      idx === i ? { ...f, status: "error", error: "서비스 점검 중" } : f
+                    ))
+                    break
+                  }
+                  setFiles(prev => prev.map((f, idx) =>
+                    idx === i ? { ...f, status: "error", error: textResult.error } : f
+                  ))
+                } else {
+                  const result = { ...textResult.data, fileName: fileStatus.file.name } as AnalysisResult
+                  newResults.push(result)
+                  setResults([...newResults])
+                  setFiles(prev => prev.map((f, idx) =>
+                    idx === i ? { ...f, status: "success", result } : f
+                  ))
+                }
+                continue
+              } catch {
+                setFiles(prev => prev.map((f, idx) =>
+                  idx === i ? { ...f, status: "error", error: "파일 처리에 실패했습니다. 파일을 수동으로 압축하여 다시 시도해 주세요." } : f
+                ))
+                continue
+              }
             }
 
-            setStatusMessage("AI 분석 중...")
-
-            // 텍스트 기반 분석 (Supabase 업로드 불필요!)
-            analysisResult = await analyzeUrlDirect({
-              projectId: selectedProjectId,
-              extractedText,
-              fileName: fileStatus.file.name,
-            })
-          } catch (extractError) {
-            console.error("PDF text extraction error:", extractError)
+            fileToUpload = compressedFile
+            setStatusMessage("압축 완료! 업로드 중...")
+          } catch (compressError) {
+            console.error("PDF compression error:", compressError)
+            // 압축 실패 시 텍스트 추출로 폴백
+            setStatusMessage("압축 실패. 텍스트 기반 분석으로 전환...")
+            try {
+              const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
+                setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+              })
+              if (extractedText.length >= 100) {
+                setStatusMessage("AI 분석 중...")
+                const textResult = await analyzeUrlDirect({
+                  projectId: selectedProjectId,
+                  extractedText,
+                  fileName: fileStatus.file.name,
+                })
+                if (textResult.error) {
+                  if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
+                    setShowCreditError(true)
+                    setFiles(prev => prev.map((f, idx) =>
+                      idx === i ? { ...f, status: "error", error: "서비스 점검 중" } : f
+                    ))
+                    break
+                  }
+                  setFiles(prev => prev.map((f, idx) =>
+                    idx === i ? { ...f, status: "error", error: textResult.error } : f
+                  ))
+                } else {
+                  const result = { ...textResult.data, fileName: fileStatus.file.name } as AnalysisResult
+                  newResults.push(result)
+                  setResults([...newResults])
+                  setFiles(prev => prev.map((f, idx) =>
+                    idx === i ? { ...f, status: "success", result } : f
+                  ))
+                }
+                continue
+              }
+            } catch { /* 텍스트 추출도 실패 */ }
             setFiles(prev => prev.map((f, idx) =>
-              idx === i ? { ...f, status: "error", error: "PDF 텍스트 추출에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+              idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
             ))
             continue
           }
-        } else {
-          // === 일반 파일 (30MB 이하): 기존 플로우 (Supabase 업로드 → PDF 원본 분석) ===
+        }
+
+        // === Supabase 업로드 → 풀 분석 (압축된 파일 또는 원본) ===
+        let analysisResult: { error?: string; data?: Record<string, unknown> }
+        {
           const supabase = createClient()
-          const fileExt = fileStatus.file.name.split(".").pop()
+          const fileExt = fileToUpload.name.split(".").pop()
           const uniqueFileName = `${uuidv4()}.${fileExt}`
           const filePath = `uploads/${uniqueFileName}`
 
           const { error: uploadError } = await supabase.storage
             .from("resumes")
-            .upload(filePath, fileStatus.file, {
-              contentType: fileStatus.file.type,
+            .upload(filePath, fileToUpload, {
+              contentType: fileToUpload.type,
               upsert: false,
             })
 
@@ -371,7 +449,7 @@ export function AnalyzeDashboard() {
             let errorMsg = "파일 업로드에 실패했습니다."
             const errMsg = uploadError.message || ""
             if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
-              const fileSizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
+              const fileSizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(1)
               errorMsg = `파일(${fileSizeMB}MB) 업로드가 서버에서 거부되었습니다. 파일 용량을 줄여서 다시 시도해 주세요.`
             } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
               errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
@@ -860,7 +938,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB (30MB 초과 PDF는 텍스트 기반 분석)</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB (대용량 PDF는 자동 압축 후 분석)</p>
                           </div>
                         </div>
                       </div>

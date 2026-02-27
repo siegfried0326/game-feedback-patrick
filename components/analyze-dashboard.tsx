@@ -943,16 +943,6 @@ export function AnalyzeDashboard() {
                         </div>
                       </div>
 
-                      {/* 파일 크기 안내 */}
-                      <div className="mt-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
-                        <p className="text-xs font-medium text-slate-300 mb-1.5">파일 크기 안내</p>
-                        <ul className="text-xs text-slate-400 space-y-1">
-                          <li>• <span className="text-emerald-400">30MB 이하</span> — 이미지·레이아웃 포함 풀 분석 (권장)</li>
-                          <li>• <span className="text-yellow-400">30MB~1GB</span> — 자동 압축 후 분석 (PDF만 지원)</li>
-                          <li>• 고화질 이미지가 많으면 용량이 커집니다. <span className="text-slate-300">이미지 해상도를 150dpi로 낮추면</span> 대부분 30MB 이하로 줄어듭니다.</li>
-                        </ul>
-                      </div>
-
                       {/* 선택된 파일 목록 (에러/완료 상태) */}
                       {files.length > 0 && (
                         <div className="mt-6 space-y-2">
@@ -996,6 +986,38 @@ export function AnalyzeDashboard() {
                     </>
                   )}
                 </>
+              )}
+
+              {/* 파일 크기 사용팁 — 파일 업로드 모드일 때 항상 표시 (분석 중에도 유지) */}
+              {uploadMode === "file" && (
+                <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
+                  <p className="text-sm font-semibold text-[#5B8DEF] mb-2 flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4" />
+                    사용 팁
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px] font-bold">1</span>
+                      <div>
+                        <p className="text-xs text-white font-medium">30MB 이하 권장</p>
+                        <p className="text-[11px] text-slate-400">이미지·레이아웃 포함 최고 품질 분석</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-[10px] font-bold">2</span>
+                      <div>
+                        <p className="text-xs text-white font-medium">30MB~1GB PDF</p>
+                        <p className="text-[11px] text-slate-400">자동 압축 후 분석 (이미지 품질 약간 감소)</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2 sm:col-span-2">
+                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-slate-700 flex items-center justify-center text-slate-300 text-[10px] font-bold">!</span>
+                      <p className="text-[11px] text-slate-400">
+                        용량이 클 때: 이미지 해상도를 <span className="text-slate-300 font-medium">150dpi</span>로 낮추거나, 불필요한 페이지를 제거하면 대부분 30MB 이하로 줄어듭니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* URL 링크 모드 */}

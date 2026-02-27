@@ -6,7 +6,8 @@
 
 export async function extractTextFromPdf(
   file: File,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  options?: { maxPages?: number }
 ): Promise<string> {
   // pdfjs-dist 동적 임포트 (번들 크기 최적화)
   const pdfjsLib = await import("pdfjs-dist")
@@ -15,7 +16,8 @@ export async function extractTextFromPdf(
   const arrayBuffer = await file.arrayBuffer()
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
 
-  const maxPages = Math.min(pdf.numPages, 200) // 최대 200페이지
+  const pageLimit = options?.maxPages ?? 200
+  const maxPages = Math.min(pdf.numPages, pageLimit)
   let fullText = ""
 
   for (let i = 1; i <= maxPages; i++) {
@@ -27,6 +29,9 @@ export async function extractTextFromPdf(
       .map((item) => item.str)
       .join(" ")
     fullText += `\n--- 페이지 ${i}/${pdf.numPages} ---\n${pageText}`
+
+    // 텍스트가 충분히 모이면 조기 종료 (100MB+ 파일 속도 개선)
+    if (fullText.length > 80000) break
   }
 
   // Claude 컨텍스트 제한 (100,000자)

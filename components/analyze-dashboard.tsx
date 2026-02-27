@@ -320,11 +320,32 @@ export function AnalyzeDashboard() {
         }
 
         // 텍스트 추출 → AI 분석 공통 함수
+        const isVeryLargeFile = fileStatus.file.size > COMPRESS_LIMIT
         const doTextAnalysis = async (): Promise<boolean> => {
-          setStatusMessage("텍스트 추출 중...")
-          const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
-            setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
-          })
+          const extractMaxPages = isVeryLargeFile ? 50 : 200
+          setStatusMessage(isVeryLargeFile
+            ? "대용량 파일 — 처음 50페이지 텍스트 추출 중..."
+            : "텍스트 추출 중..."
+          )
+
+          // 100MB+ 파일: 2분 타임아웃
+          const extractPromise = extractTextFromPdf(
+            fileStatus.file,
+            (current, total) => {
+              setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+            },
+            { maxPages: extractMaxPages }
+          )
+
+          let extractedText: string
+          if (isVeryLargeFile) {
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("EXTRACT_TIMEOUT")), 120000)
+            )
+            extractedText = await Promise.race([extractPromise, timeoutPromise])
+          } else {
+            extractedText = await extractPromise
+          }
           if (extractedText.length < 100) {
             setFiles(prev => prev.map((f, idx) =>
               idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지로만 구성된 문서일 수 있습니다." } : f
@@ -367,15 +388,18 @@ export function AnalyzeDashboard() {
             idx === i ? { ...f, status: "analyzing" } : f
           ))
 
-          // 100MB 이상: 압축이 너무 느림 → 바로 텍스트 추출
+          // 100MB 이상: 압축이 너무 느림 → 바로 텍스트 추출 (50페이지 제한 + 2분 타임아웃)
           if (fileStatus.file.size > COMPRESS_LIMIT) {
             const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(0)
-            setStatusMessage(`${sizeMB}MB 파일 — 텍스트 기반 분석으로 진행합니다`)
+            setStatusMessage(`${sizeMB}MB 파일 — 처음 50페이지를 분석합니다`)
             try {
               await doTextAnalysis()
-            } catch {
+            } catch (err) {
+              const errMsg = err instanceof Error && err.message === "EXTRACT_TIMEOUT"
+                ? "파일이 너무 커서 시간 내에 처리하지 못했습니다. 50페이지 이하로 줄여서 다시 시도해 주세요."
+                : "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다."
               setFiles(prev => prev.map((f, idx) =>
-                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+                idx === i ? { ...f, status: "error", error: errMsg } : f
               ))
             }
             continue

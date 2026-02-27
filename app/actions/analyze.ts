@@ -171,19 +171,23 @@ function isInternalUrl(urlStr: string): boolean {
   }
 }
 
-// URL 웹페이지 크롤링 → Claude 분석
+// URL 웹페이지 크롤링 또는 추출된 텍스트 → Claude 분석
 export async function analyzeUrlDirect(input: {
   projectId: string
-  url: string
+  url?: string
+  extractedText?: string // 대용량 PDF에서 클라이언트가 추출한 텍스트
+  fileName?: string // extractedText 사용 시 파일명
 }) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
   }
 
-  // URL 검증
-  if (isInternalUrl(input.url)) {
-    return { error: "허용되지 않는 URL입니다." }
+  // URL 모드일 때만 검증
+  if (input.url && !input.extractedText) {
+    if (isInternalUrl(input.url)) {
+      return { error: "허용되지 않는 URL입니다." }
+    }
   }
 
   try {
@@ -209,9 +213,21 @@ export async function analyzeUrlDirect(input: {
     }
 
     let pageContent = ""
+
+    // 대용량 PDF에서 추출된 텍스트가 있으면 크롤링 스킵
+    if (input.extractedText) {
+      pageContent = input.extractedText
+      if (pageContent.length > 100000) {
+        pageContent = pageContent.substring(0, 100000)
+      }
+      if (pageContent.length < 100) {
+        return { error: "PDF에서 충분한 텍스트를 추출할 수 없습니다. 스캔된 이미지로만 구성된 문서일 수 있습니다. 30MB 이하로 압축하여 원본 PDF 분석을 이용해 주세요." }
+      }
+    } else {
+
     try {
       // 1차 시도: 직접 fetch
-      const response = await fetch(input.url, {
+      const response = await fetch(input.url!, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; GameFeedbackBot/1.0)",
           "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -262,6 +278,8 @@ export async function analyzeUrlDirect(input: {
       }
       return { error: "웹 페이지를 가져올 수 없습니다. URL이 올바르고 공개 접근이 가능한지 확인해 주세요." }
     }
+
+    } // extractedText else 블록 끝
 
     // 이하 분석 로직은 analyzeDocumentDirect와 동일한 패턴
     const { data: portfolios, error: portfolioError } = await supabase
@@ -514,7 +532,9 @@ ${referenceStats}
       messages: [
         {
           role: "user",
-          content: `아래는 웹 페이지(${input.url})에서 추출한 텍스트 내용입니다. 이 내용을 게임 기획 포트폴리오로서 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories와 companyFeedback을 모두 포함해야 합니다.\n\n---\n\n${pageContent}`,
+          content: input.extractedText
+            ? `아래는 "${input.fileName}" 문서에서 추출한 텍스트 내용입니다. 이 내용을 게임 기획 포트폴리오로서 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories와 companyFeedback을 모두 포함해야 합니다.\n\n---\n\n${pageContent}`
+            : `아래는 웹 페이지(${input.url})에서 추출한 텍스트 내용입니다. 이 내용을 게임 기획 포트폴리오로서 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories와 companyFeedback을 모두 포함해야 합니다.\n\n---\n\n${pageContent}`,
         },
       ],
       system: systemPrompt,
@@ -587,7 +607,7 @@ ${referenceStats}
       strengths: analysis.strengths,
       weaknesses: analysis.weaknesses,
       companyFeedback: analysis.companyFeedback || "",
-      analysisSource: "url" as const,
+      analysisSource: (input.extractedText ? "pdf" : "url") as "pdf" | "url",
       ranking: {
         total: DISPLAY_TOTAL,
         percentile,
@@ -599,14 +619,14 @@ ${referenceStats}
     // 분석 이력 저장
     saveAnalysisHistory({
       projectId: input.projectId,
-      fileName: input.url,
+      fileName: input.extractedText ? (input.fileName || "대용량 PDF") : input.url!,
       score: analysis.score,
       categories: analysis.categories,
       strengths: analysis.strengths,
       weaknesses: analysis.weaknesses,
       ranking: analysisData.ranking,
       companyFeedback: analysis.companyFeedback || "",
-      analysisSource: "url",
+      analysisSource: input.extractedText ? "pdf" : "url",
     }).catch(() => {})
 
     return { data: analysisData }

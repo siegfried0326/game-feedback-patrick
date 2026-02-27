@@ -15,6 +15,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
+import { extractTextFromPdf } from "@/lib/pdf-extract"
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -294,16 +295,6 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        // 대용량 파일 경고 (AI 분석 가능 크기 안내)
-        const ANALYSIS_WARN_SIZE = 30 * 1024 * 1024 // 30MB
-        if (fileStatus.file.size > ANALYSIS_WARN_SIZE) {
-          const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
-          setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 AI 분석 가능 크기(30MB)를 초과합니다. 실제 게임 회사에서도 30MB 이상의 포트폴리오를 요구하지 않습니다. 이미지 해상도를 낮추거나, 불필요한 페이지를 제거하여 파일을 최적화해 주세요.` } : f
-          ))
-          continue
-        }
-
         // 빈 파일 체크
         if (fileStatus.file.size === 0) {
           setFiles(prev => prev.map((f, idx) =>
@@ -312,69 +303,114 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        // 클라이언트에서 Supabase Storage로 직접 업로드
-        const supabase = createClient()
-        const fileExt = fileStatus.file.name.split(".").pop()
-        const uniqueFileName = `${uuidv4()}.${fileExt}`
-        const filePath = `uploads/${uniqueFileName}`
+        // 대용량 PDF (30MB 초과): 텍스트 추출 → 텍스트 기반 분석
+        const LARGE_FILE_THRESHOLD = 30 * 1024 * 1024 // 30MB
+        const isLargePdf = fileStatus.file.size > LARGE_FILE_THRESHOLD && fileStatus.file.type === "application/pdf"
 
-        const { error: uploadError } = await supabase.storage
-          .from("resumes")
-          .upload(filePath, fileStatus.file, {
-            contentType: fileStatus.file.type,
-            upsert: false,
-          })
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError)
-          let errorMsg = "파일 업로드에 실패했습니다."
-          const errMsg = uploadError.message || ""
-          if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
-            const fileSizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
-            errorMsg = `파일(${fileSizeMB}MB) 업로드가 서버에서 거부되었습니다. 파일 용량을 줄여서 다시 시도해 주세요.`
-          } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
-            errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
-          } else if (errMsg.includes("permission") || errMsg.includes("policy") || errMsg.includes("403")) {
-            errorMsg = "업로드 권한이 없습니다. 다시 로그인해 주세요."
-          } else if (errMsg.includes("network") || errMsg.includes("fetch") || errMsg.includes("timeout")) {
-            errorMsg = "네트워크 오류입니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
-          } else if (errMsg.includes("duplicate") || errMsg.includes("already exists")) {
-            errorMsg = "파일 업로드 충돌이 발생했습니다. 다시 시도해 주세요."
-          }
+        // 대용량 비-PDF 파일은 아직 텍스트 추출 미지원
+        if (fileStatus.file.size > LARGE_FILE_THRESHOLD && fileStatus.file.type !== "application/pdf") {
+          const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: errorMsg } : f
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 분석 가능 크기(30MB)를 초과합니다. 현재 대용량 텍스트 추출은 PDF만 지원합니다. 파일을 PDF로 변환하거나 용량을 줄여주세요.` } : f
           ))
           continue
         }
 
-        const { data: urlData } = supabase.storage
-          .from("resumes")
-          .getPublicUrl(filePath)
+        let analysisResult
 
-        const uploadResult = {
-          data: {
+        if (isLargePdf) {
+          // === 대용량 PDF: 클라이언트 텍스트 추출 → 서버 분석 ===
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? { ...f, status: "analyzing" } : f
+          ))
+          setStatusMessage("대용량 PDF 텍스트 추출 중...")
+
+          try {
+            const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
+              setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+            })
+
+            if (extractedText.length < 100) {
+              setFiles(prev => prev.map((f, idx) =>
+                idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지로만 구성된 문서는 30MB 이하로 압축하여 원본 분석을 이용해 주세요." } : f
+              ))
+              continue
+            }
+
+            setStatusMessage("AI 분석 중...")
+
+            // 텍스트 기반 분석 (Supabase 업로드 불필요!)
+            analysisResult = await analyzeUrlDirect({
+              projectId: selectedProjectId,
+              extractedText,
+              fileName: fileStatus.file.name,
+            })
+          } catch (extractError) {
+            console.error("PDF text extraction error:", extractError)
+            setFiles(prev => prev.map((f, idx) =>
+              idx === i ? { ...f, status: "error", error: "PDF 텍스트 추출에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+            ))
+            continue
+          }
+        } else {
+          // === 일반 파일 (30MB 이하): 기존 플로우 (Supabase 업로드 → PDF 원본 분석) ===
+          const supabase = createClient()
+          const fileExt = fileStatus.file.name.split(".").pop()
+          const uniqueFileName = `${uuidv4()}.${fileExt}`
+          const filePath = `uploads/${uniqueFileName}`
+
+          const { error: uploadError } = await supabase.storage
+            .from("resumes")
+            .upload(filePath, fileStatus.file, {
+              contentType: fileStatus.file.type,
+              upsert: false,
+            })
+
+          if (uploadError) {
+            console.error("Upload error:", uploadError)
+            let errorMsg = "파일 업로드에 실패했습니다."
+            const errMsg = uploadError.message || ""
+            if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
+              const fileSizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
+              errorMsg = `파일(${fileSizeMB}MB) 업로드가 서버에서 거부되었습니다. 파일 용량을 줄여서 다시 시도해 주세요.`
+            } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
+              errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
+            } else if (errMsg.includes("permission") || errMsg.includes("policy") || errMsg.includes("403")) {
+              errorMsg = "업로드 권한이 없습니다. 다시 로그인해 주세요."
+            } else if (errMsg.includes("network") || errMsg.includes("fetch") || errMsg.includes("timeout")) {
+              errorMsg = "네트워크 오류입니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
+            } else if (errMsg.includes("duplicate") || errMsg.includes("already exists")) {
+              errorMsg = "파일 업로드 충돌이 발생했습니다. 다시 시도해 주세요."
+            }
+            setFiles(prev => prev.map((f, idx) =>
+              idx === i ? { ...f, status: "error", error: errorMsg } : f
+            ))
+            continue
+          }
+
+          const { data: urlData } = supabase.storage
+            .from("resumes")
+            .getPublicUrl(filePath)
+
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? { ...f, status: "analyzing" } : f
+          ))
+
+          analysisResult = await analyzeDocumentDirect({
+            projectId: selectedProjectId,
             fileName: fileStatus.file.name,
-            filePath,
             fileUrl: urlData.publicUrl,
             mimeType: fileStatus.file.type,
+            filePath,
+          })
+
+          if (analysisResult.error) {
+            await deleteFileFromStorage(filePath)
           }
         }
 
-        // 로딩 메시지는 useEffect에서 자동 순환
-        setFiles(prev => prev.map((f, idx) =>
-          idx === i ? { ...f, status: "analyzing" } : f
-        ))
-
-        const analysisResult = await analyzeDocumentDirect({
-          projectId: selectedProjectId,
-          fileName: uploadResult.data!.fileName,
-          fileUrl: uploadResult.data!.fileUrl,
-          mimeType: uploadResult.data!.mimeType,
-          filePath: uploadResult.data!.filePath,
-        })
-
+        // === 공통: 분석 결과 처리 ===
         if (analysisResult.error) {
-          await deleteFileFromStorage(uploadResult.data!.filePath)
           if (analysisResult.error === "CREDIT_LIMIT_EXCEEDED") {
             setShowCreditError(true)
             setFiles(prev => prev.map((f, idx) =>
@@ -824,7 +860,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · AI 분석 최대 30MB</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB (30MB 초과 PDF는 텍스트 기반 분석)</p>
                           </div>
                         </div>
                       </div>

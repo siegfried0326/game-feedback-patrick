@@ -938,9 +938,19 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB (대용량 PDF는 자동 압축 후 분석)</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB</p>
                           </div>
                         </div>
+                      </div>
+
+                      {/* 파일 크기 안내 */}
+                      <div className="mt-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+                        <p className="text-xs font-medium text-slate-300 mb-1.5">파일 크기 안내</p>
+                        <ul className="text-xs text-slate-400 space-y-1">
+                          <li>• <span className="text-emerald-400">30MB 이하</span> — 이미지·레이아웃 포함 풀 분석 (권장)</li>
+                          <li>• <span className="text-yellow-400">30MB~1GB</span> — 자동 압축 후 분석 (PDF만 지원)</li>
+                          <li>• 고화질 이미지가 많으면 용량이 커집니다. <span className="text-slate-300">이미지 해상도를 150dpi로 낮추면</span> 대부분 30MB 이하로 줄어듭니다.</li>
+                        </ul>
                       </div>
 
                       {/* 선택된 파일 목록 (에러/완료 상태) */}

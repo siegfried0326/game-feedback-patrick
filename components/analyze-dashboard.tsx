@@ -285,11 +285,11 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+        const MAX_FILE_SIZE = 200 * 1024 * 1024 // 200MB
         if (fileStatus.file.size > MAX_FILE_SIZE) {
           const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 50MB를 초과합니다. 파일을 압축하거나 분할해 주세요.` } : f
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 200MB를 초과합니다. 파일을 압축하거나 분할해 주세요.` } : f
           ))
           continue
         }
@@ -320,7 +320,7 @@ export function AnalyzeDashboard() {
           let errorMsg = "파일 업로드에 실패했습니다."
           const errMsg = uploadError.message || ""
           if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
-            errorMsg = `파일 크기가 서버 제한을 초과했습니다. 50MB 이하의 파일만 업로드 가능합니다.`
+            errorMsg = `파일 크기가 서버 제한을 초과했습니다. 200MB 이하의 파일만 업로드 가능합니다.`
           } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
             errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
           } else if (errMsg.includes("permission") || errMsg.includes("policy") || errMsg.includes("403")) {
@@ -511,7 +511,7 @@ export function AnalyzeDashboard() {
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
-    maxSize: 50 * 1024 * 1024,
+    maxSize: 200 * 1024 * 1024,
     disabled: isLoggedIn && !selectedProjectId,
   })
 
@@ -813,7 +813,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 50MB</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 200MB</p>
                           </div>
                         </div>
                       </div>

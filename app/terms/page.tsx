@@ -60,7 +60,7 @@ export default function TermsPage() {
               <li>서비스는 웹사이트를 통해 제공됩니다.</li>
               <li>이용자는 PDF, DOCX, PPTX, XLSX 등의 파일을 업로드하거나 URL 링크를 입력하여 분석을 받을 수 있습니다.</li>
               <li>AI 분석 결과는 업로드 후 즉시 제공됩니다.</li>
-              <li>최대 업로드 파일 크기는 500MB입니다.</li>
+              <li>파일 크기에 따라 분석 방식이 자동 조절됩니다. (30MB 이하: 이미지 포함 풀 분석, 30MB 이상: 텍스트 기반 분석)</li>
             </ul>
           </section>
 

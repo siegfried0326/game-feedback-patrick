@@ -991,39 +991,27 @@ export function AnalyzeDashboard() {
               {/* 파일 크기 사용팁 — 파일 업로드 모드일 때 항상 표시 (분석 중에도 유지) */}
               {uploadMode === "file" && (
                 <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
-                  <p className="text-sm font-semibold text-[#5B8DEF] mb-2 flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-[#5B8DEF] mb-3 flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4" />
                     사용 팁
                   </p>
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div className="flex items-start gap-2">
-                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px] font-bold">1</span>
-                      <div>
-                        <p className="text-xs text-white font-medium">30MB 이하</p>
-                        <p className="text-[11px] text-slate-400">이미지 포함 풀 분석</p>
-                      </div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                      <span className="text-emerald-400 text-xs font-bold">30MB 이하</span>
+                      <span className="text-[11px] text-slate-400">이미지 포함 풀 분석</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-[10px] font-bold">2</span>
-                      <div>
-                        <p className="text-xs text-white font-medium">30~100MB PDF</p>
-                        <p className="text-[11px] text-slate-400">자동 압축 후 풀 분석</p>
-                      </div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                      <span className="text-yellow-400 text-xs font-bold">30~100MB</span>
+                      <span className="text-[11px] text-slate-400">자동 압축 후 풀 분석 (PDF)</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center text-orange-400 text-[10px] font-bold">3</span>
-                      <div>
-                        <p className="text-xs text-white font-medium">100MB+ PDF</p>
-                        <p className="text-[11px] text-slate-400">텍스트 기반 분석</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 sm:col-span-3">
-                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-slate-700 flex items-center justify-center text-slate-300 text-[10px] font-bold">!</span>
-                      <p className="text-[11px] text-slate-400">
-                        이미지 해상도를 <span className="text-slate-300 font-medium">150dpi</span>로 낮추거나 불필요한 페이지를 제거하면 대부분 30MB 이하로 줄어듭니다.
-                      </p>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                      <span className="text-orange-400 text-xs font-bold">100MB+</span>
+                      <span className="text-[11px] text-slate-400">텍스트 기반 분석 (PDF)</span>
                     </div>
                   </div>
+                  <p className="text-[11px] text-slate-500">
+                    이미지 해상도를 <span className="text-slate-300">150dpi</span>로 낮추거나 불필요한 페이지를 제거하면 대부분 30MB 이하로 줄어듭니다.
+                  </p>
                 </div>
               )}
 

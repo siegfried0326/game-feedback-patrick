@@ -334,24 +334,13 @@ export function AnalyzeDashboard() {
             : "텍스트 추출 중..."
           )
 
-          // 100MB+ 파일: 2분 타임아웃
-          const extractPromise = extractTextFromPdf(
+          const extractResult = await extractTextFromPdf(
             fileStatus.file,
             (current, total) => {
               setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
             },
             { maxPages: extractMaxPages, startPage }
           )
-
-          let extractResult: Awaited<ReturnType<typeof extractTextFromPdf>>
-          if (isVeryLargeFile) {
-            const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("EXTRACT_TIMEOUT")), 120000)
-            )
-            extractResult = await Promise.race([extractPromise, timeoutPromise])
-          } else {
-            extractResult = await extractPromise
-          }
 
           const { text: extractedText, lastPage, totalPages } = extractResult
 
@@ -410,18 +399,15 @@ export function AnalyzeDashboard() {
             idx === i ? { ...f, status: "analyzing" } : f
           ))
 
-          // 100MB 이상: 압축이 너무 느림 → 바로 텍스트 추출 (50페이지 제한 + 2분 타임아웃)
+          // 100MB 이상: 압축 건너뛰고 바로 텍스트 추출 (50페이지씩)
           if (fileStatus.file.size > COMPRESS_LIMIT) {
             const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(0)
             setStatusMessage(`${sizeMB}MB 파일 — 처음 50페이지를 분석합니다`)
             try {
               await doTextAnalysis()
-            } catch (err) {
-              const errMsg = err instanceof Error && err.message === "EXTRACT_TIMEOUT"
-                ? "파일이 너무 커서 시간 내에 처리하지 못했습니다. 50페이지 이하로 줄여서 다시 시도해 주세요."
-                : "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다."
+            } catch {
               setFiles(prev => prev.map((f, idx) =>
-                idx === i ? { ...f, status: "error", error: errMsg } : f
+                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
               ))
             }
             continue
@@ -622,17 +608,13 @@ export function AnalyzeDashboard() {
 
     try {
       setStatusMessage(`${nextStartPage}페이지부터 텍스트 추출 중...`)
-      const extractPromise = extractTextFromPdf(
+      const extractResult = await extractTextFromPdf(
         targetFile.file,
         (current, total) => {
           setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
         },
         { maxPages: extractMaxPages, startPage: nextStartPage }
       )
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("EXTRACT_TIMEOUT")), 120000)
-      )
-      const extractResult = await Promise.race([extractPromise, timeoutPromise])
       const { text: extractedText, lastPage, totalPages } = extractResult
 
       if (extractedText.length < 100) {
@@ -671,11 +653,8 @@ export function AnalyzeDashboard() {
           startPage: nextStartPage,
         }])
       }
-    } catch (err) {
-      const errMsg = err instanceof Error && err.message === "EXTRACT_TIMEOUT"
-        ? "시간 내에 처리하지 못했습니다."
-        : "PDF 처리에 실패했습니다."
-      setStatusMessage(errMsg)
+    } catch {
+      setStatusMessage("PDF 처리에 실패했습니다.")
     } finally {
       setIsContinueReading(false)
     }

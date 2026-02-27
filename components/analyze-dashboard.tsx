@@ -86,6 +86,9 @@ type FileStatus = {
   status: "pending" | "uploading" | "analyzing" | "success" | "error"
   result?: AnalysisResult
   error?: string
+  lastPage?: number      // 마지막으로 분석한 페이지 (이어 읽기용)
+  totalPages?: number    // PDF 전체 페이지 수
+  startPage?: number     // 이 분석의 시작 페이지
 }
 
 const MAX_FILES = 1
@@ -129,6 +132,7 @@ export function AnalyzeDashboard() {
   const [uploadMode, setUploadMode] = useState<"file" | "url">("file")
   const [urlInput, setUrlInput] = useState("")
   const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false)
+  const [isContinueReading, setIsContinueReading] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
   const isLoggedIn = allowanceInfo?.reason !== "login_required"
 
@@ -321,10 +325,12 @@ export function AnalyzeDashboard() {
 
         // 텍스트 추출 → AI 분석 공통 함수
         const isVeryLargeFile = fileStatus.file.size > COMPRESS_LIMIT
-        const doTextAnalysis = async (): Promise<boolean> => {
+        const doTextAnalysis = async (startPage = 1): Promise<boolean> => {
           const extractMaxPages = isVeryLargeFile ? 50 : 200
           setStatusMessage(isVeryLargeFile
-            ? "대용량 파일 — 처음 50페이지 텍스트 추출 중..."
+            ? startPage > 1
+              ? `이어 읽기 — ${startPage}페이지부터 텍스트 추출 중...`
+              : "대용량 파일 — 처음 50페이지 텍스트 추출 중..."
             : "텍스트 추출 중..."
           )
 
@@ -334,29 +340,38 @@ export function AnalyzeDashboard() {
             (current, total) => {
               setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
             },
-            { maxPages: extractMaxPages }
+            { maxPages: extractMaxPages, startPage }
           )
 
-          let extractedText: string
+          let extractResult: Awaited<ReturnType<typeof extractTextFromPdf>>
           if (isVeryLargeFile) {
             const timeoutPromise = new Promise<never>((_, reject) =>
               setTimeout(() => reject(new Error("EXTRACT_TIMEOUT")), 120000)
             )
-            extractedText = await Promise.race([extractPromise, timeoutPromise])
+            extractResult = await Promise.race([extractPromise, timeoutPromise])
           } else {
-            extractedText = await extractPromise
+            extractResult = await extractPromise
           }
+
+          const { text: extractedText, lastPage, totalPages } = extractResult
+
           if (extractedText.length < 100) {
             setFiles(prev => prev.map((f, idx) =>
               idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지로만 구성된 문서일 수 있습니다." } : f
             ))
             return false
           }
+
+          // 파일명에 페이지 범위 표시 (대용량 파일만)
+          const displayFileName = isVeryLargeFile
+            ? `${fileStatus.file.name} (${startPage}~${lastPage}p)`
+            : fileStatus.file.name
+
           setStatusMessage("AI 분석 중...")
           const textResult = await analyzeUrlDirect({
             projectId: selectedProjectId,
             extractedText,
-            fileName: fileStatus.file.name,
+            fileName: displayFileName,
           })
           if (textResult.error) {
             if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
@@ -370,11 +385,18 @@ export function AnalyzeDashboard() {
               idx === i ? { ...f, status: "error", error: textResult.error } : f
             ))
           } else {
-            const result = { ...textResult.data, fileName: fileStatus.file.name } as AnalysisResult
+            const result = { ...textResult.data, fileName: displayFileName } as AnalysisResult
             newResults.push(result)
             setResults([...newResults])
             setFiles(prev => prev.map((f, idx) =>
-              idx === i ? { ...f, status: "success", result } : f
+              idx === i ? {
+                ...f,
+                status: "success",
+                result,
+                lastPage,
+                totalPages,
+                startPage,
+              } : f
             ))
           }
           return true
@@ -583,6 +605,81 @@ export function AnalyzeDashboard() {
       }, 100)
     }
   }, [selectedProjectId, isLoggedIn, router])
+
+  // 이어 읽기: 대용량 PDF 나머지 페이지 분석
+  const handleContinueReading = async () => {
+    // 이어 읽기 가능한 파일 찾기 (마지막으로 성공한 파일)
+    const targetFile = files.find(f =>
+      f.status === "success" && f.lastPage && f.totalPages && f.lastPage < f.totalPages
+    )
+    if (!targetFile || !targetFile.lastPage || !targetFile.totalPages) return
+
+    setIsContinueReading(true)
+    setStatusMessage(`이어 읽기 준비 중... (${targetFile.lastPage + 1}p~)`)
+
+    const nextStartPage = targetFile.lastPage + 1
+    const extractMaxPages = 50
+
+    try {
+      setStatusMessage(`${nextStartPage}페이지부터 텍스트 추출 중...`)
+      const extractPromise = extractTextFromPdf(
+        targetFile.file,
+        (current, total) => {
+          setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+        },
+        { maxPages: extractMaxPages, startPage: nextStartPage }
+      )
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("EXTRACT_TIMEOUT")), 120000)
+      )
+      const extractResult = await Promise.race([extractPromise, timeoutPromise])
+      const { text: extractedText, lastPage, totalPages } = extractResult
+
+      if (extractedText.length < 100) {
+        setStatusMessage("이 구간에서 추출할 텍스트가 부족합니다.")
+        setIsContinueReading(false)
+        return
+      }
+
+      const displayFileName = `${targetFile.file.name} (${nextStartPage}~${lastPage}p)`
+      setStatusMessage("AI 분석 중...")
+
+      const textResult = await analyzeUrlDirect({
+        projectId: selectedProjectId,
+        extractedText,
+        fileName: displayFileName,
+      })
+
+      if (textResult.error) {
+        if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
+          setShowCreditError(true)
+        }
+        setStatusMessage(textResult.error === "CREDIT_LIMIT_EXCEEDED" ? "서비스 점검 중" : textResult.error)
+      } else {
+        const result = { ...textResult.data, fileName: displayFileName } as AnalysisResult
+        const newResults = [...results, result]
+        setResults(newResults)
+        setCurrentIndex(newResults.length - 1)
+
+        // 새 FileStatus 추가 (이어 읽기 결과용)
+        setFiles(prev => [...prev, {
+          file: targetFile.file,
+          status: "success" as const,
+          result,
+          lastPage,
+          totalPages,
+          startPage: nextStartPage,
+        }])
+      }
+    } catch (err) {
+      const errMsg = err instanceof Error && err.message === "EXTRACT_TIMEOUT"
+        ? "시간 내에 처리하지 못했습니다."
+        : "PDF 처리에 실패했습니다."
+      setStatusMessage(errMsg)
+    } finally {
+      setIsContinueReading(false)
+    }
+  }
 
   // URL 분석
   const handleAnalyzeUrl = async () => {
@@ -1171,6 +1268,43 @@ export function AnalyzeDashboard() {
                 ))}
               </div>
             )}
+
+            {/* 이어 읽기 버튼 — 아직 분석하지 않은 페이지가 남아 있을 때 */}
+            {(() => {
+              // 마지막으로 분석한 파일 중 남은 페이지가 있는 것
+              const lastAnalyzedFile = [...files].reverse().find(f =>
+                f.status === "success" && f.lastPage && f.totalPages && f.lastPage < f.totalPages
+              )
+              if (!lastAnalyzedFile || !lastAnalyzedFile.lastPage || !lastAnalyzedFile.totalPages) return null
+              const nextPage = lastAnalyzedFile.lastPage + 1
+              const remaining = lastAnalyzedFile.totalPages - lastAnalyzedFile.lastPage
+              return (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-amber-400">
+                      아직 분석하지 않은 페이지가 {remaining}p 남아 있어요
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {nextPage}페이지부터 이어서 분석하고 새 문서로 저장됩니다
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleContinueReading}
+                    disabled={isContinueReading}
+                    className="bg-amber-500 hover:bg-amber-600 text-white text-sm px-4"
+                  >
+                    {isContinueReading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                        이어 읽기 중...
+                      </>
+                    ) : (
+                      <>남은 부분 분석하기 ({nextPage}p~)</>
+                    )}
+                  </Button>
+                </div>
+              )
+            })()}
 
             {results[currentIndex] && (
               <>

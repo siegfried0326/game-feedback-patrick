@@ -320,7 +320,8 @@ export function AnalyzeDashboard() {
           let errorMsg = "파일 업로드에 실패했습니다."
           const errMsg = uploadError.message || ""
           if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
-            errorMsg = `파일 크기가 서버 제한을 초과했습니다. 1GB 이하의 파일만 업로드 가능합니다.`
+            const fileSizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
+            errorMsg = `파일(${fileSizeMB}MB) 업로드가 서버에서 거부되었습니다. 파일 용량을 줄여서 다시 시도해 주세요.`
           } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
             errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
           } else if (errMsg.includes("permission") || errMsg.includes("policy") || errMsg.includes("403")) {

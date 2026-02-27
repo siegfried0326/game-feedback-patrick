@@ -247,17 +247,17 @@ export function PricingSection() {
                 <div className="w-12 h-12 rounded-xl bg-slate-700/50 flex items-center justify-center mb-4">
                   <Users className="w-6 h-6 text-[#5B8DEF]" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">그룹 컨설팅 (1회)</h3>
-                <p className="text-sm text-slate-400">타임당 9만원, 소규모 그룹 형태</p>
+                <h3 className="text-lg font-semibold text-white mb-2">그룹 컨설팅 (4주)</h3>
+                <p className="text-sm text-slate-400">주 1회 × 4주, 타임당 9만원</p>
               </div>
               <div className="mb-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">90,000</span>
+                  <span className="text-4xl font-bold text-white">360,000</span>
                   <span className="text-slate-400">원</span>
                 </div>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
-                {["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 컨설팅", "커리큘럼 맞춤 조정"].map((f, i) => (
+                {["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 컨설팅", "4주 맞춤 커리큘럼"].map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm">
                     <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
                     <span className="text-slate-400">{f}</span>

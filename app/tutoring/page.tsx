@@ -33,11 +33,11 @@ const PACKAGES = [
   },
   {
     key: "group_tutoring",
-    name: "그룹 컨설팅 (1회)",
-    price: 90000,
+    name: "그룹 컨설팅 (4주)",
+    price: 360000,
     originalPrice: null as number | null,
-    description: "타임당 9만원 · 소규모 그룹 형태",
-    details: ["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 컨설팅", "커리큘럼 맞춤 조정"],
+    description: "주 1회 × 4주, 타임당 9만원",
+    details: ["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 컨설팅", "4주 맞춤 커리큘럼"],
     icon: Users,
   },
 ]

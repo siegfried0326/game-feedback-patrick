@@ -12,8 +12,10 @@ import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
-import { uploadFileToStorage, analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
+import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
+import { createClient } from "@/lib/supabase/client"
+import { v4 as uuidv4 } from "uuid"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 
@@ -264,16 +266,62 @@ export function AnalyzeDashboard() {
           idx === i ? { ...f, status: "uploading" } : f
         ))
 
-        const formData = new FormData()
-        formData.append("file", fileStatus.file)
-
-        const uploadResult = await uploadFileToStorage(formData)
-
-        if (uploadResult.error) {
+        // 파일 타입 체크
+        const allowedTypes = [
+          "application/pdf",
+          "image/jpeg", "image/png", "image/webp",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+          "application/vnd.ms-powerpoint",
+          "text/plain",
+        ]
+        if (!allowedTypes.includes(fileStatus.file.type)) {
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: uploadResult.error } : f
+            idx === i ? { ...f, status: "error", error: "지원하지 않는 파일 형식입니다." } : f
           ))
           continue
+        }
+        if (fileStatus.file.size > 200 * 1024 * 1024) {
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? { ...f, status: "error", error: "파일 크기는 200MB를 초과할 수 없습니다." } : f
+          ))
+          continue
+        }
+
+        // 클라이언트에서 Supabase Storage로 직접 업로드
+        const supabase = createClient()
+        const fileExt = fileStatus.file.name.split(".").pop()
+        const uniqueFileName = `${uuidv4()}.${fileExt}`
+        const filePath = `uploads/${uniqueFileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from("resumes")
+          .upload(filePath, fileStatus.file, {
+            contentType: fileStatus.file.type,
+            upsert: false,
+          })
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError)
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? { ...f, status: "error", error: "파일 업로드에 실패했습니다." } : f
+          ))
+          continue
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("resumes")
+          .getPublicUrl(filePath)
+
+        const uploadResult = {
+          data: {
+            fileName: fileStatus.file.name,
+            filePath,
+            fileUrl: urlData.publicUrl,
+            mimeType: fileStatus.file.type,
+          }
         }
 
         // 로딩 메시지는 useEffect에서 자동 순환
@@ -438,7 +486,7 @@ export function AnalyzeDashboard() {
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
-    maxSize: 500 * 1024 * 1024,
+    maxSize: 200 * 1024 * 1024,
     disabled: isLoggedIn && !selectedProjectId,
   })
 

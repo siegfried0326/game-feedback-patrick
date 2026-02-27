@@ -54,9 +54,9 @@ export async function uploadFileToStorage(formData: FormData) {
       return { error: "지원하지 않는 파일 형식입니다. (PDF, DOCX, PPTX, XLSX, TXT, 이미지)" }
     }
 
-    // 파일 크기 체크 (500MB)
-    if (file.size > 500 * 1024 * 1024) {
-      return { error: "파일 크기는 500MB를 초과할 수 없습니다." }
+    // 파일 크기 체크 (200MB)
+    if (file.size > 200 * 1024 * 1024) {
+      return { error: "파일 크기는 200MB를 초과할 수 없습니다." }
     }
 
     // 고유한 파일명 생성

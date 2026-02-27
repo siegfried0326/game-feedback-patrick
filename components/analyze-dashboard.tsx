@@ -278,14 +278,26 @@ export function AnalyzeDashboard() {
           "text/plain",
         ]
         if (!allowedTypes.includes(fileStatus.file.type)) {
+          const ext = fileStatus.file.name.split(".").pop()?.toUpperCase() || "알 수 없음"
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: "지원하지 않는 파일 형식입니다." } : f
+            idx === i ? { ...f, status: "error", error: `지원하지 않는 파일 형식입니다. (.${ext}) PDF, DOCX, PPTX, XLSX, TXT, 이미지만 가능합니다.` } : f
           ))
           continue
         }
-        if (fileStatus.file.size > 200 * 1024 * 1024) {
+
+        const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+        if (fileStatus.file.size > MAX_FILE_SIZE) {
+          const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: "파일 크기는 200MB를 초과할 수 없습니다." } : f
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 50MB를 초과합니다. 파일을 압축하거나 분할해 주세요.` } : f
+          ))
+          continue
+        }
+
+        // 빈 파일 체크
+        if (fileStatus.file.size === 0) {
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? { ...f, status: "error", error: "빈 파일입니다. 내용이 있는 파일을 업로드해 주세요." } : f
           ))
           continue
         }
@@ -305,8 +317,21 @@ export function AnalyzeDashboard() {
 
         if (uploadError) {
           console.error("Upload error:", uploadError)
+          let errorMsg = "파일 업로드에 실패했습니다."
+          const errMsg = uploadError.message || ""
+          if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
+            errorMsg = `파일 크기가 서버 제한을 초과했습니다. 50MB 이하의 파일만 업로드 가능합니다.`
+          } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
+            errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
+          } else if (errMsg.includes("permission") || errMsg.includes("policy") || errMsg.includes("403")) {
+            errorMsg = "업로드 권한이 없습니다. 다시 로그인해 주세요."
+          } else if (errMsg.includes("network") || errMsg.includes("fetch") || errMsg.includes("timeout")) {
+            errorMsg = "네트워크 오류입니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
+          } else if (errMsg.includes("duplicate") || errMsg.includes("already exists")) {
+            errorMsg = "파일 업로드 충돌이 발생했습니다. 다시 시도해 주세요."
+          }
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: "파일 업로드에 실패했습니다." } : f
+            idx === i ? { ...f, status: "error", error: errorMsg } : f
           ))
           continue
         }
@@ -486,7 +511,7 @@ export function AnalyzeDashboard() {
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
-    maxSize: 200 * 1024 * 1024,
+    maxSize: 50 * 1024 * 1024,
     disabled: isLoggedIn && !selectedProjectId,
   })
 
@@ -788,7 +813,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 500MB</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 50MB</p>
                           </div>
                         </div>
                       </div>

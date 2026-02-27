@@ -64,9 +64,6 @@ function TutoringContent() {
   const [selectedPackage, setSelectedPackage] = useState<string>("tutoring_4")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [widgetsReady, setWidgetsReady] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [widgetsInstance, setWidgetsInstance] = useState<any>(null)
 
   // URL 파라미터로 패키지 선택
   useEffect(() => {
@@ -113,48 +110,18 @@ function TutoringContent() {
 
       const customerKey = `cust_${user.id.replace(/-/g, "").slice(0, 20)}`
       const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY)
-      const widgets = tossPayments.widgets({ customerKey })
+      const payment = tossPayments.payment({ customerKey })
 
-      await widgets.setAmount({ currency: "KRW", value: pkg.price })
-
-      await widgets.renderPaymentMethods({
-        selector: "#payment-method",
-      })
-
-      await widgets.renderAgreement({
-        selector: "#agreement",
-      })
-
-      setWidgetsInstance(widgets)
-      setWidgetsReady(true)
-      setLoading(false)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "결제 준비 중 오류가 발생했습니다."
-      setError(message)
-      setLoading(false)
-    }
-  }
-
-  async function handleRequestPayment() {
-    if (!widgetsInstance) return
-    setLoading(true)
-
-    try {
-      const orderResult = await createTutoringOrder(selectedPackage, pkg.price)
-      if (orderResult.error) {
-        setError(orderResult.error)
-        setLoading(false)
-        return
-      }
-
-      await widgetsInstance.requestPayment({
-        orderId: orderResult.orderId,
+      await payment.requestPayment({
+        method: "CARD",
+        amount: { currency: "KRW", value: pkg.price },
+        orderId: orderResult.orderId!,
         orderName: pkg.name,
         successUrl: `${window.location.origin}/payment/tutoring/success`,
         failUrl: `${window.location.origin}/payment/billing/fail`,
       })
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "결제 요청 중 오류가 발생했습니다."
+      const message = err instanceof Error ? err.message : "결제 중 오류가 발생했습니다."
       setError(message)
       setLoading(false)
     }
@@ -211,7 +178,6 @@ function TutoringContent() {
                 key={p.key}
                 onClick={() => {
                   setSelectedPackage(p.key)
-                  setWidgetsReady(false)
                   setError("")
                 }}
                 className={`w-full p-5 rounded-xl border text-left transition-all ${
@@ -265,33 +231,14 @@ function TutoringContent() {
           </div>
         )}
 
-        {/* 결제 위젯 영역 */}
-        {widgetsReady && (
-          <div className="mb-6">
-            <div id="payment-method" className="mb-4" />
-            <div id="agreement" />
-          </div>
-        )}
-
-        {!widgetsReady ? (
-          <Button
-            onClick={handlePayment}
-            disabled={loading}
-            className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
-          >
-            {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
-            {pkg.price.toLocaleString()}원 결제하기
-          </Button>
-        ) : (
-          <Button
-            onClick={handleRequestPayment}
-            disabled={loading}
-            className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
-          >
-            {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
-            결제하기
-          </Button>
-        )}
+        <Button
+          onClick={handlePayment}
+          disabled={loading}
+          className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
+        >
+          {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
+          {pkg.price.toLocaleString()}원 결제하기
+        </Button>
 
         {/* 환불규정 안내 */}
         <div className="mt-8 bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-5">

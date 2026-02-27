@@ -294,6 +294,16 @@ export function AnalyzeDashboard() {
           continue
         }
 
+        // 대용량 파일 경고 (AI 분석 가능 크기 안내)
+        const ANALYSIS_WARN_SIZE = 30 * 1024 * 1024 // 30MB
+        if (fileStatus.file.size > ANALYSIS_WARN_SIZE) {
+          const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
+          setFiles(prev => prev.map((f, idx) =>
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 AI 분석 가능 크기(30MB)를 초과합니다. 실제 게임 회사에서도 30MB 이상의 포트폴리오를 요구하지 않습니다. 이미지 해상도를 낮추거나, 불필요한 페이지를 제거하여 파일을 최적화해 주세요.` } : f
+          ))
+          continue
+        }
+
         // 빈 파일 체크
         if (fileStatus.file.size === 0) {
           setFiles(prev => prev.map((f, idx) =>
@@ -814,7 +824,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · AI 분석 최대 30MB</p>
                           </div>
                         </div>
                       </div>

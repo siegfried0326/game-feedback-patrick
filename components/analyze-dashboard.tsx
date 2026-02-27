@@ -306,10 +306,12 @@ export function AnalyzeDashboard() {
 
         // 대용량 파일 처리
         const LARGE_FILE_THRESHOLD = 30 * 1024 * 1024 // 30MB
-        const isLargePdf = fileStatus.file.size > LARGE_FILE_THRESHOLD && fileStatus.file.type === "application/pdf"
+        const COMPRESS_LIMIT = 100 * 1024 * 1024 // 100MB (이 이상은 압축 시도하지 않음)
+        const isPdf = fileStatus.file.type === "application/pdf"
+        const isLargeFile = fileStatus.file.size > LARGE_FILE_THRESHOLD
 
         // 대용량 비-PDF 파일은 압축 미지원
-        if (fileStatus.file.size > LARGE_FILE_THRESHOLD && fileStatus.file.type !== "application/pdf") {
+        if (isLargeFile && !isPdf) {
           const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 분석 가능 크기(30MB)를 초과합니다. PDF로 변환하면 자동 압축 후 분석됩니다.` } : f
@@ -317,19 +319,77 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        // 분석할 파일 결정 (대용량 PDF는 압축)
+        // 텍스트 추출 → AI 분석 공통 함수
+        const doTextAnalysis = async (): Promise<boolean> => {
+          setStatusMessage("텍스트 추출 중...")
+          const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
+            setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
+          })
+          if (extractedText.length < 100) {
+            setFiles(prev => prev.map((f, idx) =>
+              idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지로만 구성된 문서일 수 있습니다." } : f
+            ))
+            return false
+          }
+          setStatusMessage("AI 분석 중...")
+          const textResult = await analyzeUrlDirect({
+            projectId: selectedProjectId,
+            extractedText,
+            fileName: fileStatus.file.name,
+          })
+          if (textResult.error) {
+            if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
+              setShowCreditError(true)
+              setFiles(prev => prev.map((f, idx) =>
+                idx === i ? { ...f, status: "error", error: "서비스 점검 중" } : f
+              ))
+              return false
+            }
+            setFiles(prev => prev.map((f, idx) =>
+              idx === i ? { ...f, status: "error", error: textResult.error } : f
+            ))
+          } else {
+            const result = { ...textResult.data, fileName: fileStatus.file.name } as AnalysisResult
+            newResults.push(result)
+            setResults([...newResults])
+            setFiles(prev => prev.map((f, idx) =>
+              idx === i ? { ...f, status: "success", result } : f
+            ))
+          }
+          return true
+        }
+
+        // 분석할 파일 결정 (대용량 PDF 분기 처리)
         let fileToUpload = fileStatus.file
 
-        if (isLargePdf) {
+        if (isLargeFile && isPdf) {
           setFiles(prev => prev.map((f, idx) =>
             idx === i ? { ...f, status: "analyzing" } : f
           ))
 
+          // 100MB 이상: 압축이 너무 느림 → 바로 텍스트 추출
+          if (fileStatus.file.size > COMPRESS_LIMIT) {
+            const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(0)
+            setStatusMessage(`${sizeMB}MB 파일 — 텍스트 기반 분석으로 진행합니다`)
+            try {
+              await doTextAnalysis()
+            } catch {
+              setFiles(prev => prev.map((f, idx) =>
+                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+              ))
+            }
+            continue
+          }
+
+          // 30~100MB: 압축 시도 (타임아웃 3분)
           try {
-            // 1단계: 클라이언트에서 PDF 이미지 압축
-            const compressedFile = await compressPdf(fileStatus.file, (current, total) => {
+            const compressPromise = compressPdf(fileStatus.file, (current, total) => {
               setStatusMessage(`PDF 압축 중... (${current}/${total} 페이지)`)
             })
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("COMPRESS_TIMEOUT")), 180000)
+            )
+            const compressedFile = await Promise.race([compressPromise, timeoutPromise])
 
             const compressedMB = (compressedFile.size / (1024 * 1024)).toFixed(1)
             const originalMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
@@ -339,92 +399,32 @@ export function AnalyzeDashboard() {
             if (compressedFile.size > LARGE_FILE_THRESHOLD) {
               setStatusMessage("압축 후에도 크기가 큽니다. 텍스트 기반 분석으로 전환...")
               try {
-                const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
-                  setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
-                })
-                if (extractedText.length < 100) {
-                  setFiles(prev => prev.map((f, idx) =>
-                    idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지 문서일 수 있습니다." } : f
-                  ))
-                  continue
-                }
-                setStatusMessage("AI 분석 중...")
-                const textResult = await analyzeUrlDirect({
-                  projectId: selectedProjectId,
-                  extractedText,
-                  fileName: fileStatus.file.name,
-                })
-                // 텍스트 분석 결과 처리
-                if (textResult.error) {
-                  if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
-                    setShowCreditError(true)
-                    setFiles(prev => prev.map((f, idx) =>
-                      idx === i ? { ...f, status: "error", error: "서비스 점검 중" } : f
-                    ))
-                    break
-                  }
-                  setFiles(prev => prev.map((f, idx) =>
-                    idx === i ? { ...f, status: "error", error: textResult.error } : f
-                  ))
-                } else {
-                  const result = { ...textResult.data, fileName: fileStatus.file.name } as AnalysisResult
-                  newResults.push(result)
-                  setResults([...newResults])
-                  setFiles(prev => prev.map((f, idx) =>
-                    idx === i ? { ...f, status: "success", result } : f
-                  ))
-                }
-                continue
+                await doTextAnalysis()
               } catch {
                 setFiles(prev => prev.map((f, idx) =>
                   idx === i ? { ...f, status: "error", error: "파일 처리에 실패했습니다. 파일을 수동으로 압축하여 다시 시도해 주세요." } : f
                 ))
-                continue
               }
+              continue
             }
 
             fileToUpload = compressedFile
             setStatusMessage("압축 완료! 업로드 중...")
           } catch (compressError) {
+            const errorMsg = compressError instanceof Error ? compressError.message : ""
             console.error("PDF compression error:", compressError)
-            // 압축 실패 시 텍스트 추출로 폴백
-            setStatusMessage("압축 실패. 텍스트 기반 분석으로 전환...")
+            setStatusMessage(errorMsg === "COMPRESS_TIMEOUT"
+              ? "압축 시간 초과. 텍스트 기반 분석으로 전환..."
+              : "압축 실패. 텍스트 기반 분석으로 전환..."
+            )
             try {
-              const extractedText = await extractTextFromPdf(fileStatus.file, (current, total) => {
-                setStatusMessage(`텍스트 추출 중... (${current}/${total} 페이지)`)
-              })
-              if (extractedText.length >= 100) {
-                setStatusMessage("AI 분석 중...")
-                const textResult = await analyzeUrlDirect({
-                  projectId: selectedProjectId,
-                  extractedText,
-                  fileName: fileStatus.file.name,
-                })
-                if (textResult.error) {
-                  if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
-                    setShowCreditError(true)
-                    setFiles(prev => prev.map((f, idx) =>
-                      idx === i ? { ...f, status: "error", error: "서비스 점검 중" } : f
-                    ))
-                    break
-                  }
-                  setFiles(prev => prev.map((f, idx) =>
-                    idx === i ? { ...f, status: "error", error: textResult.error } : f
-                  ))
-                } else {
-                  const result = { ...textResult.data, fileName: fileStatus.file.name } as AnalysisResult
-                  newResults.push(result)
-                  setResults([...newResults])
-                  setFiles(prev => prev.map((f, idx) =>
-                    idx === i ? { ...f, status: "success", result } : f
-                  ))
-                }
-                continue
-              }
+              await doTextAnalysis()
             } catch { /* 텍스트 추출도 실패 */ }
-            setFiles(prev => prev.map((f, idx) =>
-              idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
-            ))
+            if (files[i]?.status !== "success" && files[i]?.status !== "error") {
+              setFiles(prev => prev.map((f, idx) =>
+                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+              ))
+            }
             continue
           }
         }
@@ -995,25 +995,32 @@ export function AnalyzeDashboard() {
                     <AlertCircle className="w-4 h-4" />
                     사용 팁
                   </p>
-                  <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="grid sm:grid-cols-3 gap-3">
                     <div className="flex items-start gap-2">
                       <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px] font-bold">1</span>
                       <div>
-                        <p className="text-xs text-white font-medium">30MB 이하 권장</p>
-                        <p className="text-[11px] text-slate-400">이미지·레이아웃 포함 최고 품질 분석</p>
+                        <p className="text-xs text-white font-medium">30MB 이하</p>
+                        <p className="text-[11px] text-slate-400">이미지 포함 풀 분석</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-[10px] font-bold">2</span>
                       <div>
-                        <p className="text-xs text-white font-medium">30MB~1GB PDF</p>
-                        <p className="text-[11px] text-slate-400">자동 압축 후 분석 (이미지 품질 약간 감소)</p>
+                        <p className="text-xs text-white font-medium">30~100MB PDF</p>
+                        <p className="text-[11px] text-slate-400">자동 압축 후 풀 분석</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2 sm:col-span-2">
+                    <div className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center text-orange-400 text-[10px] font-bold">3</span>
+                      <div>
+                        <p className="text-xs text-white font-medium">100MB+ PDF</p>
+                        <p className="text-[11px] text-slate-400">텍스트 기반 분석</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2 sm:col-span-3">
                       <span className="shrink-0 mt-0.5 w-5 h-5 rounded bg-slate-700 flex items-center justify-center text-slate-300 text-[10px] font-bold">!</span>
                       <p className="text-[11px] text-slate-400">
-                        용량이 클 때: 이미지 해상도를 <span className="text-slate-300 font-medium">150dpi</span>로 낮추거나, 불필요한 페이지를 제거하면 대부분 30MB 이하로 줄어듭니다.
+                        이미지 해상도를 <span className="text-slate-300 font-medium">150dpi</span>로 낮추거나 불필요한 페이지를 제거하면 대부분 30MB 이하로 줄어듭니다.
                       </p>
                     </div>
                   </div>

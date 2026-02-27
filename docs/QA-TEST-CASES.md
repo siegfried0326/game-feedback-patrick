@@ -121,6 +121,6 @@
 
 | # | 항목 | SQL / 작업 | 상태 |
 |---|------|-----------|------|
-| S1 | RLS DELETE 정책 | `analysis_history`, `projects` 테이블 DELETE 정책 추가 | |
-| S2 | RLS UPDATE 정책 | `projects` 테이블 UPDATE 정책 추가 | |
-| S3 | 과외 패키지 제약조건 | `ALTER TABLE tutoring_orders DROP CONSTRAINT tutoring_orders_package_type_check; ALTER TABLE tutoring_orders ADD CONSTRAINT tutoring_orders_package_type_check CHECK (package_type IN ('tutoring_4', 'tutoring_12', 'group_tutoring', 'tutoring_1h', 'mock_interview'));` | |
+| S1 | RLS DELETE 정책 | `analysis_history`, `projects` 테이블 DELETE 정책 추가 | ✅ |
+| S2 | RLS UPDATE 정책 | `projects` 테이블 UPDATE 정책 추가 | ✅ |
+| S3 | 과외 패키지 제약조건 | `ALTER TABLE tutoring_orders DROP CONSTRAINT tutoring_orders_package_type_check; ALTER TABLE tutoring_orders ADD CONSTRAINT tutoring_orders_package_type_check CHECK (package_type IN ('tutoring_4', 'tutoring_12', 'group_tutoring', 'tutoring_1h', 'mock_interview'));` | ✅ |

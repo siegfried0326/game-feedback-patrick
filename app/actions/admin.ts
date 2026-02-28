@@ -799,6 +799,14 @@ export async function reclassifyAllCompanies() {
  */
 export async function embedExistingPortfolios(force: boolean = false) {
   try {
+    // ★ 테스트: 서버 액션이 동작하는지 확인 (아무 외부 호출 없이 바로 리턴)
+    return {
+      success: true,
+      data: { total: 999, processed: 0, failed: 0, skipped: 0, remaining: 999, errors: ["테스트 성공! 서버 액션은 정상 동작합니다."] }
+    }
+
+    // ↓↓↓ 아래는 테스트 후 주석 해제 ↓↓↓
+    /* eslint-disable no-unreachable */
     const { supabase } = await verifyAdmin()
 
     if (!process.env.OPENAI_API_KEY) {

@@ -18,7 +18,7 @@ import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Pla
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios } from "@/app/actions/admin"
 
 interface UploadStatus {
   fileName: string
@@ -225,12 +225,25 @@ export default function AdminPage() {
     const allErrors: string[] = []
 
     try {
-      // 1개씩 반복 처리 (서버 액션 10초 타임아웃 안에 끝나도록)
+      // 1개씩 반복 처리 (API 라우트로 호출, maxDuration=60초)
       while (true) {
-        const result = await embedExistingPortfolios(currentForce)
+        const res = await fetch("/api/admin/embed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ force: currentForce }),
+        })
+
+        // HTTP 에러 처리
+        let result
+        try {
+          result = await res.json()
+        } catch {
+          allErrors.push(`서버 응답 파싱 실패 (HTTP ${res.status})`)
+          setEmbedErrors([...allErrors])
+          break
+        }
 
         if (!result.success) {
-          // 서버 액션 자체가 실패한 경우 (인증 오류 등)
           allErrors.push(result.error || "알 수 없는 오류")
           setEmbedErrors([...allErrors])
           break

@@ -18,7 +18,7 @@ import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Pla
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios } from "@/app/actions/admin"
 
 interface UploadStatus {
   fileName: string
@@ -205,7 +205,8 @@ export default function AdminPage() {
 
   // ============================
   // 기존 포트폴리오 일괄 벡터 임베딩
-  // 10개씩 배치 처리 → 남은 게 있으면 자동 반복
+  // API 라우트로 3개씩 배치 처리 → 자동 반복
+  // (서버 액션 대신 API 사용 — Vercel 타임아웃 안정성)
   // ============================
   const handleEmbedAll = async (force: boolean = false) => {
     if (isEmbedding) return
@@ -216,17 +217,23 @@ export default function AdminPage() {
     setTotalProcessed(0)
 
     let cumulativeProcessed = 0
+    let currentForce = force
 
     try {
-      // 10개씩 반복 처리 (남은 게 0이 될 때까지)
+      // 3개씩 반복 처리 (남은 게 0이 될 때까지)
       while (true) {
-        const result = await embedExistingPortfolios(force)
+        const res = await fetch("/api/admin/embed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ force: currentForce }),
+        })
+
+        const result = await res.json()
 
         if (!result.success) {
-          // 에러 메시지를 구체적으로 표시
           const errorMsg = result.error || "알 수 없는 오류"
           if (cumulativeProcessed > 0) {
-            alert(`${cumulativeProcessed}개 처리 후 오류 발생: ${errorMsg}`)
+            alert(`${cumulativeProcessed}개 처리 후 오류: ${errorMsg}`)
           } else {
             alert("임베딩 실패: " + errorMsg)
           }
@@ -238,7 +245,7 @@ export default function AdminPage() {
           setTotalProcessed(cumulativeProcessed)
           setEmbedResult({
             ...result.data,
-            processed: cumulativeProcessed, // 누적 처리 수
+            processed: cumulativeProcessed,
           })
 
           // 이번 배치에서 처리된 게 없거나 남은 게 없으면 종료
@@ -246,8 +253,8 @@ export default function AdminPage() {
             break
           }
 
-          // force 모드에서는 첫 배치만 force, 나머지는 일반 처리
-          if (force) force = false
+          // force 모드는 첫 배치만
+          if (currentForce) currentForce = false
         } else {
           break
         }

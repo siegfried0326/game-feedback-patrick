@@ -798,33 +798,30 @@ export async function reclassifyAllCompanies() {
  * 프론트에서 반복 호출하여 전체 완료.
  */
 export async function embedExistingPortfolios(force: boolean = false) {
-  // ★ 실전 버전: 포트폴리오 1개씩 임베딩 처리
-  // 진단 결과 — 인증, DB, OpenAI 모두 개별 동작 확인 완료
+  // ★ 진단 5단계: 성공했던 6단계 + 텍스트처리/청킹 추가
+  // 목표: 전체필드 조회 + 메타데이터 조합 + 청크 분할이 문제인지 확인
   const log: string[] = []
 
   try {
-    // ── 1. 관리자 인증 ──
+    // ── 1. 인증 ──
     const { supabase } = await verifyAdmin()
+    log.push("1.인증 OK")
 
-    // ── 2. API 키 확인 ──
-    if (!process.env.OPENAI_API_KEY) {
-      return { success: false, error: "OPENAI_API_KEY 없음" }
-    }
+    // ── 2. API 키 ──
+    log.push(`2.API키 ${process.env.OPENAI_API_KEY ? "OK" : "없음"}`)
 
-    // ── 3. 전체 수 + 처리 완료된 ID 조회 (병렬) ──
-    const [countResult, chunkedResult] = await Promise.all([
-      supabase.from("portfolios").select("id", { count: "exact", head: true }),
-      supabase.from("portfolio_chunks").select("portfolio_id"),
-    ])
-    if (countResult.error) return { success: false, error: `카운트 실패: ${countResult.error.message}` }
-    if (chunkedResult.error) return { success: false, error: `chunks 조회 실패: ${chunkedResult.error.message}` }
+    // ── 3. 카운트 (순차) ──
+    const { count, error: countErr } = await supabase.from("portfolios").select("id", { count: "exact", head: true })
+    if (countErr) return { success: false, error: `3.카운트 실패: ${countErr.message}` }
+    log.push(`3.카운트 OK (${count}개)`)
 
-    const totalCount = countResult.count || 0
-    const processedIds = [...new Set(
-      (chunkedResult.data || []).map((c: { portfolio_id: string }) => c.portfolio_id)
-    )]
+    // ── 4. chunks 조회 (순차) ──
+    const { data: chunkData, error: chunkErr } = await supabase.from("portfolio_chunks").select("portfolio_id")
+    if (chunkErr) return { success: false, error: `4.chunks 실패: ${chunkErr.message}` }
+    const processedIds = [...new Set((chunkData || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
+    log.push(`4.chunks OK (${processedIds.length}개)`)
 
-    // ── 4. 미처리 포트폴리오 1개 찾기 ──
+    // ── 5. 포트폴리오 전체 필드 조회 ──
     let query = supabase
       .from("portfolios")
       .select("id, file_name, content_text, summary, strengths, weaknesses, tags, companies, document_type")
@@ -833,22 +830,14 @@ export async function embedExistingPortfolios(force: boolean = false) {
     if (!force && processedIds.length > 0) {
       query = query.not("id", "in", `(${processedIds.join(",")})`)
     }
-
-    const { data: portfolios, error: queryError } = await query
-    if (queryError) return { success: false, error: `포트폴리오 조회 실패: ${queryError.message}` }
-
-    // 더 이상 처리할 포트폴리오 없음
+    const { data: portfolios } = await query
     if (!portfolios || portfolios.length === 0) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length, remaining: 0, errors: ["모든 포트폴리오 임베딩 완료!"] }
-      }
+      return { success: true, data: { total: count || 0, processed: 0, failed: 0, skipped: processedIds.length, remaining: 0, errors: [...log, "완료"] } }
     }
-
     const p = portfolios[0]
-    const remaining = Math.max(0, totalCount - processedIds.length - 1)
+    log.push(`5.포트폴리오 OK (${p.file_name})`)
 
-    // ── 5. 텍스트 확보 (content_text 없으면 메타데이터로 대체) ──
+    // ── 6. 텍스트 확보 ──
     let text = p.content_text || ""
     if (text.trim().length < 50) {
       const parts: string[] = []
@@ -861,70 +850,36 @@ export async function embedExistingPortfolios(force: boolean = false) {
       if (p.tags?.length) parts.push(`키워드: ${p.tags.join(", ")}`)
       text = parts.join("\n\n")
     }
+    log.push(`6.텍스트 OK (${text.length}자)`)
 
-    // 텍스트가 너무 짧으면 스킵
-    if (text.trim().length < 30) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [`${p.file_name}: 텍스트 부족 (${text.length}자) — 스킵`] }
-      }
-    }
-
-    // ── 6. 청크 분할 (최대 5개) ──
+    // ── 7. 청크 분할 ──
     const chunks = chunkText(text).slice(0, 5)
-    if (chunks.length === 0) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [`${p.file_name}: 청크 생성 실패 — 스킵`] }
-      }
+    log.push(`7.청크 OK (${chunks.length}개)`)
+
+    // ── 8. OpenAI 테스트 (짧은 문자열) ──
+    try {
+      const testEmb = await generateEmbedding("테스트")
+      log.push(`8.OpenAI OK (${testEmb.length}차원)`)
+    } catch (e) {
+      log.push(`8.OpenAI 실패: ${e instanceof Error ? e.message : String(e)}`)
     }
 
-    // ── 7. force 모드면 기존 청크 삭제 ──
-    if (force) {
-      await supabase.from("portfolio_chunks").delete().eq("portfolio_id", p.id)
-    }
-
-    // ── 8. OpenAI 임베딩 생성 ──
-    const embeddings = await generateEmbeddings(chunks)
-
-    // ── 9. DB에 저장 ──
-    const rows = chunks.map((chunk, idx) => ({
-      portfolio_id: p.id,
-      chunk_index: idx,
-      chunk_text: chunk,
-      embedding: JSON.stringify(embeddings[idx]),
-      metadata: {
-        companies: p.companies,
-        documentType: p.document_type,
-        fileName: p.file_name,
-      },
-    }))
-
-    const { error: insertError } = await supabase.from("portfolio_chunks").insert(rows)
-    if (insertError) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 1, skipped: processedIds.length, remaining, errors: [`${p.file_name}: DB 저장 실패 — ${insertError.message}`] }
-      }
-    }
-
-    // ── 성공 ──
+    // ★ 여기서 반환 — 실제 임베딩/저장은 안 함
     return {
       success: true,
       data: {
-        total: totalCount,
-        processed: 1,
+        total: count || 0,
+        processed: 0,
         failed: 0,
         skipped: processedIds.length,
-        remaining,
-        errors: [`${p.file_name}: 임베딩 완료 (${chunks.length}청크, ${text.length}자)`]
+        remaining: (count || 0) - processedIds.length,
+        errors: [...log, "★ 진단: 8단계까지 성공 (텍스트+청크+OpenAI테스트)"]
       }
     }
   } catch (error) {
-    // 최상위 에러 핸들러 — 어디서든 터지면 여기서 잡힘
     return {
       success: false,
-      error: `임베딩 실패: ${error instanceof Error ? error.message : String(error)}`
+      error: `진단 실패 (${log.join(" → ")}): ${error instanceof Error ? error.message : String(error)}`
     }
   }
 }

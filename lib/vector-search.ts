@@ -177,25 +177,61 @@ export async function embedAndStorePortfolio(
 /**
  * 기존 포트폴리오 일괄 임베딩 (관리자 배치 작업)
  *
+ * ⚠️ Vercel 타임아웃 방지를 위해 한 번에 최대 10개만 처리.
+ * "신규 임베딩 생성" 버튼을 여러 번 클릭하면 전체 완료됨.
+ *
  * content_text가 있으면 그것을 사용, 없으면 메타데이터(요약+강점+약점+태그)로 대체.
  * 이미 청크가 있는 포트폴리오는 건너뜀 (force=true로 재처리 가능).
  *
  * @param force - true면 이미 임베딩된 것도 재처리
- * @returns 처리 결과 요약
+ * @param batchLimit - 한 번에 처리할 최대 개수 (기본 10, Vercel 타임아웃 방지)
+ * @returns 처리 결과 요약 + 남은 개수
  */
 export async function embedAllPortfolios(
   force: boolean = false,
-): Promise<{ total: number; processed: number; skipped: number; failed: number; errors: string[] }> {
+  batchLimit: number = 10,
+): Promise<{
+  total: number
+  processed: number
+  skipped: number
+  failed: number
+  remaining: number
+  errors: string[]
+}> {
+  // ========== 1단계: 사전 체크 ==========
+
+  // OPENAI_API_KEY 확인
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      total: 0, processed: 0, skipped: 0, failed: 0, remaining: 0,
+      errors: ["OPENAI_API_KEY가 설정되지 않았습니다. Vercel 환경변수에 추가해주세요."],
+    }
+  }
+
   const supabase = await createClient()
 
-  // 모든 포트폴리오 조회
+  // portfolio_chunks 테이블 존재 여부 확인
+  const { error: tableCheckError } = await supabase
+    .from("portfolio_chunks")
+    .select("id")
+    .limit(1)
+
+  if (tableCheckError) {
+    return {
+      total: 0, processed: 0, skipped: 0, failed: 0, remaining: 0,
+      errors: [`portfolio_chunks 테이블이 없습니다. Supabase SQL Editor에서 011_add_vector_search.sql을 실행해주세요. (${tableCheckError.message})`],
+    }
+  }
+
+  // ========== 2단계: 포트폴리오 조회 ==========
+
   const { data: portfolios, error } = await supabase
     .from("portfolios")
     .select("id, file_name, companies, document_type, content_text, summary, strengths, weaknesses, tags")
     .order("created_at", { ascending: true })
 
   if (error || !portfolios) {
-    return { total: 0, processed: 0, skipped: 0, failed: 0, errors: [error?.message || "조회 실패"] }
+    return { total: 0, processed: 0, skipped: 0, failed: 0, remaining: 0, errors: [error?.message || "조회 실패"] }
   }
 
   // 이미 임베딩된 포트폴리오 ID 목록 (force가 아닐 때 스킵용)
@@ -209,19 +245,20 @@ export async function embedAllPortfolios(
     }
   }
 
-  const result = { total: portfolios.length, processed: 0, skipped: 0, failed: 0, errors: [] as string[] }
+  // ========== 3단계: 처리 대상 필터링 ==========
+
+  const toProcess: typeof portfolios = []
+  let textSkipped = 0
 
   for (const portfolio of portfolios) {
-    // 이미 임베딩되어 있으면 스킵 (force 모드 제외)
+    // 이미 임베딩되어 있으면 스킵
     if (!force && existingPortfolioIds.has(portfolio.id)) {
-      result.skipped++
       continue
     }
 
-    // 텍스트 확보: content_text 우선, 없으면 메타데이터 조합
+    // 텍스트 확보 가능한지 확인
     let text = portfolio.content_text
     if (!text || text.trim().length < 50) {
-      // 메타데이터로 임베딩용 텍스트 생성
       const parts: string[] = []
       if (portfolio.file_name) parts.push(`파일: ${portfolio.file_name}`)
       if (portfolio.document_type) parts.push(`문서유형: ${portfolio.document_type}`)
@@ -234,14 +271,46 @@ export async function embedAllPortfolios(
     }
 
     if (!text || text.trim().length < 30) {
-      result.skipped++
+      textSkipped++
       continue
+    }
+
+    toProcess.push(portfolio)
+  }
+
+  // ========== 4단계: 배치 처리 (최대 batchLimit개) ==========
+
+  const batch = toProcess.slice(0, batchLimit)
+  const remaining = toProcess.length - batch.length
+
+  const result = {
+    total: portfolios.length,
+    processed: 0,
+    skipped: existingPortfolioIds.size + textSkipped,
+    failed: 0,
+    remaining,
+    errors: [] as string[],
+  }
+
+  for (const portfolio of batch) {
+    // 텍스트 확보
+    let text = portfolio.content_text
+    if (!text || text.trim().length < 50) {
+      const parts: string[] = []
+      if (portfolio.file_name) parts.push(`파일: ${portfolio.file_name}`)
+      if (portfolio.document_type) parts.push(`문서유형: ${portfolio.document_type}`)
+      if (portfolio.companies?.length) parts.push(`회사: ${portfolio.companies.join(", ")}`)
+      if (portfolio.summary) parts.push(`요약: ${portfolio.summary}`)
+      if (portfolio.strengths?.length) parts.push(`강점: ${portfolio.strengths.join(". ")}`)
+      if (portfolio.weaknesses?.length) parts.push(`약점: ${portfolio.weaknesses.join(". ")}`)
+      if (portfolio.tags?.length) parts.push(`키워드: ${portfolio.tags.join(", ")}`)
+      text = parts.join("\n\n")
     }
 
     try {
       const embedResult = await embedAndStorePortfolio(
         portfolio.id,
-        text,
+        text!,
         {
           companies: portfolio.companies,
           documentType: portfolio.document_type,
@@ -256,15 +325,15 @@ export async function embedAllPortfolios(
         result.errors.push(`${portfolio.file_name}: ${embedResult.error}`)
       }
 
-      // API 속도 제한 방지 — 포트폴리오 간 1초 대기
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // API 속도 제한 방지 — 포트폴리오 간 500ms 대기
+      await new Promise(resolve => setTimeout(resolve, 500))
     } catch (err) {
       result.failed++
       result.errors.push(`${portfolio.file_name}: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
-  console.log(`[vector-search] 일괄 임베딩 완료: 총 ${result.total}, 처리 ${result.processed}, 스킵 ${result.skipped}, 실패 ${result.failed}`)
+  console.log(`[vector-search] 배치 임베딩 완료: 처리 ${result.processed}, 남은 ${result.remaining}개`)
   return result
 }
 

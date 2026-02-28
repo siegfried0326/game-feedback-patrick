@@ -793,10 +793,11 @@ export async function embedExistingPortfolios(force: boolean = false) {
     // 보안: 관리자 인증 확인
     await verifyAdmin()
 
-    console.log(`[admin] 기존 포트폴리오 일괄 임베딩 시작 (force=${force})`)
-    const result = await embedAllPortfolios(force)
+    console.log(`[admin] 기존 포트폴리오 배치 임베딩 시작 (force=${force})`)
+    // 한 번에 10개씩만 처리 (Vercel 타임아웃 방지)
+    const result = await embedAllPortfolios(force, 10)
 
-    console.log(`[admin] 일괄 임베딩 완료:`, result)
+    console.log(`[admin] 배치 임베딩 완료:`, result)
     return {
       success: true,
       data: {
@@ -804,7 +805,8 @@ export async function embedExistingPortfolios(force: boolean = false) {
         processed: result.processed,
         skipped: result.skipped,
         failed: result.failed,
-        errors: result.errors.slice(0, 10), // 에러 메시지 10개까지만 반환
+        remaining: result.remaining, // 아직 처리 안 된 개수
+        errors: result.errors.slice(0, 10),
       }
     }
   } catch (error) {

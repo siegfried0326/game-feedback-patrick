@@ -39,8 +39,10 @@ export default function AdminPage() {
   // 벡터 임베딩 상태
   const [isEmbedding, setIsEmbedding] = useState(false)
   const [embedResult, setEmbedResult] = useState<{
-    total: number; processed: number; skipped: number; failed: number
+    total: number; processed: number; skipped: number; failed: number; remaining: number
   } | null>(null)
+  // 누적 처리 개수 (배치 반복 시 합산)
+  const [totalProcessed, setTotalProcessed] = useState(0)
 
   useEffect(() => {
     loadStats()
@@ -203,7 +205,7 @@ export default function AdminPage() {
 
   // ============================
   // 기존 포트폴리오 일괄 벡터 임베딩
-  // 벡터 서치용: 기존 데이터에 벡터를 생성하여 유사도 검색 가능하게 함
+  // 10개씩 배치 처리 → 남은 게 있으면 자동 반복
   // ============================
   const handleEmbedAll = async (force: boolean = false) => {
     if (isEmbedding) return
@@ -211,13 +213,44 @@ export default function AdminPage() {
 
     setIsEmbedding(true)
     setEmbedResult(null)
+    setTotalProcessed(0)
+
+    let cumulativeProcessed = 0
 
     try {
-      const result = await embedExistingPortfolios(force)
-      if (result.success && result.data) {
-        setEmbedResult(result.data)
-      } else {
-        alert("임베딩 실패: " + (result.error || "알 수 없는 오류"))
+      // 10개씩 반복 처리 (남은 게 0이 될 때까지)
+      while (true) {
+        const result = await embedExistingPortfolios(force)
+
+        if (!result.success) {
+          // 에러 메시지를 구체적으로 표시
+          const errorMsg = result.error || "알 수 없는 오류"
+          if (cumulativeProcessed > 0) {
+            alert(`${cumulativeProcessed}개 처리 후 오류 발생: ${errorMsg}`)
+          } else {
+            alert("임베딩 실패: " + errorMsg)
+          }
+          break
+        }
+
+        if (result.data) {
+          cumulativeProcessed += result.data.processed
+          setTotalProcessed(cumulativeProcessed)
+          setEmbedResult({
+            ...result.data,
+            processed: cumulativeProcessed, // 누적 처리 수
+          })
+
+          // 이번 배치에서 처리된 게 없거나 남은 게 없으면 종료
+          if (result.data.processed === 0 || result.data.remaining === 0) {
+            break
+          }
+
+          // force 모드에서는 첫 배치만 force, 나머지는 일반 처리
+          if (force) force = false
+        } else {
+          break
+        }
       }
     } catch (error) {
       alert("임베딩 오류: " + (error instanceof Error ? error.message : "알 수 없는 오류"))
@@ -438,7 +471,7 @@ export default function AdminPage() {
                 {isEmbedding ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    임베딩 생성 중...
+                    임베딩 생성 중... ({totalProcessed}개 완료)
                   </>
                 ) : (
                   "신규 임베딩 생성"
@@ -458,8 +491,10 @@ export default function AdminPage() {
             {/* 임베딩 결과 표시 */}
             {embedResult && (
               <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                <p className="text-purple-300 text-sm font-medium mb-2">임베딩 완료</p>
-                <div className="grid grid-cols-4 gap-4 text-center">
+                <p className="text-purple-300 text-sm font-medium mb-2">
+                  {embedResult.remaining > 0 ? "임베딩 진행 중..." : "임베딩 완료!"}
+                </p>
+                <div className="grid grid-cols-5 gap-3 text-center">
                   <div>
                     <p className="text-2xl font-bold text-white">{embedResult.total}</p>
                     <p className="text-slate-400 text-xs">전체</p>
@@ -475,6 +510,10 @@ export default function AdminPage() {
                   <div>
                     <p className="text-2xl font-bold text-red-400">{embedResult.failed}</p>
                     <p className="text-slate-400 text-xs">실패</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-amber-400">{embedResult.remaining}</p>
+                    <p className="text-slate-400 text-xs">남음</p>
                   </div>
                 </div>
               </div>

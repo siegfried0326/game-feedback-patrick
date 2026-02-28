@@ -798,144 +798,64 @@ export async function reclassifyAllCompanies() {
  * 프론트에서 반복 호출하여 전체 완료.
  */
 export async function embedExistingPortfolios(force: boolean = false) {
-  // ★ 전체 진단: 각 단계를 개별 try/catch로 감싸서 정확히 어디서 터지는지 확인
+  // ★ 진단 3단계: DB 쿼리 4개(인증+카운트+chunks+포트폴리오) 실행 후 바로 반환
+  // OpenAI 호출 없이 어디까지 되는지 확인
   const log: string[] = []
 
   try {
     // ── 1단계: 관리자 인증 ──
-    let supabase
-    try {
-      const result = await verifyAdmin()
-      supabase = result.supabase
-      log.push("1.인증 OK")
-    } catch (e) {
-      return { success: false, error: `1.인증 실패: ${e instanceof Error ? e.message : String(e)}` }
-    }
+    const { supabase } = await verifyAdmin()
+    log.push("1.인증 OK")
 
     // ── 2단계: OPENAI_API_KEY 확인 ──
-    if (!process.env.OPENAI_API_KEY) {
-      return { success: false, error: "2.OPENAI_API_KEY 없음" }
-    }
-    log.push("2.API키 OK")
+    const hasKey = !!process.env.OPENAI_API_KEY
+    log.push(`2.API키 ${hasKey ? "OK" : "없음"}`)
 
     // ── 3단계: portfolios 카운트 ──
-    let totalCount = 0
-    try {
-      const { count, error } = await supabase.from("portfolios").select("id", { count: "exact", head: true })
-      if (error) return { success: false, error: `3.portfolios 카운트 실패: ${error.message}` }
-      totalCount = count || 0
-      log.push(`3.카운트 OK (${totalCount}개)`)
-    } catch (e) {
-      return { success: false, error: `3.카운트 에러: ${e instanceof Error ? e.message : String(e)}` }
-    }
+    const { count, error: countErr } = await supabase.from("portfolios").select("id", { count: "exact", head: true })
+    if (countErr) return { success: false, error: `3.카운트 실패: ${countErr.message}` }
+    log.push(`3.카운트 OK (${count}개)`)
 
     // ── 4단계: portfolio_chunks 조회 ──
-    let processedIds: string[] = []
-    try {
-      const { data, error } = await supabase.from("portfolio_chunks").select("portfolio_id")
-      if (error) return { success: false, error: `4.chunks 테이블 실패: ${error.message}. SQL(011) 실행했는지 확인.` }
-      processedIds = [...new Set((data || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
-      log.push(`4.chunks OK (처리완료 ${processedIds.length}개)`)
-    } catch (e) {
-      return { success: false, error: `4.chunks 에러: ${e instanceof Error ? e.message : String(e)}` }
+    const { data: chunkData, error: chunkErr } = await supabase.from("portfolio_chunks").select("portfolio_id")
+    if (chunkErr) return { success: false, error: `4.chunks 실패: ${chunkErr.message}` }
+    const processedIds = [...new Set((chunkData || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
+    log.push(`4.chunks OK (${processedIds.length}개 처리됨)`)
+
+    // ── 5단계: 미처리 포트폴리오 1개 조회 ──
+    let query = supabase
+      .from("portfolios")
+      .select("id, file_name, content_text")
+      .order("created_at", { ascending: true })
+      .limit(1)
+    if (!force && processedIds.length > 0) {
+      query = query.not("id", "in", `(${processedIds.join(",")})`)
+    }
+    const { data: portfolios } = await query
+    if (!portfolios || portfolios.length === 0) {
+      log.push("5.처리할 포트폴리오 없음 (전부 완료)")
+    } else {
+      const p = portfolios[0]
+      const textLen = p.content_text?.length || 0
+      log.push(`5.포트폴리오 OK (${p.file_name}, 텍스트 ${textLen}자)`)
     }
 
-    // ── 5단계: 미처리 포트폴리오 1개 찾기 ──
-    let portfolio: Record<string, unknown> | null = null
-    try {
-      let query = supabase
-        .from("portfolios")
-        .select("id, file_name, content_text, summary, strengths, weaknesses, tags, companies, document_type")
-        .order("created_at", { ascending: true })
-        .limit(1)
-      if (!force && processedIds.length > 0) {
-        query = query.not("id", "in", `(${processedIds.join(",")})`)
-      }
-      const { data } = await query
-      if (!data || data.length === 0) {
-        return {
-          success: true,
-          data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length, remaining: 0, errors: [...log, "완료: 더 이상 처리할 포트폴리오 없음"] }
-        }
-      }
-      portfolio = data[0]
-      log.push(`5.포트폴리오 OK (${(portfolio as { file_name?: string }).file_name})`)
-    } catch (e) {
-      return { success: false, error: `5.포트폴리오 조회 에러: ${e instanceof Error ? e.message : String(e)}` }
-    }
-
-    const remaining = Math.max(0, totalCount - processedIds.length - 1)
-    const p = portfolio as { id: string; file_name: string; content_text: string; summary: string; strengths: string[]; weaknesses: string[]; tags: string[]; companies: string[]; document_type: string }
-
-    // ── 6단계: 텍스트 확보 ──
-    let text = p.content_text
-    if (!text || text.trim().length < 50) {
-      const parts: string[] = []
-      if (p.file_name) parts.push(`파일: ${p.file_name}`)
-      if (p.summary) parts.push(`요약: ${p.summary}`)
-      if (p.strengths?.length) parts.push(`강점: ${p.strengths.join(". ")}`)
-      if (p.weaknesses?.length) parts.push(`약점: ${p.weaknesses.join(". ")}`)
-      if (p.tags?.length) parts.push(`키워드: ${p.tags.join(", ")}`)
-      text = parts.join("\n\n")
-    }
-    log.push(`6.텍스트 OK (${text.length}자)`)
-
-    if (!text || text.trim().length < 30) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [...log, `텍스트 부족 (${text.length}자)`] }
-      }
-    }
-
-    // ── 7단계: 청크 분할 ──
-    let chunks: string[] = []
-    try {
-      chunks = chunkText(text).slice(0, 5)
-      log.push(`7.청크 OK (${chunks.length}개)`)
-    } catch (e) {
-      return { success: false, error: `7.청크 에러: ${e instanceof Error ? e.message : String(e)}` }
-    }
-
-    // ── 8단계: force면 기존 삭제 ──
-    if (force) {
-      await supabase.from("portfolio_chunks").delete().eq("portfolio_id", p.id)
-      log.push("8.기존 삭제 OK")
-    }
-
-    // ── 9단계: OpenAI 임베딩 ──
-    let embeddings: number[][] = []
-    try {
-      embeddings = await generateEmbeddings(chunks)
-      log.push(`9.OpenAI OK (${embeddings.length}개 벡터)`)
-    } catch (e) {
-      return { success: false, error: `9.OpenAI 실패: ${e instanceof Error ? e.message : String(e)}. 로그: ${log.join(" → ")}` }
-    }
-
-    // ── 10단계: DB 저장 ──
-    try {
-      const rows = chunks.map((chunk, idx) => ({
-        portfolio_id: p.id,
-        chunk_index: idx,
-        chunk_text: chunk,
-        embedding: JSON.stringify(embeddings[idx]),
-        metadata: { companies: p.companies, documentType: p.document_type, fileName: p.file_name },
-      }))
-      const { error: insertError } = await supabase.from("portfolio_chunks").insert(rows)
-      if (insertError) {
-        return { success: false, error: `10.DB 저장 실패: ${insertError.message}. 로그: ${log.join(" → ")}` }
-      }
-      log.push("10.DB 저장 OK")
-    } catch (e) {
-      return { success: false, error: `10.DB 저장 에러: ${e instanceof Error ? e.message : String(e)}` }
-    }
-
-    // ── 성공 ──
+    // ★ 여기서 바로 반환 — OpenAI 호출 안 함
     return {
       success: true,
-      data: { total: totalCount, processed: 1, failed: 0, skipped: processedIds.length, remaining, errors: log }
+      data: {
+        total: count || 0,
+        processed: 0,
+        failed: 0,
+        skipped: processedIds.length,
+        remaining: (count || 0) - processedIds.length,
+        errors: [...log, "★ 진단모드: 5단계까지 성공. OpenAI 호출 전 중단."]
+      }
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    return { success: false, error: msg }
+    return {
+      success: false,
+      error: `진단 실패 (${log.join(" → ")}): ${error instanceof Error ? error.message : String(error)}`
+    }
   }
 }

@@ -835,8 +835,22 @@ export async function embedExistingPortfolios(force: boolean = false) {
       log.push("5.처리할 포트폴리오 없음")
     } else {
       const p = portfolios[0]
-      // 각 필드의 유무와 크기만 확인 (데이터 자체는 반환 안 함)
-      log.push(`5.포트폴리오 OK (${p.file_name}, text:${(p.content_text||"").length}자, summary:${(p.summary||"").length}자, strengths:${p.strengths?.length||0}개, tags:${p.tags?.length||0}개)`)
+      log.push(`5.포트폴리오 OK (${p.file_name})`)
+
+      // ── 5b. 텍스트 처리 (metadata fallback) ──
+      let text = p.content_text || ""
+      if (text.trim().length < 50) {
+        const parts: string[] = []
+        if (p.file_name) parts.push(`파일: ${p.file_name}`)
+        if (p.document_type) parts.push(`유형: ${p.document_type}`)
+        if (p.companies && Array.isArray(p.companies)) parts.push(`회사: ${p.companies.join(", ")}`)
+        if (p.summary) parts.push(`요약: ${p.summary}`)
+        if (p.strengths && Array.isArray(p.strengths)) parts.push(`강점: ${p.strengths.join(". ")}`)
+        if (p.weaknesses && Array.isArray(p.weaknesses)) parts.push(`약점: ${p.weaknesses.join(". ")}`)
+        if (p.tags && Array.isArray(p.tags)) parts.push(`키워드: ${p.tags.join(", ")}`)
+        text = parts.join("\n\n")
+      }
+      log.push(`5b.텍스트 ${text.length}자`)
     }
 
     // ── 6. OpenAI 테스트 ──

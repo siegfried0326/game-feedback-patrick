@@ -36,12 +36,12 @@ export default function AdminPage() {
   const [portfolioList, setPortfolioList] = useState<any[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isDeleting, setIsDeleting] = useState(false)
-  // 벡터 임베딩 상태
+  // 포트폴리오 검색 데이터 생성 상태
   const [isEmbedding, setIsEmbedding] = useState(false)
   const [embedResult, setEmbedResult] = useState<{
     total: number; processed: number; skipped: number; failed: number; remaining: number
   } | null>(null)
-  // 누적 처리 개수 (배치 반복 시 합산)
+  // 누적 처리 개수 (반복 처리 시 합산)
   const [totalProcessed, setTotalProcessed] = useState(0)
 
   useEffect(() => {
@@ -204,13 +204,12 @@ export default function AdminPage() {
   }
 
   // ============================
-  // 기존 포트폴리오 일괄 벡터 임베딩
-  // API 라우트로 3개씩 배치 처리 → 자동 반복
-  // (서버 액션 대신 API 사용 — Vercel 타임아웃 안정성)
+  // 기존 포트폴리오 검색 데이터 일괄 생성
+  // API로 3개씩 처리 → 자동 반복 (서버 안정성 위해)
   // ============================
   const handleEmbedAll = async (force: boolean = false) => {
     if (isEmbedding) return
-    if (force && !confirm("기존 임베딩을 모두 삭제하고 다시 생성합니다. 계속하시겠습니까?")) return
+    if (force && !confirm("기존 검색 데이터를 삭제하고 처음부터 다시 만듭니다. 계속하시겠습니까?")) return
 
     setIsEmbedding(true)
     setEmbedResult(null)
@@ -228,14 +227,24 @@ export default function AdminPage() {
           body: JSON.stringify({ force: currentForce }),
         })
 
-        const result = await res.json()
+        // 응답을 텍스트로 먼저 읽고, JSON 파싱 시도
+        // (서버가 HTML 에러 페이지를 반환하면 res.json()이 실패하므로)
+        const responseText = await res.text()
+        let result: { success: boolean; error?: string; data?: any }
+        try {
+          result = JSON.parse(responseText)
+        } catch {
+          // JSON이 아닌 응답 (서버 에러 페이지 등)
+          const preview = responseText.slice(0, 200).replace(/<[^>]*>/g, "")
+          result = { success: false, error: `서버 응답 오류 (${res.status}): ${preview}` }
+        }
 
         if (!result.success) {
           const errorMsg = result.error || "알 수 없는 오류"
           if (cumulativeProcessed > 0) {
             alert(`${cumulativeProcessed}개 처리 후 오류: ${errorMsg}`)
           } else {
-            alert("임베딩 실패: " + errorMsg)
+            alert("처리 실패: " + errorMsg)
           }
           break
         }
@@ -260,7 +269,7 @@ export default function AdminPage() {
         }
       }
     } catch (error) {
-      alert("임베딩 오류: " + (error instanceof Error ? error.message : "알 수 없는 오류"))
+      alert("처리 오류: " + (error instanceof Error ? error.message : "알 수 없는 오류"))
     }
 
     setIsEmbedding(false)
@@ -454,22 +463,23 @@ export default function AdminPage() {
         </Card>
 
         {/* ============================
-          벡터 임베딩 관리
-          기존 포트폴리오에 벡터를 생성하여 유사도 검색(벡터 서치) 활성화
+          포트폴리오 검색 데이터 생성
+          포트폴리오를 검색 가능하게 만들어서 "비슷한 합격 사례" 기능 활성화
         ============================ */}
         <Card className="bg-slate-900/80 border-[#1e3a5f] mt-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2 text-lg">
               <Database className="w-5 h-5 text-purple-400" />
-              벡터 서치 임베딩
+              유사 포트폴리오 검색 준비
             </CardTitle>
             <CardDescription className="text-slate-400">
-              기존 포트폴리오에 벡터를 생성합니다. 새로 업로드하는 파일은 자동으로 임베딩됩니다.
+              포트폴리오를 검색 가능하게 만듭니다. 이 작업을 해야 사용자 분석 시 &quot;비슷한 합격 사례&quot;를 보여줄 수 있습니다.
+              새로 올린 파일은 자동 처리됩니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-3">
-              {/* 신규만 임베딩 (이미 된 건 건너뜀) */}
+              {/* 아직 처리 안 된 것만 (이미 된 건 건너뜀) */}
               <Button
                 onClick={() => handleEmbedAll(false)}
                 disabled={isEmbedding}
@@ -478,28 +488,28 @@ export default function AdminPage() {
                 {isEmbedding ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    임베딩 생성 중... ({totalProcessed}개 완료)
+                    처리 중... ({totalProcessed}개 완료)
                   </>
                 ) : (
-                  "신규 임베딩 생성"
+                  "검색 데이터 만들기"
                 )}
               </Button>
-              {/* 전체 재생성 (기존 삭제 후 다시) */}
+              {/* 전체 다시 만들기 (기존 삭제 후 처음부터) */}
               <Button
                 onClick={() => handleEmbedAll(true)}
                 disabled={isEmbedding}
                 variant="outline"
                 className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
               >
-                전체 재생성
+                전체 다시 만들기
               </Button>
             </div>
 
-            {/* 임베딩 결과 표시 */}
+            {/* 처리 결과 표시 */}
             {embedResult && (
               <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                 <p className="text-purple-300 text-sm font-medium mb-2">
-                  {embedResult.remaining > 0 ? "임베딩 진행 중..." : "임베딩 완료!"}
+                  {embedResult.remaining > 0 ? "처리 중..." : "완료!"}
                 </p>
                 <div className="grid grid-cols-5 gap-3 text-center">
                   <div>
@@ -527,7 +537,7 @@ export default function AdminPage() {
             )}
 
             <p className="text-slate-500 text-xs mt-3">
-              * 포트폴리오 1개당 약 2초 소요. "신규 임베딩 생성"은 아직 안 된 것만 처리합니다.
+              * 포트폴리오 1개당 약 2초 걸립니다. 이미 처리된 건 건너뜁니다.
             </p>
           </CardContent>
         </Card>

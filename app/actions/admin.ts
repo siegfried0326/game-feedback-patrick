@@ -798,8 +798,8 @@ export async function reclassifyAllCompanies() {
  * 프론트에서 반복 호출하여 전체 완료.
  */
 export async function embedExistingPortfolios(force: boolean = false) {
-  // ★ 진단 5단계: 성공했던 6단계 + 텍스트처리/청킹 추가
-  // 목표: 전체필드 조회 + 메타데이터 조합 + 청크 분할이 문제인지 확인
+  // ★ 진단 6: 성공한 6단계와 완전히 동일 + 9개 필드 조회만 변경
+  // 텍스트 처리/청킹 없음. 필드 개수가 문제인지 확인
   const log: string[] = []
 
   try {
@@ -810,18 +810,18 @@ export async function embedExistingPortfolios(force: boolean = false) {
     // ── 2. API 키 ──
     log.push(`2.API키 ${process.env.OPENAI_API_KEY ? "OK" : "없음"}`)
 
-    // ── 3. 카운트 (순차) ──
+    // ── 3. 카운트 ──
     const { count, error: countErr } = await supabase.from("portfolios").select("id", { count: "exact", head: true })
     if (countErr) return { success: false, error: `3.카운트 실패: ${countErr.message}` }
     log.push(`3.카운트 OK (${count}개)`)
 
-    // ── 4. chunks 조회 (순차) ──
+    // ── 4. chunks 조회 ──
     const { data: chunkData, error: chunkErr } = await supabase.from("portfolio_chunks").select("portfolio_id")
     if (chunkErr) return { success: false, error: `4.chunks 실패: ${chunkErr.message}` }
     const processedIds = [...new Set((chunkData || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
     log.push(`4.chunks OK (${processedIds.length}개)`)
 
-    // ── 5. 포트폴리오 전체 필드 조회 ──
+    // ── 5. 포트폴리오 9개 필드 조회 (이전 성공 버전은 3개 필드) ──
     let query = supabase
       .from("portfolios")
       .select("id, file_name, content_text, summary, strengths, weaknesses, tags, companies, document_type")
@@ -832,39 +832,22 @@ export async function embedExistingPortfolios(force: boolean = false) {
     }
     const { data: portfolios } = await query
     if (!portfolios || portfolios.length === 0) {
-      return { success: true, data: { total: count || 0, processed: 0, failed: 0, skipped: processedIds.length, remaining: 0, errors: [...log, "완료"] } }
+      log.push("5.처리할 포트폴리오 없음")
+    } else {
+      const p = portfolios[0]
+      // 각 필드의 유무와 크기만 확인 (데이터 자체는 반환 안 함)
+      log.push(`5.포트폴리오 OK (${p.file_name}, text:${(p.content_text||"").length}자, summary:${(p.summary||"").length}자, strengths:${p.strengths?.length||0}개, tags:${p.tags?.length||0}개)`)
     }
-    const p = portfolios[0]
-    log.push(`5.포트폴리오 OK (${p.file_name})`)
 
-    // ── 6. 텍스트 확보 ──
-    let text = p.content_text || ""
-    if (text.trim().length < 50) {
-      const parts: string[] = []
-      if (p.file_name) parts.push(`파일: ${p.file_name}`)
-      if (p.document_type) parts.push(`문서유형: ${p.document_type}`)
-      if (p.companies?.length) parts.push(`회사: ${p.companies.join(", ")}`)
-      if (p.summary) parts.push(`요약: ${p.summary}`)
-      if (p.strengths?.length) parts.push(`강점: ${p.strengths.join(". ")}`)
-      if (p.weaknesses?.length) parts.push(`약점: ${p.weaknesses.join(". ")}`)
-      if (p.tags?.length) parts.push(`키워드: ${p.tags.join(", ")}`)
-      text = parts.join("\n\n")
-    }
-    log.push(`6.텍스트 OK (${text.length}자)`)
-
-    // ── 7. 청크 분할 ──
-    const chunks = chunkText(text).slice(0, 5)
-    log.push(`7.청크 OK (${chunks.length}개)`)
-
-    // ── 8. OpenAI 테스트 (짧은 문자열) ──
+    // ── 6. OpenAI 테스트 ──
     try {
       const testEmb = await generateEmbedding("테스트")
-      log.push(`8.OpenAI OK (${testEmb.length}차원)`)
+      log.push(`6.OpenAI OK (${testEmb.length}차원)`)
     } catch (e) {
-      log.push(`8.OpenAI 실패: ${e instanceof Error ? e.message : String(e)}`)
+      log.push(`6.OpenAI 실패: ${e instanceof Error ? e.message : String(e)}`)
     }
 
-    // ★ 여기서 반환 — 실제 임베딩/저장은 안 함
+    // ★ 반환
     return {
       success: true,
       data: {
@@ -873,7 +856,7 @@ export async function embedExistingPortfolios(force: boolean = false) {
         failed: 0,
         skipped: processedIds.length,
         remaining: (count || 0) - processedIds.length,
-        errors: [...log, "★ 진단: 8단계까지 성공 (텍스트+청크+OpenAI테스트)"]
+        errors: [...log, "★ 진단6: 9개필드 조회 테스트"]
       }
     }
   } catch (error) {

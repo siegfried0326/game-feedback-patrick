@@ -34,7 +34,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { v4 as uuidv4 } from "uuid"
 import { extractCompanyFromFileName } from "@/lib/company-parser"
 import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
-import { embedAndStorePortfolio, embedAllPortfolios } from "@/lib/vector-search"
+import { embedAndStorePortfolio, embedAllPortfolios, chunkText } from "@/lib/vector-search"
+import { generateEmbeddings } from "@/lib/openai-embedding"
 
 interface PortfolioInput {
   fileName: string
@@ -789,31 +790,118 @@ export async function reclassifyAllCompanies() {
  * 소요 시간: 포트폴리오 1개당 ~2초 (OpenAI API 호출 + DB 저장)
  */
 /**
- * 기존 포트폴리오 검색 데이터 생성 (1개씩 처리)
+ * 초경량 검색 데이터 생성 (1개씩, Vercel 10초 타임아웃 대응)
  *
- * Vercel 서버 액션 타임아웃(10초) 안에 끝나도록 1개만 처리.
+ * 기존 embedAllPortfolios를 쓰지 않고 직접 최소 쿼리로 처리.
+ * 네트워크 호출 최소화: Supabase 3회(병렬) + OpenAI 1회 + DB저장 1회 = 총 ~4초
+ *
  * 프론트에서 반복 호출하여 전체 완료.
  */
 export async function embedExistingPortfolios(force: boolean = false) {
   try {
-    // 보안: 관리자 인증 확인
-    await verifyAdmin()
+    const { supabase } = await verifyAdmin()
 
-    console.log(`[admin] 포트폴리오 검색 데이터 생성 시작 (force=${force})`)
-    // ★ 한 번에 1개만 처리 (Vercel 서버 액션 10초 타임아웃 대응)
-    const result = await embedAllPortfolios(force, 1)
+    if (!process.env.OPENAI_API_KEY) {
+      return { success: false, error: "OPENAI_API_KEY가 Vercel 환경변수에 없습니다." }
+    }
 
-    console.log(`[admin] 완료: 처리 ${result.processed}, 남은 ${result.remaining}개`)
+    // ── 1단계: 전체 수 + 이미 처리된 ID를 동시에 가져옴 (병렬) ──
+    const [countResult, chunkedResult] = await Promise.all([
+      supabase.from("portfolios").select("id", { count: "exact", head: true }),
+      supabase.from("portfolio_chunks").select("portfolio_id"),
+    ])
+
+    const totalCount = countResult.count || 0
+    const processedIds = [...new Set((chunkedResult.data || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
+
+    // ── 2단계: 처리 안 된 포트폴리오 1개 찾기 ──
+    let query = supabase
+      .from("portfolios")
+      .select("id, file_name, content_text, summary, strengths, weaknesses, tags, companies, document_type")
+      .order("created_at", { ascending: true })
+      .limit(1)
+
+    // 이미 처리된 포트폴리오 제외 (force 모드가 아닐 때)
+    if (!force && processedIds.length > 0) {
+      query = query.not("id", "in", `(${processedIds.join(",")})`)
+    }
+
+    const { data: portfolios } = await query
+
+    if (!portfolios || portfolios.length === 0) {
+      // 더 이상 처리할 포트폴리오 없음
+      return {
+        success: true,
+        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length, remaining: 0, errors: [] }
+      }
+    }
+
+    const portfolio = portfolios[0]
+    const remaining = Math.max(0, totalCount - processedIds.length - 1)
+
+    // ── 3단계: 텍스트 확보 (content_text 또는 메타데이터 조합) ──
+    let text = portfolio.content_text
+    if (!text || text.trim().length < 50) {
+      const parts: string[] = []
+      if (portfolio.file_name) parts.push(`파일: ${portfolio.file_name}`)
+      if (portfolio.document_type) parts.push(`문서유형: ${portfolio.document_type}`)
+      if (portfolio.companies?.length) parts.push(`회사: ${portfolio.companies.join(", ")}`)
+      if (portfolio.summary) parts.push(`요약: ${portfolio.summary}`)
+      if (portfolio.strengths?.length) parts.push(`강점: ${portfolio.strengths.join(". ")}`)
+      if (portfolio.weaknesses?.length) parts.push(`약점: ${portfolio.weaknesses.join(". ")}`)
+      if (portfolio.tags?.length) parts.push(`키워드: ${portfolio.tags.join(", ")}`)
+      text = parts.join("\n\n")
+    }
+
+    if (!text || text.trim().length < 30) {
+      return {
+        success: true,
+        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [`${portfolio.file_name}: 텍스트 부족`] }
+      }
+    }
+
+    // ── 4단계: 텍스트 → 청크 분할 (최대 20개 = OpenAI 1회 호출) ──
+    const chunks = chunkText(text).slice(0, 20)
+    if (chunks.length === 0) {
+      return {
+        success: true,
+        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [`${portfolio.file_name}: 텍스트 부족`] }
+      }
+    }
+
+    // ── 5단계: force 모드면 기존 청크 삭제 ──
+    if (force) {
+      await supabase.from("portfolio_chunks").delete().eq("portfolio_id", portfolio.id)
+    }
+
+    // ── 6단계: OpenAI 임베딩 생성 (1회 API 호출) ──
+    const embeddings = await generateEmbeddings(chunks)
+
+    // ── 7단계: DB에 저장 (1회 insert) ──
+    const rows = chunks.map((chunk, idx) => ({
+      portfolio_id: portfolio.id,
+      chunk_index: idx,
+      chunk_text: chunk,
+      embedding: JSON.stringify(embeddings[idx]),
+      metadata: {
+        companies: portfolio.companies,
+        documentType: portfolio.document_type,
+        fileName: portfolio.file_name,
+      },
+    }))
+
+    const { error: insertError } = await supabase.from("portfolio_chunks").insert(rows)
+
+    if (insertError) {
+      return {
+        success: true,
+        data: { total: totalCount, processed: 0, failed: 1, skipped: processedIds.length, remaining, errors: [`${portfolio.file_name}: DB 저장 실패 — ${insertError.message}`] }
+      }
+    }
+
     return {
       success: true,
-      data: {
-        total: result.total,
-        processed: result.processed,
-        skipped: result.skipped,
-        failed: result.failed,
-        remaining: result.remaining,
-        errors: result.errors.slice(0, 5),
-      }
+      data: { total: totalCount, processed: 1, failed: 0, skipped: processedIds.length, remaining, errors: [] }
     }
   } catch (error) {
     return {

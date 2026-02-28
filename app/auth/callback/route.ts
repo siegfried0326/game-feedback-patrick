@@ -2,15 +2,21 @@ import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import { ensureSubscription } from "@/app/actions/auth"
 
+// 보안: 오픈 리다이렉트 방지 — 내부 경로만 허용
+function sanitizeRedirect(url: string): string {
+  if (!url || !url.startsWith("/") || url.startsWith("//")) return "/"
+  return url
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const nextParam = searchParams.get("next") ?? "/"
+  const nextParam = sanitizeRedirect(searchParams.get("next") ?? "/")
 
   // OAuth 과정에서 next 파라미터가 사라질 수 있으므로 쿠키에서 백업값 확인
   const cookieHeader = request.headers.get("cookie") || ""
   const redirectCookieMatch = cookieHeader.match(/redirect_after_login=([^;]+)/)
-  const cookieRedirect = redirectCookieMatch ? decodeURIComponent(redirectCookieMatch[1]) : "/"
+  const cookieRedirect = sanitizeRedirect(redirectCookieMatch ? decodeURIComponent(redirectCookieMatch[1]) : "/")
 
   // next 파라미터 우선, 없으면 쿠키 값 사용
   const finalRedirect = nextParam !== "/" ? nextParam : cookieRedirect

@@ -135,6 +135,12 @@ export async function deleteFileFromStorage(filePath: string) {
     if (!user) {
       return { error: "로그인이 필요합니다." }
     }
+
+    // 보안: uploads/ 경로만 허용 (다른 경로 삭제 차단)
+    if (!filePath.startsWith("uploads/")) {
+      return { error: "잘못된 파일 경로입니다." }
+    }
+
     await supabase.storage.from("resumes").remove([filePath])
     return { success: true }
   } catch (error) {
@@ -177,7 +183,13 @@ function isInternalUrl(urlStr: string): boolean {
   try {
     const url = new URL(urlStr)
     const hostname = url.hostname.toLowerCase()
-    // 내부 IP / localhost 차단
+
+    // http/https만 허용
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return true
+    }
+
+    // 내부 IP / localhost / 클라우드 메타데이터 차단
     if (
       hostname === "localhost" ||
       hostname === "127.0.0.1" ||
@@ -185,9 +197,13 @@ function isInternalUrl(urlStr: string): boolean {
       hostname.startsWith("10.") ||
       hostname.startsWith("172.") ||
       hostname.startsWith("192.168.") ||
+      hostname.startsWith("169.254.") || // 클라우드 메타데이터 (AWS/GCP/Azure)
+      hostname.startsWith("fd") ||       // IPv6 private (fd00::/8)
       hostname.endsWith(".local") ||
+      hostname.endsWith(".internal") ||
       hostname === "[::1]" ||
-      url.protocol === "file:"
+      hostname === "metadata.google.internal" ||
+      hostname.includes("[::ffff:") // IPv4-mapped IPv6
     ) {
       return true
     }
@@ -204,6 +220,13 @@ export async function analyzeUrlDirect(input: {
   extractedText?: string // 대용량 PDF에서 클라이언트가 추출한 텍스트
   fileName?: string // extractedText 사용 시 파일명
 }) {
+  // 보안: 로그인 확인 (미인증 사용자의 API 호출 차단)
+  const supabaseAuth = await createClient()
+  const { data: { user: authUser } } = await supabaseAuth.auth.getUser()
+  if (!authUser) {
+    return { error: "로그인이 필요합니다." }
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
@@ -677,6 +700,13 @@ export async function analyzeDocumentDirect(input: {
   mimeType: string
   filePath: string
 }) {
+  // 보안: 로그인 확인 (미인증 사용자의 API 호출 차단)
+  const supabaseAuth = await createClient()
+  const { data: { user: authUser } } = await supabaseAuth.auth.getUser()
+  if (!authUser) {
+    return { error: "로그인이 필요합니다." }
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }

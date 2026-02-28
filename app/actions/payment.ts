@@ -1,92 +1,25 @@
 /**
- * TossPayments 결제 서버 액션 (228줄)
+ * TossPayments 결제 서버 액션
  *
  * 기능:
- * - issueBillingKey(): 카드 등록 후 빌링키 발급 (구독용)
- * - approveBillingPayment(): 빌링키로 자동결제 승인
  * - processSubscriptionPayment(): 구독 결제 전체 흐름 (빌링키→결제→DB 활성화)
- * - deleteBillingKey(): 구독 해지 시 빌링키 삭제
- * - confirmPayment(): 일반결제 확인 (컨설팅용)
  * - validateGamecanvasCode(): 게임캔버스 할인 코드 검증
+ *
+ * 보안:
+ * - TossPayments API 호출 헬퍼(issueBillingKey, approveBillingPayment, deleteBillingKey,
+ *   confirmPayment)는 lib/toss-api.ts로 분리하여 HTTP 엔드포인트 노출 방지
+ * - processSubscriptionPayment에서 로그인 체크 수행
  *
  * 요금:
  * - monthly: 17,900원/월 (게임캔버스 할인 시 5,900원)
  * - three_month: 49,000원/3개월
- *
- * 만료일 계산 로직:
- * - 테스터(tossreview@gmail.com): 항상 +1개월
- * - 기존 활성 구독: 만료일에서 연장
- * - 신규/만료: 현재부터 계산
  *
  * 환경변수: TOSS_SECRET_KEY, GAMECANVAS_DISCOUNT_CODES
  */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-
-const TOSS_API_BASE = "https://api.tosspayments.com/v1"
-
-function getAuthHeader() {
-  const key = process.env.TOSS_SECRET_KEY
-  if (!key) throw new Error("TOSS_SECRET_KEY 환경변수가 설정되지 않았습니다.")
-  const encoded = Buffer.from(`${key}:`).toString("base64")
-  return `Basic ${encoded}`
-}
-
-/**
- * 빌링키 발급 (카드 등록 후 authKey로 빌링키 발급)
- */
-export async function issueBillingKey(authKey: string, customerKey: string) {
-  const response = await fetch(`${TOSS_API_BASE}/billing/authorizations/issue`, {
-    method: "POST",
-    headers: {
-      Authorization: getAuthHeader(),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ authKey, customerKey }),
-  })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    return { error: data.message || "빌링키 발급에 실패했습니다." }
-  }
-
-  return { data }
-}
-
-/**
- * 빌링키로 자동결제 승인
- */
-export async function approveBillingPayment(
-  billingKey: string,
-  customerKey: string,
-  amount: number,
-  orderId: string,
-  orderName: string,
-) {
-  const response = await fetch(`${TOSS_API_BASE}/billing/${billingKey}`, {
-    method: "POST",
-    headers: {
-      Authorization: getAuthHeader(),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      customerKey,
-      amount,
-      orderId,
-      orderName,
-    }),
-  })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    return { error: data.message || "결제 승인에 실패했습니다." }
-  }
-
-  return { data }
-}
+import { issueBillingKey, approveBillingPayment } from "@/lib/toss-api"
 
 /**
  * 게임캔버스 할인 코드 검증
@@ -208,43 +141,5 @@ export async function processSubscriptionPayment(
   return { success: true, paymentKey: paymentResult.data.paymentKey }
 }
 
-/**
- * 빌링키 삭제 (구독 해지 시)
- */
-export async function deleteBillingKey(billingKey: string) {
-  const response = await fetch(`${TOSS_API_BASE}/billing/${billingKey}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: getAuthHeader(),
-    },
-  })
-
-  if (!response.ok) {
-    const data = await response.json()
-    return { error: data.message || "빌링키 삭제에 실패했습니다." }
-  }
-
-  return { success: true }
-}
-
-/**
- * 일반결제 확인 (컨설팅 결제용)
- */
-export async function confirmPayment(paymentKey: string, orderId: string, amount: number) {
-  const response = await fetch(`${TOSS_API_BASE}/payments/confirm`, {
-    method: "POST",
-    headers: {
-      Authorization: getAuthHeader(),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ paymentKey, orderId, amount }),
-  })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    return { error: data.message || "결제 확인에 실패했습니다." }
-  }
-
-  return { data }
-}
+// 보안: issueBillingKey, approveBillingPayment, deleteBillingKey, confirmPayment는
+// lib/toss-api.ts로 이동하여 "use server" 파일의 HTTP 엔드포인트 노출 방지

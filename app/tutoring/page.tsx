@@ -108,8 +108,8 @@ function TutoringContent() {
         return
       }
 
-      // 주문 생성
-      const orderResult = await createTutoringOrder(selectedPackage, pkg.price)
+      // 주문 생성 (금액은 서버에서 결정)
+      const orderResult = await createTutoringOrder(selectedPackage)
       if (orderResult.error) {
         setError(orderResult.error)
         setLoading(false)
@@ -122,7 +122,7 @@ function TutoringContent() {
 
       await payment.requestPayment({
         method: "CARD",
-        amount: { currency: "KRW", value: pkg.price },
+        amount: { currency: "KRW", value: orderResult.amount! },
         orderId: orderResult.orderId!,
         orderName: pkg.name,
         successUrl: `${window.location.origin}/payment/tutoring/success`,

@@ -16,7 +16,14 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { confirmPayment } from "./payment"
+import { confirmPayment } from "@/lib/toss-api"
+
+// 보안: 서버에서 결제 금액 결정 (클라이언트가 보낸 금액을 신뢰하지 않음)
+const TUTORING_PRICES: Record<string, number> = {
+  tutoring_4: 480000,      // 1:1 과외 4회
+  tutoring_12: 1296000,    // 1:1 과외 12회
+  group_tutoring: 360000,  // 그룹 과외
+}
 
 /**
  * 컨설팅 접근 권한 확인 (로그인만 체크)
@@ -33,11 +40,15 @@ export async function checkTutoringAccess() {
 /**
  * 컨설팅 주문 생성
  */
-export async function createTutoringOrder(packageType: string, amount: number) {
+export async function createTutoringOrder(packageType: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: "로그인이 필요합니다." }
+
+  // 보안: 서버에서 금액 결정 (클라이언트 금액 무시)
+  const amount = TUTORING_PRICES[packageType]
+  if (!amount) return { error: "유효하지 않은 상품입니다." }
 
   const orderId = `TUT_${packageType}_${user.id.slice(0, 8)}_${Date.now()}`
 
@@ -53,7 +64,7 @@ export async function createTutoringOrder(packageType: string, amount: number) {
     .single()
 
   if (error) return { error: error.message }
-  return { data, orderId }
+  return { data, orderId, amount }
 }
 
 /**

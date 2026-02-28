@@ -39,6 +39,20 @@ interface PortfolioInput {
   documentType: string
 }
 
+// 보안: 관리자 인증 확인 헬퍼 (모든 관리자 함수에서 사용)
+async function verifyAdmin() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error("로그인이 필요합니다.")
+  }
+  const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean)
+  if (!adminEmails.includes(user.email?.toLowerCase() || "")) {
+    throw new Error("관리자 권한이 필요합니다.")
+  }
+  return { supabase, user }
+}
+
 // 관리자용: Supabase Storage에 파일 업로드
 export async function uploadAdminFile(formData: FormData) {
   try {
@@ -113,6 +127,9 @@ export async function uploadAdminFile(formData: FormData) {
 // 포트폴리오 분석 및 저장 (inline_data 사용 - 파일시스템 불필요)
 export async function analyzeAndSavePortfolio(input: PortfolioInput) {
   try {
+    // 보안: 관리자 인증 확인
+    await verifyAdmin()
+
     // 파일명에서 회사명 직접 추출 (폴백)
     if (input.companies.length === 0) {
       const fileName = input.fileName.normalize('NFC')
@@ -474,7 +491,8 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
 // 포트폴리오 통계 조회
 export async function getPortfolioStats() {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { data: companyData, error } = await supabase
       .from("portfolios")
@@ -511,7 +529,8 @@ export async function getPortfolioStats() {
 // 회사별 평균 점수 조회
 export async function getCompanyAverages(company: string) {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { data: portfolioData, error } = await supabase
       .from("portfolios")
@@ -549,7 +568,8 @@ export async function getCompanyAverages(company: string) {
 // 전체 포트폴리오 데이터 조회
 export async function getAllPortfoliosForComparison() {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { data: portfolioData, error } = await supabase
       .from("portfolios")
@@ -570,7 +590,8 @@ export async function getAllPortfoliosForComparison() {
 // 학습된 포트폴리오 목록 조회
 export async function getPortfolioList() {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { data: portfolioList, error } = await supabase
       .from("portfolios")
@@ -591,7 +612,8 @@ export async function getPortfolioList() {
 // 포트폴리오 삭제
 export async function deletePortfolio(id: string) {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { error } = await supabase
       .from("portfolios")
@@ -612,7 +634,8 @@ export async function deletePortfolio(id: string) {
 // 포트폴리오 일괄 삭제
 export async function deleteMultiplePortfolios(ids: string[]) {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { error } = await supabase
       .from("portfolios")
@@ -633,7 +656,8 @@ export async function deleteMultiplePortfolios(ids: string[]) {
 // 회사별 학습 데이터 통계 (실제 데이터에서 동적으로 추출)
 export async function getCompanyStats() {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     // 전체 포트폴리오 가져오기
     const { data: portfolios, error } = await supabase
@@ -671,7 +695,8 @@ export async function getCompanyStats() {
 // 전체 포트폴리오 회사 재분류 (파일명 기준 — 모든 회사 대상)
 export async function reclassifyAllCompanies() {
   try {
-    const supabase = await createClient()
+    // 보안: 관리자 인증 확인
+    const { supabase } = await verifyAdmin()
 
     const { data: portfolios, error } = await supabase
       .from("portfolios")

@@ -25,7 +25,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { deleteBillingKey } from "./payment"
+import { deleteBillingKey } from "@/lib/toss-api"
 
 export async function getSubscription() {
   const supabase = await createClient()

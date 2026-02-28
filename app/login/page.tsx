@@ -14,9 +14,15 @@ import Link from "next/link"
 import { FileText, Mail, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
+// 보안: 오픈 리다이렉트 방지 — 내부 경로만 허용
+function sanitizeRedirect(url: string): string {
+  if (!url || !url.startsWith("/") || url.startsWith("//")) return "/"
+  return url
+}
+
 function LoginContent() {
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get("redirect") || "/"
+  const redirectTo = sanitizeRedirect(searchParams.get("redirect") || "/")
   const error = searchParams.get("error")
 
   // 이메일 로그인 상태

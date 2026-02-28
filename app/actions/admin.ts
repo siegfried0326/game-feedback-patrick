@@ -851,6 +851,10 @@ export async function embedExistingPortfolios(force: boolean = false) {
         text = parts.join("\n\n")
       }
       log.push(`5b.텍스트 ${text.length}자`)
+
+      // ── 5c. 청크 분할 ──
+      const chunks = chunkText(text).slice(0, 5)
+      log.push(`5c.청크 ${chunks.length}개`)
     }
 
     // ── 6. OpenAI 테스트 ──

@@ -1,3 +1,11 @@
+/**
+ * 구독 결제 페이지 (261줄)
+ *
+ * TossPayments 빌링 위젯으로 카드 등록 → 자동결제.
+ * plan 쿼리 파라미터로 월/3개월 플랜 구분.
+ * 게임캔버스 할인 코드 입력 지원 (monthly 플랜만).
+ * 라우트: /payment/billing?plan=monthly|three_month
+ */
 "use client"
 
 import { Suspense, useState } from "react"

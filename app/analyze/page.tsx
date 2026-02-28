@@ -1,3 +1,10 @@
+/**
+ * 분석 페이지 — AnalyzeDashboard 래퍼 (22줄)
+ *
+ * AuthAnalyzeHeader(인증 헤더) + AnalyzeDashboard(분석 대시보드) 조합.
+ * 5분 타임아웃 설정 (대용량 파일 처리).
+ * 라우트: /analyze (로그인 필수)
+ */
 import { Suspense } from "react"
 import { AnalyzeDashboard } from "@/components/analyze-dashboard"
 import { AuthAnalyzeHeader } from "@/components/auth-analyze-header"

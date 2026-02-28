@@ -1,3 +1,25 @@
+/**
+ * TossPayments 결제 서버 액션 (228줄)
+ *
+ * 기능:
+ * - issueBillingKey(): 카드 등록 후 빌링키 발급 (구독용)
+ * - approveBillingPayment(): 빌링키로 자동결제 승인
+ * - processSubscriptionPayment(): 구독 결제 전체 흐름 (빌링키→결제→DB 활성화)
+ * - deleteBillingKey(): 구독 해지 시 빌링키 삭제
+ * - confirmPayment(): 일반결제 확인 (컨설팅용)
+ * - validateGamecanvasCode(): 게임캔버스 할인 코드 검증
+ *
+ * 요금:
+ * - monthly: 17,900원/월 (게임캔버스 할인 시 5,900원)
+ * - three_month: 49,000원/3개월
+ *
+ * 만료일 계산 로직:
+ * - 테스터(tossreview@gmail.com): 항상 +1개월
+ * - 기존 활성 구독: 만료일에서 연장
+ * - 신규/만료: 현재부터 계산
+ *
+ * 환경변수: TOSS_SECRET_KEY, GAMECANVAS_DISCOUNT_CODES
+ */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"

@@ -1,3 +1,10 @@
+/**
+ * 컨설팅 결제 성공 페이지 (96줄)
+ *
+ * TossPayments 일반결제 후 리다이렉트.
+ * paymentKey로 결제 확인 → DB 주문 상태 갱신 → 1개월 구독 자동 부여.
+ * 라우트: /payment/tutoring/success?paymentKey=...&orderId=...&amount=...
+ */
 "use client"
 
 import { Suspense, useEffect, useState } from "react"

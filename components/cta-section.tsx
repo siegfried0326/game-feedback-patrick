@@ -1,3 +1,9 @@
+/**
+ * CTA(Call-to-Action) 섹션 — 랜딩 페이지 하단 (43줄)
+ *
+ * "지금 바로 시작하세요" + 분석 시작/카카오톡 문의 버튼.
+ * 사용: app/(landing)/page.tsx
+ */
 import { ArrowRight, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"

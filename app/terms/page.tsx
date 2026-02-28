@@ -1,3 +1,7 @@
+/**
+ * 이용약관 페이지 (188줄)
+ * 라우트: /terms (공개)
+ */
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 

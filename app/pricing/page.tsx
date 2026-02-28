@@ -1,3 +1,11 @@
+/**
+ * 요금제 상세 페이지 (340줄)
+ *
+ * 전체 요금제 비교 (무료/월/3개월/컨설팅).
+ * PricingSection 컴포넌트와 유사하나 독립 페이지로 더 상세한 정보 포함.
+ * "왜 유료인가요?" 섹션 + 환불 정책 링크.
+ * 라우트: /pricing (공개)
+ */
 import Link from "next/link"
 import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap, GraduationCap, BookOpen, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"

@@ -1,3 +1,12 @@
+/**
+ * 왜 디자이닛인가 섹션 — 랜딩 페이지 (239줄)
+ *
+ * 3가지 핵심 차별점 + 미리보기 슬라이드:
+ * 1. 학습 데이터 기반 → 미리보기: 종합 점수, 합격자 비교, 맞춤 피드백
+ * 2. 정량적 점수 → 자동 슬라이드 전환 (3초)
+ * 3. 합격자 비교 → 분석 시작 CTA 버튼
+ * 사용: app/(landing)/page.tsx
+ */
 "use client"
 
 import { useRef, useState, useEffect } from "react"

@@ -1,3 +1,24 @@
+/**
+ * 분석 대시보드 — 핵심 페이지 컴포넌트 (1387줄)
+ *
+ * 기능:
+ * - 파일 업로드 (드래그&드롭, PDF/DOCX/XLSX/CSV/PPTX, 200MB 제한)
+ * - URL 직접 분석 (크롤링 → AI 분석)
+ * - 파일 크기별 3단계 처리: <30MB 직접업로드, 30~100MB 압축, 100MB+ 텍스트추출
+ * - Claude AI 분석 (15개 카테고리 점수 + 강점/약점 + 랭킹 + 가독성 + 레이아웃)
+ * - 프로젝트 선택/생성 → 결과 자동 저장
+ * - 멀티파일 탭 전환, 분석 진행률 표시, 로딩 메시지 애니메이션
+ *
+ * 주요 흐름:
+ * 1. 프로젝트 선택 → 파일 업로드/URL 입력
+ * 2. 구독 체크 (checkBeforeAnalysis)
+ * 3. 파일 크기별 분기 → 서버 업로드 or 클라이언트 압축 or 텍스트 추출
+ * 4. AI 분석 (analyzeDocumentDirect / analyzeUrlDirect)
+ * 5. 결과 렌더링 (ScoreCard, RadarChart, FeedbackCards, DesignScores 등)
+ * 6. saveAnalysisHistory로 DB 저장
+ *
+ * 의존: analyze actions, pdf-extract, pdf-compress, subscription actions
+ */
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"

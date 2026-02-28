@@ -1,3 +1,10 @@
+/**
+ * 이용 방법 섹션 — 랜딩 페이지 (80줄)
+ *
+ * 4단계 이용 안내: 프로젝트 생성 → 파일 업로드 → AI 분석 → 이력 비교.
+ * 각 단계별 아이콘 + 제목 + 설명.
+ * 사용: app/(landing)/page.tsx
+ */
 import { Upload, Zap, BarChart3, FolderKanban } from "lucide-react"
 
 const steps = [

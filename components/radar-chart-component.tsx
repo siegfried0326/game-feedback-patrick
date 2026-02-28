@@ -1,3 +1,11 @@
+/**
+ * 레이더 차트 — 기본 5개 카테고리 (66줄)
+ *
+ * 논리력/구체성/가독성/기술이해/창의성 5개 기본 카테고리를
+ * 오각형 레이더 차트로 시각화.
+ * 사용: analyze-dashboard.tsx 결과 화면
+ * 의존: recharts (RadarChart, PolarGrid)
+ */
 "use client"
 
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from "recharts"

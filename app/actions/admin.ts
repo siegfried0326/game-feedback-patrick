@@ -1,3 +1,26 @@
+/**
+ * 관리자 학습 데이터 관리 서버 액션 (694줄)
+ *
+ * 합격자 포트폴리오를 업로드/분석/저장하여 사용자 분석 시 비교 기준으로 활용.
+ *
+ * 핵심 기능:
+ * - uploadAdminFile(): Supabase Storage에 파일 업로드 (500MB 제한)
+ * - analyzeAndSavePortfolio(): Gemini 2.0 Flash AI 분석 → portfolios 테이블 저장
+ *   - Excel/CSV: 텍스트 변환 후 분석
+ *   - 15MB 미만: inline_data (base64)
+ *   - 15MB 이상: Gemini File API 업로드 → 폴링 → 분석 → 파일 삭제
+ * - getPortfolioStats/getCompanyStats: 통계 조회
+ * - deletePortfolio/deleteMultiplePortfolios: 삭제
+ * - reclassifyAllCompanies: 파일명 기준 회사명 일괄 재분류
+ *
+ * 프롬프트:
+ * - portfolioPrompt: PDF/이미지용 (문서 구조, 강점 패턴, 수치/데이터 분석)
+ * - dataTablePrompt: Excel/CSV용 (어트리뷰트 설계, 밸런스, 확장성 분석)
+ *
+ * 보안: 모든 함수에서 관리자 이메일 이중 확인 (미들웨어 + 서버 액션)
+ *
+ * 환경변수: GOOGLE_GENERATIVE_AI_API_KEY, ADMIN_EMAILS
+ */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"

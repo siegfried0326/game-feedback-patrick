@@ -1,3 +1,10 @@
+/**
+ * AI 비교 섹션 — 랜딩 페이지 (235줄)
+ *
+ * "일반 AI vs 디자이닛" 비교 표 + 연도별 학습 데이터 시각화.
+ * 일반 AI의 한계(추상적, 기준 없음 등)와 디자이닛의 장점(학습 데이터 기반, 정량 분석 등) 대비.
+ * 사용: app/(landing)/page.tsx
+ */
 "use client"
 
 import { Brain, Database, FileWarning, CheckCircle2, XCircle, ArrowDown, Sparkles, TrendingUp } from "lucide-react"

@@ -1,3 +1,18 @@
+/**
+ * 컨설팅(과외) 결제 서버 액션 (108줄)
+ *
+ * 기능:
+ * - checkTutoringAccess(): 접근 권한 확인 (로그인만 체크)
+ * - createTutoringOrder(): 주문 생성 (tutoring_orders 테이블)
+ * - confirmTutoringPayment(): 결제 확인 + 구독 자동 부여
+ *
+ * 결제 흐름:
+ * 1. createTutoringOrder → orderId 생성
+ * 2. 클라이언트에서 TossPayments 일반결제 위젯
+ * 3. confirmTutoringPayment → 금액 재확인 → 결제 승인 → 1개월 tutoring 구독 부여
+ *
+ * 보안: 서버에서 DB의 주문 금액을 재확인 (클라이언트 값 신뢰하지 않음)
+ */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"

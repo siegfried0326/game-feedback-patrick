@@ -1,6 +1,21 @@
+/**
+ * Next.js 미들웨어 — 모든 요청에서 실행
+ *
+ * 역할:
+ * 1. Supabase 세션 갱신 (토큰 만료 임박 시 자동 refresh)
+ * 2. 라우트 보호:
+ *    - /mypage: 로그인 필수 → 미인증 시 /login?redirect=/mypage
+ *    - /admin/*: 관리자 전용 → 비관리자는 홈으로
+ *    - /login: 이미 로그인 시 홈으로
+ *
+ * 쿠키 설정: 30일 세션, SameSite=lax (OAuth 리다이렉트 호환)
+ *
+ * 참고: ADMIN_EMAILS를 직접 파싱하고 있으나 lib/admin.ts에도 동일 로직 존재 (통합 필요)
+ */
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// 관리자 이메일 — 환경변수에서 쉼표 구분 파싱
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean)
 
 export async function middleware(request: NextRequest) {

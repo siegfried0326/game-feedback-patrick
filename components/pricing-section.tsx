@@ -1,3 +1,11 @@
+/**
+ * 요금제 섹션 — 랜딩 페이지용 (280줄)
+ *
+ * 4가지 플랜 카드: 무료 체험, 월 구독, 3개월 패스 + 1:1 컨설팅.
+ * 각 플랜별 가격/기능 목록 + "시작하기" 버튼.
+ * 인기 플랜(월 구독) 강조 표시, 컨설팅은 4회/12회/그룹 3가지.
+ * 사용: app/(landing)/page.tsx
+ */
 import Link from "next/link"
 import { Check, Sparkles, GraduationCap, BookOpen, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"

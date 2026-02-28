@@ -1,3 +1,9 @@
+/**
+ * 사이트 푸터 (55줄)
+ *
+ * 로고, 서비스명, 이용약관/개인정보처리방침 링크, 카카오톡 문의 링크.
+ * 사용: 랜딩 페이지 + 분석 페이지 레이아웃
+ */
 import Link from "next/link"
 import { FileText } from "lucide-react"
 

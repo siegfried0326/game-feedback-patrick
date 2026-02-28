@@ -1,3 +1,10 @@
+/**
+ * 마케팅 구분선 — 섹션 간 강조 문구 (28줄)
+ *
+ * 랜딩 페이지 섹션 사이에 배치되는 한 줄 강조 문구.
+ * accent 색상 지정 가능 (blue/red/white).
+ * 사용: app/(landing)/page.tsx
+ */
 interface MarketingBreakProps {
   headline: string
   sub?: string

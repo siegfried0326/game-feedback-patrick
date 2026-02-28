@@ -1,3 +1,10 @@
+/**
+ * 구독 결제 실패 페이지 (44줄)
+ *
+ * TossPayments 결제 실패/취소 시 리다이렉트.
+ * 에러 코드/메시지 표시 + 다시 시도/홈으로 버튼.
+ * 라우트: /payment/billing/fail?code=...&message=...
+ */
 "use client"
 
 import { Suspense } from "react"

@@ -1,3 +1,15 @@
+/**
+ * 관리자 대시보드 — 학습 데이터 관리 (465줄)
+ *
+ * 기능:
+ * - 포트폴리오 PDF 업로드 → Supabase Storage 저장
+ * - Gemini AI 분석 실행 (회사/데이터 테이블 생성)
+ * - 기존 포트폴리오 목록 조회/삭제
+ * - 분석 상태 실시간 표시 (분석중/완료/실패)
+ *
+ * 접근: 관리자 이메일만 허용 (middleware + 서버 액션 이중 체크)
+ * 라우트: /admin
+ */
 "use client"
 
 import { useState, useCallback, useEffect } from "react"

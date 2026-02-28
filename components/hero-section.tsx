@@ -1,3 +1,10 @@
+/**
+ * 히어로 섹션 — 랜딩 페이지 최상단 (136줄)
+ *
+ * "첫 1회 무료 분석" 배지 + 메인 카피 + CTA 버튼.
+ * 3가지 특징 카드: AI 분석, 학습 데이터, 비교 분석.
+ * 사용: app/(landing)/page.tsx
+ */
 "use client"
 
 import React from "react"

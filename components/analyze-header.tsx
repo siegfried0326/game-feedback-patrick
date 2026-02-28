@@ -1,3 +1,10 @@
+/**
+ * 분석 페이지 전용 헤더 (68줄)
+ *
+ * 분석/마이페이지에서 사용하는 헤더.
+ * 랜딩 헤더(header.tsx)와 유사하나 관리자 링크 없음, 구독 모달 포함.
+ * 사용: AuthAnalyzeHeader에서 유저 정보 주입 후 렌더링.
+ */
 "use client"
 
 import Link from "next/link"

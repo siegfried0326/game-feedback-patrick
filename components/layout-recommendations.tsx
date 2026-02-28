@@ -1,3 +1,11 @@
+/**
+ * 레이아웃 개선 제안 (122줄)
+ *
+ * AI가 분석한 문서 레이아웃 개선점을 섹션별로 표시.
+ * 각 섹션: 현재 상태(before) → 개선안(after) 형태.
+ * PDF/이미지 업로드 시에만 평가됨 (텍스트 추출 모드에서는 비활성).
+ * 사용: analyze-dashboard.tsx 결과 화면
+ */
 "use client"
 
 import { useState } from "react"

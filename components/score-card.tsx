@@ -1,3 +1,11 @@
+/**
+ * 종합 점수 카드 (113줄)
+ *
+ * 분석 결과의 종합 점수(100점 만점)를 큰 숫자로 표시.
+ * 학습 데이터 기반 랭킹 정보: 상위 N%, 총 N명 중 순위.
+ * 점수 구간별 색상: 80+ 초록, 60+ 노랑, 그 외 빨강.
+ * 사용: analyze-dashboard.tsx 결과 화면
+ */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

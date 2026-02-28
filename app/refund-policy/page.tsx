@@ -1,3 +1,7 @@
+/**
+ * 환불정책 페이지 (224줄)
+ * 라우트: /refund-policy (공개)
+ */
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 

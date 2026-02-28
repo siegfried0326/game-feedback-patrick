@@ -1,3 +1,27 @@
+/**
+ * 구독/프로젝트/분석이력 관리 서버 액션 (369줄)
+ *
+ * 구독 관련:
+ * - getSubscription(): 구독 조회 (없으면 free 자동 생성)
+ * - cancelSubscription(): 구독 해지 (빌링키 삭제 + status=cancelled)
+ * - checkAnalysisAllowance(): 분석 가능 여부 (free: 1회, 유료: 무제한)
+ * - checkProjectAllowance(): 프로젝트 생성 가능 여부 (free: 1개, 유료: 무제한)
+ *
+ * 프로젝트 CRUD:
+ * - getProjects(): 목록 조회 (분석 통계 포함)
+ * - createProject(): 생성 (할당량 체크)
+ * - deleteProject(): 삭제 (하위 분석 먼저 삭제)
+ * - renameProject(): 이름 변경
+ *
+ * 분석 이력:
+ * - getProjectAnalyses(): 프로젝트별 분석 목록
+ * - getAnalysisHistory(): 전체 분석 이력
+ * - getAnalysisDetail(): 분석 상세
+ * - saveAnalysisHistory(): 분석 결과 저장
+ * - deleteAnalysis(): 분석 삭제
+ *
+ * TODO: 구독/프로젝트/이력을 별도 파일로 분리 필요 (TODO_BACKLOG.md 참고)
+ */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"

@@ -1,3 +1,9 @@
+/**
+ * 루트 레이아웃 (53줄)
+ *
+ * Next.js 앱 최상위 레이아웃.
+ * Geist 폰트, Vercel Analytics, ThemeProvider(다크모드), 메타데이터.
+ */
 import React from "react"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'

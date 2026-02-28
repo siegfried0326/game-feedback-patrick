@@ -1,3 +1,29 @@
+/**
+ * 사용자 포트폴리오 분석 서버 액션 (1128줄)
+ *
+ * 핵심 함수:
+ * - checkBeforeAnalysis(): 분석 전 인증 + 구독 확인
+ * - uploadFileToStorage(): Supabase Storage에 파일 업로드 (1GB 제한)
+ * - deleteFileFromStorage(): Storage 파일 삭제
+ * - getModelForUser(): 구독 플랜별 Claude 모델 선택 (Sonnet/Opus)
+ * - analyzeUrlDirect(): URL 크롤링 또는 추출된 텍스트 → Claude 분석
+ * - analyzeDocumentDirect(): 업로드된 파일 → Claude 분석
+ *
+ * 분석 파이프라인:
+ * 1. portfolios 테이블에서 학습 데이터 로드 (상위 50개)
+ * 2. 통계 계산 (전체 평균, 회사별 평균, 태그 빈도)
+ * 3. 샘플 12개 선택 (회사별 균형 샘플링)
+ * 4. 시스템 프롬프트 구성 (통계 + 샘플 + 평가 기준)
+ * 5. Claude API 호출 (15개 카테고리 + 가독성 + 레이아웃 + 회사별 비교)
+ * 6. JSON 파싱 + 랭킹 계산 (187명 기준)
+ *
+ * URL 분석: 직접 fetch → HTML 텍스트 추출 → SPA는 Jina AI Reader 폴백
+ * SSRF 방어: isInternalUrl()로 내부 네트워크 URL 차단
+ *
+ * TODO: analyzeUrlDirect와 analyzeDocumentDirect의 중복 로직 추출 필요
+ *
+ * 환경변수: ANTHROPIC_API_KEY, JINA_API_KEY
+ */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"

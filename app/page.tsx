@@ -1,3 +1,10 @@
+/**
+ * 랜딩 페이지 — 메인 홈 (54줄)
+ *
+ * 구성 순서: 헤더 → 히어로 → 왜 디자이닛 → AI 비교 → 서비스 소개
+ * → 이용 방법 → 요금제 → FAQ → CTA → 푸터.
+ * 라우트: / (공개)
+ */
 import { AuthHeader } from "@/components/auth-header"
 import { HeroSection } from "@/components/hero-section"
 import { WhyChooseUs } from "@/components/why-choose-us"

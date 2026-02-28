@@ -1,3 +1,11 @@
+/**
+ * 컨설팅(과외) 결제 페이지 (273줄)
+ *
+ * TossPayments 일반결제 위젯으로 컨설팅 상품 결제.
+ * package 쿼리 파라미터로 패키지 구분: tutoring_4, tutoring_12, group_tutoring.
+ * 결제 전 주문 생성 (tutoring_orders) → 결제 → success 페이지로 리다이렉트.
+ * 라우트: /tutoring?package=tutoring_4|tutoring_12|group_tutoring
+ */
 "use client"
 
 import { Suspense, useEffect, useState } from "react"

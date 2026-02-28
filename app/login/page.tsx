@@ -1,3 +1,10 @@
+/**
+ * 로그인 페이지 (210줄)
+ *
+ * Google OAuth 로그인 버튼 + 서비스 소개 문구.
+ * 로그인 성공 시 redirectTo 파라미터로 원래 페이지로 복귀.
+ * 라우트: /login
+ */
 "use client"
 
 import { useState } from "react"

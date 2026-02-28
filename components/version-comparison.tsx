@@ -1,3 +1,15 @@
+/**
+ * 버전 비교 차트 (250줄)
+ *
+ * 같은 프로젝트에서 여러 번 분석한 결과를 꺾은선 그래프로 비교.
+ * - 종합 점수 추이 (LineChart)
+ * - 카테고리별 점수 변화
+ * - 최근 분석 대비 증감 표시 (TrendingUp/Down)
+ * - 2개 이상 분석이 있을 때만 표시
+ *
+ * 사용: 마이페이지 프로젝트 상세 → 분석 이력 비교
+ * 의존: recharts (LineChart, ResponsiveContainer)
+ */
 "use client"
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"

@@ -1,3 +1,15 @@
+/**
+ * 마이페이지 (987줄)
+ *
+ * 기능:
+ * - 구독 상태 표시 (플랜, 만료일, 해지 버튼)
+ * - 프로젝트 목록 (생성/삭제/이름변경)
+ * - 프로젝트별 분석 이력 (점수, 날짜, 삭제)
+ * - 분석 결과 상세 보기 (ScoreCard, RadarChart, FeedbackCards 등)
+ * - 버전 비교 차트 (VersionComparison)
+ *
+ * 라우트: /mypage (로그인 필수)
+ */
 "use client"
 
 import { useEffect, useState, useMemo } from "react"

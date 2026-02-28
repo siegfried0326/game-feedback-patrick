@@ -1,3 +1,11 @@
+/**
+ * 구독 결제 성공 페이지 (105줄)
+ *
+ * TossPayments 결제 후 리다이렉트.
+ * authKey로 빌링키 발급 → 첫 결제 → DB 구독 활성화.
+ * 성공/실패 상태 표시 후 분석 페이지로 이동.
+ * 라우트: /payment/billing/success?authKey=...&customerKey=...
+ */
 "use client"
 
 import { Suspense, useEffect, useState } from "react"

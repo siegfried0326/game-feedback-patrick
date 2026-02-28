@@ -1,3 +1,10 @@
+/**
+ * 서비스 소개 섹션 — 랜딩 페이지 (153줄)
+ *
+ * 5가지 핵심 기능 소개: 15개 영역 분석, 회사별 비교, 맞춤 피드백, 빠른 분석, 이력 관리.
+ * 미리보기 이미지 포함.
+ * 사용: app/(landing)/page.tsx
+ */
 import { FileSearch, BarChart3, Target, Zap, History } from "lucide-react"
 import Image from "next/image"
 

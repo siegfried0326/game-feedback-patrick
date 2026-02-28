@@ -1,3 +1,10 @@
+/**
+ * 강점/약점 피드백 카드 (61줄)
+ *
+ * AI 분석 결과의 strengths/weaknesses 배열을
+ * 초록(강점)/빨강(약점) 카드로 나란히 표시.
+ * 사용: analyze-dashboard.tsx 결과 화면
+ */
 import { ThumbsUp, AlertTriangle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 

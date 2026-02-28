@@ -1,3 +1,15 @@
+/**
+ * 학습 데이터 상세 관리 페이지 (823줄)
+ *
+ * 기능:
+ * - 포트폴리오 업로드 (드래그&드롭, PDF만)
+ * - Gemini AI 분석: 회사 파싱, 데이터 테이블 추출, JSON 변환
+ * - 분석 결과 미리보기 (회사별, 연도별 통계)
+ * - portfolios 테이블 CRUD
+ *
+ * 접근: 관리자 전용
+ * 라우트: /admin/training
+ */
 "use client"
 
 import { useState, useCallback, useEffect } from "react"

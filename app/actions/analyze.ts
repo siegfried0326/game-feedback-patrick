@@ -29,7 +29,7 @@
 import { createClient } from "@/lib/supabase/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
-import { checkAnalysisAllowance, saveAnalysisHistory } from "./subscription"
+import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 
 // 분석 전 인증 + 구독 확인
 export async function checkBeforeAnalysis() {
@@ -665,7 +665,7 @@ ${referenceStats}
       }
     }
 
-    // 분석 이력 저장
+    // 분석 이력 저장 + 크레딧 차감
     saveAnalysisHistory({
       projectId: input.projectId,
       fileName: input.extractedText ? (input.fileName || "대용량 PDF") : input.url!,
@@ -677,6 +677,8 @@ ${referenceStats}
       companyFeedback: analysis.companyFeedback || "",
       analysisSource: input.extractedText ? "pdf" : "url",
     }).catch(() => {})
+
+    deductCredit().catch(() => {})
 
     return { data: analysisData }
   } catch (error) {
@@ -1146,7 +1148,7 @@ ${referenceStats}
         }
       }
 
-      // 분석 이력 저장
+      // 분석 이력 저장 + 크레딧 차감
       saveAnalysisHistory({
         projectId: input.projectId,
         fileName: input.fileName,
@@ -1160,6 +1162,8 @@ ${referenceStats}
         readabilityCategories: analysis.readabilityCategories || [],
         layoutRecommendations: analysis.layoutRecommendations || [],
       }).catch(() => {})
+
+      deductCredit().catch(() => {})
 
       return { data: analysisData }
     } finally {

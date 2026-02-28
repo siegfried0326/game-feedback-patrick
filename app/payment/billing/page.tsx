@@ -20,8 +20,8 @@ import { validateGamecanvasCode } from "@/app/actions/payment"
 const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? ""
 
 const PLANS = {
-  monthly: { name: "월 구독", price: "17,900", amount: 17900, period: "월", description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
-  three_month: { name: "3개월 패스", price: "49,000", amount: 49000, period: "3개월", description: "무제한 분석 + 버전 비교 + 프리미엄 Claude Opus" },
+  monthly: { name: "월 무제한", price: "13,900", amount: 13900, period: "월", description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
+  three_month: { name: "3개월 무제한", price: "39,000", amount: 39000, period: "3개월", description: "무제한 분석 + 버전 비교 + 프리미엄 Claude Opus" },
 } as const
 
 function BillingContent() {

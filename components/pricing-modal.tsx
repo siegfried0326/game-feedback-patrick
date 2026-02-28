@@ -19,72 +19,55 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const plans: {
-  name: string
-  price: string
-  period: string
-  description: string
-  features: string[]
-  cta: string
-  href: string
-  highlighted: boolean
-  originalPrice?: string
-  badge?: string
-  discountNote?: string
-}[] = [
+const plans = [
   {
-    name: "무료 체험",
-    price: "0",
-    period: "무료",
-    description: "처음 이용하시는 분들을 위한 무료 체험 (총 1회)",
+    name: "회차권",
+    price: "2,900",
+    period: "1회~",
+    description: "필요한 만큼 구매 (1회/5회/10회)",
     features: [
-      "프로젝트 1개",
-      "총 1회 문서 분석",
-      "5개 항목 점수 평가",
-      "기본 피드백 제공",
-      "Claude Sonnet AI",
+      "1회 2,900원 / 5회 7,900원 / 10회 12,900원",
+      "15개 항목 점수 평가",
+      "상세 코멘트 제공",
+      "크레딧 만료 없음",
     ],
-    cta: "무료로 시작하기",
-    href: "/analyze",
-    highlighted: false
+    cta: "크레딧 구매",
+    href: "/payment/credits",
+    highlighted: false,
   },
   {
-    name: "월 구독",
-    price: "17,900",
+    name: "월 무제한",
+    price: "13,900",
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
     discountNote: "게임캔버스 수강생 월 5,900원",
     features: [
+      "무제한 분석",
       "무제한 프로젝트",
-      "무제한 문서 분석",
-      "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
       "버전별 점수 비교 분석",
-      "Claude Sonnet AI",
     ],
     cta: "구독 시작하기",
     href: "/payment/billing?plan=monthly",
-    highlighted: true
+    highlighted: true,
   },
   {
-    name: "3개월 패스",
-    price: "49,000",
-    originalPrice: "53,700",
+    name: "3개월 무제한",
+    price: "39,000",
     period: "3개월",
-    description: "프리미엄 AI로 더 정밀한 분석",
+    description: "월 13,000원 수준 + 프리미엄 AI",
     badge: "프리미엄 AI",
     features: [
+      "무제한 분석",
       "무제한 프로젝트",
-      "무제한 문서 분석",
-      "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
       "버전별 점수 비교 분석",
       "프리미엄 AI (Claude Opus)",
     ],
-    cta: "3개월 패스 구매",
+    cta: "3개월 구매",
     href: "/payment/billing?plan=three_month",
-    highlighted: false
-  }
+    highlighted: false,
+  },
 ]
 
 export function PricingModal() {
@@ -102,7 +85,7 @@ export function PricingModal() {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center mb-2">요금제 선택</DialogTitle>
           <p className="text-center text-muted-foreground text-sm">
-            첫 1회는 무료로 체험해 보세요
+            첫 1회 무료! 크레딧 구매 또는 무제한 구독
           </p>
         </DialogHeader>
         

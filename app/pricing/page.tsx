@@ -12,72 +12,84 @@ import { Button } from "@/components/ui/button"
 
 export const metadata = {
   title: "요금제 | 디자이닛(DesignIt)",
-  description: "디자이닛(DesignIt) 요금제 안내. 월 구독 17,900원, 3개월 패스 49,000원. 1:1 컨설팅, 그룹 컨설팅.",
+  description: "디자이닛(DesignIt) 요금제 안내. 1회 2,900원부터. 월 무제한 13,900원.",
 }
 
-const plans: {
-  name: string
-  price: string
-  period: string
-  description: string
-  features: string[]
-  cta: string
-  href: string
-  highlighted: boolean
-  originalPrice?: string
-  badge?: string
-  discountNote?: string
-}[] = [
+const creditPlans = [
   {
     name: "무료 체험",
     price: "0",
-    period: "무료",
-    description: "처음 이용하시는 분들을 위한 무료 체험 (총 1회)",
-    features: [
-      "프로젝트 1개",
-      "총 1회 문서 분석",
-      "5개 항목 점수 평가",
-      "기본 피드백 제공",
-      "Claude Sonnet AI",
-    ],
+    period: "1회",
+    description: "처음 이용하시는 분들을 위한 무료 체험",
+    features: ["1회 무료 분석", "15개 항목 점수 평가", "기본 피드백 제공"],
     cta: "무료로 시작하기",
     href: "/analyze",
-    highlighted: false,
   },
   {
-    name: "월 구독",
-    price: "17,900",
+    name: "1회권",
+    price: "2,900",
+    period: "1회",
+    description: "필요할 때 한 번만",
+    perCredit: null as string | null,
+    features: ["1회 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    cta: "구매하기",
+    href: "/payment/credits?package=credit_1",
+  },
+  {
+    name: "5회권",
+    price: "7,900",
+    period: "5회",
+    description: "회당 1,580원 (45% 할인)",
+    badge: "45% 할인",
+    features: ["5회 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    cta: "구매하기",
+    href: "/payment/credits?package=credit_5",
+  },
+  {
+    name: "10회권",
+    price: "12,900",
+    period: "10회",
+    description: "회당 1,290원 (55% 할인)",
+    badge: "55% 할인",
+    features: ["10회 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    cta: "구매하기",
+    href: "/payment/credits?package=credit_10",
+  },
+]
+
+const subscriptionPlans = [
+  {
+    name: "월 무제한",
+    price: "13,900",
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
     discountNote: "게임캔버스 수강생 월 5,900원",
     features: [
+      "무제한 분석",
       "무제한 프로젝트",
-      "무제한 문서 분석",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
       "버전별 점수 비교 분석",
-      "Claude Sonnet AI",
     ],
     cta: "구독 시작하기",
     href: "/payment/billing?plan=monthly",
     highlighted: true,
   },
   {
-    name: "3개월 패스",
-    price: "49,000",
-    originalPrice: "53,700",
+    name: "3개월 무제한",
+    price: "39,000",
     period: "3개월",
-    description: "프리미엄 AI로 더 정밀한 분석",
+    description: "월 13,000원 수준 + 프리미엄 AI",
     badge: "프리미엄 AI",
     features: [
+      "무제한 분석",
       "무제한 프로젝트",
-      "무제한 문서 분석",
       "상세 코멘트 제공",
       "포지션별 맞춤 피드백",
       "버전별 점수 비교 분석",
       "프리미엄 AI (Claude Opus)",
     ],
-    cta: "3개월 패스 구매",
+    cta: "3개월 구매",
     href: "/payment/billing?plan=three_month",
     highlighted: false,
   },
@@ -100,22 +112,69 @@ export default function PricingPage() {
             합리적인 요금제
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            첫 1회는 무료로 체험해 보세요. 마음에 드시면 구독을 시작하시면 됩니다.
+            첫 1회는 무료! 필요한 만큼 크레딧을 구매하거나, 무제한 구독을 시작하세요.
           </p>
         </div>
 
-        {/* 요금제 카드 */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mb-16">
-          {plans.map((plan, index) => (
+        {/* 크레딧 (회차권) */}
+        <h2 className="text-xl font-bold text-white mb-4">회차권</h2>
+        <p className="text-slate-400 text-sm mb-6">크레딧은 만료되지 않습니다. 필요할 때 사용하세요.</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+          {creditPlans.map((plan, index) => (
+            <div
+              key={index}
+              className="relative bg-slate-900/80 rounded-2xl p-6 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-all duration-300"
+            >
+              {"badge" in plan && plan.badge && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/90 text-white text-xs font-medium">
+                    {plan.badge}
+                  </span>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white mb-1">{plan.name}</h3>
+                <p className="text-xs text-slate-400">{plan.description}</p>
+              </div>
+
+              <div className="mb-4">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-white">{plan.price}</span>
+                  <span className="text-slate-400">원</span>
+                </div>
+              </div>
+
+              <ul className="space-y-2 mb-6">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
+                    <span className="text-slate-400">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
+                <Link href={plan.href}>{plan.cta}</Link>
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        {/* 무제한 구독 */}
+        <h2 className="text-xl font-bold text-white mb-4">무제한 구독</h2>
+        <p className="text-slate-400 text-sm mb-6">매일 분석한다면 구독이 훨씬 합리적이에요.</p>
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-16">
+          {subscriptionPlans.map((plan, index) => (
             <div
               key={index}
               className={`relative bg-slate-900/80 rounded-2xl p-8 border transition-all duration-300 ${
                 plan.highlighted
-                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10 scale-[1.02]"
+                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
                   : "border-[#1e3a5f] hover:border-[#5B8DEF]/30"
               }`}
             >
-              {plan.badge && (
+              {"badge" in plan && plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
                     <Sparkles className="w-3 h-3" />
@@ -123,7 +182,7 @@ export default function PricingPage() {
                   </span>
                 </div>
               )}
-              {plan.highlighted && !plan.badge && (
+              {plan.highlighted && !("badge" in plan && plan.badge) && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
                     추천
@@ -138,23 +197,18 @@ export default function PricingPage() {
 
               <div className="mb-6">
                 <div className="flex items-baseline gap-1">
-                  {plan.originalPrice && (
-                    <span className="text-lg text-slate-500 line-through mr-2">
-                      {plan.originalPrice}원
-                    </span>
-                  )}
                   <span className="text-4xl font-bold text-white">{plan.price}</span>
                   <span className="text-slate-400">원</span>
                   <span className="text-slate-400 text-sm">/ {plan.period}</span>
                 </div>
-                {plan.discountNote && (
+                {"discountNote" in plan && plan.discountNote && (
                   <p className="text-xs text-emerald-400 mt-2">{plan.discountNote}</p>
                 )}
               </div>
 
               <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-start gap-3 text-sm">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm">
                     <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
                     <span className="text-slate-400">{feature}</span>
                   </li>
@@ -299,8 +353,9 @@ export default function PricingPage() {
               <div>
                 <h3 className="font-medium text-white mb-1">서비스 제공 기간</h3>
                 <p className="text-sm text-slate-400">
+                  회차권: 만료 없음<br />
                   월 구독: 결제일부터 1개월<br />
-                  3개월 패스: 결제일부터 3개월
+                  3개월: 결제일부터 3개월
                 </p>
               </div>
             </div>

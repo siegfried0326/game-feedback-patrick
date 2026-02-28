@@ -276,7 +276,7 @@ export default function MyPage() {
   }, [projectAnalyses])
 
   const getPlanLabel = (plan: string) => {
-    switch (plan) { case "free": return "무료 체험"; case "monthly": return "월 구독"; case "three_month": return "3개월 패스"; case "tutoring": return "과외 수강생"; default: return plan }
+    switch (plan) { case "free": return "무료"; case "monthly": return "월 무제한"; case "three_month": return "3개월 무제한"; case "tutoring": return "과외 수강생"; default: return plan }
   }
   const getStatusLabel = (status: string) => {
     switch (status) { case "active": return "이용중"; case "cancelled": return "해지됨"; case "expired": return "만료됨"; default: return status }
@@ -359,14 +359,25 @@ export default function MyPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-sm text-slate-400 mb-1">현재 플랜</p><p className="text-white font-medium">{getPlanLabel(subscription.plan)}</p></div>
-                <div><p className="text-sm text-slate-400 mb-1">시작일</p><p className="text-white font-medium">{formatDate(subscription.created_at)}</p></div>
+                <div>
+                  <p className="text-sm text-slate-400 mb-1">남은 크레딧</p>
+                  <p className="text-white font-medium">
+                    {isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date())
+                      ? "무제한"
+                      : `${subscription.analysis_credits ?? 0}회`
+                    }
+                  </p>
+                </div>
                 {subscription.expires_at && <div><p className="text-sm text-slate-400 mb-1">만료일</p><p className="text-white font-medium">{formatDate(subscription.expires_at)}</p></div>}
                 {subscription.cancelled_at && <div><p className="text-sm text-slate-400 mb-1">해지일</p><p className="text-yellow-400 font-medium">{formatDate(subscription.cancelled_at)}</p></div>}
               </div>
-              {subscription.plan === "free" && (
+              {(!isPaidPlan || subscription.status !== "active") && (subscription.analysis_credits ?? 0) === 0 && (
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
-                  <p className="text-sm text-slate-300">무료 플랜은 프로젝트 1개, 총 1회 분석이 가능합니다. 무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.</p>
-                  <Button asChild className="mt-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/pricing">요금제 보기</Link></Button>
+                  <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매하거나 무제한 구독을 시작해 보세요.</p>
+                  <div className="flex gap-2 mt-3">
+                    <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/payment/credits">크레딧 구매</Link></Button>
+                    <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white"><Link href="/pricing">요금제 보기</Link></Button>
+                  </div>
                 </div>
               )}
               {subscription.plan === "monthly" && subscription.status === "active" && (

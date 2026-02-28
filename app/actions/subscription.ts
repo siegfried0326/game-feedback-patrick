@@ -1,26 +1,12 @@
 /**
- * 구독/프로젝트/분석이력 관리 서버 액션 (369줄)
+ * 구독/크레딧/프로젝트/분석이력 관리 서버 액션
  *
  * 구독 관련:
- * - getSubscription(): 구독 조회 (없으면 free 자동 생성)
+ * - getSubscription(): 구독 조회 (없으면 free 자동 생성, 크레딧 포함)
  * - cancelSubscription(): 구독 해지 (빌링키 삭제 + status=cancelled)
- * - checkAnalysisAllowance(): 분석 가능 여부 (free: 1회, 유료: 무제한)
- * - checkProjectAllowance(): 프로젝트 생성 가능 여부 (free: 1개, 유료: 무제한)
- *
- * 프로젝트 CRUD:
- * - getProjects(): 목록 조회 (분석 통계 포함)
- * - createProject(): 생성 (할당량 체크)
- * - deleteProject(): 삭제 (하위 분석 먼저 삭제)
- * - renameProject(): 이름 변경
- *
- * 분석 이력:
- * - getProjectAnalyses(): 프로젝트별 분석 목록
- * - getAnalysisHistory(): 전체 분석 이력
- * - getAnalysisDetail(): 분석 상세
- * - saveAnalysisHistory(): 분석 결과 저장
- * - deleteAnalysis(): 분석 삭제
- *
- * TODO: 구독/프로젝트/이력을 별도 파일로 분리 필요 (TODO_BACKLOG.md 참고)
+ * - checkAnalysisAllowance(): 분석 가능 여부 (구독: 무제한, 비구독: 크레딧 확인)
+ * - checkProjectAllowance(): 프로젝트 생성 가능 여부 (구독/크레딧 있으면 무제한)
+ * - deductCredit(): 분석 완료 후 크레딧 차감 (구독자는 차감 안 함)
  */
 "use server"
 
@@ -179,27 +165,21 @@ export async function checkProjectAllowance() {
     .eq("user_id", user.id)
     .single()
 
-  // 유료 플랜: 만료 확인
+  // 유료 구독 활성 상태: 무제한
   if (subscription && subscription.plan !== "free") {
     const isExpired = subscription.expires_at && new Date(subscription.expires_at) < new Date()
-    if (isExpired || subscription.status === "expired") {
-      return { allowed: false, plan: subscription.plan, reason: "구독이 만료되었습니다." }
+    if (!isExpired && subscription.status !== "expired") {
+      return { allowed: true, plan: subscription.plan, unlimited: true }
     }
-    return { allowed: true, plan: subscription.plan, unlimited: true }
   }
 
-  // 무료 플랜: 프로젝트 1개 제한
-  const { count } = await supabase
-    .from("projects")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-
-  const used = count || 0
-  if (used >= 1) {
-    return { allowed: false, plan: "free" as const, reason: "무료 플랜은 프로젝트 1개까지 가능합니다." }
+  // 크레딧이 있으면 프로젝트 생성 허용
+  if (subscription && (subscription.analysis_credits || 0) > 0) {
+    return { allowed: true, plan: subscription?.plan || "free" }
   }
 
-  return { allowed: true, plan: "free" as const, remaining: 1 - used }
+  // 크레딧도 구독도 없음
+  return { allowed: false, plan: "free" as const, reason: "분석 크레딧이 없습니다. 크레딧을 구매하거나 구독해 주세요." }
 }
 
 export async function checkAnalysisAllowance() {
@@ -215,27 +195,66 @@ export async function checkAnalysisAllowance() {
     .eq("user_id", user.id)
     .single()
 
-  // 유료 플랜: 만료 확인
-  if (subscription && subscription.plan !== "free") {
+  if (!subscription) {
+    return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
+  }
+
+  // 유료 구독: 만료 확인
+  if (subscription.plan !== "free") {
     const isExpired = subscription.expires_at && new Date(subscription.expires_at) < new Date()
     if (isExpired || subscription.status === "expired") {
-      return { allowed: false, plan: subscription.plan, expired: true }
+      // 구독 만료 → 크레딧 남아있으면 허용
+      const credits = subscription.analysis_credits || 0
+      if (credits > 0) {
+        return { allowed: true, plan: subscription.plan, remaining: credits }
+      }
+      return { allowed: false, plan: subscription.plan, expired: true, remaining: 0 }
     }
     return { allowed: true, plan: subscription.plan, unlimited: true }
   }
 
-  // 무료 플랜: 총 1회 분석 제한
-  const { count } = await supabase
-    .from("analysis_history")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-
-  const used = count || 0
-  const FREE_LIMIT = 1
-  if (used >= FREE_LIMIT) {
+  // 무료/비구독: 크레딧 확인
+  const credits = subscription.analysis_credits || 0
+  if (credits <= 0) {
     return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
   }
-  return { allowed: true, plan: "free" as const, remaining: FREE_LIMIT - used }
+  return { allowed: true, plan: "free" as const, remaining: credits }
+}
+
+// 분석 완료 후 크레딧 차감 (구독자는 차감 안 함)
+export async function deductCredit() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  const { data: subscription } = await supabase
+    .from("users_subscription")
+    .select("plan, expires_at, status, analysis_credits")
+    .eq("user_id", user.id)
+    .single()
+
+  if (!subscription) return { error: "구독 정보를 찾을 수 없습니다." }
+
+  // 유효한 구독이면 차감 안 함 (무제한)
+  if (subscription.plan !== "free") {
+    const isExpired = subscription.expires_at && new Date(subscription.expires_at) < new Date()
+    if (!isExpired && subscription.status !== "expired") {
+      return { success: true, unlimited: true }
+    }
+  }
+
+  // 크레딧 차감
+  const currentCredits = subscription.analysis_credits || 0
+  if (currentCredits <= 0) return { error: "크레딧이 부족합니다." }
+
+  const { error } = await supabase
+    .from("users_subscription")
+    .update({ analysis_credits: currentCredits - 1, updated_at: new Date().toISOString() })
+    .eq("user_id", user.id)
+
+  if (error) return dbError("크레딧 차감에 실패했습니다.", error)
+  return { success: true, remaining: currentCredits - 1 }
 }
 
 export async function getProjectAnalyses(projectId: string) {

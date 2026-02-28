@@ -798,9 +798,8 @@ export async function reclassifyAllCompanies() {
  * 프론트에서 반복 호출하여 전체 완료.
  */
 export async function embedExistingPortfolios(force: boolean = false) {
-  // ★ 실전 버전: 포트폴리오 1개씩 임베딩 처리
-  // 근본 원인: chunkText()에서 800~900자 텍스트 처리 시 무한 루프 → 서버 OOM
-  // 수정: vector-search.ts의 chunkText에 end >= text.length 탈출 조건 추가
+  // ★ 실전 버전: 포트폴리오 배치(20개) 조회 → 텍스트 충분한 1개 임베딩
+  // 텍스트 부족한 포트폴리오는 빈 마커 저장 → 다음 호출 시 건너뜀 (무한 루프 방지)
 
   try {
     // ── 1. 관리자 인증 ──
@@ -820,12 +819,12 @@ export async function embedExistingPortfolios(force: boolean = false) {
     if (chunkErr) return { success: false, error: `chunks 조회 실패: ${chunkErr.message}` }
     const processedIds = [...new Set((chunkData || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
 
-    // ── 4. 미처리 포트폴리오 1개 찾기 ──
+    // ── 4. 미처리 포트폴리오 20개 가져오기 (배치) ──
     let query = supabase
       .from("portfolios")
       .select("id, file_name, content_text, summary, strengths, weaknesses, tags, companies, document_type")
       .order("created_at", { ascending: true })
-      .limit(1)
+      .limit(20)
     if (!force && processedIds.length > 0) {
       query = query.not("id", "in", `(${processedIds.join(",")})`)
     }
@@ -840,80 +839,84 @@ export async function embedExistingPortfolios(force: boolean = false) {
       }
     }
 
-    const p = portfolios[0]
-    const remaining = Math.max(0, totalCount - processedIds.length - 1)
+    const errors: string[] = []
+    let skippedCount = 0
 
-    // ── 5. 텍스트 확보 (content_text 없으면 메타데이터로 대체) ──
-    let text = p.content_text || ""
-    if (text.trim().length < 50) {
-      const parts: string[] = []
-      if (p.file_name) parts.push(`파일: ${p.file_name}`)
-      if (p.document_type) parts.push(`문서유형: ${p.document_type}`)
-      if (p.companies && Array.isArray(p.companies)) parts.push(`회사: ${p.companies.join(", ")}`)
-      if (p.summary) parts.push(`요약: ${p.summary}`)
-      if (p.strengths && Array.isArray(p.strengths)) parts.push(`강점: ${p.strengths.join(". ")}`)
-      if (p.weaknesses && Array.isArray(p.weaknesses)) parts.push(`약점: ${p.weaknesses.join(". ")}`)
-      if (p.tags && Array.isArray(p.tags)) parts.push(`키워드: ${p.tags.join(", ")}`)
-      text = parts.join("\n\n")
-    }
+    // ── 5. 배치 순회: 텍스트 부족한 건 마커 저장, 충분한 건 임베딩 ──
+    for (const p of portfolios) {
+      // 텍스트 확보 (content_text 없으면 메타데이터로 대체)
+      let text = p.content_text || ""
+      if (text.trim().length < 50) {
+        const parts: string[] = []
+        if (p.file_name) parts.push(`파일: ${p.file_name}`)
+        if (p.document_type) parts.push(`문서유형: ${p.document_type}`)
+        if (p.companies && Array.isArray(p.companies)) parts.push(`회사: ${p.companies.join(", ")}`)
+        if (p.summary) parts.push(`요약: ${p.summary}`)
+        if (p.strengths && Array.isArray(p.strengths)) parts.push(`강점: ${p.strengths.join(". ")}`)
+        if (p.weaknesses && Array.isArray(p.weaknesses)) parts.push(`약점: ${p.weaknesses.join(". ")}`)
+        if (p.tags && Array.isArray(p.tags)) parts.push(`키워드: ${p.tags.join(", ")}`)
+        text = parts.join("\n\n")
+      }
 
-    // 텍스트가 너무 짧으면 스킵
-    if (text.trim().length < 30) {
+      // 텍스트 부족 → 빈 마커 저장 (다음 호출 시 건너뜀)
+      if (text.trim().length < 30) {
+        await supabase.from("portfolio_chunks").insert({
+          portfolio_id: p.id,
+          chunk_index: -1,
+          chunk_text: `[스킵] 텍스트 부족 (${text.length}자)`,
+          embedding: JSON.stringify(Array(1536).fill(0)),
+          metadata: { skipped: true, fileName: p.file_name },
+        })
+        skippedCount++
+        errors.push(`${p.file_name}: 텍스트 부족 (${text.length}자) — 스킵`)
+        continue
+      }
+
+      // 청크 분할 (최대 5개)
+      const chunks = chunkText(text).slice(0, 5)
+      if (chunks.length === 0) {
+        skippedCount++
+        errors.push(`${p.file_name}: 청크 없음 — 스킵`)
+        continue
+      }
+
+      // force 모드면 기존 청크 삭제
+      if (force) {
+        await supabase.from("portfolio_chunks").delete().eq("portfolio_id", p.id)
+      }
+
+      // OpenAI 임베딩 생성
+      const embeddings = await generateEmbeddings(chunks)
+
+      // DB에 저장
+      const rows = chunks.map((chunk, idx) => ({
+        portfolio_id: p.id,
+        chunk_index: idx,
+        chunk_text: chunk,
+        embedding: JSON.stringify(embeddings[idx]),
+        metadata: { companies: p.companies, documentType: p.document_type, fileName: p.file_name },
+      }))
+
+      const { error: insertError } = await supabase.from("portfolio_chunks").insert(rows)
+      if (insertError) {
+        errors.push(`${p.file_name}: DB 저장 실패 — ${insertError.message}`)
+        continue
+      }
+
+      // 1개 임베딩 성공 → 바로 반환 (타임아웃 방지)
+      errors.push(`${p.file_name}: 임베딩 완료 (${chunks.length}청크, ${text.length}자)`)
+      const remaining = Math.max(0, totalCount - processedIds.length - skippedCount - 1)
       return {
         success: true,
-        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [`${p.file_name}: 텍스트 부족 (${text.length}자) — 스킵`] }
+        data: { total: totalCount, processed: 1, failed: 0, skipped: processedIds.length + skippedCount, remaining, errors }
       }
     }
 
-    // ── 6. 청크 분할 (최대 5개) ──
-    const chunks = chunkText(text).slice(0, 5)
-    if (chunks.length === 0) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + 1, remaining, errors: [`${p.file_name}: 청크 없음 — 스킵`] }
-      }
-    }
-
-    // ── 7. force 모드면 기존 청크 삭제 ──
-    if (force) {
-      await supabase.from("portfolio_chunks").delete().eq("portfolio_id", p.id)
-    }
-
-    // ── 8. OpenAI 임베딩 생성 ──
-    const embeddings = await generateEmbeddings(chunks)
-
-    // ── 9. DB에 저장 ──
-    const rows = chunks.map((chunk, idx) => ({
-      portfolio_id: p.id,
-      chunk_index: idx,
-      chunk_text: chunk,
-      embedding: JSON.stringify(embeddings[idx]),
-      metadata: {
-        companies: p.companies,
-        documentType: p.document_type,
-        fileName: p.file_name,
-      },
-    }))
-
-    const { error: insertError } = await supabase.from("portfolio_chunks").insert(rows)
-    if (insertError) {
-      return {
-        success: true,
-        data: { total: totalCount, processed: 0, failed: 1, skipped: processedIds.length, remaining, errors: [`${p.file_name}: DB 저장 실패 — ${insertError.message}`] }
-      }
-    }
-
-    // ── 성공 ──
+    // 배치 전체가 스킵/실패된 경우
+    const remaining = Math.max(0, totalCount - processedIds.length - skippedCount)
     return {
       success: true,
-      data: {
-        total: totalCount,
-        processed: 1,
-        failed: 0,
-        skipped: processedIds.length,
-        remaining,
-        errors: [`${p.file_name}: 임베딩 완료 (${chunks.length}청크, ${text.length}자)`]
-      }
+      data: { total: totalCount, processed: 0, failed: 0, skipped: processedIds.length + skippedCount, remaining, errors }
     }
   } catch (error) {
     return {

@@ -18,7 +18,7 @@ import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Pla
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios } from "@/app/actions/admin"
 
 interface UploadStatus {
   fileName: string
@@ -36,6 +36,11 @@ export default function AdminPage() {
   const [portfolioList, setPortfolioList] = useState<any[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isDeleting, setIsDeleting] = useState(false)
+  // 벡터 임베딩 상태
+  const [isEmbedding, setIsEmbedding] = useState(false)
+  const [embedResult, setEmbedResult] = useState<{
+    total: number; processed: number; skipped: number; failed: number
+  } | null>(null)
 
   useEffect(() => {
     loadStats()
@@ -194,6 +199,31 @@ export default function AdminPage() {
     setSelectedIds(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     )
+  }
+
+  // ============================
+  // 기존 포트폴리오 일괄 벡터 임베딩
+  // 벡터 서치용: 기존 데이터에 벡터를 생성하여 유사도 검색 가능하게 함
+  // ============================
+  const handleEmbedAll = async (force: boolean = false) => {
+    if (isEmbedding) return
+    if (force && !confirm("기존 임베딩을 모두 삭제하고 다시 생성합니다. 계속하시겠습니까?")) return
+
+    setIsEmbedding(true)
+    setEmbedResult(null)
+
+    try {
+      const result = await embedExistingPortfolios(force)
+      if (result.success && result.data) {
+        setEmbedResult(result.data)
+      } else {
+        alert("임베딩 실패: " + (result.error || "알 수 없는 오류"))
+      }
+    } catch (error) {
+      alert("임베딩 오류: " + (error instanceof Error ? error.message : "알 수 없는 오류"))
+    }
+
+    setIsEmbedding(false)
   }
 
   const clearAll = () => {
@@ -379,6 +409,79 @@ export default function AdminPage() {
             {/* 안내 메시지 */}
             <p className="text-slate-500 text-xs text-center mt-4">
               * Gemini AI가 PDF를 원본 그대로 직접 읽어서 분석합니다. 화질 저하 없이 모든 페이지를 분석합니다.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* ============================
+          벡터 임베딩 관리
+          기존 포트폴리오에 벡터를 생성하여 유사도 검색(벡터 서치) 활성화
+        ============================ */}
+        <Card className="bg-slate-900/80 border-[#1e3a5f] mt-8">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2 text-lg">
+              <Database className="w-5 h-5 text-purple-400" />
+              벡터 서치 임베딩
+            </CardTitle>
+            <CardDescription className="text-slate-400">
+              기존 포트폴리오에 벡터를 생성합니다. 새로 업로드하는 파일은 자동으로 임베딩됩니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              {/* 신규만 임베딩 (이미 된 건 건너뜀) */}
+              <Button
+                onClick={() => handleEmbedAll(false)}
+                disabled={isEmbedding}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {isEmbedding ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    임베딩 생성 중...
+                  </>
+                ) : (
+                  "신규 임베딩 생성"
+                )}
+              </Button>
+              {/* 전체 재생성 (기존 삭제 후 다시) */}
+              <Button
+                onClick={() => handleEmbedAll(true)}
+                disabled={isEmbedding}
+                variant="outline"
+                className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+              >
+                전체 재생성
+              </Button>
+            </div>
+
+            {/* 임베딩 결과 표시 */}
+            {embedResult && (
+              <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                <p className="text-purple-300 text-sm font-medium mb-2">임베딩 완료</p>
+                <div className="grid grid-cols-4 gap-4 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-white">{embedResult.total}</p>
+                    <p className="text-slate-400 text-xs">전체</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-emerald-400">{embedResult.processed}</p>
+                    <p className="text-slate-400 text-xs">처리됨</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-400">{embedResult.skipped}</p>
+                    <p className="text-slate-400 text-xs">건너뜀</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-red-400">{embedResult.failed}</p>
+                    <p className="text-slate-400 text-xs">실패</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <p className="text-slate-500 text-xs mt-3">
+              * 포트폴리오 1개당 약 2초 소요. "신규 임베딩 생성"은 아직 안 된 것만 처리합니다.
             </p>
           </CardContent>
         </Card>

@@ -7,17 +7,17 @@ create policy "resumes_storage_select"
 on storage.objects for select
 using (bucket_id = 'resumes');
 
--- Storage 정책: 서비스 역할만 업로드 가능 (서버에서만)
-create policy "resumes_storage_insert"
+-- Storage 정책: 인증된 사용자만 업로드 가능
+create policy "resumes_storage_insert_auth"
 on storage.objects for insert
-with check (bucket_id = 'resumes');
+with check (bucket_id = 'resumes' AND auth.uid() IS NOT NULL);
 
--- Storage 정책: 서비스 역할만 업데이트 가능
-create policy "resumes_storage_update"
+-- Storage 정책: 인증된 사용자만 업데이트 가능
+create policy "resumes_storage_update_auth"
 on storage.objects for update
-using (bucket_id = 'resumes');
+using (bucket_id = 'resumes' AND auth.uid() IS NOT NULL);
 
--- Storage 정책: 서비스 역할만 삭제 가능
-create policy "resumes_storage_delete"
+-- Storage 정책: 인증된 사용자만 삭제 가능
+create policy "resumes_storage_delete_auth"
 on storage.objects for delete
-using (bucket_id = 'resumes');
+using (bucket_id = 'resumes' AND auth.uid() IS NOT NULL);

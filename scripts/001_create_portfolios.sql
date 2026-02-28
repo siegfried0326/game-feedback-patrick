@@ -62,23 +62,22 @@ select
 from public.portfolios
 where overall_score is not null;
 
--- RLS 활성화 (관리자만 접근 가능하도록 나중에 설정)
--- 지금은 public 읽기 허용
+-- RLS 활성화
 alter table public.portfolios enable row level security;
 
 -- 누구나 읽기 가능 (분석 비교용)
-create policy "portfolios_select_public" on public.portfolios 
+create policy "portfolios_select_public" on public.portfolios
   for select using (true);
 
--- 삽입/수정/삭제는 서비스 역할만 (서버에서만)
-create policy "portfolios_insert_service" on public.portfolios 
-  for insert with check (true);
+-- 삽입/수정/삭제는 인증된 사용자만 (서버 액션에서 verifyAdmin()으로 추가 확인)
+create policy "portfolios_insert_authenticated" on public.portfolios
+  for insert with check (auth.uid() IS NOT NULL);
 
-create policy "portfolios_update_service" on public.portfolios 
-  for update using (true);
+create policy "portfolios_update_authenticated" on public.portfolios
+  for update using (auth.uid() IS NOT NULL);
 
-create policy "portfolios_delete_service" on public.portfolios 
-  for delete using (true);
+create policy "portfolios_delete_authenticated" on public.portfolios
+  for delete using (auth.uid() IS NOT NULL);
 
 -- 인덱스 (성능 최적화)
 create index if not exists idx_portfolios_companies on public.portfolios using gin(companies);

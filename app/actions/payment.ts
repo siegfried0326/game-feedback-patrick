@@ -136,7 +136,10 @@ export async function processSubscriptionPayment(
       updated_at: now.toISOString(),
     }, { onConflict: "user_id" })
 
-  if (dbError) return { error: dbError.message }
+  if (dbError) {
+    console.error("[payment] 구독 활성화 실패:", dbError.message)
+    return { error: "구독 활성화에 실패했습니다." }
+  }
 
   return { success: true, paymentKey: paymentResult.data.paymentKey }
 }

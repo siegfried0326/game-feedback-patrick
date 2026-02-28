@@ -27,6 +27,12 @@
 import { createClient } from "@/lib/supabase/server"
 import { deleteBillingKey } from "@/lib/toss-api"
 
+// 보안: DB 에러 메시지를 사용자에게 직접 노출하지 않음
+function dbError(msg: string, error: unknown): { error: string } {
+  console.error(`[subscription] ${msg}:`, error instanceof Error ? error.message : error)
+  return { error: msg }
+}
+
 export async function getSubscription() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -49,7 +55,7 @@ export async function getSubscription() {
         .single()
       return { data: newSub }
     }
-    return { error: error.message }
+    return dbError("구독 정보 조회에 실패했습니다.", error)
   }
 
   return { data }
@@ -86,7 +92,7 @@ export async function cancelSubscription() {
     })
     .eq("user_id", user.id)
 
-  if (error) return { error: error.message }
+  if (error) return dbError("구독 해지 처리에 실패했습니다.", error)
   return { success: true }
 }
 
@@ -105,7 +111,7 @@ export async function getProjects() {
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false })
 
-  if (error) return { error: error.message }
+  if (error) return dbError("프로젝트 목록 조회에 실패했습니다.", error)
 
   // 각 프로젝트의 분석 통계 가져오기
   const { data: analyses } = await supabase
@@ -156,7 +162,7 @@ export async function createProject(name: string, description?: string) {
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return dbError("프로젝트 생성에 실패했습니다.", error)
   return { data }
 }
 
@@ -245,7 +251,7 @@ export async function getProjectAnalyses(projectId: string) {
     .eq("user_id", user.id)
     .order("analyzed_at", { ascending: false })
 
-  if (error) return { error: error.message }
+  if (error) return dbError("분석 이력 조회에 실패했습니다.", error)
   return { data: data || [] }
 }
 
@@ -261,7 +267,7 @@ export async function getAnalysisHistory() {
     .eq("user_id", user.id)
     .order("analyzed_at", { ascending: false })
 
-  if (error) return { error: error.message }
+  if (error) return dbError("분석 이력 조회에 실패했습니다.", error)
   return { data: data || [] }
 }
 
@@ -317,7 +323,7 @@ export async function saveAnalysisHistory(result: {
       layout_recommendations: result.layoutRecommendations || null,
     })
 
-  if (error) return { error: error.message }
+  if (error) return dbError("분석 결과 저장에 실패했습니다.", error)
 
   // 프로젝트 updated_at 갱신
   await supabase
@@ -343,7 +349,7 @@ export async function deleteAnalysis(id: string) {
     .eq("id", id)
     .eq("user_id", user.id)
 
-  if (error) return { error: error.message }
+  if (error) return dbError("분석 삭제에 실패했습니다.", error)
   return { success: true }
 }
 
@@ -360,7 +366,7 @@ export async function deleteProject(id: string) {
     .eq("project_id", id)
     .eq("user_id", user.id)
 
-  if (analysisError) return { error: analysisError.message }
+  if (analysisError) return dbError("분석 이력 삭제에 실패했습니다.", analysisError)
 
   // 프로젝트 삭제
   const { error: projectError } = await supabase
@@ -369,7 +375,7 @@ export async function deleteProject(id: string) {
     .eq("id", id)
     .eq("user_id", user.id)
 
-  if (projectError) return { error: projectError.message }
+  if (projectError) return dbError("프로젝트 삭제에 실패했습니다.", projectError)
   return { success: true }
 }
 
@@ -387,6 +393,6 @@ export async function renameProject(id: string, newName: string) {
     .eq("id", id)
     .eq("user_id", user.id)
 
-  if (error) return { error: error.message }
+  if (error) return dbError("이름 변경에 실패했습니다.", error)
   return { success: true }
 }

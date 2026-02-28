@@ -63,7 +63,10 @@ export async function createTutoringOrder(packageType: string) {
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) {
+    console.error("[tutoring] 주문 생성 실패:", error.message)
+    return { error: "주문 생성에 실패했습니다." }
+  }
   return { data, orderId, amount }
 }
 
@@ -102,7 +105,10 @@ export async function confirmTutoringPayment(paymentKey: string, orderId: string
     .eq("order_id", orderId)
     .eq("user_id", user.id)
 
-  if (error) return { error: error.message }
+  if (error) {
+    console.error("[tutoring] 결제 상태 업데이트 실패:", error.message)
+    return { error: "결제 처리에 실패했습니다." }
+  }
 
   // 과외 수강생에게 1개월 구독(무제한 분석) 부여
   const now = new Date()

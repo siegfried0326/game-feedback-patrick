@@ -788,16 +788,22 @@ export async function reclassifyAllCompanies() {
  * 호출 방법: 관리자 페이지에서 버튼 클릭 또는 직접 호출
  * 소요 시간: 포트폴리오 1개당 ~2초 (OpenAI API 호출 + DB 저장)
  */
+/**
+ * 기존 포트폴리오 검색 데이터 생성 (1개씩 처리)
+ *
+ * Vercel 서버 액션 타임아웃(10초) 안에 끝나도록 1개만 처리.
+ * 프론트에서 반복 호출하여 전체 완료.
+ */
 export async function embedExistingPortfolios(force: boolean = false) {
   try {
     // 보안: 관리자 인증 확인
     await verifyAdmin()
 
-    console.log(`[admin] 기존 포트폴리오 배치 임베딩 시작 (force=${force})`)
-    // 한 번에 10개씩만 처리 (Vercel 타임아웃 방지)
-    const result = await embedAllPortfolios(force, 10)
+    console.log(`[admin] 포트폴리오 검색 데이터 생성 시작 (force=${force})`)
+    // ★ 한 번에 1개만 처리 (Vercel 서버 액션 10초 타임아웃 대응)
+    const result = await embedAllPortfolios(force, 1)
 
-    console.log(`[admin] 배치 임베딩 완료:`, result)
+    console.log(`[admin] 완료: 처리 ${result.processed}, 남은 ${result.remaining}개`)
     return {
       success: true,
       data: {
@@ -805,14 +811,14 @@ export async function embedExistingPortfolios(force: boolean = false) {
         processed: result.processed,
         skipped: result.skipped,
         failed: result.failed,
-        remaining: result.remaining, // 아직 처리 안 된 개수
-        errors: result.errors.slice(0, 10),
+        remaining: result.remaining,
+        errors: result.errors.slice(0, 5),
       }
     }
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "일괄 임베딩 실패"
+      error: error instanceof Error ? error.message : "처리 실패"
     }
   }
 }

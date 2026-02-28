@@ -18,7 +18,7 @@ import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Pla
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios } from "@/app/actions/admin"
 
 interface UploadStatus {
   fileName: string
@@ -219,25 +219,9 @@ export default function AdminPage() {
     let currentForce = force
 
     try {
-      // 3개씩 반복 처리 (남은 게 0이 될 때까지)
+      // 1개씩 반복 처리 (서버 액션 10초 타임아웃 안에 끝나도록)
       while (true) {
-        const res = await fetch("/api/admin/embed", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ force: currentForce }),
-        })
-
-        // 응답을 텍스트로 먼저 읽고, JSON 파싱 시도
-        // (서버가 HTML 에러 페이지를 반환하면 res.json()이 실패하므로)
-        const responseText = await res.text()
-        let result: { success: boolean; error?: string; data?: any }
-        try {
-          result = JSON.parse(responseText)
-        } catch {
-          // JSON이 아닌 응답 (서버 에러 페이지 등)
-          const preview = responseText.slice(0, 200).replace(/<[^>]*>/g, "")
-          result = { success: false, error: `서버 응답 오류 (${res.status}): ${preview}` }
-        }
+        const result = await embedExistingPortfolios(currentForce)
 
         if (!result.success) {
           const errorMsg = result.error || "알 수 없는 오류"
@@ -257,12 +241,12 @@ export default function AdminPage() {
             processed: cumulativeProcessed,
           })
 
-          // 이번 배치에서 처리된 게 없거나 남은 게 없으면 종료
+          // 이번에 처리된 게 없거나 남은 게 없으면 종료
           if (result.data.processed === 0 || result.data.remaining === 0) {
             break
           }
 
-          // force 모드는 첫 배치만
+          // force 모드는 첫 호출만 (이후는 새것만 처리)
           if (currentForce) currentForce = false
         } else {
           break

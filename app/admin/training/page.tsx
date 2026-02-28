@@ -361,7 +361,7 @@ export default function TrainingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628] py-12 px-6">
+    <div className="py-12 px-6">
       <div className="max-w-5xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8 flex items-center justify-between">

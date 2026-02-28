@@ -22,7 +22,9 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\n로그인: 네이버 제거, Apple 로그인 추가\n\n- 네이버 소셜 로그인 버튼 제거\n- Apple 소셜 로그인 버튼 추가 \\(검정 배경, Apple 로고\\)\n- 지원 로그인: Google, 카카오, Apple\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit -m \"$\\(cat <<''EOF''\n분석 결과 저장/조회 + 데이터 프라이버시 보호 UI\n\n- 마이페이지에서 분석 이력 클릭 시 상세 결과\\(점수, 레이더차트, 강점/약점\\) 조회\n- getAnalysisDetail 함수 추가 \\(RLS로 본인 데이터만 접근 가능\\)\n- 분석 페이지 + 마이페이지에 데이터 보호 안내 문구 추가\n- \"관리자를 포함한 그 누구도 열람할 수 없습니다\" 프라이버시 안내\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "mcp__tosspayments-integration-guide__get-v2-documents",
+      "Bash(python3:*)"
     ]
   }
 }

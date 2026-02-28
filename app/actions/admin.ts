@@ -799,16 +799,24 @@ export async function reclassifyAllCompanies() {
  */
 export async function embedExistingPortfolios(force: boolean = false) {
   try {
+    // ★ 진단 1단계: DB 연결만 테스트
     const { supabase } = await verifyAdmin()
 
+    const { count: totalCount, error: countErr } = await supabase
+      .from("portfolios").select("id", { count: "exact", head: true })
+
+    if (countErr) return { success: false, error: `DB 오류: ${countErr.message}` }
+
+    // ★ 여기서 바로 리턴 (DB 연결 테스트)
+    return {
+      success: true,
+      data: { total: totalCount || 0, processed: 0, failed: 0, skipped: 0, remaining: totalCount || 0, errors: [`DB 연결 성공! 포트폴리오 ${totalCount}개 확인`] }
+    }
+
+    /* eslint-disable no-unreachable */
     if (!process.env.OPENAI_API_KEY) {
       return { success: false, error: "OPENAI_API_KEY가 설정되지 않았습니다." }
     }
-
-    // ── 1단계: 전체 수 조회 (가벼운 쿼리) ──
-    const { count: totalCount, error: countErr } = await supabase
-      .from("portfolios").select("id", { count: "exact", head: true })
-    if (countErr) return { success: false, error: `DB 오류: ${countErr.message}` }
 
     // ── 2단계: 이미 처리된 포트폴리오 ID 조회 ──
     const { data: chunked, error: chunkErr } = await supabase

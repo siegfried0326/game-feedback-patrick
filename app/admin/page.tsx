@@ -18,7 +18,7 @@ import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Pla
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios } from "@/app/actions/admin"
 
 interface UploadStatus {
   fileName: string
@@ -225,23 +225,9 @@ export default function AdminPage() {
     const allErrors: string[] = []
 
     try {
-      // 1개씩 반복 처리 (API 라우트로 호출, maxDuration=60초)
+      // 1개씩 반복 처리 (서버 액션 호출)
       while (true) {
-        const res = await fetch("/api/admin/embed", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ force: currentForce }),
-        })
-
-        // HTTP 에러 처리
-        let result
-        try {
-          result = await res.json()
-        } catch {
-          allErrors.push(`서버 응답 파싱 실패 (HTTP ${res.status})`)
-          setEmbedErrors([...allErrors])
-          break
-        }
+        const result = await embedExistingPortfolios(currentForce)
 
         if (!result.success) {
           allErrors.push(result.error || "알 수 없는 오류")
@@ -254,7 +240,6 @@ export default function AdminPage() {
           cumulativeFailed += result.data.failed
           setTotalProcessed(cumulativeProcessed)
 
-          // 에러 메시지 수집 (실패한 항목의 원인)
           if (result.data.errors && result.data.errors.length > 0) {
             allErrors.push(...result.data.errors)
             setEmbedErrors([...allErrors])
@@ -266,17 +251,8 @@ export default function AdminPage() {
             failed: cumulativeFailed,
           })
 
-          // 남은 게 없으면 종료
-          if (result.data.remaining === 0) {
-            break
-          }
-
-          // 처리도 실패도 0이면 종료 (더 이상 할 게 없음)
-          if (result.data.processed === 0 && result.data.failed === 0) {
-            break
-          }
-
-          // force 모드는 첫 호출만 (이후는 새것만 처리)
+          if (result.data.remaining === 0) break
+          if (result.data.processed === 0 && result.data.failed === 0) break
           if (currentForce) currentForce = false
         } else {
           break

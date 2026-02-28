@@ -798,23 +798,36 @@ export async function reclassifyAllCompanies() {
  * 프론트에서 반복 호출하여 전체 완료.
  */
 export async function embedExistingPortfolios(force: boolean = false) {
+  // 디버그: 어느 단계에서 실패하는지 추적
+  let step = "시작"
   try {
+    step = "관리자 인증"
     const { supabase } = await verifyAdmin()
 
+    step = "OPENAI_API_KEY 확인"
     if (!process.env.OPENAI_API_KEY) {
       return { success: false, error: "OPENAI_API_KEY가 Vercel 환경변수에 없습니다." }
     }
 
     // ── 1단계: 전체 수 + 이미 처리된 ID를 동시에 가져옴 (병렬) ──
+    step = "DB 조회 (전체 수 + 처리완료 목록)"
     const [countResult, chunkedResult] = await Promise.all([
       supabase.from("portfolios").select("id", { count: "exact", head: true }),
       supabase.from("portfolio_chunks").select("portfolio_id"),
     ])
 
+    if (countResult.error) {
+      return { success: false, error: `portfolios 테이블 조회 실패: ${countResult.error.message}` }
+    }
+    if (chunkedResult.error) {
+      return { success: false, error: `portfolio_chunks 테이블 조회 실패: ${chunkedResult.error.message}. portfolio_chunks 테이블이 존재하는지 확인하세요.` }
+    }
+
     const totalCount = countResult.count || 0
     const processedIds = [...new Set((chunkedResult.data || []).map((c: { portfolio_id: string }) => c.portfolio_id))]
 
     // ── 2단계: 처리 안 된 포트폴리오 1개 찾기 ──
+    step = "미처리 포트폴리오 검색"
     let query = supabase
       .from("portfolios")
       .select("id, file_name, content_text, summary, strengths, weaknesses, tags, companies, document_type")
@@ -826,7 +839,11 @@ export async function embedExistingPortfolios(force: boolean = false) {
       query = query.not("id", "in", `(${processedIds.join(",")})`)
     }
 
-    const { data: portfolios } = await query
+    const { data: portfolios, error: queryError } = await query
+
+    if (queryError) {
+      return { success: false, error: `포트폴리오 조회 실패: ${queryError.message}` }
+    }
 
     if (!portfolios || portfolios.length === 0) {
       // 더 이상 처리할 포트폴리오 없음
@@ -840,6 +857,7 @@ export async function embedExistingPortfolios(force: boolean = false) {
     const remaining = Math.max(0, totalCount - processedIds.length - 1)
 
     // ── 3단계: 텍스트 확보 (content_text 또는 메타데이터 조합) ──
+    step = `텍스트 추출 (${portfolio.file_name})`
     let text = portfolio.content_text
     if (!text || text.trim().length < 50) {
       const parts: string[] = []
@@ -861,6 +879,7 @@ export async function embedExistingPortfolios(force: boolean = false) {
     }
 
     // ── 4단계: 텍스트 → 청크 분할 (최대 20개 = OpenAI 1회 호출) ──
+    step = "청크 분할"
     const chunks = chunkText(text).slice(0, 20)
     if (chunks.length === 0) {
       return {
@@ -871,13 +890,16 @@ export async function embedExistingPortfolios(force: boolean = false) {
 
     // ── 5단계: force 모드면 기존 청크 삭제 ──
     if (force) {
+      step = "기존 청크 삭제"
       await supabase.from("portfolio_chunks").delete().eq("portfolio_id", portfolio.id)
     }
 
     // ── 6단계: OpenAI 임베딩 생성 (1회 API 호출) ──
+    step = `OpenAI 임베딩 생성 (${chunks.length}개 청크)`
     const embeddings = await generateEmbeddings(chunks)
 
     // ── 7단계: DB에 저장 (1회 insert) ──
+    step = "DB 저장"
     const rows = chunks.map((chunk, idx) => ({
       portfolio_id: portfolio.id,
       chunk_index: idx,
@@ -904,9 +926,11 @@ export async function embedExistingPortfolios(force: boolean = false) {
       data: { total: totalCount, processed: 1, failed: 0, skipped: processedIds.length, remaining, errors: [] }
     }
   } catch (error) {
+    // 디버그: 어느 단계에서 실패했는지 포함
+    const msg = error instanceof Error ? error.message : String(error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "처리 실패"
+      error: `[${step}] 실패: ${msg}`
     }
   }
 }

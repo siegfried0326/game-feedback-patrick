@@ -1,5 +1,5 @@
 /**
- * 사용자 포트폴리오 분석 서버 액션 (1128줄)
+ * 사용자 포트폴리오 분석 서버 액션
  *
  * 핵심 함수:
  * - checkBeforeAnalysis(): 분석 전 인증 + 구독 확인
@@ -13,16 +13,18 @@
  * 1. portfolios 테이블에서 학습 데이터 로드 (상위 50개)
  * 2. 통계 계산 (전체 평균, 회사별 평균, 태그 빈도)
  * 3. 샘플 12개 선택 (회사별 균형 샘플링)
- * 4. 시스템 프롬프트 구성 (통계 + 샘플 + 평가 기준)
- * 5. Claude API 호출 (15개 카테고리 + 가독성 + 레이아웃 + 회사별 비교)
- * 6. JSON 파싱 + 랭킹 계산 (187명 기준)
+ * 4. [벡터 서치] 사용자 문서와 유사한 포트폴리오 실제 내용 검색
+ * 5. 시스템 프롬프트 구성 (통계 + 샘플 + 유사 내용 + 평가 기준)
+ * 6. Claude API 호출 (15개 카테고리 + 가독성 + 레이아웃 + 회사별 비교)
+ * 7. JSON 파싱 + 랭킹 계산 (187명 기준)
  *
+ * 벡터 서치: OpenAI 임베딩 + Supabase pgvector로 유사 포트폴리오 검색
  * URL 분석: 직접 fetch → HTML 텍스트 추출 → SPA는 Jina AI Reader 폴백
  * SSRF 방어: isInternalUrl()로 내부 네트워크 URL 차단
  *
  * TODO: analyzeUrlDirect와 analyzeDocumentDirect의 중복 로직 추출 필요
  *
- * 환경변수: ANTHROPIC_API_KEY, JINA_API_KEY
+ * 환경변수: ANTHROPIC_API_KEY, JINA_API_KEY, OPENAI_API_KEY
  */
 "use server"
 
@@ -30,6 +32,7 @@ import { createClient } from "@/lib/supabase/server"
 import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
+import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
 
 // 분석 전 인증 + 구독 확인
 export async function checkBeforeAnalysis() {
@@ -485,10 +488,30 @@ ${topExamples}
 `
     }
 
+    // [벡터 서치] 사용자 문서와 유사한 합격 포트폴리오 내용 검색
+    // pageContent가 있을 때만 실행 (URL/텍스트 추출 완료 후)
+    let vectorSearchSection = ""
+    if (pageContent && pageContent.length >= 100) {
+      try {
+        const searchResult = await searchSimilarContent(pageContent, 5, 0.3)
+        if (searchResult.chunks.length > 0) {
+          vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
+          console.log(`[벡터 서치] ${searchResult.chunks.length}개 유사 청크 발견`)
+        } else {
+          console.log("[벡터 서치] 유사 청크 없음 (임베딩 미생성 또는 유사도 부족)")
+        }
+      } catch (err) {
+        // 벡터 서치 실패해도 기존 분석은 정상 진행
+        console.error("[벡터 서치] 검색 실패 (무시):", err)
+      }
+    }
+
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}
+
+${vectorSearchSection}
 
 ---
 
@@ -878,10 +901,28 @@ ${topExamples}
 `
     }
 
+    // [벡터 서치] analyzeDocumentDirect에서는 파일명 기반으로 유사 검색 시도
+    // (파일이 base64로 전달되어 텍스트 추출이 어려우므로, 파일명+문서유형으로 검색)
+    let vectorSearchSection = ""
+    try {
+      // 파일명과 문서유형을 검색 쿼리로 사용
+      const searchQuery = `게임 기획 포트폴리오 ${input.fileName}`
+      const searchResult = await searchSimilarContent(searchQuery, 5, 0.25)
+      if (searchResult.chunks.length > 0) {
+        vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
+        console.log(`[벡터 서치-문서] ${searchResult.chunks.length}개 유사 청크 발견`)
+      }
+    } catch (err) {
+      // 벡터 서치 실패해도 기존 분석은 정상 진행
+      console.error("[벡터 서치-문서] 검색 실패 (무시):", err)
+    }
+
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}
+
+${vectorSearchSection}
 
 ---
 

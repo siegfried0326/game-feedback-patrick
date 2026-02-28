@@ -4,6 +4,17 @@
 
 ## 2026-02-28
 
+### 벡터 서치 (유사 포트폴리오 검색) 구현
+- OpenAI text-embedding-3-small 임베딩 + Supabase pgvector 연동
+- 사용자 분석 시 유사한 합격 포트폴리오의 **실제 내용**을 AI에 제공
+- 기존: 메타데이터(점수/태그/요약)만 → 변경: 실제 텍스트 내용 비교 가능
+- 신규 파일: `lib/openai-embedding.ts`, `lib/vector-search.ts`
+- 신규 SQL: `scripts/011_add_vector_search.sql` (portfolio_chunks 테이블)
+- admin.ts: 포트폴리오 업로드 시 자동 임베딩 생성 + 일괄 임베딩 액션 추가
+- analyze.ts: analyzeUrlDirect/analyzeDocumentDirect에 벡터 검색 연동
+- 스프레드시트 업로드 시 content_text 자동 저장
+- PRD 기획서: `docs/PRD_벡터서치.md` 작성
+
 ### 보안 감사 완료
 - 28개 항목 보안 감사 수행 (19 통과 / 5 부분 / 4 미구현)
 - RLS 정책 전면 정비: 위험한 퍼블릭 정책 삭제 → auth.uid() 기반으로 교체

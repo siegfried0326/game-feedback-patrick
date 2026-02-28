@@ -1,14 +1,15 @@
 /**
- * 관리자 학습 데이터 관리 서버 액션 (694줄)
+ * 관리자 학습 데이터 관리 서버 액션
  *
  * 합격자 포트폴리오를 업로드/분석/저장하여 사용자 분석 시 비교 기준으로 활용.
  *
  * 핵심 기능:
  * - uploadAdminFile(): Supabase Storage에 파일 업로드 (500MB 제한)
  * - analyzeAndSavePortfolio(): Gemini 2.0 Flash AI 분석 → portfolios 테이블 저장
- *   - Excel/CSV: 텍스트 변환 후 분석
+ *   - Excel/CSV: 텍스트 변환 후 분석 + content_text 저장
  *   - 15MB 미만: inline_data (base64)
  *   - 15MB 이상: Gemini File API 업로드 → 폴링 → 분석 → 파일 삭제
+ * - embedExistingPortfolios(): 기존 포트폴리오 일괄 벡터 임베딩 (벡터 서치용)
  * - getPortfolioStats/getCompanyStats: 통계 조회
  * - deletePortfolio/deleteMultiplePortfolios: 삭제
  * - reclassifyAllCompanies: 파일명 기준 회사명 일괄 재분류
@@ -17,9 +18,14 @@
  * - portfolioPrompt: PDF/이미지용 (문서 구조, 강점 패턴, 수치/데이터 분석)
  * - dataTablePrompt: Excel/CSV용 (어트리뷰트 설계, 밸런스, 확장성 분석)
  *
+ * 벡터 서치:
+ * - 포트폴리오 저장 후 자동으로 텍스트 청킹 + OpenAI 임베딩 생성
+ * - 스프레드시트: parseExcelToText() 결과를 content_text로 저장
+ * - PDF/이미지: 메타데이터(요약+강점+약점) 기반 임베딩
+ *
  * 보안: 모든 함수에서 관리자 이메일 이중 확인 (미들웨어 + 서버 액션)
  *
- * 환경변수: GOOGLE_GENERATIVE_AI_API_KEY, ADMIN_EMAILS
+ * 환경변수: GOOGLE_GENERATIVE_AI_API_KEY, ADMIN_EMAILS, OPENAI_API_KEY
  */
 "use server"
 
@@ -28,6 +34,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { v4 as uuidv4 } from "uuid"
 import { extractCompanyFromFileName } from "@/lib/company-parser"
 import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
+import { embedAndStorePortfolio, embedAllPortfolios } from "@/lib/vector-search"
 
 interface PortfolioInput {
   fileName: string
@@ -307,6 +314,8 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
       })
 
       let result
+      // 스프레드시트에서 추출한 텍스트 (벡터 임베딩용 — content_text로 DB에 저장)
+      let extractedContentText: string | null = null
 
       // 엑셀/CSV 파일: 텍스트로 변환해서 분석
       if (isSpreadsheet) {
@@ -321,6 +330,8 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
         }
 
         console.log(`📊 변환된 텍스트 길이: ${tableText.length}자`)
+        // 스프레드시트 텍스트를 content_text로 보존 (벡터 서치용)
+        extractedContentText = tableText
 
         result = await model.generateContent([
           { text: prompt + "\n\n--- 아래는 데이터테이블 내용입니다 ---\n\n" + tableText },
@@ -441,8 +452,8 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
         return 0
       }
 
-      // DB에 저장
-      const { error: dbError } = await supabase
+      // DB에 저장 (content_text 포함 — 벡터 서치용)
+      const { data: savedPortfolio, error: dbError } = await supabase
         .from("portfolios")
         .insert({
           file_name: input.fileName,
@@ -459,13 +470,39 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
           tags: analysis.tags,
           summary: analysis.summary,
           strengths: analysis.strengths,
-          weaknesses: analysis.weaknesses
+          weaknesses: analysis.weaknesses,
+          // 스프레드시트는 추출된 텍스트 저장, 그 외는 null (향후 개선)
+          content_text: extractedContentText,
         })
         .select()
         .single()
 
       if (dbError) {
         throw new Error(`DB 저장 실패: ${dbError.message}`)
+      }
+
+      // [벡터 서치] 저장된 포트폴리오에 대해 임베딩 생성 (비동기, 실패해도 분석 성공)
+      if (savedPortfolio?.id) {
+        // 임베딩용 텍스트: content_text 있으면 사용, 없으면 메타데이터 조합
+        const embeddingText = extractedContentText ||
+          [
+            `파일: ${input.fileName}`,
+            `문서유형: ${input.documentType}`,
+            `회사: ${input.companies.join(", ")}`,
+            `요약: ${analysis.summary}`,
+            `강점: ${(analysis.strengths || []).join(". ")}`,
+            `약점: ${(analysis.weaknesses || []).join(". ")}`,
+            `키워드: ${(analysis.tags || []).join(", ")}`,
+          ].join("\n\n")
+
+        embedAndStorePortfolio(savedPortfolio.id, embeddingText, {
+          companies: input.companies,
+          documentType: input.documentType,
+          fileName: input.fileName,
+        }).catch(err => {
+          // 임베딩 실패해도 포트폴리오 저장은 성공 처리
+          console.error("[admin] 임베딩 생성 실패 (무시):", err)
+        })
       }
 
       return {
@@ -737,5 +774,43 @@ export async function reclassifyAllCompanies() {
     return { success: true, total: portfolios.length, updated, changes: changes.slice(0, 50) }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "재분류 실패" }
+  }
+}
+
+// ========== 벡터 서치 (임베딩) ==========
+
+/**
+ * 기존 포트폴리오 일괄 벡터 임베딩
+ *
+ * content_text가 있으면 실제 텍스트로, 없으면 메타데이터(요약+강점+약점) 기반.
+ * 이미 임베딩된 포트폴리오는 건너뜀 (force=true로 재처리 가능).
+ *
+ * 호출 방법: 관리자 페이지에서 버튼 클릭 또는 직접 호출
+ * 소요 시간: 포트폴리오 1개당 ~2초 (OpenAI API 호출 + DB 저장)
+ */
+export async function embedExistingPortfolios(force: boolean = false) {
+  try {
+    // 보안: 관리자 인증 확인
+    await verifyAdmin()
+
+    console.log(`[admin] 기존 포트폴리오 일괄 임베딩 시작 (force=${force})`)
+    const result = await embedAllPortfolios(force)
+
+    console.log(`[admin] 일괄 임베딩 완료:`, result)
+    return {
+      success: true,
+      data: {
+        total: result.total,
+        processed: result.processed,
+        skipped: result.skipped,
+        failed: result.failed,
+        errors: result.errors.slice(0, 10), // 에러 메시지 10개까지만 반환
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "일괄 임베딩 실패"
+    }
   }
 }

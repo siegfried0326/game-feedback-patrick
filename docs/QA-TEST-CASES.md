@@ -137,6 +137,35 @@
 | I5 | 포트폴리오 삭제 | 삭제 버튼 → Storage + DB에서 제거 | 🔲 |
 | I6 | 학습 데이터 통계 | 회사별/연도별 통계 정상 표시 | 🔲 |
 | I7 | 회사명 파싱 | 파일명에서 회사명 자동 추출 (company-parser.ts) | 🔲 |
+| I8 | 일괄 임베딩 | embedExistingPortfolios() 호출 → 기존 포트폴리오 벡터 생성 | 🔲 |
+| I9 | 자동 임베딩 | 새 포트폴리오 업로드 → content_text 저장 + 임베딩 자동 생성 | 🔲 |
+| I10 | 임베딩 재생성 | embedExistingPortfolios(force=true) → 기존 청크 삭제 후 재생성 | 🔲 |
+
+---
+
+## L. 벡터 서치
+
+| # | 항목 | 확인사항 | 결과 |
+|---|------|---------|------|
+| L1 | pgvector 설정 | Supabase에 011_add_vector_search.sql 실행 완료 | 🔲 |
+| L2 | OPENAI_API_KEY | Vercel 환경변수에 OPENAI_API_KEY 설정 | 🔲 |
+| L3 | 일괄 임베딩 실행 | 관리자 → embedExistingPortfolios() → 전체 포트폴리오 임베딩 | 🔲 |
+| L4 | URL 분석 벡터 검색 | analyzeUrlDirect → 유사 청크 발견 시 프롬프트에 포함 | 🔲 |
+| L5 | 문서 분석 벡터 검색 | analyzeDocumentDirect → 파일명 기반 유사 검색 시도 | 🔲 |
+| L6 | 벡터 검색 실패 시 | OPENAI_API_KEY 없어도 기존 분석 정상 진행 | 🔲 |
+| L7 | 포트폴리오 삭제 | 포트폴리오 삭제 시 관련 청크도 cascade 삭제 | 🔲 |
+| L8 | 스프레드시트 content_text | 엑셀/CSV 업로드 → content_text 컬럼에 텍스트 저장 | 🔲 |
+
+---
+
+### S. 수동 실행 필요 (SQL)
+
+| # | 항목 | 작업 | 결과 |
+|---|------|------|------|
+| S5 | 크레딧 시스템 DB | Supabase SQL Editor에서 010_add_credits_system.sql 실행 | 🔲 |
+| S6 | 벡터 서치 DB | Supabase SQL Editor에서 011_add_vector_search.sql 실행 | 🔲 |
+| S7 | 환경변수 추가 | Vercel에 OPENAI_API_KEY 추가 | 🔲 |
+| S8 | 일괄 임베딩 | S6 완료 후 embedExistingPortfolios() 호출하여 기존 데이터 임베딩 | 🔲 |
 
 ---
 

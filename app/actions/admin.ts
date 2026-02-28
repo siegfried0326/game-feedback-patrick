@@ -29,10 +29,6 @@
  */
 "use server"
 
-// Vercel Pro: 서버 액션 최대 실행 시간 60초
-// (layout.tsx의 maxDuration은 서버 액션 파일에 적용 안 됨, 여기서 직접 설정 필요)
-export const maxDuration = 60
-
 import { createClient } from "@/lib/supabase/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { v4 as uuidv4 } from "uuid"

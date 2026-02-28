@@ -90,6 +90,11 @@ export function chunkText(
       chunks.push(chunk)
     }
 
+    // 텍스트 끝에 도달했으면 종료 (무한 루프 방지)
+    // 800~900자 텍스트에서 end가 항상 text.length로 고정되어
+    // start = end - overlap이 같은 값을 반복하는 버그 수정
+    if (end >= text.length) break
+
     // 다음 청크 시작점 (겹침 적용)
     start = end - overlap
     if (start >= text.length) break

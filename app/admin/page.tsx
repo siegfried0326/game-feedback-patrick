@@ -18,7 +18,7 @@ import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Pla
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios, debugEmbeddingStatus } from "@/app/actions/admin"
 
 interface UploadStatus {
   fileName: string
@@ -494,6 +494,33 @@ export default function AdminPage() {
                 className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
               >
                 전체 다시 만들기
+              </Button>
+
+              {/* 임베딩 상태 진단 */}
+              <Button
+                onClick={async () => {
+                  const result = await debugEmbeddingStatus()
+                  if (result.success && result.data) {
+                    const d = result.data as Record<string, unknown>
+                    const lines = [
+                      `총 포트폴리오: ${d.총포트폴리오}`,
+                      `진짜 임베딩: ${d.진짜임베딩}개 (청크 ${d.진짜임베딩청크수}개)`,
+                      `스킵 마커: ${d.스킵마커}개`,
+                      ``,
+                      `스킵된 포트폴리오 샘플:`,
+                      ...((d.스킵된샘플 as string[]) || []).map((s: string) => `  ${s}`),
+                    ]
+                    setEmbedErrors(lines)
+                  } else {
+                    setEmbedErrors([`진단 실패: ${result.error}`])
+                  }
+                }}
+                disabled={isEmbedding}
+                variant="outline"
+                size="sm"
+                className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+              >
+                상태 진단
               </Button>
             </div>
 

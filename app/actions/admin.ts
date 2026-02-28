@@ -797,6 +797,54 @@ export async function reclassifyAllCompanies() {
  *
  * 프론트에서 반복 호출하여 전체 완료.
  */
+// ★ 임베딩 상태 진단 함수 — 진짜 임베딩 vs 스킵 마커 확인
+export async function debugEmbeddingStatus() {
+  try {
+    const { supabase } = await verifyAdmin()
+
+    // 전체 포트폴리오 수
+    const { count: totalPortfolios } = await supabase.from("portfolios").select("id", { count: "exact", head: true })
+
+    // 진짜 임베딩 (chunk_index >= 0)
+    const { data: realChunks } = await supabase.from("portfolio_chunks").select("portfolio_id, chunk_index").gte("chunk_index", 0)
+    const realIds = [...new Set((realChunks || []).map(c => c.portfolio_id))]
+
+    // 스킵 마커 (chunk_index = -1)
+    const { data: skipMarkers } = await supabase.from("portfolio_chunks").select("portfolio_id, chunk_text").eq("chunk_index", -1)
+
+    // 스킵된 포트폴리오 5개의 실제 데이터 확인
+    const skipIds = (skipMarkers || []).map(m => m.portfolio_id).slice(0, 5)
+    let sampleData: string[] = []
+    if (skipIds.length > 0) {
+      const { data: samples } = await supabase
+        .from("portfolios")
+        .select("id, file_name, content_text, summary, strengths, weaknesses, tags")
+        .in("id", skipIds)
+        .limit(5)
+      sampleData = (samples || []).map(p => {
+        const ct = (p.content_text || "").length
+        const sm = (p.summary || "").length
+        const st = p.strengths?.length || 0
+        const tg = p.tags?.length || 0
+        return `${p.file_name}: content_text=${ct}자, summary=${sm}자, strengths=${st}개, tags=${tg}개`
+      })
+    }
+
+    return {
+      success: true,
+      data: {
+        총포트폴리오: totalPortfolios,
+        진짜임베딩: realIds.length,
+        스킵마커: (skipMarkers || []).length,
+        진짜임베딩청크수: (realChunks || []).length,
+        스킵된샘플: sampleData,
+      }
+    }
+  } catch (error) {
+    return { success: false, error: `진단 실패: ${error instanceof Error ? error.message : String(error)}` }
+  }
+}
+
 export async function embedExistingPortfolios(force: boolean = false) {
   // ★ 실전 버전: 포트폴리오 배치(20개) 조회 → 텍스트 충분한 1개 임베딩
   // 텍스트 부족한 포트폴리오는 빈 마커 저장 → 다음 호출 시 건너뜀 (무한 루프 방지)

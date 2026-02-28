@@ -40,9 +40,12 @@ export default function AdminPage() {
   const [isEmbedding, setIsEmbedding] = useState(false)
   const [embedResult, setEmbedResult] = useState<{
     total: number; processed: number; skipped: number; failed: number; remaining: number
+    errors?: string[]
   } | null>(null)
   // 누적 처리 개수 (반복 처리 시 합산)
   const [totalProcessed, setTotalProcessed] = useState(0)
+  // 에러 메시지 모음 (디버깅용)
+  const [embedErrors, setEmbedErrors] = useState<string[]>([])
 
   useEffect(() => {
     loadStats()
@@ -214,9 +217,12 @@ export default function AdminPage() {
     setIsEmbedding(true)
     setEmbedResult(null)
     setTotalProcessed(0)
+    setEmbedErrors([])
 
     let cumulativeProcessed = 0
+    let cumulativeFailed = 0
     let currentForce = force
+    const allErrors: string[] = []
 
     try {
       // 1개씩 반복 처리 (서버 액션 10초 타임아웃 안에 끝나도록)
@@ -224,25 +230,36 @@ export default function AdminPage() {
         const result = await embedExistingPortfolios(currentForce)
 
         if (!result.success) {
-          const errorMsg = result.error || "알 수 없는 오류"
-          if (cumulativeProcessed > 0) {
-            alert(`${cumulativeProcessed}개 처리 후 오류: ${errorMsg}`)
-          } else {
-            alert("처리 실패: " + errorMsg)
-          }
+          // 서버 액션 자체가 실패한 경우 (인증 오류 등)
+          allErrors.push(result.error || "알 수 없는 오류")
+          setEmbedErrors([...allErrors])
           break
         }
 
         if (result.data) {
           cumulativeProcessed += result.data.processed
+          cumulativeFailed += result.data.failed
           setTotalProcessed(cumulativeProcessed)
+
+          // 에러 메시지 수집 (실패한 항목의 원인)
+          if (result.data.errors && result.data.errors.length > 0) {
+            allErrors.push(...result.data.errors)
+            setEmbedErrors([...allErrors])
+          }
+
           setEmbedResult({
             ...result.data,
             processed: cumulativeProcessed,
+            failed: cumulativeFailed,
           })
 
-          // 이번에 처리된 게 없거나 남은 게 없으면 종료
-          if (result.data.processed === 0 || result.data.remaining === 0) {
+          // 남은 게 없으면 종료
+          if (result.data.remaining === 0) {
+            break
+          }
+
+          // 처리도 실패도 0이면 종료 (더 이상 할 게 없음)
+          if (result.data.processed === 0 && result.data.failed === 0) {
             break
           }
 
@@ -253,7 +270,9 @@ export default function AdminPage() {
         }
       }
     } catch (error) {
-      alert("처리 오류: " + (error instanceof Error ? error.message : "알 수 없는 오류"))
+      const msg = error instanceof Error ? error.message : "알 수 없는 오류"
+      allErrors.push(msg)
+      setEmbedErrors([...allErrors])
     }
 
     setIsEmbedding(false)
@@ -493,7 +512,7 @@ export default function AdminPage() {
             {embedResult && (
               <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                 <p className="text-purple-300 text-sm font-medium mb-2">
-                  {embedResult.remaining > 0 ? "처리 중..." : "완료!"}
+                  {isEmbedding ? "처리 중..." : embedResult.failed > 0 ? `완료 (${embedResult.failed}개 실패)` : "완료!"}
                 </p>
                 <div className="grid grid-cols-5 gap-3 text-center">
                   <div>
@@ -516,6 +535,18 @@ export default function AdminPage() {
                     <p className="text-2xl font-bold text-amber-400">{embedResult.remaining}</p>
                     <p className="text-slate-400 text-xs">남음</p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* 에러 메시지 표시 — 실패 원인 확인용 */}
+            {embedErrors.length > 0 && (
+              <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm font-medium mb-1">실패 원인:</p>
+                <div className="space-y-1 max-h-32 overflow-auto">
+                  {embedErrors.map((err, idx) => (
+                    <p key={idx} className="text-red-300/80 text-xs font-mono break-all">{err}</p>
+                  ))}
                 </div>
               </div>
             )}

@@ -1,3 +1,17 @@
+/**
+ * 크레딧(회차권) 결제 페이지
+ *
+ * 경로: /payment/credits?package=credit_1|credit_5|credit_10
+ *
+ * 흐름:
+ * 1. 로그인 확인 → 패키지 선택 (1회/5회/10회)
+ * 2. "결제하기" 클릭 → createCreditOrder()로 서버에 주문 생성
+ * 3. TossPayments 일반결제 위젯으로 카드 결제
+ * 4. 결제 완료 → /payment/credits/success로 이동
+ *
+ * 금액은 서버(payment.ts CREDIT_PRICES)에서 결정하며,
+ * 클라이언트 PACKAGES는 UI 표시용만 담당.
+ */
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
@@ -11,6 +25,7 @@ import { createCreditOrder } from "@/app/actions/payment"
 
 const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? ""
 
+// UI 표시용 패키지 정보 (실제 결제 금액은 서버 CREDIT_PRICES에서 결정)
 const PACKAGES = [
   {
     key: "credit_1",

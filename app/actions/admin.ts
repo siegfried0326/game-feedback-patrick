@@ -35,7 +35,7 @@ import { v4 as uuidv4 } from "uuid"
 import { extractCompanyFromFileName } from "@/lib/company-parser"
 import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
 import { embedAndStorePortfolio, embedAllPortfolios, chunkText } from "@/lib/vector-search"
-import { generateEmbeddings } from "@/lib/openai-embedding"
+import { generateEmbedding, generateEmbeddings } from "@/lib/openai-embedding"
 
 interface PortfolioInput {
   fileName: string
@@ -840,7 +840,15 @@ export async function embedExistingPortfolios(force: boolean = false) {
       log.push(`5.포트폴리오 OK (${p.file_name}, 텍스트 ${textLen}자)`)
     }
 
-    // ★ 여기서 바로 반환 — OpenAI 호출 안 함
+    // ── 6단계: OpenAI 임베딩 테스트 (짧은 문자열 1개만) ──
+    try {
+      const testEmbedding = await generateEmbedding("테스트 문장입니다")
+      log.push(`6.OpenAI OK (벡터 ${testEmbedding.length}차원)`)
+    } catch (e) {
+      log.push(`6.OpenAI 실패: ${e instanceof Error ? e.message : String(e)}`)
+    }
+
+    // ★ 진단 결과 반환
     return {
       success: true,
       data: {
@@ -849,7 +857,7 @@ export async function embedExistingPortfolios(force: boolean = false) {
         failed: 0,
         skipped: processedIds.length,
         remaining: (count || 0) - processedIds.length,
-        errors: [...log, "★ 진단모드: 5단계까지 성공. OpenAI 호출 전 중단."]
+        errors: [...log, "★ 진단모드: 6단계까지 테스트 완료"]
       }
     }
   } catch (error) {

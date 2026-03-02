@@ -502,18 +502,26 @@ export default function AdminPage() {
                   const result = await debugEmbeddingStatus()
                   if (result.success && result.data) {
                     const d = result.data as Record<string, unknown>
-                    const realCount = d.진짜임베딩 as number
-                    const totalCount = d.총포트폴리오 as number
-                    const skipCount = d.스킵마커 as number
-                    const chunkCount = d.진짜임베딩청크수 as number
-                    const lines = [
+                    const realCount = Number(d.진짜임베딩) || 0
+                    const totalCount = Number(d.총포트폴리오) || 0
+                    const skipCount = Number(d.스킵마커) || 0
+                    const chunkCount = Number(d.진짜임베딩청크수) || 0
+                    const skipSamples = Array.isArray(d.스킵된샘플) ? d.스킵된샘플 as string[] : []
+                    const lines: string[] = [
                       `📊 임베딩 현황`,
                       `  전체 포트폴리오: ${totalCount}개`,
                       `  임베딩 완료: ${realCount}개 (텍스트 청크 ${chunkCount}개)`,
-                      ...(skipCount > 0 ? [`  텍스트 부족으로 스킵: ${skipCount}개`] : []),
-                      ...(realCount === totalCount ? [`✅ 모든 포트폴리오 임베딩 완료!`] : [`⚠️ 미처리: ${totalCount - realCount - skipCount}개`]),
-                      ...((d.스킵된샘플 as string[]) || []).length > 0 ? [``, `스킵된 샘플:`, ...((d.스킵된샘플 as string[]) || []).map((s: string) => `  ${s}`)] : [],
                     ]
+                    if (skipCount > 0) lines.push(`  텍스트 부족으로 스킵: ${skipCount}개`)
+                    if (realCount === totalCount) {
+                      lines.push(`✅ 모든 포트폴리오 임베딩 완료!`)
+                    } else {
+                      lines.push(`⚠️ 미처리: ${totalCount - realCount - skipCount}개`)
+                    }
+                    if (skipSamples.length > 0) {
+                      lines.push(``, `스킵된 샘플:`)
+                      skipSamples.forEach(s => lines.push(`  ${s}`))
+                    }
                     setEmbedErrors(lines)
                   } else {
                     setEmbedErrors([`진단 실패: ${result.error}`])

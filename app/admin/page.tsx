@@ -496,19 +496,23 @@ export default function AdminPage() {
                 전체 다시 만들기
               </Button>
 
-              {/* 임베딩 상태 진단 */}
+              {/* 임베딩 상태 확인 */}
               <Button
                 onClick={async () => {
                   const result = await debugEmbeddingStatus()
                   if (result.success && result.data) {
                     const d = result.data as Record<string, unknown>
+                    const realCount = d.진짜임베딩 as number
+                    const totalCount = d.총포트폴리오 as number
+                    const skipCount = d.스킵마커 as number
+                    const chunkCount = d.진짜임베딩청크수 as number
                     const lines = [
-                      `총 포트폴리오: ${d.총포트폴리오}`,
-                      `진짜 임베딩: ${d.진짜임베딩}개 (청크 ${d.진짜임베딩청크수}개)`,
-                      `스킵 마커: ${d.스킵마커}개`,
-                      ``,
-                      `스킵된 포트폴리오 샘플:`,
-                      ...((d.스킵된샘플 as string[]) || []).map((s: string) => `  ${s}`),
+                      `📊 임베딩 현황`,
+                      `  전체 포트폴리오: ${totalCount}개`,
+                      `  임베딩 완료: ${realCount}개 (텍스트 청크 ${chunkCount}개)`,
+                      ...(skipCount > 0 ? [`  텍스트 부족으로 스킵: ${skipCount}개`] : []),
+                      ...(realCount === totalCount ? [`✅ 모든 포트폴리오 임베딩 완료!`] : [`⚠️ 미처리: ${totalCount - realCount - skipCount}개`]),
+                      ...((d.스킵된샘플 as string[]) || []).length > 0 ? [``, `스킵된 샘플:`, ...((d.스킵된샘플 as string[]) || []).map((s: string) => `  ${s}`)] : [],
                     ]
                     setEmbedErrors(lines)
                   } else {
@@ -518,17 +522,32 @@ export default function AdminPage() {
                 disabled={isEmbedding}
                 variant="outline"
                 size="sm"
-                className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+                className="border-slate-500/30 text-slate-300 hover:bg-slate-500/10"
               >
-                상태 진단
+                현황 보기
               </Button>
             </div>
 
             {/* 처리 결과 표시 */}
             {embedResult && (
-              <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                <p className="text-purple-300 text-sm font-medium mb-2">
-                  {isEmbedding ? "처리 중..." : embedResult.failed > 0 ? `완료 (${embedResult.failed}개 실패)` : "완료!"}
+              <div className={`mt-4 p-4 rounded-lg border ${
+                isEmbedding
+                  ? "bg-purple-500/10 border-purple-500/20"
+                  : embedResult.failed > 0
+                    ? "bg-red-500/10 border-red-500/20"
+                    : "bg-emerald-500/10 border-emerald-500/20"
+              }`}>
+                {/* 상태 헤더 */}
+                <p className={`text-sm font-medium mb-3 ${
+                  isEmbedding ? "text-purple-300" : embedResult.failed > 0 ? "text-red-300" : "text-emerald-300"
+                }`}>
+                  {isEmbedding
+                    ? `⏳ 처리 중... (${totalProcessed}개 완료)`
+                    : embedResult.remaining === 0 && embedResult.failed === 0
+                      ? "✅ 임베딩 완료!"
+                      : embedResult.failed > 0
+                        ? `⚠️ 완료 (${embedResult.failed}개 실패)`
+                        : "✅ 완료!"}
                 </p>
                 <div className="grid grid-cols-5 gap-3 text-center">
                   <div>
@@ -537,11 +556,11 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-emerald-400">{embedResult.processed}</p>
-                    <p className="text-slate-400 text-xs">처리됨</p>
+                    <p className="text-slate-400 text-xs">성공</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-slate-400">{embedResult.skipped}</p>
-                    <p className="text-slate-400 text-xs">건너뜀</p>
+                    <p className="text-slate-400 text-xs">이미 완료</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-red-400">{embedResult.failed}</p>
@@ -555,20 +574,28 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* 에러 메시지 표시 — 실패 원인 확인용 */}
+            {/* 처리 로그 */}
             {embedErrors.length > 0 && (
-              <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <p className="text-red-400 text-sm font-medium mb-1">실패 원인:</p>
-                <div className="space-y-1 max-h-32 overflow-auto">
+              <div className="mt-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+                <p className="text-slate-300 text-sm font-medium mb-1">📋 처리 로그</p>
+                <div className="space-y-1 max-h-40 overflow-auto">
                   {embedErrors.map((err, idx) => (
-                    <p key={idx} className="text-red-300/80 text-xs font-mono break-all">{err}</p>
+                    <p key={idx} className={`text-xs font-mono break-all ${
+                      err.includes("실패") || err.includes("에러")
+                        ? "text-red-300/80"
+                        : err.includes("완료") || err.includes("성공") || err.includes("OK")
+                          ? "text-emerald-300/80"
+                          : err.includes("스킵") || err.includes("부족")
+                            ? "text-amber-300/80"
+                            : "text-slate-400"
+                    }`}>{err}</p>
                   ))}
                 </div>
               </div>
             )}
 
             <p className="text-slate-500 text-xs mt-3">
-              * 포트폴리오 1개당 약 2초 걸립니다. 이미 처리된 건 건너뜁니다.
+              * 포트폴리오 1개당 약 2초 걸립니다. 이미 처리된 건 자동으로 건너뜁니다.
             </p>
           </CardContent>
         </Card>

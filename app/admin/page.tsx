@@ -14,11 +14,12 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Play } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Trash2, Play, Lightbulb, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios, debugEmbeddingStatus } from "@/app/actions/admin"
+import { uploadAdminFile, analyzeAndSavePortfolio, getPortfolioStats, getPortfolioList, deletePortfolio, deleteMultiplePortfolios, embedExistingPortfolios, debugEmbeddingStatus, extractSuccessPatterns } from "@/app/actions/admin"
+import Link from "next/link"
 
 interface UploadStatus {
   fileName: string
@@ -604,6 +605,37 @@ export default function AdminPage() {
 
             <p className="text-slate-500 text-xs mt-3">
               * 포트폴리오 1개당 약 2초 걸립니다. 이미 처리된 건 자동으로 건너뜁니다.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* ============================
+          합격자 공통점 100가지 추출
+          임베딩된 청크 텍스트를 Claude가 분석하여 공통점 추출
+        ============================ */}
+        <Card className="bg-slate-900/80 border-[#1e3a5f] mt-8">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2 text-lg">
+              <Lightbulb className="w-5 h-5 text-amber-400" />
+              합격자 공통점 분석
+            </CardTitle>
+            <CardDescription className="text-slate-400">
+              임베딩된 포트폴리오 데이터를 Claude AI가 분석하여 합격자 공통점 100가지를 추출합니다.
+              일반 공통점 70가지 + 회사별 특징 30가지를 추려냅니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Link href="/admin/success-patterns">
+                <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+                  <Lightbulb className="w-4 h-4 mr-2" />
+                  공통점 보기 / 추출하기
+                  <ExternalLink className="w-3 h-3 ml-2" />
+                </Button>
+              </Link>
+            </div>
+            <p className="text-slate-500 text-xs mt-3">
+              * 추출에 30초~1분 소요됩니다. 결과는 DB에 저장되어 언제든 확인할 수 있습니다.
             </p>
           </CardContent>
         </Card>

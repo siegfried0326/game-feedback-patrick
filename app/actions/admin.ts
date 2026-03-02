@@ -31,6 +31,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { extractCompanyFromFileName } from "@/lib/company-parser"
 import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
@@ -970,6 +971,311 @@ export async function embedExistingPortfolios(force: boolean = false) {
     return {
       success: false,
       error: `임베딩 실패: ${error instanceof Error ? error.message : String(error)}`
+    }
+  }
+}
+
+// ========== 합격자 공통점 추출 ==========
+
+/**
+ * 합격자 공통점 100가지 추출 (Claude API 사용)
+ *
+ * 동작:
+ * 1. portfolio_chunks에서 모든 청크 텍스트 + 메타데이터 가져오기
+ * 2. 회사별로 그룹핑
+ * 3. Claude API에 보내서 일반 공통점 70가지 + 회사별 특징 30가지 추출
+ * 4. success_patterns 테이블에 저장
+ *
+ * 호출: 관리자 페이지 버튼 클릭
+ * 소요: ~30초 (Claude API 1회 호출)
+ */
+export async function extractSuccessPatterns() {
+  try {
+    // ── 1. 관리자 인증 ──
+    const { supabase } = await verifyAdmin()
+
+    // ── 2. Claude API 키 확인 ──
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      return { success: false, error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
+    }
+
+    // ── 3. 모든 청크 텍스트 가져오기 (스킵 마커 제외, 진짜 임베딩만) ──
+    const { data: chunks, error: chunksError } = await supabase
+      .from("portfolio_chunks")
+      .select("portfolio_id, chunk_text, metadata")
+      .gte("chunk_index", 0)
+      .order("portfolio_id")
+
+    if (chunksError) {
+      return { success: false, error: `청크 조회 실패: ${chunksError.message}` }
+    }
+
+    if (!chunks || chunks.length === 0) {
+      return { success: false, error: "임베딩된 청크가 없습니다. 먼저 임베딩을 실행하세요." }
+    }
+
+    // ── 4. 회사별 그룹핑 ──
+    // 각 포트폴리오의 청크를 합쳐서 회사별로 분류
+    const portfolioTexts: Record<string, { text: string; companies: string[]; fileName: string }> = {}
+    for (const chunk of chunks) {
+      const pid = chunk.portfolio_id
+      if (!portfolioTexts[pid]) {
+        const meta = (chunk.metadata as Record<string, unknown>) || {}
+        portfolioTexts[pid] = {
+          text: "",
+          companies: Array.isArray(meta.companies) ? meta.companies as string[] : [],
+          fileName: (meta.fileName as string) || "알 수 없음",
+        }
+      }
+      portfolioTexts[pid].text += chunk.chunk_text + "\n"
+    }
+
+    // 회사별로 포트폴리오 그룹핑
+    const companyGroups: Record<string, string[]> = {}
+    const allTexts: string[] = []
+
+    for (const [pid, info] of Object.entries(portfolioTexts)) {
+      // 전체 목록에 추가 (요약: 앞 500자만)
+      const summary = info.text.slice(0, 500)
+      allTexts.push(`[${info.fileName}] ${summary}`)
+
+      // 회사별 그룹
+      if (info.companies.length > 0) {
+        for (const company of info.companies) {
+          if (!companyGroups[company]) companyGroups[company] = []
+          companyGroups[company].push(`[${info.fileName}] ${summary}`)
+        }
+      }
+    }
+
+    // ── 5. 회사별 통계 문자열 구성 ──
+    const companyStatsStr = Object.entries(companyGroups)
+      .sort((a, b) => b[1].length - a[1].length)
+      .map(([company, texts]) => `${company}: ${texts.length}개 포트폴리오`)
+      .join(", ")
+
+    // 주요 회사 (5개 이상인 것)
+    const majorCompanies = Object.entries(companyGroups)
+      .filter(([, texts]) => texts.length >= 3)
+      .sort((a, b) => b[1].length - a[1].length)
+      .slice(0, 8)
+
+    // ── 6. Claude에 보낼 프롬프트 구성 ──
+    // 전체 텍스트가 너무 길면 잘라서 보냄 (토큰 제한)
+    const maxChars = 150000 // ~50K 토큰
+    let contextText = ""
+
+    // 전체 포트폴리오 요약 (앞부분)
+    contextText += "=== 전체 포트폴리오 요약 ===\n"
+    let charCount = 0
+    for (const t of allTexts) {
+      if (charCount + t.length > maxChars * 0.6) break
+      contextText += t + "\n---\n"
+      charCount += t.length
+    }
+
+    // 회사별 포트폴리오 (나머지 공간)
+    for (const [company, texts] of majorCompanies) {
+      contextText += `\n=== ${company} 합격 포트폴리오 ===\n`
+      for (const t of texts.slice(0, 5)) { // 회사당 최대 5개
+        if (charCount + t.length > maxChars) break
+        contextText += t + "\n---\n"
+        charCount += t.length
+      }
+    }
+
+    const systemPrompt = `당신은 게임 업계 채용 전문 분석가입니다.
+아래에 실제 게임 회사에 합격한 ${Object.keys(portfolioTexts).length}개 포트폴리오의 내용이 있습니다.
+회사 분포: ${companyStatsStr}
+
+이 데이터를 기반으로 합격자들의 공통 특징을 분석해주세요.
+
+## 분석 요구사항:
+
+1. **일반 공통점 70가지**: 회사에 상관없이 합격 포트폴리오에서 공통적으로 나타나는 특징
+   - 문서 구조, 시각화, 수치 제시, 기획 방법론, 표현 방식 등 다양한 관점
+   - 구체적이고 실용적인 인사이트 (추상적인 말 금지)
+
+2. **회사별 특징 30가지**: 특정 회사 합격 포트폴리오에서 두드러지는 특징
+   - 주요 회사: ${majorCompanies.map(([c]) => c).join(", ")}
+   - 각 회사별 3~5개씩
+
+## 응답 형식 (반드시 JSON만, 다른 텍스트 없이):
+{
+  "patterns": [
+    {
+      "number": 1,
+      "category": "general",
+      "title": "패턴 제목 (한 줄)",
+      "description": "구체적인 설명 (2~3문장). 왜 이것이 중요한지, 어떻게 활용되는지.",
+      "importance": "high",
+      "example_files": ["파일명1.pdf", "파일명2.pdf"]
+    },
+    {
+      "number": 71,
+      "category": "넥슨",
+      "title": "넥슨 합격자 특징 제목",
+      "description": "넥슨 합격 포트폴리오에서 특히 두드러지는 특징 설명.",
+      "importance": "high",
+      "example_files": ["넥슨_01.pdf"]
+    }
+  ]
+}
+
+중요:
+- "일반적으로 좋다" 같은 추상적 표현 금지. 구체적 수치나 사례 포함
+- importance는 high(핵심)/medium(유용)/low(참고) 중 택1
+- example_files는 해당 패턴이 보이는 파일명 (없으면 빈 배열)
+- 정확히 100개 (일반 70 + 회사별 30)
+- category는 "general" 또는 회사명 (넥슨, 엔씨소프트, 넷마블 등)`
+
+    // ── 7. Claude API 호출 ──
+    const anthropic = new Anthropic({ apiKey })
+
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 16000,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: `아래는 ${Object.keys(portfolioTexts).length}개 합격 포트폴리오의 내용입니다. 분석해서 100가지 공통점을 JSON으로 추출해주세요.\n\n${contextText}`
+        }
+      ]
+    })
+
+    // ── 8. 응답 파싱 ──
+    const responseText = message.content[0].type === "text" ? message.content[0].text : ""
+
+    // JSON 추출
+    let jsonStr = responseText
+    const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      jsonStr = jsonMatch[1]
+    } else {
+      const objectMatch = responseText.match(/\{[\s\S]*\}/)
+      if (objectMatch) {
+        jsonStr = objectMatch[0]
+      }
+    }
+
+    let parsed: { patterns: Array<{
+      number: number
+      category: string
+      title: string
+      description: string
+      importance: string
+      example_files: string[]
+    }> }
+
+    try {
+      parsed = JSON.parse(jsonStr)
+    } catch {
+      return { success: false, error: `JSON 파싱 실패. 응답 앞부분: ${responseText.slice(0, 200)}` }
+    }
+
+    if (!parsed.patterns || !Array.isArray(parsed.patterns)) {
+      return { success: false, error: "patterns 배열이 없습니다." }
+    }
+
+    // ── 9. DB 저장 (기존 데이터 삭제 후 새로 저장) ──
+    const batchId = `batch_${Date.now()}`
+
+    // 기존 데이터 삭제 (같은 batch가 아닌 이전 데이터 전체)
+    await supabase.from("success_patterns").delete().neq("batch_id", batchId)
+
+    // 새 데이터 삽입
+    const rows = parsed.patterns.map(p => ({
+      pattern_number: p.number,
+      category: p.category || "general",
+      title: p.title,
+      description: p.description,
+      importance: p.importance || "medium",
+      example_files: p.example_files || [],
+      batch_id: batchId,
+    }))
+
+    // 50개씩 나눠서 삽입 (Supabase 제한)
+    for (let i = 0; i < rows.length; i += 50) {
+      const batch = rows.slice(i, i + 50)
+      const { error: insertError } = await supabase.from("success_patterns").insert(batch)
+      if (insertError) {
+        return { success: false, error: `DB 저장 실패 (${i}번째~): ${insertError.message}` }
+      }
+    }
+
+    // ── 10. 결과 반환 ──
+    const generalCount = parsed.patterns.filter(p => p.category === "general").length
+    const companyCount = parsed.patterns.filter(p => p.category !== "general").length
+    const companies = [...new Set(parsed.patterns.filter(p => p.category !== "general").map(p => p.category))]
+
+    return {
+      success: true,
+      data: {
+        total: parsed.patterns.length,
+        general: generalCount,
+        company: companyCount,
+        companies,
+        batchId,
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `공통점 추출 실패: ${error instanceof Error ? error.message : String(error)}`
+    }
+  }
+}
+
+/**
+ * 합격자 공통점 목록 조회 (확인 페이지용)
+ *
+ * 카테고리별로 그룹핑해서 반환
+ * 누구나 볼 수 있음 (로그인한 사용자)
+ */
+export async function getSuccessPatterns() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { success: false, error: "로그인이 필요합니다." }
+    }
+
+    const { data: patterns, error } = await supabase
+      .from("success_patterns")
+      .select("*")
+      .order("pattern_number", { ascending: true })
+
+    if (error) {
+      return { success: false, error: `조회 실패: ${error.message}` }
+    }
+
+    if (!patterns || patterns.length === 0) {
+      return { success: true, data: { patterns: [], stats: { total: 0, general: 0, company: 0, companies: [] } } }
+    }
+
+    // 카테고리별 그룹핑
+    const general = patterns.filter(p => p.category === "general")
+    const companyPatterns = patterns.filter(p => p.category !== "general")
+    const companies = [...new Set(companyPatterns.map(p => p.category))]
+
+    return {
+      success: true,
+      data: {
+        patterns,
+        stats: {
+          total: patterns.length,
+          general: general.length,
+          company: companyPatterns.length,
+          companies,
+        }
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `조회 실패: ${error instanceof Error ? error.message : String(error)}`
     }
   }
 }

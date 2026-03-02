@@ -141,6 +141,9 @@
 | I9 | 자동 검색 데이터 | 새 포트폴리오 업로드 → 자동으로 검색 데이터 생성 | 🔲 |
 | I10 | 전체 다시 만들기 | "전체 다시 만들기" 클릭 → 확인창 → 기존 삭제 후 재생성 | 🔲 |
 | I11 | 서버 에러 처리 | 서버가 HTML 에러 반환 시 → 읽을 수 있는 에러 메시지 표시 (깨진 메시지 안 나옴) | 🔲 |
+| I12 | 공통점 추출 | /admin/success-patterns → "공통점 새로 추출하기" → 30초~1분 후 100가지 표시 | 🔲 |
+| I13 | 공통점 탭 전환 | "일반 공통점" / 회사별 탭 클릭 → 해당 카테고리 패턴만 표시 | 🔲 |
+| I14 | 공통점 중요도 뱃지 | high=빨강, medium=노랑, low=회색 뱃지 정상 표시 | 🔲 |
 
 ---
 
@@ -167,6 +170,7 @@
 | S6 | 벡터 서치 DB | Supabase SQL Editor에서 011_add_vector_search.sql 실행 | 🔲 |
 | S7 | 환경변수 추가 | Vercel에 OPENAI_API_KEY 추가 | 🔲 |
 | S8 | 일괄 임베딩 | S6 완료 후 embedExistingPortfolios() 호출하여 기존 데이터 임베딩 | 🔲 |
+| S9 | 공통점 테이블 DB | Supabase SQL Editor에서 012_create_success_patterns.sql 실행 | 🔲 |
 
 ---
 

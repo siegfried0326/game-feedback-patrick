@@ -2,6 +2,18 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-03-03
+
+### 데이터 구조 지도 문서화
+- `docs/DATA-ARCHITECTURE.md` 신규 작성
+- DB 테이블 8개, Storage, 외부 API 5개, 데이터 흐름 5가지 전체 정리
+- 테이블 관계도, SQL 스크립트 목록, 환경 변수, 보안(RLS) 정책 포함
+
+### 스트리밍 에러 수정
+- `extractSuccessPatterns()`에서 Claude API 호출 방식 변경
+- `anthropic.messages.create()` → `anthropic.messages.stream()` + `finalMessage()`
+- 10분 초과 시 SDK가 던지는 "Streaming is required" 에러 해결
+
 ## 2026-03-02
 
 ### 합격자 공통점 100가지 추출 기능

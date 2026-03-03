@@ -1130,10 +1130,11 @@ export async function extractSuccessPatterns() {
 - 정확히 100개 (일반 70 + 회사별 30)
 - category는 "general" 또는 회사명 (넥슨, 엔씨소프트, 넷마블 등)`
 
-    // ── 7. Claude API 호출 ──
+    // ── 7. Claude API 호출 (스트리밍 — 10분 이상 걸릴 수 있으므로 필수) ──
     const anthropic = new Anthropic({ apiKey })
 
-    const message = await anthropic.messages.create({
+    // 스트리밍으로 호출 후 최종 메시지를 받아옴
+    const stream = anthropic.messages.stream({
       model: "claude-sonnet-4-20250514",
       max_tokens: 30000, // 100개 패턴 JSON이 크므로 넉넉하게
       system: systemPrompt,
@@ -1144,6 +1145,7 @@ export async function extractSuccessPatterns() {
         }
       ]
     })
+    const message = await stream.finalMessage()
 
     // ── 8. 응답 파싱 ──
     const responseText = message.content[0].type === "text" ? message.content[0].text : ""

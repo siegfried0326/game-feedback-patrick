@@ -1032,12 +1032,13 @@ export async function extractSuccessPatterns() {
     }
 
     // 회사별로 포트폴리오 그룹핑
+    // ※ 속도 최적화: 포트폴리오당 250자만 사용 (Vercel 5분 제한 내 완료 필수)
     const companyGroups: Record<string, string[]> = {}
     const allTexts: string[] = []
 
-    for (const [pid, info] of Object.entries(portfolioTexts)) {
-      // 전체 목록에 추가 (요약: 앞 500자만)
-      const summary = info.text.slice(0, 500)
+    for (const [, info] of Object.entries(portfolioTexts)) {
+      // 전체 목록에 추가 — 핵심만 250자 (기존 500자에서 축소)
+      const summary = info.text.slice(0, 250)
       allTexts.push(`[${info.fileName}] ${summary}`)
 
       // 회사별 그룹
@@ -1055,30 +1056,31 @@ export async function extractSuccessPatterns() {
       .map(([company, texts]) => `${company}: ${texts.length}개 포트폴리오`)
       .join(", ")
 
-    // 주요 회사 (5개 이상인 것)
+    // 주요 회사 (3개 이상 포트폴리오가 있는 회사)
     const majorCompanies = Object.entries(companyGroups)
       .filter(([, texts]) => texts.length >= 3)
       .sort((a, b) => b[1].length - a[1].length)
       .slice(0, 8)
 
     // ── 6. Claude에 보낼 프롬프트 구성 ──
-    // 전체 텍스트가 너무 길면 잘라서 보냄 (토큰 제한)
-    const maxChars = 150000 // ~50K 토큰
+    // ※ 속도 최적화: 총 50,000자(~16K 토큰) 이하로 제한
+    //    기존 150,000자에서 대폭 축소 — Vercel 5분 제한 내 완료 위해
+    const maxChars = 50000
     let contextText = ""
-
-    // 전체 포트폴리오 요약 (앞부분)
-    contextText += "=== 전체 포트폴리오 요약 ===\n"
     let charCount = 0
+
+    // 전체 포트폴리오 요약 (60% 할당)
+    contextText += "=== 전체 포트폴리오 요약 ===\n"
     for (const t of allTexts) {
       if (charCount + t.length > maxChars * 0.6) break
       contextText += t + "\n---\n"
       charCount += t.length
     }
 
-    // 회사별 포트폴리오 (나머지 공간)
+    // 회사별 포트폴리오 (나머지 40% 할당)
     for (const [company, texts] of majorCompanies) {
       contextText += `\n=== ${company} 합격 포트폴리오 ===\n`
-      for (const t of texts.slice(0, 5)) { // 회사당 최대 5개
+      for (const t of texts.slice(0, 3)) { // 회사당 최대 3개 (기존 5개에서 축소)
         if (charCount + t.length > maxChars) break
         contextText += t + "\n---\n"
         charCount += t.length
@@ -1130,13 +1132,16 @@ export async function extractSuccessPatterns() {
 - 정확히 100개 (일반 70 + 회사별 30)
 - category는 "general" 또는 회사명 (넥슨, 엔씨소프트, 넷마블 등)`
 
-    // ── 7. Claude API 호출 (스트리밍 — 10분 이상 걸릴 수 있으므로 필수) ──
+    // ── 7. Claude API 호출 ──
+    // ※ 속도 최적화:
+    //   - 스트리밍 모드 (Anthropic SDK 타임아웃 방지)
+    //   - max_tokens 12000 (100개 패턴에 충분, 기존 30000에서 축소)
+    //   - 입력 50K자 + 출력 12K토큰 = Vercel 5분 내 완료 가능
     const anthropic = new Anthropic({ apiKey })
 
-    // 스트리밍으로 호출 후 최종 메시지를 받아옴
     const stream = anthropic.messages.stream({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 30000, // 100개 패턴 JSON이 크므로 넉넉하게
+      max_tokens: 12000,
       system: systemPrompt,
       messages: [
         {

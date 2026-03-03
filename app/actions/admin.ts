@@ -1135,12 +1135,12 @@ export async function extractSuccessPatterns() {
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 16000,
+      max_tokens: 30000, // 100개 패턴 JSON이 크므로 넉넉하게
       system: systemPrompt,
       messages: [
         {
           role: "user",
-          content: `아래는 ${Object.keys(portfolioTexts).length}개 합격 포트폴리오의 내용입니다. 분석해서 100가지 공통점을 JSON으로 추출해주세요.\n\n${contextText}`
+          content: `아래는 ${Object.keys(portfolioTexts).length}개 합격 포트폴리오의 내용입니다. 분석해서 100가지 공통점을 JSON으로 추출해주세요. 코드펜스(백틱) 없이 순수 JSON만 출력하세요.\n\n${contextText}`
         }
       ]
     })
@@ -1148,15 +1148,18 @@ export async function extractSuccessPatterns() {
     // ── 8. 응답 파싱 ──
     const responseText = message.content[0].type === "text" ? message.content[0].text : ""
 
-    // JSON 추출
-    let jsonStr = responseText
-    const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1]
-    } else {
-      const objectMatch = responseText.match(/\{[\s\S]*\}/)
-      if (objectMatch) {
-        jsonStr = objectMatch[0]
+    // JSON 추출 — 코드펜스 제거 후 { } 사이 추출
+    let jsonStr = responseText.trim()
+    // ```json ... ``` 코드펜스 제거
+    if (jsonStr.startsWith("```")) {
+      jsonStr = jsonStr.replace(/^```(?:json)?\s*/, "").replace(/\s*```\s*$/, "")
+    }
+    // { 로 시작하지 않으면 첫 번째 { 부터 마지막 } 까지 추출
+    if (!jsonStr.startsWith("{")) {
+      const firstBrace = jsonStr.indexOf("{")
+      const lastBrace = jsonStr.lastIndexOf("}")
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        jsonStr = jsonStr.slice(firstBrace, lastBrace + 1)
       }
     }
 

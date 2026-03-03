@@ -1087,21 +1087,22 @@ export async function extractSuccessPatterns() {
       }
     }
 
+    // ※ 50개로 축소 (기존 100개 → 12000 토큰 안에 안정적으로 들어가게)
     const systemPrompt = `당신은 게임 업계 채용 전문 분석가입니다.
 아래에 실제 게임 회사에 합격한 ${Object.keys(portfolioTexts).length}개 포트폴리오의 내용이 있습니다.
 회사 분포: ${companyStatsStr}
 
-이 데이터를 기반으로 합격자들의 공통 특징을 분석해주세요.
+이 데이터를 기반으로 합격자들의 공통 특징 50가지를 분석해주세요.
 
 ## 분석 요구사항:
 
-1. **일반 공통점 70가지**: 회사에 상관없이 합격 포트폴리오에서 공통적으로 나타나는 특징
+1. **일반 공통점 35가지**: 회사에 상관없이 합격 포트폴리오에서 공통적으로 나타나는 특징
    - 문서 구조, 시각화, 수치 제시, 기획 방법론, 표현 방식 등 다양한 관점
    - 구체적이고 실용적인 인사이트 (추상적인 말 금지)
 
-2. **회사별 특징 30가지**: 특정 회사 합격 포트폴리오에서 두드러지는 특징
+2. **회사별 특징 15가지**: 특정 회사 합격 포트폴리오에서 두드러지는 특징
    - 주요 회사: ${majorCompanies.map(([c]) => c).join(", ")}
-   - 각 회사별 3~5개씩
+   - 각 회사별 2~3개씩
 
 ## 응답 형식 (반드시 JSON만, 다른 텍스트 없이):
 {
@@ -1109,16 +1110,16 @@ export async function extractSuccessPatterns() {
     {
       "number": 1,
       "category": "general",
-      "title": "패턴 제목 (한 줄)",
-      "description": "구체적인 설명 (2~3문장). 왜 이것이 중요한지, 어떻게 활용되는지.",
+      "title": "패턴 제목",
+      "description": "구체적 설명 1문장.",
       "importance": "high",
-      "example_files": ["파일명1.pdf", "파일명2.pdf"]
+      "example_files": ["파일명.pdf"]
     },
     {
-      "number": 71,
+      "number": 36,
       "category": "넥슨",
-      "title": "넥슨 합격자 특징 제목",
-      "description": "넥슨 합격 포트폴리오에서 특히 두드러지는 특징 설명.",
+      "title": "넥슨 특징 제목",
+      "description": "넥슨 합격 포트폴리오에서 두드러지는 특징 1문장.",
       "importance": "high",
       "example_files": ["넥슨_01.pdf"]
     }
@@ -1126,17 +1127,18 @@ export async function extractSuccessPatterns() {
 }
 
 중요:
+- description은 반드시 1문장 (50자 이내)으로 간결하게
 - "일반적으로 좋다" 같은 추상적 표현 금지. 구체적 수치나 사례 포함
 - importance는 high(핵심)/medium(유용)/low(참고) 중 택1
-- example_files는 해당 패턴이 보이는 파일명 (없으면 빈 배열)
-- 정확히 100개 (일반 70 + 회사별 30)
+- example_files는 해당 패턴이 보이는 파일명 1개만 (없으면 빈 배열)
+- 정확히 50개 (일반 35 + 회사별 15)
 - category는 "general" 또는 회사명 (넥슨, 엔씨소프트, 넷마블 등)`
 
     // ── 7. Claude API 호출 ──
     // ※ 속도 최적화:
     //   - 스트리밍 모드 (Anthropic SDK 타임아웃 방지)
-    //   - max_tokens 12000 (100개 패턴에 충분, 기존 30000에서 축소)
-    //   - 입력 50K자 + 출력 12K토큰 = Vercel 5분 내 완료 가능
+    //   - max_tokens 12000 (50개 패턴 + 간결 설명 = ~5000 토큰, 넉넉한 여유)
+    //   - 입력 50K자(~16K 토큰) + 출력 12K 토큰 = Vercel 5분 내 완료 가능
     const anthropic = new Anthropic({ apiKey })
 
     const stream = anthropic.messages.stream({
@@ -1146,7 +1148,7 @@ export async function extractSuccessPatterns() {
       messages: [
         {
           role: "user",
-          content: `아래는 ${Object.keys(portfolioTexts).length}개 합격 포트폴리오의 내용입니다. 분석해서 100가지 공통점을 JSON으로 추출해주세요. 코드펜스(백틱) 없이 순수 JSON만 출력하세요.\n\n${contextText}`
+          content: `아래는 ${Object.keys(portfolioTexts).length}개 합격 포트폴리오의 내용입니다. 분석해서 50가지 공통점을 JSON으로 추출해주세요. 코드펜스(백틱) 없이 순수 JSON만 출력하세요.\n\n${contextText}`
         }
       ]
     })
@@ -1154,6 +1156,7 @@ export async function extractSuccessPatterns() {
 
     // ── 8. 응답 파싱 ──
     const responseText = message.content[0].type === "text" ? message.content[0].text : ""
+    const wasTruncated = message.stop_reason === "max_tokens" // 응답이 중간에 잘렸는지 확인
 
     // JSON 추출 — 코드펜스 제거 후 { } 사이 추출
     let jsonStr = responseText.trim()
@@ -1161,15 +1164,17 @@ export async function extractSuccessPatterns() {
     if (jsonStr.startsWith("```")) {
       jsonStr = jsonStr.replace(/^```(?:json)?\s*/, "").replace(/\s*```\s*$/, "")
     }
-    // { 로 시작하지 않으면 첫 번째 { 부터 마지막 } 까지 추출
+    // { 로 시작하지 않으면 첫 번째 { 부터 추출
     if (!jsonStr.startsWith("{")) {
       const firstBrace = jsonStr.indexOf("{")
-      const lastBrace = jsonStr.lastIndexOf("}")
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        jsonStr = jsonStr.slice(firstBrace, lastBrace + 1)
+      if (firstBrace !== -1) {
+        jsonStr = jsonStr.slice(firstBrace)
       }
     }
 
+    // ※ 잘린 JSON 복구 로직
+    // max_tokens에 도달해서 응답이 중간에 끊기면 JSON이 불완전함
+    // 마지막으로 완성된 패턴 객체까지만 살려서 파싱 시도
     let parsed: { patterns: Array<{
       number: number
       category: string
@@ -1182,12 +1187,49 @@ export async function extractSuccessPatterns() {
     try {
       parsed = JSON.parse(jsonStr)
     } catch {
-      return { success: false, error: `JSON 파싱 실패. 응답 앞부분: ${responseText.slice(0, 200)}` }
+      // 1차 복구: 마지막 완전한 } 이후를 잘라내고 배열/객체 닫기
+      try {
+        // 마지막으로 완전한 패턴 객체의 끝(}]) 찾기
+        // "example_files": [...]} 패턴 뒤의 마지막 } 위치를 찾음
+        const lastCompleteObj = jsonStr.lastIndexOf("}")
+        if (lastCompleteObj !== -1) {
+          let recovered = jsonStr.slice(0, lastCompleteObj + 1)
+          // 열린 배열/객체 괄호 수 세서 닫아주기
+          const openBraces = (recovered.match(/{/g) || []).length
+          const closeBraces = (recovered.match(/}/g) || []).length
+          const openBrackets = (recovered.match(/\[/g) || []).length
+          const closeBrackets = (recovered.match(/]/g) || []).length
+
+          // 부족한 닫는 괄호 추가
+          for (let i = 0; i < openBrackets - closeBrackets; i++) recovered += "]"
+          for (let i = 0; i < openBraces - closeBraces; i++) recovered += "}"
+
+          parsed = JSON.parse(recovered)
+        } else {
+          return { success: false, error: `JSON 파싱 실패. 응답 앞부분: ${responseText.slice(0, 300)}` }
+        }
+      } catch {
+        // 2차 복구: 마지막 완전한 },{ 패턴까지만 살리기
+        try {
+          const lastComma = jsonStr.lastIndexOf("},")
+          if (lastComma !== -1) {
+            const recovered = jsonStr.slice(0, lastComma + 1) + "]}"
+            parsed = JSON.parse(recovered)
+          } else {
+            return { success: false, error: `JSON 파싱 실패 (복구 불가). 응답 앞부분: ${responseText.slice(0, 300)}` }
+          }
+        } catch {
+          return { success: false, error: `JSON 파싱 실패 (복구 불가). 응답 앞부분: ${responseText.slice(0, 300)}` }
+        }
+      }
     }
 
     if (!parsed.patterns || !Array.isArray(parsed.patterns)) {
       return { success: false, error: "patterns 배열이 없습니다." }
     }
+
+    // 잘린 경우 불완전한 마지막 패턴 제거 (title이 없는 것)
+    parsed.patterns = parsed.patterns.filter(p => p.title && p.description)
 
     // ── 9. DB 저장 (기존 데이터 삭제 후 새로 저장) ──
     const batchId = `batch_${Date.now()}`

@@ -1,11 +1,12 @@
 /**
- * 합격자 공통점 100가지 확인 페이지
+ * 합격자 공통점 50가지 확인 페이지
  *
  * 기능:
- * - 일반 공통점 (general) + 회사별 특징 탭으로 구분
+ * - 일반 공통점 35개 (general) + 회사별 특징 15개를 탭으로 구분
  * - 중요도별 색상 표시 (high=빨강, medium=노랑, low=회색)
  * - 카테고리 필터링
  * - 관리자 전용 (middleware에서 체크)
+ * - 잘린 JSON 자동 복구 (Claude 응답이 max_tokens에 도달 시)
  *
  * 라우트: /admin/success-patterns
  */
@@ -69,7 +70,7 @@ export default function SuccessPatternsPage() {
   // 공통점 추출 실행
   const handleExtract = async () => {
     if (isExtracting) return
-    if (!confirm("합격자 공통점 100가지를 새로 추출합니다. 기존 데이터는 삭제됩니다. 계속하시겠습니까?")) return
+    if (!confirm("합격자 공통점 50가지를 새로 추출합니다. 기존 데이터는 삭제됩니다. 약 2~3분 걸립니다. 계속하시겠습니까?")) return
 
     setIsExtracting(true)
     setExtractMessage(null)
@@ -126,7 +127,7 @@ export default function SuccessPatternsPage() {
           </Link>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <Lightbulb className="w-8 h-8 text-amber-400" />
-            합격자 공통점 100가지
+            합격자 공통점 50가지
           </h1>
           <p className="text-slate-400">
             {stats ? `${stats.total}개 패턴 (일반 ${stats.general}개 + 회사별 ${stats.company}개)` : "데이터 로딩 중..."}
@@ -143,7 +144,7 @@ export default function SuccessPatternsPage() {
             {isExtracting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                AI 분석 중... (30초~1분 소요)
+                AI 분석 중... (2~3분 소요)
               </>
             ) : (
               <>

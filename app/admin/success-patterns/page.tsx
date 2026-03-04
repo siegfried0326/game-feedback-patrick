@@ -70,7 +70,7 @@ export default function SuccessPatternsPage() {
   // 공통점 추출 실행
   const handleExtract = async () => {
     if (isExtracting) return
-    if (!confirm("합격자 공통점 50가지를 새로 추출합니다. 기존 데이터는 삭제됩니다. 약 2~3분 걸립니다. 계속하시겠습니까?")) return
+    if (!confirm("전체 포트폴리오를 배치 분할하여 공통점을 새로 추출합니다.\n기존 데이터는 삭제됩니다. 약 3~4분 걸립니다.\n계속하시겠습니까?")) return
 
     setIsExtracting(true)
     setExtractMessage(null)
@@ -78,10 +78,16 @@ export default function SuccessPatternsPage() {
 
     const result = await extractSuccessPatterns()
     if (result.success && result.data) {
+      const d = result.data as {
+        total: number; general: number; company: number;
+        analyzedPortfolios?: number; batchCount?: number; intermediatePatterns?: number
+      }
+      const details = d.analyzedPortfolios
+        ? ` | ${d.analyzedPortfolios}개 문서 → ${d.batchCount}배치 분석 → 중간 ${d.intermediatePatterns}개 → 최종 ${d.total}개`
+        : ""
       setExtractMessage(
-        `✅ ${result.data.total}개 추출 완료! (일반 ${result.data.general}개 + 회사별 ${result.data.company}개)`
+        `✅ ${d.total}개 추출 완료! (일반 ${d.general}개 + 회사별 ${d.company}개)${details}`
       )
-      // 데이터 새로고침
       await loadPatterns()
     } else {
       setError(result.error || "추출 실패")
@@ -130,7 +136,7 @@ export default function SuccessPatternsPage() {
             합격자 공통점 50가지
           </h1>
           <p className="text-slate-400">
-            {stats ? `${stats.total}개 패턴 (일반 ${stats.general}개 + 회사별 ${stats.company}개)` : "데이터 로딩 중..."}
+            {stats ? `${stats.total}개 패턴 (일반 ${stats.general}개 + 회사별 ${stats.company}개) — 전체 문서 배치 분할 분석` : "데이터 로딩 중..."}
           </p>
         </div>
 
@@ -144,7 +150,7 @@ export default function SuccessPatternsPage() {
             {isExtracting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                AI 분석 중... (2~3분 소요)
+                전체 문서 배치 분석 중... (3~4분 소요)
               </>
             ) : (
               <>

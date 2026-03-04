@@ -982,13 +982,84 @@ export async function embedExistingPortfolios(force: boolean = false) {
  *
  * 동작:
  * 1. portfolio_chunks에서 모든 청크 텍스트 + 메타데이터 가져오기
- * 2. 회사별로 그룹핑
- * 3. Claude API에 보내서 일반 공통점 70가지 + 회사별 특징 30가지 추출
- * 4. success_patterns 테이블에 저장
+ * 2. N개 배치로 분할 (배치당 ~45개 포트폴리오)
+ * 3. 각 배치: Claude API 호출 → 중간 패턴 추출 (포트폴리오당 1000자 분석)
+ * 4. 최종 통합: 모든 배치 결과를 Claude에 전달 → 최종 50개 패턴 도출
+ * 5. success_patterns 테이블에 저장
+ *
+ * 배치 분할 이유:
+ * - 178개 전체를 1회 호출로 분석하면 포트폴리오당 250자만 가능 (너무 얕음)
+ * - 배치 분할하면 포트폴리오당 1000자씩 분석 가능 (4배 깊이)
+ * - Vercel 5분 제한 내: 배치 4~5회 + 통합 1회 = 총 5~6회 Claude 호출
  *
  * 호출: 관리자 페이지 버튼 클릭
- * 소요: ~30초 (Claude API 1회 호출)
+ * 소요: ~3~4분 (Claude API 5~6회 호출)
  */
+
+// ── 잘린 JSON 복구 헬퍼 ──
+// Claude 응답이 max_tokens에 도달해 중간에 끊기면 JSON이 불완전함
+// 마지막으로 완성된 패턴 객체까지만 살려서 파싱 시도
+interface PatternItem {
+  number: number
+  category: string
+  title: string
+  description: string
+  importance: string
+  example_files: string[]
+}
+
+function parseClaudePatternResponse(responseText: string): PatternItem[] {
+  let jsonStr = responseText.trim()
+
+  // 코드펜스 제거
+  if (jsonStr.startsWith("```")) {
+    jsonStr = jsonStr.replace(/^```(?:json)?\s*/, "").replace(/\s*```\s*$/, "")
+  }
+
+  // { 로 시작하지 않으면 첫 번째 { 부터 추출
+  if (!jsonStr.startsWith("{") && !jsonStr.startsWith("[")) {
+    const firstBrace = jsonStr.indexOf("{")
+    if (firstBrace !== -1) jsonStr = jsonStr.slice(firstBrace)
+  }
+
+  // 파싱 시도
+  try {
+    const parsed = JSON.parse(jsonStr)
+    const patterns = parsed.patterns || parsed
+    if (Array.isArray(patterns)) return patterns.filter((p: PatternItem) => p.title && p.description)
+    return []
+  } catch {
+    // 1차 복구: 마지막 완전한 } 이후를 잘라내고 배열/객체 닫기
+    try {
+      const lastCompleteObj = jsonStr.lastIndexOf("}")
+      if (lastCompleteObj !== -1) {
+        let recovered = jsonStr.slice(0, lastCompleteObj + 1)
+        const openBraces = (recovered.match(/{/g) || []).length
+        const closeBraces = (recovered.match(/}/g) || []).length
+        const openBrackets = (recovered.match(/\[/g) || []).length
+        const closeBrackets = (recovered.match(/]/g) || []).length
+        for (let i = 0; i < openBrackets - closeBrackets; i++) recovered += "]"
+        for (let i = 0; i < openBraces - closeBraces; i++) recovered += "}"
+        const parsed = JSON.parse(recovered)
+        const patterns = parsed.patterns || parsed
+        if (Array.isArray(patterns)) return patterns.filter((p: PatternItem) => p.title && p.description)
+      }
+    } catch {
+      // 2차 복구: 마지막 완전한 },{ 패턴까지만 살리기
+      try {
+        const lastComma = jsonStr.lastIndexOf("},")
+        if (lastComma !== -1) {
+          const recovered = jsonStr.slice(0, lastComma + 1) + "]}"
+          const parsed = JSON.parse(recovered)
+          const patterns = parsed.patterns || parsed
+          if (Array.isArray(patterns)) return patterns.filter((p: PatternItem) => p.title && p.description)
+        }
+      } catch { /* 복구 불가 */ }
+    }
+  }
+  return []
+}
+
 export async function extractSuccessPatterns() {
   try {
     // ── 1. 관리자 인증 ──
@@ -1000,7 +1071,7 @@ export async function extractSuccessPatterns() {
       return { success: false, error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
     }
 
-    // ── 3. 모든 청크 텍스트 가져오기 (스킵 마커 제외, 진짜 임베딩만) ──
+    // ── 3. 모든 청크 텍스트 가져오기 (스킵 마커 제외) ──
     const { data: chunks, error: chunksError } = await supabase
       .from("portfolio_chunks")
       .select("portfolio_id, chunk_text, metadata")
@@ -1015,8 +1086,7 @@ export async function extractSuccessPatterns() {
       return { success: false, error: "임베딩된 청크가 없습니다. 먼저 임베딩을 실행하세요." }
     }
 
-    // ── 4. 회사별 그룹핑 ──
-    // 각 포트폴리오의 청크를 합쳐서 회사별로 분류
+    // ── 4. 포트폴리오별 텍스트 그룹핑 ──
     const portfolioTexts: Record<string, { text: string; companies: string[]; fileName: string }> = {}
     for (const chunk of chunks) {
       const pid = chunk.portfolio_id
@@ -1031,215 +1101,150 @@ export async function extractSuccessPatterns() {
       portfolioTexts[pid].text += chunk.chunk_text + "\n"
     }
 
-    // 회사별로 포트폴리오 그룹핑
-    // ※ 속도 최적화: 포트폴리오당 250자만 사용 (Vercel 5분 제한 내 완료 필수)
-    const companyGroups: Record<string, string[]> = {}
-    const allTexts: string[] = []
+    const portfolioEntries = Object.entries(portfolioTexts)
+    const totalCount = portfolioEntries.length
 
-    for (const [, info] of Object.entries(portfolioTexts)) {
-      // 전체 목록에 추가 — 핵심만 250자 (기존 500자에서 축소)
-      const summary = info.text.slice(0, 250)
-      allTexts.push(`[${info.fileName}] ${summary}`)
-
-      // 회사별 그룹
-      if (info.companies.length > 0) {
-        for (const company of info.companies) {
-          if (!companyGroups[company]) companyGroups[company] = []
-          companyGroups[company].push(`[${info.fileName}] ${summary}`)
-        }
-      }
+    // ── 5. 배치 분할 ──
+    // 포트폴리오당 1000자 × 45개 = 45,000자(~15K 토큰) per batch
+    const BATCH_SIZE = 45
+    const CHARS_PER_PORTFOLIO = 1000
+    const batches: typeof portfolioEntries[] = []
+    for (let i = 0; i < portfolioEntries.length; i += BATCH_SIZE) {
+      batches.push(portfolioEntries.slice(i, i + BATCH_SIZE))
     }
 
-    // ── 5. 회사별 통계 문자열 구성 ──
+    // 회사별 통계 (전체)
+    const companyGroups: Record<string, number> = {}
+    for (const [, info] of portfolioEntries) {
+      for (const company of info.companies) {
+        companyGroups[company] = (companyGroups[company] || 0) + 1
+      }
+    }
+    const majorCompanyNames = Object.entries(companyGroups)
+      .filter(([, count]) => count >= 3)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name]) => name)
+
     const companyStatsStr = Object.entries(companyGroups)
-      .sort((a, b) => b[1].length - a[1].length)
-      .map(([company, texts]) => `${company}: ${texts.length}개 포트폴리오`)
+      .sort((a, b) => b[1] - a[1])
+      .map(([company, count]) => `${company}: ${count}개`)
       .join(", ")
 
-    // 주요 회사 (3개 이상 포트폴리오가 있는 회사)
-    const majorCompanies = Object.entries(companyGroups)
-      .filter(([, texts]) => texts.length >= 3)
-      .sort((a, b) => b[1].length - a[1].length)
-      .slice(0, 8)
+    // ── 6. 배치별 Claude 호출 → 중간 패턴 추출 ──
+    const anthropic = new Anthropic({ apiKey })
+    const allIntermediatePatterns: PatternItem[] = []
 
-    // ── 6. Claude에 보낼 프롬프트 구성 ──
-    // ※ 속도 최적화: 총 50,000자(~16K 토큰) 이하로 제한
-    //    기존 150,000자에서 대폭 축소 — Vercel 5분 제한 내 완료 위해
-    const maxChars = 50000
-    let contextText = ""
-    let charCount = 0
+    for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+      const batch = batches[batchIdx]
+      const batchStart = batchIdx * BATCH_SIZE + 1
+      const batchEnd = Math.min(batchStart + batch.length - 1, totalCount)
 
-    // 전체 포트폴리오 요약 (60% 할당)
-    contextText += "=== 전체 포트폴리오 요약 ===\n"
-    for (const t of allTexts) {
-      if (charCount + t.length > maxChars * 0.6) break
-      contextText += t + "\n---\n"
-      charCount += t.length
-    }
-
-    // 회사별 포트폴리오 (나머지 40% 할당)
-    for (const [company, texts] of majorCompanies) {
-      contextText += `\n=== ${company} 합격 포트폴리오 ===\n`
-      for (const t of texts.slice(0, 3)) { // 회사당 최대 3개 (기존 5개에서 축소)
-        if (charCount + t.length > maxChars) break
-        contextText += t + "\n---\n"
-        charCount += t.length
+      // 배치 컨텍스트 구성 (포트폴리오당 1000자)
+      let batchContext = ""
+      for (const [, info] of batch) {
+        const text = info.text.slice(0, CHARS_PER_PORTFOLIO)
+        const companyTag = info.companies.length > 0 ? ` (${info.companies.join(", ")})` : ""
+        batchContext += `[${info.fileName}${companyTag}]\n${text}\n---\n`
       }
-    }
 
-    // ※ 50개로 축소 (기존 100개 → 12000 토큰 안에 안정적으로 들어가게)
-    const systemPrompt = `당신은 게임 업계 채용 전문 분석가입니다.
-아래에 실제 게임 회사에 합격한 ${Object.keys(portfolioTexts).length}개 포트폴리오의 내용이 있습니다.
-회사 분포: ${companyStatsStr}
+      const batchPrompt = `당신은 게임 업계 채용 전문 분석가입니다.
+아래는 총 ${totalCount}개 합격 포트폴리오 중 ${batchStart}~${batchEnd}번째 (${batch.length}개) 포트폴리오입니다.
 
-이 데이터를 기반으로 합격자들의 공통 특징 50가지를 분석해주세요.
+이 ${batch.length}개 포트폴리오에서 발견되는 합격자 공통 특징을 최대한 많이 추출해주세요.
 
 ## 분석 요구사항:
+- 문서 구조, 시각화, 수치 제시, 기획 방법론, 표현 방식, 레퍼런스 분석, 시스템 설계 등 다양한 관점
+- 구체적이고 실용적인 인사이트 (추상적인 말 금지)
+- 특정 회사(${majorCompanyNames.join(", ")}) 포트폴리오에서 두드러지는 특징도 별도로
 
-1. **일반 공통점 35가지**: 회사에 상관없이 합격 포트폴리오에서 공통적으로 나타나는 특징
-   - 문서 구조, 시각화, 수치 제시, 기획 방법론, 표현 방식 등 다양한 관점
-   - 구체적이고 실용적인 인사이트 (추상적인 말 금지)
+## 응답 형식 (반드시 JSON만):
+{"patterns":[{"title":"패턴 제목","description":"구체적 설명 1문장.","category":"general","importance":"high","example_files":["파일명.pdf"]}]}
 
-2. **회사별 특징 15가지**: 특정 회사 합격 포트폴리오에서 두드러지는 특징
-   - 주요 회사: ${majorCompanies.map(([c]) => c).join(", ")}
-   - 각 회사별 2~3개씩
+규칙:
+- category: "general" 또는 회사명
+- importance: high/medium/low
+- description: 1문장 50자 이내
+- example_files: 해당 패턴이 보이는 파일명 1개
+- 15~25개 추출`
 
-## 응답 형식 (반드시 JSON만, 다른 텍스트 없이):
-{
-  "patterns": [
-    {
-      "number": 1,
-      "category": "general",
-      "title": "패턴 제목",
-      "description": "구체적 설명 1문장.",
-      "importance": "high",
-      "example_files": ["파일명.pdf"]
-    },
-    {
-      "number": 36,
-      "category": "넥슨",
-      "title": "넥슨 특징 제목",
-      "description": "넥슨 합격 포트폴리오에서 두드러지는 특징 1문장.",
-      "importance": "high",
-      "example_files": ["넥슨_01.pdf"]
+      const stream = anthropic.messages.stream({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 6000,
+        system: batchPrompt,
+        messages: [{
+          role: "user",
+          content: `아래 ${batch.length}개 포트폴리오를 분석해서 공통 패턴을 JSON으로 추출하세요. 코드펜스 없이 순수 JSON만.\n\n${batchContext}`
+        }]
+      })
+      const message = await stream.finalMessage()
+      const responseText = message.content[0].type === "text" ? message.content[0].text : ""
+
+      const batchPatterns = parseClaudePatternResponse(responseText)
+      // 배치 번호 태깅 (통합 시 출처 추적용)
+      for (const p of batchPatterns) {
+        allIntermediatePatterns.push(p)
+      }
     }
-  ]
-}
 
-중요:
-- description은 반드시 1문장 (50자 이내)으로 간결하게
-- "일반적으로 좋다" 같은 추상적 표현 금지. 구체적 수치나 사례 포함
-- importance는 high(핵심)/medium(유용)/low(참고) 중 택1
-- example_files는 해당 패턴이 보이는 파일명 1개만 (없으면 빈 배열)
+    if (allIntermediatePatterns.length === 0) {
+      return { success: false, error: "배치 분석에서 패턴을 추출하지 못했습니다." }
+    }
+
+    // ── 7. 최종 통합: 모든 배치 결과를 Claude에 전달 → 최종 50개 도출 ──
+    // 중간 결과를 중복 제거 + 빈도 기반 정렬하여 최종 50개 선정
+    const intermediateJson = allIntermediatePatterns.map((p, i) => (
+      `${i + 1}. [${p.category}] ${p.title}: ${p.description} (${p.importance}) ${p.example_files?.length ? `예시: ${p.example_files[0]}` : ""}`
+    )).join("\n")
+
+    const consolidationPrompt = `당신은 게임 업계 채용 전문 분석가입니다.
+
+${totalCount}개 합격 포트폴리오를 ${batches.length}개 배치로 나눠 분석한 중간 결과가 총 ${allIntermediatePatterns.length}개 있습니다.
+회사 분포: ${companyStatsStr}
+
+이 중간 결과를 통합하여 **최종 50가지** 공통점을 선정해주세요.
+
+## 통합 규칙:
+1. **일반 공통점 35가지**: 여러 배치에서 반복 등장한 패턴 우선 (빈도가 높을수록 중요)
+2. **회사별 특징 15가지**: 주요 회사(${majorCompanyNames.join(", ")}) 각 2~3개씩
+3. 유사한 패턴은 하나로 합쳐서 더 정확한 표현으로
+4. 추상적인 패턴은 제거, 구체적인 것만 선별
+5. number는 1~50으로 재부여
+
+## 응답 형식 (반드시 JSON만):
+{"patterns":[{"number":1,"category":"general","title":"패턴 제목","description":"구체적 설명 1문장.","importance":"high","example_files":["파일명.pdf"]}]}
+
+규칙:
 - 정확히 50개 (일반 35 + 회사별 15)
-- category는 "general" 또는 회사명 (넥슨, 엔씨소프트, 넷마블 등)`
+- description: 1문장 50자 이내
+- importance: high(핵심)/medium(유용)/low(참고)
+- example_files: 파일명 1개 (없으면 빈 배열)`
 
-    // ── 7. Claude API 호출 ──
-    // ※ 속도 최적화:
-    //   - 스트리밍 모드 (Anthropic SDK 타임아웃 방지)
-    //   - max_tokens 12000 (50개 패턴 + 간결 설명 = ~5000 토큰, 넉넉한 여유)
-    //   - 입력 50K자(~16K 토큰) + 출력 12K 토큰 = Vercel 5분 내 완료 가능
-    const anthropic = new Anthropic({ apiKey })
-
-    const stream = anthropic.messages.stream({
+    const consolidationStream = anthropic.messages.stream({
       model: "claude-sonnet-4-20250514",
       max_tokens: 12000,
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: `아래는 ${Object.keys(portfolioTexts).length}개 합격 포트폴리오의 내용입니다. 분석해서 50가지 공통점을 JSON으로 추출해주세요. 코드펜스(백틱) 없이 순수 JSON만 출력하세요.\n\n${contextText}`
-        }
-      ]
+      system: consolidationPrompt,
+      messages: [{
+        role: "user",
+        content: `아래는 ${batches.length}개 배치에서 추출한 ${allIntermediatePatterns.length}개 중간 패턴입니다. 통합하여 최종 50개를 JSON으로 출력하세요. 코드펜스 없이 순수 JSON만.\n\n${intermediateJson}`
+      }]
     })
-    const message = await stream.finalMessage()
+    const finalMessage = await consolidationStream.finalMessage()
+    const finalText = finalMessage.content[0].type === "text" ? finalMessage.content[0].text : ""
 
-    // ── 8. 응답 파싱 ──
-    const responseText = message.content[0].type === "text" ? message.content[0].text : ""
-    const wasTruncated = message.stop_reason === "max_tokens" // 응답이 중간에 잘렸는지 확인
+    const finalPatterns = parseClaudePatternResponse(finalText)
 
-    // JSON 추출 — 코드펜스 제거 후 { } 사이 추출
-    let jsonStr = responseText.trim()
-    // ```json ... ``` 코드펜스 제거
-    if (jsonStr.startsWith("```")) {
-      jsonStr = jsonStr.replace(/^```(?:json)?\s*/, "").replace(/\s*```\s*$/, "")
-    }
-    // { 로 시작하지 않으면 첫 번째 { 부터 추출
-    if (!jsonStr.startsWith("{")) {
-      const firstBrace = jsonStr.indexOf("{")
-      if (firstBrace !== -1) {
-        jsonStr = jsonStr.slice(firstBrace)
-      }
+    if (finalPatterns.length === 0) {
+      return { success: false, error: `최종 통합 파싱 실패. 중간 패턴 ${allIntermediatePatterns.length}개는 추출됨. 응답: ${finalText.slice(0, 300)}` }
     }
 
-    // ※ 잘린 JSON 복구 로직
-    // max_tokens에 도달해서 응답이 중간에 끊기면 JSON이 불완전함
-    // 마지막으로 완성된 패턴 객체까지만 살려서 파싱 시도
-    let parsed: { patterns: Array<{
-      number: number
-      category: string
-      title: string
-      description: string
-      importance: string
-      example_files: string[]
-    }> }
-
-    try {
-      parsed = JSON.parse(jsonStr)
-    } catch {
-      // 1차 복구: 마지막 완전한 } 이후를 잘라내고 배열/객체 닫기
-      try {
-        // 마지막으로 완전한 패턴 객체의 끝(}]) 찾기
-        // "example_files": [...]} 패턴 뒤의 마지막 } 위치를 찾음
-        const lastCompleteObj = jsonStr.lastIndexOf("}")
-        if (lastCompleteObj !== -1) {
-          let recovered = jsonStr.slice(0, lastCompleteObj + 1)
-          // 열린 배열/객체 괄호 수 세서 닫아주기
-          const openBraces = (recovered.match(/{/g) || []).length
-          const closeBraces = (recovered.match(/}/g) || []).length
-          const openBrackets = (recovered.match(/\[/g) || []).length
-          const closeBrackets = (recovered.match(/]/g) || []).length
-
-          // 부족한 닫는 괄호 추가
-          for (let i = 0; i < openBrackets - closeBrackets; i++) recovered += "]"
-          for (let i = 0; i < openBraces - closeBraces; i++) recovered += "}"
-
-          parsed = JSON.parse(recovered)
-        } else {
-          return { success: false, error: `JSON 파싱 실패. 응답 앞부분: ${responseText.slice(0, 300)}` }
-        }
-      } catch {
-        // 2차 복구: 마지막 완전한 },{ 패턴까지만 살리기
-        try {
-          const lastComma = jsonStr.lastIndexOf("},")
-          if (lastComma !== -1) {
-            const recovered = jsonStr.slice(0, lastComma + 1) + "]}"
-            parsed = JSON.parse(recovered)
-          } else {
-            return { success: false, error: `JSON 파싱 실패 (복구 불가). 응답 앞부분: ${responseText.slice(0, 300)}` }
-          }
-        } catch {
-          return { success: false, error: `JSON 파싱 실패 (복구 불가). 응답 앞부분: ${responseText.slice(0, 300)}` }
-        }
-      }
-    }
-
-    if (!parsed.patterns || !Array.isArray(parsed.patterns)) {
-      return { success: false, error: "patterns 배열이 없습니다." }
-    }
-
-    // 잘린 경우 불완전한 마지막 패턴 제거 (title이 없는 것)
-    parsed.patterns = parsed.patterns.filter(p => p.title && p.description)
-
-    // ── 9. DB 저장 (기존 데이터 삭제 후 새로 저장) ──
+    // ── 8. DB 저장 (기존 데이터 삭제 후 새로 저장) ──
     const batchId = `batch_${Date.now()}`
 
-    // 기존 데이터 삭제 (같은 batch가 아닌 이전 데이터 전체)
     await supabase.from("success_patterns").delete().neq("batch_id", batchId)
 
-    // 새 데이터 삽입
-    const rows = parsed.patterns.map(p => ({
-      pattern_number: p.number,
+    const rows = finalPatterns.map((p, idx) => ({
+      pattern_number: p.number || idx + 1,
       category: p.category || "general",
       title: p.title,
       description: p.description,
@@ -1248,28 +1253,31 @@ export async function extractSuccessPatterns() {
       batch_id: batchId,
     }))
 
-    // 50개씩 나눠서 삽입 (Supabase 제한)
     for (let i = 0; i < rows.length; i += 50) {
-      const batch = rows.slice(i, i + 50)
-      const { error: insertError } = await supabase.from("success_patterns").insert(batch)
+      const dbBatch = rows.slice(i, i + 50)
+      const { error: insertError } = await supabase.from("success_patterns").insert(dbBatch)
       if (insertError) {
         return { success: false, error: `DB 저장 실패 (${i}번째~): ${insertError.message}` }
       }
     }
 
-    // ── 10. 결과 반환 ──
-    const generalCount = parsed.patterns.filter(p => p.category === "general").length
-    const companyCount = parsed.patterns.filter(p => p.category !== "general").length
-    const companies = [...new Set(parsed.patterns.filter(p => p.category !== "general").map(p => p.category))]
+    // ── 9. 결과 반환 ──
+    const generalCount = finalPatterns.filter(p => p.category === "general").length
+    const companyCount = finalPatterns.filter(p => p.category !== "general").length
+    const companies = [...new Set(finalPatterns.filter(p => p.category !== "general").map(p => p.category))]
 
     return {
       success: true,
       data: {
-        total: parsed.patterns.length,
+        total: finalPatterns.length,
         general: generalCount,
         company: companyCount,
         companies,
         batchId,
+        // 추가 정보: 분석 범위
+        analyzedPortfolios: totalCount,
+        batchCount: batches.length,
+        intermediatePatterns: allIntermediatePatterns.length,
       }
     }
   } catch (error) {
@@ -1331,3 +1339,8 @@ export async function getSuccessPatterns() {
     }
   }
 }
+
+
+// ============================================================
+// ■ 포트폴리오 개별 분석 (TODO: 미완성 — 추후 구현 예정)
+// ============================================================

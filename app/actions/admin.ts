@@ -1810,6 +1810,32 @@ export async function analyzePortfoliosBatch(batchLimit: number = 5) {
 }
 
 /**
+ * portfolio_analysis 전체 데이터 조회 (관리자용)
+ * 데이터 관리 탭에서 포트폴리오별 심층분석 결과 표시에 사용
+ */
+export async function getPortfolioAnalysisAll() {
+  try {
+    const { supabase } = await verifyAdmin()
+
+    const { data, error } = await supabase
+      .from("portfolio_analysis")
+      .select("*")
+      .order("overall_score", { ascending: false })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data: data || [] }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error)
+    }
+  }
+}
+
+/**
  * portfolio_analysis 통계 조회 (관리자용)
  */
 export async function getPortfolioAnalysisStats() {

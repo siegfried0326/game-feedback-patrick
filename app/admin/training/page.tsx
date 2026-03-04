@@ -16,7 +16,8 @@ import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
 import {
   Upload, FileText, Loader2, CheckCircle2, XCircle, Database, Brain,
-  AlertTriangle, TrendingUp, Trash2, Eye, RefreshCw
+  AlertTriangle, TrendingUp, Trash2, Eye, RefreshCw,
+  ChevronDown, ChevronRight, Star, Building2, Lightbulb
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -25,7 +26,8 @@ import {
   analyzeAndSavePortfolio, getPortfolioList,
   getCompanyStats, deletePortfolio, deleteMultiplePortfolios,
   reclassifyAllCompanies, rebuildAllPortfolioChunks,
-  analyzePortfoliosBatch, getPortfolioAnalysisStats
+  analyzePortfoliosBatch, getPortfolioAnalysisStats,
+  getPortfolioAnalysisAll, getSuccessPatterns, extractSuccessPatterns
 } from "@/app/actions/admin"
 import { createClient } from "@/lib/supabase/client"
 import { v4 as uuidv4 } from "uuid"
@@ -37,6 +39,18 @@ interface TrainingFile {
   message?: string
   score?: number
   companies?: string[]
+}
+
+interface Pattern {
+  id: string
+  pattern_number: number
+  category: string
+  title: string
+  description: string
+  importance: string
+  example_files: string[]
+  batch_id: string
+  created_at: string
 }
 
 type TabType = "upload" | "data"
@@ -66,13 +80,24 @@ export default function TrainingPage() {
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // ── 심층 분석 결과 (데이터 관리 탭) ──
+  const [analysisMap, setAnalysisMap] = useState<Record<string, any>>({})
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  // ── 공통점 (데이터 관리 탭) ──
+  const [patterns, setPatterns] = useState<Pattern[]>([])
+  const [patternStats, setPatternStats] = useState<{ total: number; general: number; company: number; companies: string[] } | null>(null)
+  const [activePatternTab, setActivePatternTab] = useState<string>("general")
+  const [isExtracting, setIsExtracting] = useState(false)
+  const [extractMessage, setExtractMessage] = useState<string | null>(null)
+
   // 초기 로드
   useEffect(() => {
     loadAll()
   }, [])
 
   const loadAll = async () => {
-    await Promise.all([loadExistingFiles(), loadCompanyStats(), loadPortfolios()])
+    await Promise.all([loadExistingFiles(), loadCompanyStats(), loadPortfolios(), loadAnalysis(), loadPatterns()])
   }
 
   const loadExistingFiles = async () => {
@@ -100,6 +125,81 @@ export default function TrainingPage() {
     }
     setIsLoadingData(false)
   }
+
+  const loadAnalysis = async () => {
+    const result = await getPortfolioAnalysisAll()
+    if (result.success && result.data) {
+      const map: Record<string, any> = {}
+      for (const a of result.data) {
+        map[a.portfolio_id] = a
+      }
+      setAnalysisMap(map)
+    }
+  }
+
+  const loadPatterns = async () => {
+    const result = await getSuccessPatterns()
+    if (result.success && result.data) {
+      setPatterns(result.data.patterns)
+      setPatternStats(result.data.stats)
+    }
+  }
+
+  const handleExtract = async () => {
+    if (isExtracting) return
+    if (!confirm("전체 포트폴리오를 배치 분할하여 공통점을 새로 추출합니다.\n기존 데이터는 삭제됩니다. 약 3~4분 걸립니다.\n계속하시겠습니까?")) return
+
+    setIsExtracting(true)
+    setExtractMessage(null)
+
+    const result = await extractSuccessPatterns()
+    if (result.success && result.data) {
+      const d = result.data as any
+      setExtractMessage(`✅ ${d.total}개 추출 완료! (일반 ${d.general}개 + 회사별 ${d.company}개)`)
+      await loadPatterns()
+    } else {
+      setExtractMessage(`❌ 추출 실패: ${result.error}`)
+    }
+    setIsExtracting(false)
+  }
+
+  const importanceBadge = (importance: string) => {
+    switch (importance) {
+      case "high": return "bg-red-500/20 text-red-300 border-red-500/30"
+      case "medium": return "bg-amber-500/20 text-amber-300 border-amber-500/30"
+      default: return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+    }
+  }
+
+  const importanceLabel = (importance: string) => {
+    switch (importance) {
+      case "high": return "핵심"
+      case "medium": return "유용"
+      case "low": return "참고"
+      default: return importance
+    }
+  }
+
+  const filteredPatterns = patterns.filter(p => p.category === activePatternTab)
+
+  // 15개 카테고리 라벨
+  const categoryLabels: { key: string; label: string }[] = [
+    { key: "logic_score", label: "논리력" },
+    { key: "specificity_score", label: "구체성" },
+    { key: "readability_score", label: "가독성" },
+    { key: "technical_score", label: "기술이해" },
+    { key: "creativity_score", label: "창의성" },
+    { key: "core_loop_score", label: "핵심반복구조" },
+    { key: "content_taxonomy_score", label: "콘텐츠분류" },
+    { key: "economy_score", label: "재화흐름설계" },
+    { key: "player_experience_score", label: "플레이경험" },
+    { key: "data_design_score", label: "수치데이터" },
+    { key: "feature_connection_score", label: "기능연결" },
+    { key: "motivation_score", label: "동기부여" },
+    { key: "difficulty_score", label: "난이도균형" },
+    { key: "ui_ux_score", label: "화면/조작" },
+    { key: "dev_plan_score", label: "개발일정" },
+  ]
 
   // ── 업로드 로직 ──
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
@@ -868,89 +968,189 @@ export default function TrainingPage() {
                       <span className="text-slate-400 text-sm">전체 선택</span>
                     </div>
 
+                    {/* 심층분석 통계 요약 */}
+                    {Object.keys(analysisMap).length > 0 && (
+                      <div className="flex items-center gap-2 pb-3 border-b border-[#1e3a5f] mb-3">
+                        <Brain className="w-4 h-4 text-purple-400" />
+                        <span className="text-slate-400 text-sm">
+                          심층 분석 완료: <span className="text-purple-400 font-medium">{Object.keys(analysisMap).length}</span> / {portfolios.length}개
+                        </span>
+                      </div>
+                    )}
+
                     {/* 목록 */}
                     <div className="space-y-2 max-h-[600px] overflow-auto">
-                      {portfolios.map((portfolio: any) => (
-                        <div
-                          key={portfolio.id}
-                          className={`flex items-center gap-3 p-4 rounded-lg transition-colors ${
-                            selectedIds.includes(portfolio.id)
-                              ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30"
-                              : "bg-slate-800/50 border border-transparent hover:bg-slate-800"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(portfolio.id)}
-                            onChange={() => toggleSelect(portfolio.id)}
-                            className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#5B8DEF]"
-                          />
+                      {portfolios.map((portfolio: any) => {
+                        const analysis = analysisMap[portfolio.id]
+                        const isExpanded = expandedId === portfolio.id
+                        return (
+                          <div key={portfolio.id}>
+                            <div
+                              className={`flex items-center gap-3 p-4 rounded-lg transition-colors ${
+                                selectedIds.includes(portfolio.id)
+                                  ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30"
+                                  : isExpanded
+                                    ? "bg-slate-800 border border-slate-700"
+                                    : "bg-slate-800/50 border border-transparent hover:bg-slate-800"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.includes(portfolio.id)}
+                                onChange={() => toggleSelect(portfolio.id)}
+                                className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#5B8DEF]"
+                              />
 
-                          <div className="flex-1 min-w-0">
-                            <p className="text-slate-200 font-medium truncate">{portfolio.file_name}</p>
-                            <div className="flex items-center gap-3 mt-2">
-                              {portfolio.companies?.length > 0 ? (
-                                <div className="flex items-center gap-2">
-                                  {portfolio.companies.map((company: string, idx: number) => (
-                                    <span key={idx} className="text-xs px-2 py-1 bg-[#5B8DEF]/10 text-[#5B8DEF] rounded">
-                                      {company}
-                                    </span>
-                                  ))}
+                              {/* 펼치기 버튼 */}
+                              <button
+                                onClick={() => setExpandedId(isExpanded ? null : portfolio.id)}
+                                className="text-slate-400 hover:text-white transition-colors p-1"
+                                title={analysis ? "심층 분석 결과 보기" : "미분석"}
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <ChevronRight className={`w-4 h-4 ${analysis ? "text-purple-400" : ""}`} />
+                                )}
+                              </button>
+
+                              <div className="flex-1 min-w-0">
+                                <p className="text-slate-200 font-medium truncate">{portfolio.file_name}</p>
+                                <div className="flex items-center gap-3 mt-2">
+                                  {portfolio.companies?.length > 0 ? (
+                                    <div className="flex items-center gap-2">
+                                      {portfolio.companies.map((company: string, idx: number) => (
+                                        <span key={idx} className="text-xs px-2 py-1 bg-[#5B8DEF]/10 text-[#5B8DEF] rounded">
+                                          {company}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-slate-500">회사 미지정</span>
+                                  )}
+                                  <span className="text-xs text-slate-500">{portfolio.year}년</span>
+                                  <span className="text-xs text-slate-500">{portfolio.document_type}</span>
+                                  {analysis && (
+                                    <span className="text-xs px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded">심층분석</span>
+                                  )}
                                 </div>
-                              ) : (
-                                <span className="text-xs text-slate-500">회사 미지정</span>
+                              </div>
+
+                              <div className="text-right shrink-0">
+                                <p className="text-[#5B8DEF] font-bold text-lg">{portfolio.overall_score}점</p>
+                                <div className="flex gap-1 mt-1">
+                                  <span className="text-xs text-slate-500">논리 {portfolio.logic_score}</span>
+                                  <span className="text-xs text-slate-500">구체 {portfolio.specificity_score}</span>
+                                  <span className="text-xs text-slate-500">가독 {portfolio.readability_score}</span>
+                                </div>
+                                <p className="text-slate-500 text-xs mt-1">
+                                  {new Date(portfolio.created_at).toLocaleDateString('ko-KR')}
+                                </p>
+                              </div>
+
+                              {portfolio.file_url && (
+                                <a
+                                  href={portfolio.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-slate-500 hover:text-[#5B8DEF] transition-colors p-2"
+                                  title="파일 보기"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </a>
                               )}
-                              <span className="text-xs text-slate-500">{portfolio.year}년</span>
-                              <span className="text-xs text-slate-500">{portfolio.document_type}</span>
+
+                              <button
+                                onClick={() => handleDelete(portfolio.id)}
+                                disabled={isDeleting}
+                                className="text-slate-500 hover:text-red-400 transition-colors p-2"
+                                title="삭제"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                            {portfolio.tags?.length > 0 && (
-                              <div className="flex items-center gap-1 mt-2">
-                                {portfolio.tags.slice(0, 5).map((tag: string, idx: number) => (
-                                  <span key={idx} className="text-xs px-2 py-0.5 bg-slate-700/50 text-slate-400 rounded">
-                                    {tag}
-                                  </span>
-                                ))}
-                                {portfolio.tags.length > 5 && (
-                                  <span className="text-xs text-slate-500">+{portfolio.tags.length - 5}</span>
+
+                            {/* 펼침: 심층 분석 결과 */}
+                            {isExpanded && (
+                              <div className="ml-10 mr-4 mb-2 p-4 bg-slate-900/80 border border-slate-700 rounded-lg">
+                                {analysis ? (
+                                  <>
+                                    {/* 15개 카테고리 점수 그리드 */}
+                                    <h4 className="text-sm font-medium text-purple-400 mb-3 flex items-center gap-2">
+                                      <Brain className="w-4 h-4" />
+                                      심층 분석 결과 (종합 {analysis.overall_score}점)
+                                    </h4>
+                                    <div className="grid grid-cols-5 gap-2 mb-4">
+                                      {categoryLabels.map(({ key, label }) => (
+                                        <div key={key} className="text-center p-2 bg-slate-800 rounded">
+                                          <p className="text-slate-400 text-[10px] mb-1">{label}</p>
+                                          <p className={`font-bold text-sm ${
+                                            (analysis[key] || 0) >= 80 ? "text-emerald-400" :
+                                            (analysis[key] || 0) >= 60 ? "text-[#5B8DEF]" :
+                                            (analysis[key] || 0) >= 40 ? "text-amber-400" :
+                                            "text-red-400"
+                                          }`}>
+                                            {analysis[key] || 0}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {/* 요약 */}
+                                    {analysis.summary && (
+                                      <div className="mb-3">
+                                        <p className="text-slate-500 text-xs mb-1">요약</p>
+                                        <p className="text-slate-300 text-sm">{analysis.summary}</p>
+                                      </div>
+                                    )}
+
+                                    {/* 강점 / 약점 */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                      {analysis.strengths?.length > 0 && (
+                                        <div>
+                                          <p className="text-emerald-400 text-xs mb-1">강점</p>
+                                          <ul className="space-y-1">
+                                            {analysis.strengths.map((s: string, i: number) => (
+                                              <li key={i} className="text-slate-300 text-xs">• {s}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {analysis.weaknesses?.length > 0 && (
+                                        <div>
+                                          <p className="text-amber-400 text-xs mb-1">약점</p>
+                                          <ul className="space-y-1">
+                                            {analysis.weaknesses.map((w: string, i: number) => (
+                                              <li key={i} className="text-slate-300 text-xs">• {w}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* 핵심 특징 */}
+                                    {analysis.key_features?.length > 0 && (
+                                      <div className="mt-3 flex flex-wrap gap-1">
+                                        {analysis.key_features.map((f: string, i: number) => (
+                                          <span key={i} className="text-xs px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded">
+                                            {f}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div className="text-center py-6">
+                                    <Brain className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                                    <p className="text-slate-400 text-sm">아직 심층 분석되지 않았습니다</p>
+                                    <p className="text-slate-500 text-xs mt-1">업로드 탭 → AI 학습 강화 → 심층 분석 실행</p>
+                                  </div>
                                 )}
                               </div>
                             )}
                           </div>
-
-                          <div className="text-right shrink-0">
-                            <p className="text-[#5B8DEF] font-bold text-lg">{portfolio.overall_score}점</p>
-                            <div className="flex gap-1 mt-1">
-                              <span className="text-xs text-slate-500">논리 {portfolio.logic_score}</span>
-                              <span className="text-xs text-slate-500">구체 {portfolio.specificity_score}</span>
-                              <span className="text-xs text-slate-500">가독 {portfolio.readability_score}</span>
-                            </div>
-                            <p className="text-slate-500 text-xs mt-1">
-                              {new Date(portfolio.created_at).toLocaleDateString('ko-KR')}
-                            </p>
-                          </div>
-
-                          {portfolio.file_url && (
-                            <a
-                              href={portfolio.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-slate-500 hover:text-[#5B8DEF] transition-colors p-2"
-                              title="파일 보기"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </a>
-                          )}
-
-                          <button
-                            onClick={() => handleDelete(portfolio.id)}
-                            disabled={isDeleting}
-                            className="text-slate-500 hover:text-red-400 transition-colors p-2"
-                            title="삭제"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </>
                 )}
@@ -960,6 +1160,144 @@ export default function TrainingPage() {
                     ⚠️ <strong>주의:</strong> 학습 데이터를 삭제하면 AI가 해당 데이터를 더 이상 참고하지 않습니다.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* ═══════════════════════════════════ */}
+            {/* 합격자 공통점 섹션 */}
+            {/* ═══════════════════════════════════ */}
+            <Card className="bg-slate-900/80 border-[#1e3a5f] mt-6">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-amber-400" />
+                    합격자 공통점
+                    {patternStats && (
+                      <span className="text-sm font-normal text-slate-400 ml-2">
+                        ({patternStats.total}개)
+                      </span>
+                    )}
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleExtract}
+                      disabled={isExtracting}
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700 text-white"
+                    >
+                      {isExtracting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          추출 중...
+                        </>
+                      ) : (
+                        <>
+                          <Lightbulb className="w-4 h-4 mr-1" />
+                          공통점 추출
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription className="text-slate-400">
+                  전체 포트폴리오를 분석하여 추출한 합격자 공통 패턴
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* 추출 결과 메시지 */}
+                {extractMessage && (
+                  <div className={`mb-4 p-3 rounded-lg text-sm ${
+                    extractMessage.startsWith("✅")
+                      ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
+                      : "bg-red-500/10 border border-red-500/20 text-red-300"
+                  }`}>
+                    {extractMessage}
+                  </div>
+                )}
+
+                {patterns.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Lightbulb className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                    <p className="text-slate-400 mb-2">아직 추출된 공통점이 없습니다</p>
+                    <p className="text-slate-500 text-sm">위의 &quot;공통점 추출&quot; 버튼을 클릭하세요</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* 카테고리 탭 */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <button
+                        onClick={() => setActivePatternTab("general")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
+                          activePatternTab === "general"
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                            : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                        }`}
+                      >
+                        <Star className="w-3 h-3" />
+                        일반 ({patternStats?.general || 0})
+                      </button>
+                      {patternStats?.companies.map(company => {
+                        const count = patterns.filter(p => p.category === company).length
+                        return (
+                          <button
+                            key={company}
+                            onClick={() => setActivePatternTab(company)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
+                              activePatternTab === company
+                                ? "bg-[#5B8DEF]/20 text-[#5B8DEF] border border-[#5B8DEF]/30"
+                                : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                            }`}
+                          >
+                            <Building2 className="w-3 h-3" />
+                            {company} ({count})
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* 패턴 목록 */}
+                    <div className="space-y-2 max-h-[500px] overflow-auto">
+                      {filteredPatterns.map((pattern) => (
+                        <div
+                          key={pattern.id}
+                          className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-slate-600 transition-colors"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                              <span className="text-[#5B8DEF] font-bold text-xs">{pattern.pattern_number}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-white font-medium text-sm">{pattern.title}</h3>
+                                <span className={`px-2 py-0.5 text-xs rounded-full border ${importanceBadge(pattern.importance)}`}>
+                                  {importanceLabel(pattern.importance)}
+                                </span>
+                              </div>
+                              <p className="text-slate-400 text-xs leading-relaxed">{pattern.description}</p>
+                              {pattern.example_files?.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {pattern.example_files.slice(0, 3).map((file, idx) => (
+                                    <span key={idx} className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded">
+                                      {file}
+                                    </span>
+                                  ))}
+                                  {pattern.example_files.length > 3 && (
+                                    <span className="text-[10px] text-slate-500">+{pattern.example_files.length - 3}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 하단 통계 */}
+                    <div className="mt-4 text-center text-slate-500 text-xs">
+                      총 {patternStats?.total}개 | 일반 {patternStats?.general}개 | 회사별 {patternStats?.company}개
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </>

@@ -6,11 +6,14 @@
  * 흐름:
  * 1. 로그인 확인 → 패키지 선택 (1회/5회/10회)
  * 2. "결제하기" 클릭 → createCreditOrder()로 서버에 주문 생성
- * 3. TossPayments 일반결제 위젯으로 카드 결제
+ * 3. TossPayments 일반결제로 카드 결제
  * 4. 결제 완료 → /payment/credits/success로 이동
  *
  * 금액은 서버(payment.ts CREDIT_PRICES)에서 결정하며,
  * 클라이언트 PACKAGES는 UI 표시용만 담당.
+ *
+ * SDK 초기화: useEffect에서 미리 로드 (공식 문서 권장 패턴)
+ * 결제 요청: 버튼 클릭 시 requestPayment만 호출
  */
 "use client"
 
@@ -72,6 +75,10 @@ function CreditsContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
+  // TossPayments SDK 인스턴스 (useEffect에서 미리 초기화)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [payment, setPayment] = useState<any>(null)
+
   useEffect(() => {
     const pkgParam = searchParams.get("package")
     if (pkgParam && PACKAGES.some(p => p.key === pkgParam)) {
@@ -79,13 +86,25 @@ function CreditsContent() {
     }
   }, [searchParams])
 
+  // SDK 초기화 + 로그인 확인 (공식 문서 권장: 컴포넌트 마운트 시 미리 로드)
   useEffect(() => {
-    async function check() {
+    async function init() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setIsLoggedIn(!!user)
+
+      if (!user || !TOSS_CLIENT_KEY) return
+
+      try {
+        const customerKey = `cust_${user.id.replace(/-/g, "").slice(0, 20)}`
+        const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY)
+        const paymentInstance = tossPayments.payment({ customerKey })
+        setPayment(paymentInstance)
+      } catch (err) {
+        console.error("[credits] SDK 초기화 에러:", err)
+      }
     }
-    check()
+    init()
   }, [])
 
   const pkg = PACKAGES.find(p => p.key === selectedPackage) || PACKAGES[0]
@@ -95,17 +114,8 @@ function CreditsContent() {
     setError("")
 
     try {
-      if (!TOSS_CLIENT_KEY) {
-        setError("TOSS_CLIENT_KEY가 설정되지 않았습니다. 환경변수를 확인해주세요.")
-        setLoading(false)
-        return
-      }
-
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        setError("로그인이 필요합니다.")
+      if (!payment) {
+        setError("결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해주세요.")
         setLoading(false)
         return
       }
@@ -117,10 +127,6 @@ function CreditsContent() {
         setLoading(false)
         return
       }
-
-      const customerKey = `cust_${user.id.replace(/-/g, "").slice(0, 20)}`
-      const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY)
-      const payment = tossPayments.payment({ customerKey })
 
       await payment.requestPayment({
         method: "CARD",
@@ -226,11 +232,13 @@ function CreditsContent() {
 
         <Button
           onClick={handlePayment}
-          disabled={loading}
+          disabled={loading || !payment}
           className="w-full py-6 text-lg bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
         >
           {loading ? (
             <><Loader2 className="w-5 h-5 animate-spin mr-2" /> 결제 준비 중...</>
+          ) : !payment ? (
+            <><Loader2 className="w-5 h-5 animate-spin mr-2" /> 결제 모듈 로딩 중...</>
           ) : (
             <>{pkg.price.toLocaleString()}원 결제하기</>
           )}

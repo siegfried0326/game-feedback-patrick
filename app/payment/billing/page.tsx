@@ -1,14 +1,17 @@
 /**
- * 구독 결제 페이지 (261줄)
+ * 구독 결제 페이지
  *
  * TossPayments 빌링 위젯으로 카드 등록 → 자동결제.
  * plan 쿼리 파라미터로 월/3개월 플랜 구분.
  * 게임캔버스 할인 코드 입력 지원 (monthly 플랜만).
  * 라우트: /payment/billing?plan=monthly|three_month
+ *
+ * SDK 초기화: useEffect에서 미리 로드 (공식 문서 권장 패턴)
+ * 결제 요청: 버튼 클릭 시 requestBillingAuth만 호출
  */
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, CreditCard, Loader2, KeyRound, CheckCircle2, ChevronDown } from "lucide-react"
@@ -38,11 +41,43 @@ function BillingContent() {
   const [discountLoading, setDiscountLoading] = useState(false)
   const [discountError, setDiscountError] = useState("")
 
+  // TossPayments SDK 인스턴스 (useEffect에서 미리 초기화)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [payment, setPayment] = useState<any>(null)
+  const [customerKey, setCustomerKey] = useState("")
+
   const plan = PLANS[selectedPlan]
 
   // 할인 적용 시 실제 결제 금액
   const finalAmount = discountVerified && selectedPlan === "monthly" ? 5900 : plan.amount
   const finalPrice = finalAmount.toLocaleString()
+
+  // SDK 초기화 (공식 문서 권장: 컴포넌트 마운트 시 미리 로드)
+  useEffect(() => {
+    async function initSDK() {
+      if (!TOSS_CLIENT_KEY) {
+        setError("TOSS_CLIENT_KEY가 설정되지 않았습니다.")
+        return
+      }
+
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const custKey = `cust_${user.id.replace(/-/g, "").slice(0, 20)}`
+        setCustomerKey(custKey)
+
+        const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY)
+        const paymentInstance = tossPayments.payment({ customerKey: custKey })
+        setPayment(paymentInstance)
+      } catch (err) {
+        console.error("[billing] SDK 초기화 에러:", err)
+      }
+    }
+
+    initSDK()
+  }, [])
 
   // 할인코드 검증
   async function handleDiscountVerify() {
@@ -69,25 +104,11 @@ function BillingContent() {
     setError("")
 
     try {
-      if (!TOSS_CLIENT_KEY) {
-        setError("TOSS_CLIENT_KEY가 설정되지 않았습니다. 환경변수를 확인해주세요.")
+      if (!payment) {
+        setError("결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해주세요.")
         setLoading(false)
         return
       }
-
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        setError("로그인이 필요합니다.")
-        setLoading(false)
-        return
-      }
-
-      const customerKey = `cust_${user.id.replace(/-/g, "").slice(0, 20)}`
-
-      const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY)
-      const payment = tossPayments.payment({ customerKey })
 
       // 할인코드가 인증되었으면 쿼리에 포함
       let successUrl = `${window.location.origin}/payment/billing/success?plan=${selectedPlan}`
@@ -95,12 +116,15 @@ function BillingContent() {
         successUrl += `&discountCode=${encodeURIComponent(discountCode)}`
       }
 
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
       await payment.requestBillingAuth({
         method: "CARD",
         successUrl,
         failUrl: `${window.location.origin}/payment/billing/fail`,
-        customerEmail: user.email || "",
-        customerName: user.user_metadata?.name || "구매자",
+        customerEmail: user?.email || "",
+        customerName: user?.user_metadata?.name || "구매자",
       })
     } catch (err: unknown) {
       console.error("[billing] 결제 에러:", err)
@@ -242,7 +266,7 @@ function BillingContent() {
 
         <Button
           onClick={handleBillingAuth}
-          disabled={loading}
+          disabled={loading || !payment}
           className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
         >
           {loading ? (
@@ -250,7 +274,7 @@ function BillingContent() {
           ) : (
             <CreditCard className="w-5 h-5 mr-2" />
           )}
-          {loading ? "처리 중..." : "카드 등록하기"}
+          {loading ? "처리 중..." : !payment ? "결제 모듈 로딩 중..." : "카드 등록하기"}
         </Button>
 
         <p className="text-xs text-slate-500 text-center mt-4">

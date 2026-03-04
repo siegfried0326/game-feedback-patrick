@@ -128,7 +128,17 @@ function BillingContent() {
       })
     } catch (err: unknown) {
       console.error("[billing] 결제 에러:", err)
-      const detail = err instanceof Error ? err.message : JSON.stringify(err)
+      // 에러 객체의 모든 속성 추출 (Error 객체는 JSON.stringify로 안 잡힘)
+      let detail = "원인 불명"
+      if (err instanceof Error) {
+        const props: Record<string, unknown> = {}
+        for (const key of Object.getOwnPropertyNames(err)) {
+          props[key] = (err as Record<string, unknown>)[key]
+        }
+        detail = JSON.stringify(props)
+      } else {
+        detail = JSON.stringify(err)
+      }
       setError(`결제 에러: ${detail}`)
       setLoading(false)
     }

@@ -97,7 +97,14 @@ function BillingContent() {
         customerName: user.user_metadata?.name || "구매자",
       })
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "결제 요청 중 오류가 발생했습니다."
+      console.error("[billing] 결제 에러:", err)
+      let message = "결제 요청 중 오류가 발생했습니다."
+      if (err instanceof Error) {
+        message = err.message
+      } else if (typeof err === "object" && err !== null && "code" in err) {
+        const e = err as { code?: string; message?: string }
+        message = `[${e.code}] ${e.message || "알 수 없는 오류"}`
+      }
       setError(message)
       setLoading(false)
     }

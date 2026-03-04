@@ -47,14 +47,6 @@ export default function TermsPage() {
                   <li>강점 및 개선점 피드백 제공</li>
                 </ul>
               </div>
-              <div>
-                <h3 className="font-medium text-white mb-1">2. 컨설팅 서비스</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>1:1 컨설팅: 현업 기획자와의 포트폴리오 심층 리뷰 및 맞춤 피드백</li>
-                  <li>모의면접 / 단기 피드백: 실전 모의면접 진행 및 피드백 리포트 제공</li>
-                  <li>그룹 컨설팅: 소규모 그룹(2~4인) 형태의 맞춤 컨설팅</li>
-                </ul>
-              </div>
             </div>
           </section>
 
@@ -78,15 +70,6 @@ export default function TermsPage() {
                   <li>월 구독: 월 17,900원 - 무제한 문서 분석</li>
                   <li>3개월 패스: 49,000원 - 3개월간 무제한 문서 분석</li>
                   <li>구독은 언제든지 해지할 수 있으며, 해지 시 다음 결제일부터 과금이 중단됩니다.</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium text-white mb-1">2. 컨설팅 서비스</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>1:1 컨설팅 (4타임): 48만원 (타임당 12만원)</li>
-                  <li>모의면접 / 단기 피드백: 20만원 (1회)</li>
-                  <li>그룹 컨설팅 (1타임): 9만원 (타임당)</li>
-                  <li>컨설팅 결제는 상담 코드 인증 후 토스페이먼츠를 통해 처리됩니다.</li>
                 </ul>
               </div>
               <p>모든 결제는 토스페이먼츠를 통해 처리됩니다.</p>
@@ -128,14 +111,6 @@ export default function TermsPage() {
                 <ul className="list-disc list-inside space-y-1">
                   <li>월 구독: 결제일로부터 1개월</li>
                   <li>3개월 패스: 결제일로부터 3개월</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium text-white mb-1">2. 컨설팅 서비스</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>기본 이용 기한: 결제일로부터 4주</li>
-                  <li>서비스 연장: 기본 기한 종료 후 2주 무료 연장 제공</li>
-                  <li>강사 사정에 의한 미진행 시 해당 기간만큼 무료 자동 연장</li>
                 </ul>
               </div>
             </div>

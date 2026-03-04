@@ -1,13 +1,12 @@
 /**
- * 요금제 상세 페이지 (340줄)
+ * 요금제 상세 페이지
  *
- * 전체 요금제 비교 (무료/월/3개월/컨설팅).
+ * 전체 요금제 비교 (무료/회차권/월구독/3개월).
  * PricingSection 컴포넌트와 유사하나 독립 페이지로 더 상세한 정보 포함.
- * "왜 유료인가요?" 섹션 + 환불 정책 링크.
  * 라우트: /pricing (공개)
  */
 import Link from "next/link"
-import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap, GraduationCap, BookOpen, Users } from "lucide-react"
+import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export const metadata = {
@@ -227,112 +226,6 @@ export default function PricingPage() {
               </Button>
             </div>
           ))}
-        </div>
-
-        {/* 1:1 컨설팅 섹션 */}
-        <div className="mb-16">
-          <div className="text-center mb-10">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <GraduationCap className="w-6 h-6 text-[#5B8DEF]" />
-              <h2 className="text-2xl font-bold text-white">1:1 컨설팅</h2>
-            </div>
-            <p className="text-slate-400">
-              게임 업계 11년차 현업 기획자의 맞춤 컨설팅
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-            {/* 4회 컨설팅 */}
-            <div className="relative bg-slate-900/80 rounded-2xl p-8 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-all duration-300">
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-xl bg-slate-700/50 flex items-center justify-center mb-4">
-                  <BookOpen className="w-6 h-6 text-[#5B8DEF]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">1:1 컨설팅 (4회)</h3>
-                <p className="text-sm text-slate-400">타임당 12만원 x 4회</p>
-              </div>
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">480,000</span>
-                  <span className="text-slate-400">원</span>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {["포트폴리오 심층 리뷰", "실무 노하우 전수", "질의응답 무제한", "4회 맞춤 커리큘럼 제공"].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm">
-                    <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
-                    <span className="text-slate-400">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
-                <Link href="/tutoring?package=tutoring_4">신청하기</Link>
-              </Button>
-            </div>
-
-            {/* 12회 컨설팅 (10% 할인) */}
-            <div className="relative bg-slate-900/80 rounded-2xl p-8 border border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10 scale-[1.02] transition-all duration-300">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
-                  <Sparkles className="w-3 h-3" />
-                  10% 할인
-                </span>
-              </div>
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-xl bg-[#5B8DEF]/20 flex items-center justify-center mb-4">
-                  <BookOpen className="w-6 h-6 text-[#5B8DEF]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">1:1 컨설팅 (12회)</h3>
-                <p className="text-sm text-slate-400">타임당 12만원 x 12회, 10% 할인 적용</p>
-              </div>
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-lg text-slate-500 line-through mr-2">1,440,000원</span>
-                  <span className="text-4xl font-bold text-white">1,296,000</span>
-                  <span className="text-slate-400">원</span>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {["포트폴리오 심층 리뷰", "실무 노하우 전수", "질의응답 무제한", "12회 맞춤 커리큘럼 제공", "10% 할인 적용"].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm">
-                    <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
-                    <span className="text-slate-400">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                <Link href="/tutoring?package=tutoring_12">신청하기</Link>
-              </Button>
-            </div>
-
-            {/* 그룹 컨설팅 */}
-            <div className="relative bg-slate-900/80 rounded-2xl p-8 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-all duration-300">
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-xl bg-slate-700/50 flex items-center justify-center mb-4">
-                  <Users className="w-6 h-6 text-[#5B8DEF]" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">그룹 컨설팅 (4주)</h3>
-                <p className="text-sm text-slate-400">주 1회 × 4주, 타임당 9만원</p>
-              </div>
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">360,000</span>
-                  <span className="text-slate-400">원</span>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {["소규모 그룹 (2~4인)", "참여자 간 피드백 교류", "합리적인 가격의 컨설팅", "4주 맞춤 커리큘럼"].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm">
-                    <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
-                    <span className="text-slate-400">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
-                <Link href="/tutoring?package=group_tutoring">신청하기</Link>
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* 서비스 상세 설명 */}

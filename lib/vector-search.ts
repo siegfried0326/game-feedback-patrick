@@ -6,7 +6,7 @@
  * AI에게 실제 합격 포트폴리오 내용을 제공.
  *
  * 주요 함수:
- * - chunkText(): 텍스트를 겹치는 청크로 분할 (800자 단위, 100자 겹침)
+ * - chunkText(): 텍스트를 겹치는 청크로 분할 (1800자 단위, 200자 겹침)
  * - embedAndStorePortfolio(): 포트폴리오 텍스트 → 청크 → 임베딩 → DB 저장
  * - embedAllPortfolios(): 기존 포트폴리오 일괄 임베딩 (관리자 배치 작업)
  * - searchSimilarContent(): 사용자 문서 텍스트로 유사 포트폴리오 검색
@@ -19,10 +19,10 @@ import { generateEmbedding, generateEmbeddings } from "./openai-embedding"
 import { createClient } from "./supabase/server"
 
 // ========== 설정값 ==========
-// 청크 크기: 800자 (벡터 검색 최적 범위)
-const CHUNK_SIZE = 800
-// 청크 겹침: 100자 (문장이 청크 경계에서 잘리는 문제 방지)
-const CHUNK_OVERLAP = 100
+// 청크 크기: 1800자 (~450토큰, 게임기획 문서의 문맥 보존에 유리)
+const CHUNK_SIZE = 1800
+// 청크 겹침: 200자 (문장이 청크 경계에서 잘리는 문제 방지)
+const CHUNK_OVERLAP = 200
 // 배치 임베딩 크기: 한 번에 최대 20개 처리 (OpenAI API 안정성)
 const BATCH_SIZE = 20
 
@@ -43,12 +43,12 @@ export interface SimilarChunk {
 /**
  * 텍스트를 겹치는 청크로 분할
  *
- * 긴 문서를 벡터 검색 가능한 크기(800자)로 나눔.
+ * 긴 문서를 벡터 검색 가능한 크기(1800자, ~450토큰)로 나눔.
  * 문장 경계(줄바꿈, 마침표)에서 자르기를 시도하여 의미 단위 유지.
  *
  * @param text - 원본 텍스트
- * @param chunkSize - 각 청크의 목표 크기 (기본 800자)
- * @param overlap - 청크 간 겹치는 부분 (기본 100자)
+ * @param chunkSize - 각 청크의 목표 크기 (기본 1800자)
+ * @param overlap - 청크 간 겹치는 부분 (기본 200자)
  * @returns 청크 텍스트 배열
  */
 export function chunkText(

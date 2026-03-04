@@ -21,7 +21,9 @@
  * 벡터 서치:
  * - 포트폴리오 저장 후 자동으로 텍스트 청킹 + OpenAI 임베딩 생성
  * - 스프레드시트: parseExcelToText() 결과를 content_text로 저장
- * - PDF/이미지: 메타데이터(요약+강점+약점) 기반 임베딩
+ * - PDF: pdf-parse로 텍스트 추출 → content_text 저장 → 전문 임베딩
+ * - 이미지: 메타데이터(요약+강점+약점) 기반 임베딩
+ * - rebuildAllPortfolioChunks(): 전체 포트폴리오 청크 재구성 + 재임베딩
  *
  * 보안: 모든 함수에서 관리자 이메일 이중 확인 (미들웨어 + 서버 액션)
  *
@@ -37,6 +39,7 @@ import { extractCompanyFromFileName } from "@/lib/company-parser"
 import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
 import { embedAndStorePortfolio, embedAllPortfolios, chunkText } from "@/lib/vector-search"
 import { generateEmbedding, generateEmbeddings } from "@/lib/openai-embedding"
+import pdfParse from "pdf-parse"
 
 interface PortfolioInput {
   fileName: string
@@ -427,6 +430,21 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
         ])
       }
 
+      // PDF 파일: pdf-parse로 텍스트 추출 → content_text에 저장 (벡터 서치용)
+      if (!isSpreadsheet && input.mimeType === 'application/pdf') {
+        try {
+          const pdfData = await pdfParse(fileBuffer)
+          if (pdfData.text && pdfData.text.trim().length > 50) {
+            extractedContentText = pdfData.text.trim()
+            console.log(`📄 PDF 텍스트 추출 성공: ${extractedContentText.length}자`)
+          } else {
+            console.log('📄 PDF 텍스트 추출 결과 너무 짧음 — 메타데이터 폴백')
+          }
+        } catch (pdfErr) {
+          console.error('📄 PDF 텍스트 추출 실패 (무시):', pdfErr)
+        }
+      }
+
       const responseText = result.response.text()
 
       // JSON 추출
@@ -485,17 +503,23 @@ export async function analyzeAndSavePortfolio(input: PortfolioInput) {
 
       // [벡터 서치] 저장된 포트폴리오에 대해 임베딩 생성 (비동기, 실패해도 분석 성공)
       if (savedPortfolio?.id) {
-        // 임베딩용 텍스트: content_text 있으면 사용, 없으면 메타데이터 조합
+        // 임베딩용 텍스트: content_text 있으면 사용, 없으면 구조화된 메타데이터
         const embeddingText = extractedContentText ||
-          [
-            `파일: ${input.fileName}`,
-            `문서유형: ${input.documentType}`,
-            `회사: ${input.companies.join(", ")}`,
-            `요약: ${analysis.summary}`,
-            `강점: ${(analysis.strengths || []).join(". ")}`,
-            `약점: ${(analysis.weaknesses || []).join(". ")}`,
-            `키워드: ${(analysis.tags || []).join(", ")}`,
-          ].join("\n\n")
+          buildRichPortfolioText({
+            file_name: input.fileName,
+            companies: input.companies,
+            document_type: input.documentType,
+            overall_score: convertToInt(analysis.overall_score),
+            logic_score: convertToInt(analysis.scores?.logic_score),
+            specificity_score: convertToInt(analysis.scores?.specificity_score),
+            readability_score: convertToInt(analysis.scores?.readability_score),
+            technical_score: convertToInt(analysis.scores?.technical_score),
+            creativity_score: convertToInt(analysis.scores?.creativity_score),
+            summary: analysis.summary,
+            strengths: analysis.strengths,
+            weaknesses: analysis.weaknesses,
+            tags: analysis.tags,
+          })
 
         embedAndStorePortfolio(savedPortfolio.id, embeddingText, {
           companies: input.companies,
@@ -1342,5 +1366,181 @@ export async function getSuccessPatterns() {
 
 
 // ============================================================
-// ■ 포트폴리오 개별 분석 (TODO: 미완성 — 추후 구현 예정)
+// ■ 전체 포트폴리오 재청킹 + 재임베딩
+// ============================================================
+
+/**
+ * 기존 포트폴리오의 메타데이터를 풍부한 구조화 텍스트로 재구성하여 재임베딩
+ *
+ * 기존: PDF 포트폴리오의 임베딩 텍스트 = 파일명+요약+강점+약점 (~500자)
+ * 개선: 점수, 카테고리별 점수, 상세 메타데이터를 모두 포함한 구조화 텍스트 (~1500-2000자)
+ *
+ * content_text가 있으면 그대로 사용 (스프레드시트 등 원본 텍스트 보유),
+ * 없으면 DB 메타데이터로 풍부한 텍스트를 재구성.
+ *
+ * @param batchLimit - 한 번에 처리할 최대 개수 (기본 10, Vercel 타임아웃 방지)
+ * @returns 처리 결과
+ */
+export async function rebuildAllPortfolioChunks(batchLimit: number = 10) {
+  try {
+    await verifyAdmin()
+    const supabase = await createClient()
+
+    // 전체 포트폴리오 조회 (모든 메타데이터 포함)
+    const { data: portfolios, error } = await supabase
+      .from("portfolios")
+      .select(`
+        id, file_name, companies, document_type, content_text,
+        summary, strengths, weaknesses, tags,
+        overall_score, logic_score, specificity_score, readability_score,
+        technical_score, creativity_score
+      `)
+      .order("created_at", { ascending: true })
+
+    if (error || !portfolios) {
+      return { success: false, error: `포트폴리오 조회 실패: ${error?.message}` }
+    }
+
+    // 이미 재청킹 완료된 포트폴리오 체크 (chunk_text 길이 기준)
+    // 기존 청크가 있어도 강제 재처리 (품질 개선이 목적)
+    const { data: chunkCounts } = await supabase
+      .from("portfolio_chunks")
+      .select("portfolio_id")
+
+    const existingChunkIds = new Set((chunkCounts || []).map(c => c.portfolio_id))
+
+    // 아직 재청킹 안 된 포트폴리오 우선 처리
+    const unprocessed = portfolios.filter(p => !existingChunkIds.has(p.id))
+    const processed = portfolios.filter(p => existingChunkIds.has(p.id))
+    const ordered = [...unprocessed, ...processed]
+
+    const batch = ordered.slice(0, batchLimit)
+    const remaining = ordered.length - batch.length
+
+    let successCount = 0
+    let failCount = 0
+    const errors: string[] = []
+
+    for (const portfolio of batch) {
+      try {
+        // content_text가 있으면 그대로 사용, 없으면 메타데이터로 풍부한 텍스트 재구성
+        let text = portfolio.content_text
+        if (!text || text.trim().length < 100) {
+          text = buildRichPortfolioText(portfolio)
+        }
+
+        if (!text || text.trim().length < 50) {
+          failCount++
+          errors.push(`${portfolio.file_name}: 텍스트 부족`)
+          continue
+        }
+
+        const result = await embedAndStorePortfolio(
+          portfolio.id,
+          text,
+          {
+            companies: portfolio.companies,
+            documentType: portfolio.document_type,
+            fileName: portfolio.file_name,
+          },
+        )
+
+        if (result.success) {
+          successCount++
+        } else {
+          failCount++
+          errors.push(`${portfolio.file_name}: ${result.error}`)
+        }
+
+        // API 속도 제한 방지
+        await new Promise(resolve => setTimeout(resolve, 300))
+      } catch (err) {
+        failCount++
+        errors.push(`${portfolio.file_name}: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        total: portfolios.length,
+        processed: successCount,
+        failed: failCount,
+        remaining,
+        errors: errors.slice(0, 10),
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `재청킹 실패: ${error instanceof Error ? error.message : String(error)}`
+    }
+  }
+}
+
+/**
+ * 포트폴리오 메타데이터를 풍부한 구조화 텍스트로 변환
+ * content_text가 없는 PDF 포트폴리오용
+ */
+function buildRichPortfolioText(portfolio: {
+  file_name: string
+  companies?: string[]
+  document_type?: string
+  summary?: string
+  strengths?: string[]
+  weaknesses?: string[]
+  tags?: string[]
+  overall_score?: number
+  logic_score?: number
+  specificity_score?: number
+  readability_score?: number
+  technical_score?: number
+  creativity_score?: number
+}): string {
+  const parts: string[] = []
+
+  parts.push(`[포트폴리오: ${portfolio.file_name}]`)
+
+  if (portfolio.companies?.length) {
+    parts.push(`합격 회사: ${portfolio.companies.join(", ")}`)
+  }
+  if (portfolio.document_type) {
+    parts.push(`문서 유형: ${portfolio.document_type}`)
+  }
+
+  // 점수 정보
+  const scores: string[] = []
+  if (portfolio.overall_score) scores.push(`종합 ${portfolio.overall_score}/100`)
+  if (portfolio.logic_score) scores.push(`논리력 ${portfolio.logic_score}`)
+  if (portfolio.specificity_score) scores.push(`구체성 ${portfolio.specificity_score}`)
+  if (portfolio.readability_score) scores.push(`가독성 ${portfolio.readability_score}`)
+  if (portfolio.technical_score) scores.push(`기술이해 ${portfolio.technical_score}`)
+  if (portfolio.creativity_score) scores.push(`창의성 ${portfolio.creativity_score}`)
+  if (scores.length > 0) {
+    parts.push(`평가 점수: ${scores.join(", ")}`)
+  }
+
+  if (portfolio.summary) {
+    parts.push(`\n요약:\n${portfolio.summary}`)
+  }
+
+  if (portfolio.strengths?.length) {
+    parts.push(`\n강점:`)
+    portfolio.strengths.forEach((s, i) => parts.push(`${i + 1}. ${s}`))
+  }
+
+  if (portfolio.weaknesses?.length) {
+    parts.push(`\n보완점:`)
+    portfolio.weaknesses.forEach((w, i) => parts.push(`${i + 1}. ${w}`))
+  }
+
+  if (portfolio.tags?.length) {
+    parts.push(`\n키워드: ${portfolio.tags.join(", ")}`)
+  }
+
+  return parts.join("\n")
+}
+
+// ============================================================
+// ■ 포트폴리오 개별 분석 (TODO: Phase 2에서 구현 예정)
 // ============================================================

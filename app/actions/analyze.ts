@@ -493,7 +493,7 @@ ${topExamples}
     let vectorSearchSection = ""
     if (pageContent && pageContent.length >= 100) {
       try {
-        const searchResult = await searchSimilarContent(pageContent, 5, 0.3)
+        const searchResult = await searchSimilarContent(pageContent, 15, 0.4)
         if (searchResult.chunks.length > 0) {
           vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
           console.log(`[벡터 서치] ${searchResult.chunks.length}개 유사 청크 발견`)
@@ -907,7 +907,7 @@ ${topExamples}
     try {
       // 파일명과 문서유형을 검색 쿼리로 사용
       const searchQuery = `게임 기획 포트폴리오 ${input.fileName}`
-      const searchResult = await searchSimilarContent(searchQuery, 5, 0.25)
+      const searchResult = await searchSimilarContent(searchQuery, 15, 0.35)
       if (searchResult.chunks.length > 0) {
         vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
         console.log(`[벡터 서치-문서] ${searchResult.chunks.length}개 유사 청크 발견`)

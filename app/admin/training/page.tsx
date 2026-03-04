@@ -24,7 +24,7 @@ import { Progress } from "@/components/ui/progress"
 import {
   analyzeAndSavePortfolio, getPortfolioList,
   getCompanyStats, deletePortfolio, deleteMultiplePortfolios,
-  reclassifyAllCompanies
+  reclassifyAllCompanies, rebuildAllPortfolioChunks
 } from "@/app/actions/admin"
 import { createClient } from "@/lib/supabase/client"
 import { v4 as uuidv4 } from "uuid"
@@ -47,6 +47,8 @@ export default function TrainingPage() {
   const [companyStats, setCompanyStats] = useState<Record<string, number>>({})
   const [isLoadingStats, setIsLoadingStats] = useState(false)
   const [isReclassifying, setIsReclassifying] = useState(false)
+  const [isRebuilding, setIsRebuilding] = useState(false)
+  const [rebuildProgress, setRebuildProgress] = useState({ processed: 0, total: 0, remaining: 0 })
 
   // ── 업로드 탭 상태 ──
   const [files, setFiles] = useState<TrainingFile[]>([])
@@ -375,6 +377,50 @@ export default function TrainingPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={async () => {
+                if (!confirm("전체 포트폴리오의 벡터 임베딩을 재생성합니다.\n기존 청크를 삭제하고 메타데이터 기반으로 다시 생성합니다.\n\n계속하시겠습니까?")) return
+                setIsRebuilding(true)
+                setRebuildProgress({ processed: 0, total: 0, remaining: 0 })
+                try {
+                  // 10개씩 배치 처리 반복
+                  let totalProcessed = 0
+                  let hasMore = true
+                  while (hasMore) {
+                    const result = await rebuildAllPortfolioChunks(10)
+                    if (!result.success) {
+                      alert("재임베딩 실패: " + result.error)
+                      break
+                    }
+                    totalProcessed += result.processed
+                    setRebuildProgress({
+                      processed: totalProcessed,
+                      total: totalProcessed + result.remaining,
+                      remaining: result.remaining,
+                    })
+                    hasMore = result.remaining > 0
+                  }
+                  if (totalProcessed > 0) {
+                    alert(`✅ 전체 재임베딩 완료! ${totalProcessed}개 포트폴리오 처리됨`)
+                  }
+                } catch (err: any) {
+                  alert("재임베딩 오류: " + err.message)
+                }
+                setIsRebuilding(false)
+              }}
+              disabled={isRebuilding}
+              variant="outline"
+              className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+            >
+              {isRebuilding ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Database className="w-4 h-4 mr-2" />
+              )}
+              {isRebuilding
+                ? `재임베딩 중... (${rebuildProgress.processed}/${rebuildProgress.processed + rebuildProgress.remaining})`
+                : "전체 재임베딩"}
+            </Button>
             <Button
               onClick={async () => {
                 setIsReclassifying(true)

@@ -7,7 +7,7 @@
 | PG사 | TossPayments |
 | 결제 방식 | 일반결제 (크레딧) + 빌링키 자동결제 (구독) |
 | DB | Supabase: users_subscription, credit_orders |
-| 마지막 갱신 | 2026-02-28 |
+| 마지막 갱신 | 2026-03-04 |
 | 가격 기준표 | → [PRD_가격표_요금제.md](./PRD_가격표_요금제.md) 참고 |
 
 > **가격 변경 시**: PRD_가격표_요금제.md를 먼저 수정하고, 거기 적힌 "코드 반영 위치"를 모두 수정하세요.
@@ -45,6 +45,7 @@
    c. orderId + amount 반환
 3. TossPayments 일반결제 위젯 표시
 4. 결제 완료 → /payment/credits/success로 리다이렉트
+   결제 실패/취소 → /payment/credits/fail로 리다이렉트
 5. confirmCreditPayment(paymentKey, orderId, amount) 호출:
    a. credit_orders에서 주문 조회 + 금액 검증
    b. TossPayments 결제 확인 API 호출
@@ -139,6 +140,7 @@ cancelSubscription():
 | `app/actions/subscription.ts` | 구독 CRUD, 할당량 체크, 크레딧 차감 |
 | `app/payment/credits/page.tsx` | 크레딧 결제 페이지 |
 | `app/payment/credits/success/page.tsx` | 크레딧 결제 성공 페이지 |
+| `app/payment/credits/fail/page.tsx` | 크레딧 결제 실패 페이지 |
 | `app/payment/billing/page.tsx` | 구독 결제 페이지 |
 | `components/pricing-modal.tsx` | 요금제 선택 모달 |
 | `components/pricing-section.tsx` | 랜딩페이지 가격표 |

@@ -122,7 +122,7 @@ function CreditsContent() {
         orderId: orderResult.orderId!,
         orderName: `디자이닛 분석 ${pkg.name}`,
         successUrl: `${window.location.origin}/payment/credits/success`,
-        failUrl: `${window.location.origin}/payment/billing/fail`,
+        failUrl: `${window.location.origin}/payment/credits/fail`,
       })
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "결제 중 오류가 발생했습니다."

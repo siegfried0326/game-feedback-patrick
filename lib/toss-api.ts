@@ -91,7 +91,7 @@ export async function deleteBillingKey(billingKey: string) {
 }
 
 /**
- * 일반결제 확인 (컨설팅 결제용)
+ * 일반결제 확인 (크레딧 결제용)
  */
 export async function confirmPayment(paymentKey: string, orderId: string, amount: number) {
   const response = await fetch(`${TOSS_API_BASE}/payments/confirm`, {

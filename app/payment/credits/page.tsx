@@ -95,6 +95,12 @@ function CreditsContent() {
     setError("")
 
     try {
+      if (!TOSS_CLIENT_KEY) {
+        setError("TOSS_CLIENT_KEY가 설정되지 않았습니다. 환경변수를 확인해주세요.")
+        setLoading(false)
+        return
+      }
+
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -126,14 +132,8 @@ function CreditsContent() {
       })
     } catch (err: unknown) {
       console.error("[credits] 결제 에러:", err)
-      let message = "결제 중 오류가 발생했습니다."
-      if (err instanceof Error) {
-        message = err.message
-      } else if (typeof err === "object" && err !== null && "code" in err) {
-        const e = err as { code?: string; message?: string }
-        message = `[${e.code}] ${e.message || "알 수 없는 오류"}`
-      }
-      setError(message)
+      const detail = err instanceof Error ? err.message : JSON.stringify(err)
+      setError(`결제 에러: ${detail}`)
       setLoading(false)
     }
   }

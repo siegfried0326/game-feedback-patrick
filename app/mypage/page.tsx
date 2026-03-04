@@ -276,7 +276,7 @@ export default function MyPage() {
   }, [projectAnalyses])
 
   const getPlanLabel = (plan: string) => {
-    switch (plan) { case "free": return "무료"; case "monthly": return "월 무제한"; case "three_month": return "3개월 무제한"; case "tutoring": return "과외 수강생"; default: return plan }
+    switch (plan) { case "free": return "무료"; case "monthly": return "월 무제한"; case "three_month": return "3개월 무제한"; default: return plan }
   }
   const getStatusLabel = (status: string) => {
     switch (status) { case "active": return "이용중"; case "cancelled": return "해지됨"; case "expired": return "만료됨"; default: return status }

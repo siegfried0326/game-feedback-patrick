@@ -2,7 +2,7 @@
  * TossPayments API 호출 헬퍼 (서버 전용)
  *
  * "use server" 파일이 아니므로 HTTP 엔드포인트로 노출되지 않음.
- * 결제 관련 서버 액션(payment.ts, tutoring.ts, subscription.ts)에서 import하여 사용.
+ * 결제 관련 서버 액션(payment.ts, subscription.ts)에서 import하여 사용.
  *
  * 환경변수: TOSS_SECRET_KEY
  */

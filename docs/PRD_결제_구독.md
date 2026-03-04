@@ -5,8 +5,8 @@
 | 항목 | 내용 |
 |------|------|
 | PG사 | TossPayments |
-| 결제 방식 | 일반결제 (크레딧/컨설팅) + 빌링키 자동결제 (구독) |
-| DB | Supabase: users_subscription, credit_orders, tutoring_orders |
+| 결제 방식 | 일반결제 (크레딧) + 빌링키 자동결제 (구독) |
+| DB | Supabase: users_subscription, credit_orders |
 | 마지막 갱신 | 2026-02-28 |
 | 가격 기준표 | → [PRD_가격표_요금제.md](./PRD_가격표_요금제.md) 참고 |
 
@@ -29,16 +29,11 @@
 |------|------|-----------|----------|-------------|------|
 | monthly | 13,900원/월 | 무제한 | 무제한 | Sonnet | 1개월 |
 | three_month | 39,000원 | 무제한 | 무제한 | Opus | 3개월 |
-| tutoring | 컨설팅 결제 시 | 무제한 | 무제한 | Sonnet | 1개월 |
-
 ### 2.3 게임캔버스 할인
 - 대상: monthly 플랜만
 - 할인가: 5,900원/월
 - 검증: `GAMECANVAS_DISCOUNT_CODES` 환경변수의 코드와 비교
 - 주문명: "디자이닛 월 구독 (게임캔버스)"
-
-### 2.4 컨설팅 상품
-별도 일반결제 → 결제 완료 시 1개월 구독(tutoring 플랜) 자동 부여
 
 ## 3. 크레딧 결제 흐름
 
@@ -84,47 +79,35 @@ cancelSubscription():
 5. DB 업데이트: status="cancelled", billing_key=null
 ```
 
-## 6. 컨설팅 결제 흐름
+## 6. 할당량 체크
 
-```
-1. createTutoringOrder() → DB에 주문 생성 (orderId)
-2. TossPayments 일반결제 위젯 표시
-3. 결제 완료 → confirmTutoringPayment():
-   a. DB에서 주문 금액 재확인 (클라이언트 값 신뢰 X)
-   b. confirmPayment() → TossPayments 결제 확인
-   c. tutoring_orders DB 업데이트 (paid)
-   d. users_subscription을 tutoring 플랜으로 upsert (+1개월)
-```
-
-## 7. 할당량 체크
-
-### 7.1 분석 할당량 (`checkAnalysisAllowance`)
+### 6.1 분석 할당량 (`checkAnalysisAllowance`)
 | 조건 | 결과 |
 |------|------|
-| 활성 구독 (monthly/three_month/tutoring, 미만료) | 무제한 허용 |
+| 활성 구독 (monthly/three_month, 미만료) | 무제한 허용 |
 | 크레딧 1개 이상 | 허용 (분석 후 1개 차감) |
 | 크레딧 0개 + 구독 없음 | 차단 → 크레딧 구매 또는 구독 안내 |
 
-### 7.2 프로젝트 할당량 (`checkProjectAllowance`)
+### 6.2 프로젝트 할당량 (`checkProjectAllowance`)
 | 조건 | 결과 |
 |------|------|
 | 활성 구독 | 무제한 |
 | 크레딧 1개 이상 | 허용 |
 | 크레딧 0개 + 구독 없음 | 1개 제한 |
 
-### 7.3 크레딧 차감 (`deductCredit`)
+### 6.3 크레딧 차감 (`deductCredit`)
 - 분석 완료 후 호출
 - 활성 구독자: 차감 없이 통과 (무제한)
 - 비구독자: `analysis_credits -= 1`
 
-## 8. DB 테이블
+## 7. DB 테이블
 
-### 8.1 users_subscription
+### 7.1 users_subscription
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
 | user_id | UUID (PK, FK) | 사용자 ID |
-| plan | text | free/monthly/three_month/tutoring |
+| plan | text | free/monthly/three_month |
 | status | text | active/cancelled/expired |
 | analysis_credits | integer (DEFAULT 1) | 남은 분석 크레딧 |
 | billing_key | text | TossPayments 빌링키 |
@@ -134,7 +117,7 @@ cancelSubscription():
 | expires_at | timestamptz | 만료일 |
 | cancelled_at | timestamptz | 해지일 |
 
-### 8.2 credit_orders
+### 7.2 credit_orders
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
@@ -148,33 +131,19 @@ cancelSubscription():
 | payment_status | text | pending / paid |
 | paid_at | timestamptz | 결제 확인 시각 |
 
-### 8.3 tutoring_orders
-
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | UUID (PK) | 주문 ID |
-| user_id | UUID (FK) | 사용자 ID |
-| order_id | text (unique) | TUT_{type}_{uid}_{timestamp} |
-| package_type | text | 상품 타입 |
-| amount | integer | 결제 금액 |
-| payment_key | text | TossPayments 결제 키 |
-| payment_status | text | pending/paid |
-| paid_at | timestamptz | 결제 확인 시각 |
-
-## 9. 관련 파일
+## 8. 관련 파일
 
 | 파일 | 역할 |
 |------|------|
 | `app/actions/payment.ts` | TossPayments API: 구독결제, 크레딧결제, 할인코드 |
 | `app/actions/subscription.ts` | 구독 CRUD, 할당량 체크, 크레딧 차감 |
-| `app/actions/tutoring.ts` | 컨설팅 주문/결제/구독 부여 |
 | `app/payment/credits/page.tsx` | 크레딧 결제 페이지 |
 | `app/payment/credits/success/page.tsx` | 크레딧 결제 성공 페이지 |
 | `app/payment/billing/page.tsx` | 구독 결제 페이지 |
 | `components/pricing-modal.tsx` | 요금제 선택 모달 |
 | `components/pricing-section.tsx` | 랜딩페이지 가격표 |
 
-## 10. 환경변수
+## 9. 환경변수
 
 | 변수명 | 용도 |
 |--------|------|
@@ -182,16 +151,16 @@ cancelSubscription():
 | `NEXT_PUBLIC_TOSS_CLIENT_KEY` | TossPayments 클라이언트 키 |
 | `GAMECANVAS_DISCOUNT_CODES` | 할인 코드 목록 (쉼표 구분) |
 
-## 11. 보안
+## 10. 보안
 
 | 항목 | 구현 |
 |------|------|
 | 빌링키 보호 | 서버에서만 접근, DB에 저장 |
-| 금액 변조 방지 | 컨설팅 결제 시 서버에서 DB 금액 재확인 |
+| 금액 변조 방지 | 서버에서 CREDIT_PRICES/SUBSCRIPTION_PRICES 기준으로 금액 결정 |
 | 인증 | 모든 결제 액션에서 getUser() 확인 |
 | RLS | Supabase RLS로 user_id 기반 접근 제한 |
 
-## 12. 알려진 이슈
+## 11. 알려진 이슈
 
 | 항목 | 설명 |
 |------|------|

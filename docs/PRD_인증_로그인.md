@@ -112,7 +112,7 @@
 | 필드 | 타입 | 설명 |
 |------|------|------|
 | `user_id` | UUID (FK) | 사용자 식별자 |
-| `plan` | text | "free", "monthly", "three_month", "tutoring" |
+| `plan` | text | "free", "monthly", "three_month" |
 | `status` | text | "active", "cancelled", "expired" |
 | `billing_key` | text | TossPayments 빌링키 |
 | `expires_at` | timestamptz | 구독 만료일 |

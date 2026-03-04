@@ -12,7 +12,7 @@
 |---|------|--------|------|-----------|
 | 1 | 분석 API 로그인 체크 없음 | 치명 | `app/actions/analyze.ts` | `analyzeUrlDirect`, `analyzeDocumentDirect`에 `getUser()` 인증 추가 |
 | 2 | 관리자 함수 9개 권한 체크 없음 | 치명 | `app/actions/admin.ts` | `verifyAdmin()` 헬퍼 생성, 9개 함수에 관리자 이메일 확인 추가 |
-| 3 | 컨설팅 결제 금액 클라이언트 신뢰 | 치명 | `app/actions/tutoring.ts` | 서버에 `TUTORING_PRICES` 테이블 추가, `amount` 파라미터 제거 |
+| 3 | 컨설팅 결제 금액 클라이언트 신뢰 | 치명 | `app/actions/tutoring.ts` (삭제됨) | 컨설팅 기능 자체가 삭제됨 |
 | 4 | 결제 헬퍼 함수 HTTP 엔드포인트 노출 | 높음 | `app/actions/payment.ts` | `lib/toss-api.ts`로 분리 (비 "use server" 파일) |
 | 5 | 보안 헤더 없음 | 높음 | `next.config.mjs` | CSP, X-Frame-Options, HSTS 등 7종 추가 |
 | 6 | 오픈 리다이렉트 | 높음 | `app/login/page.tsx`, `app/auth/callback/route.ts` | `sanitizeRedirect()` 함수 |
@@ -28,7 +28,7 @@
 |---|------|--------|------|-----------|
 | 10 | next 취약점 3건 (DoS) | 높음 | `package.json` | 16.0.10 → 16.1.6 업데이트 |
 | 11 | 전역 에러 핸들러 없음 | 중간 | `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` | 신규 생성 — 빈 화면/스택트레이스 노출 방지 |
-| 12 | DB error.message 직접 노출 | 중간 | `subscription.ts` 11곳, `tutoring.ts` 2곳, `payment.ts` 1곳 | `dbError()` 헬퍼로 사용자 메시지만 반환, 실제 에러는 서버 로그 |
+| 12 | DB error.message 직접 노출 | 중간 | `subscription.ts` 11곳, `payment.ts` 1곳 | `dbError()` 헬퍼로 사용자 메시지만 반환, 실제 에러는 서버 로그 |
 | 13 | RLS portfolios/storage 완전 개방 | 치명 | `scripts/008`, `009` + Supabase SQL Editor 직접 실행 | `with check(true)` → `auth.uid() IS NOT NULL` |
 
 ---
@@ -138,8 +138,7 @@
 
 ### 결제 보안
 - 구독 금액: `processSubscriptionPayment()` 내부에서 서버가 결정
-- 컨설팅 금액: `TUTORING_PRICES` 서버 가격표에서 결정
-- 결제 확인: DB에 저장된 금액과 대조 (`confirmTutoringPayment`)
+- 크레딧 금액: `CREDIT_PRICES` 서버 가격표에서 결정
 - TossPayments API 호출: `lib/toss-api.ts` (HTTP 엔드포인트 아님)
 
 ### 에러 처리

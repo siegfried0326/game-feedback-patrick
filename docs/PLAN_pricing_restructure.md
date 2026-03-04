@@ -12,7 +12,7 @@
 | 3개월 무제한 | 39,000원 | 무제한 | 월 13,000원 수준 |
 | GameCanvas 할인 | 월결제에만 적용 | - | 기존 유지 |
 
-※ 컨설팅(tutoring) 가격은 변경 없음
+※ 컨설팅(tutoring) 기능은 삭제됨
 
 ---
 
@@ -94,7 +94,7 @@ CREATE TABLE credit_orders (
 
 **`app/payment/credits/page.tsx`** (신규 — 크레딧 결제)
 - 1/5/10회권 선택 UI
-- TossPayments 일반결제 위젯 (tutoring과 동일 방식)
+- TossPayments 일반결제 위젯
 
 **`app/payment/credits/success/page.tsx`** (신규 — 결제 완료)
 - `confirmCreditPayment()` 호출
@@ -129,7 +129,7 @@ CREATE TABLE credit_orders (
   ↓
 로그인 확인
   ↓
-구독 확인 (monthly/three_month/tutoring?)
+구독 확인 (monthly/three_month?)
   ├─ YES + 기간 내 → 무제한 허용
   └─ NO ↓
 크레딧 확인 (analysis_credits > 0?)
@@ -158,5 +158,5 @@ CREATE TABLE credit_orders (
 - 기존 구독자(monthly/three_month)는 영향 없음 — 만료까지 무제한 유지
 - 기존 무료 사용자 중 분석 1회 이미 쓴 사람 → credits 0으로 세팅
 - 기존 무료 사용자 중 아직 안 쓴 사람 → credits 1 유지
-- 컨설팅(tutoring) 가격/로직은 변경 없음
+- 컨설팅(tutoring) 기능은 삭제됨
 - GameCanvas 할인코드: 월결제에만 적용 (기존과 동일)

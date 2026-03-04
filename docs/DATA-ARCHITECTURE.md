@@ -97,7 +97,7 @@
 |------|------|------|
 | id | UUID | 고유 식별자 |
 | user_id | UUID | Supabase Auth 사용자 ID |
-| plan | TEXT | 구독 유형: 'free', 'monthly', 'three_month', 'tutoring' |
+| plan | TEXT | 구독 유형: 'free', 'monthly', 'three_month' |
 | status | TEXT | 상태: 'active', 'cancelled', 'expired' |
 | started_at | TIMESTAMPTZ | 구독 시작일 |
 | expires_at | TIMESTAMPTZ | 구독 만료일 |
@@ -159,22 +159,6 @@
 | user_id | UUID | 사용자 ID |
 | package_type | TEXT | 'credit_1', 'credit_5', 'credit_10' |
 | credits | INTEGER | 구매할 크레딧 수 |
-| amount | INTEGER | 가격 (원) |
-| order_id | TEXT | 주문 번호 (고유) |
-| payment_key | TEXT | TossPayments 결제 키 |
-| payment_status | TEXT | 'pending', 'paid', 'cancelled' |
-| created_at | TIMESTAMPTZ | 주문일 |
-| paid_at | TIMESTAMPTZ | 결제 완료일 |
-
----
-
-### tutoring_orders — 과외 구매 주문
-
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | UUID | 고유 식별자 |
-| user_id | UUID | 사용자 ID |
-| package_type | TEXT | '1session', '3sessions', '5sessions', '4', '12', 'group' |
 | amount | INTEGER | 가격 (원) |
 | order_id | TEXT | 주문 번호 (고유) |
 | payment_key | TEXT | TossPayments 결제 키 |
@@ -259,9 +243,9 @@ AI가 전체 포트폴리오를 분석해서 뽑아낸 공통 패턴.
 
 | 항목 | 내용 |
 |------|------|
-| 용도 | 구독 결제, 크레딧 구매, 과외 결제 |
+| 용도 | 구독 결제, 크레딧 구매 |
 | 환경변수 | `TOSS_SECRET_KEY` |
-| 사용 위치 | `payment.ts`, `tutoring.ts` |
+| 사용 위치 | `payment.ts` |
 | 기능 | 빌링키 발급, 자동결제, 일반결제, 해지 |
 
 ### Jina AI Reader — 웹페이지 텍스트 추출
@@ -474,9 +458,7 @@ auth.users (Supabase 인증)
   │
   ├── 1:N ── projects (프로젝트 폴더)
   │
-  ├── 1:N ── credit_orders (크레딧 구매)
-  │
-  └── 1:N ── tutoring_orders (과외 구매)
+  └── 1:N ── credit_orders (크레딧 구매)
 
 
 portfolios (학습 데이터) ── 사용자와 무관, 관리자만 관리
@@ -499,7 +481,6 @@ success_patterns (공통점) ── 독립 테이블, portfolio_chunks에서 추
 | `app/actions/admin.ts` | `uploadAdminFile()`, `analyzeAndSavePortfolio()`, `embedExistingPortfolios()`, `extractSuccessPatterns()` | 학습 데이터 + 임베딩 + 공통점 |
 | `app/actions/subscription.ts` | `getSubscription()`, `cancelSubscription()`, `getAnalysisHistory()`, `deductCredit()` | 구독/크레딧/프로젝트 관리 |
 | `app/actions/payment.ts` | `processSubscriptionPayment()`, `createCreditOrder()`, `confirmCreditPayment()` | 구독 + 크레딧 결제 |
-| `app/actions/tutoring.ts` | `createTutoringOrder()`, `confirmTutoringPayment()` | 과외 결제 |
 
 ---
 
@@ -516,7 +497,7 @@ success_patterns (공통점) ── 독립 테이블, portfolio_chunks에서 추
 | 005 | `005_add_projects.sql` | projects 테이블 + analysis_history에 project_id |
 | 006 | `006_add_billing_columns.sql` | billing_key, customer_key 추가 |
 | 007 | `007_create_credit_orders.sql` | credit_orders 테이블 |
-| 008 | `008_create_tutoring_orders.sql` | tutoring_orders 테이블 |
+| 008 | `008_create_tutoring_orders.sql` | tutoring_orders 테이블 (삭제됨) |
 | 009 | `009_add_content_text.sql` | portfolios에 content_text 컬럼 |
 | 010 | `010_create_portfolio_chunks.sql` | portfolio_chunks + pgvector + HNSW 인덱스 |
 | 011 | `011_add_company_feedback.sql` | analysis_history에 company_feedback 컬럼 |
@@ -536,7 +517,6 @@ success_patterns (공통점) ── 독립 테이블, portfolio_chunks에서 추
 | analysis_history | 본인만 | 본인만 | - |
 | projects | 본인만 | 본인만 | 본인만 |
 | credit_orders | 본인만 | 본인만 | - |
-| tutoring_orders | 본인만 | 본인만 | - |
 | success_patterns | 인증 사용자 | 인증 사용자 | 인증 사용자 |
 
 ---

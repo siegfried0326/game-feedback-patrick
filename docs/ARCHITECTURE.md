@@ -167,6 +167,7 @@ auth.users (Supabase 내장)
     ├──→ users_subscription (1:1, user_id FK)
     │       ├─ plan: free/monthly/three_month
     │       ├─ status: active/cancelled/expired
+
     │       ├─ analysis_credits: 남은 크레딧
     │       └─ billing_key: TossPayments 빌링키
     │

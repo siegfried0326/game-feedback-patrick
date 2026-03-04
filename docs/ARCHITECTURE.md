@@ -32,7 +32,6 @@ game-feedback-landing-page/
 │   ├── sample-portfolio/page.tsx     # 샘플 포트폴리오
 │   ├── terms/page.tsx                # 이용약관
 │   ├── refund-policy/page.tsx        # 환불정책
-│   ├── tutoring/page.tsx             # 컨설팅 결제 페이지
 │   ├── admin/                        # 관리자 페이지
 │   │   ├── page.tsx                  # 메인 대시보드
 │   │   ├── training/page.tsx         # 학습 데이터 관리 (~823줄)
@@ -44,14 +43,12 @@ game-feedback-landing-page/
 │   │   ├── billing/success/page.tsx  # 구독 결제 성공
 │   │   ├── billing/fail/page.tsx     # 구독 결제 실패
 │   │   ├── credits/page.tsx          # 크레딧 결제
-│   │   ├── credits/success/page.tsx  # 크레딧 결제 성공
-│   │   └── tutoring/success/page.tsx # 컨설팅 결제 성공
+│   │   └── credits/success/page.tsx  # 크레딧 결제 성공
 │   ├── actions/                      # Server Actions
 │   │   ├── analyze.ts                # AI 분석 (~1128줄)
 │   │   ├── auth.ts                   # 인증 (getUser, signOut, ensureSubscription)
 │   │   ├── payment.ts                # TossPayments API (~228줄)
 │   │   ├── subscription.ts           # 구독/프로젝트/이력 (~369줄)
-│   │   ├── tutoring.ts               # 컨설팅 결제 (~108줄)
 │   │   └── admin.ts                  # 관리자 기능 (~1345줄)
 │   └── api/
 │       ├── admin/embed/route.ts      # 벡터 임베딩 API (maxDuration=60)
@@ -150,7 +147,6 @@ game-feedback-landing-page/
 ```
 [크레딧] createCreditOrder → TossPayments 일반결제 → confirmCreditPayment → credits 증가
 [구독] 카드 등록 → authKey → issueBillingKey → approveBillingPayment → DB upsert
-[컨설팅] createTutoringOrder → TossPayments 일반결제 → confirmTutoringPayment → 구독 부여
 ```
 
 ## DB 테이블 관계
@@ -159,7 +155,7 @@ game-feedback-landing-page/
 auth.users (Supabase 내장)
     │
     ├──→ users_subscription (1:1, user_id FK)
-    │       ├─ plan: free/monthly/three_month/tutoring
+    │       ├─ plan: free/monthly/three_month
     │       ├─ status: active/cancelled/expired
     │       ├─ analysis_credits: 남은 크레딧
     │       └─ billing_key: TossPayments 빌링키
@@ -170,11 +166,8 @@ auth.users (Supabase 내장)
     │               ├─ ranking: jsonb (백분위, 순위)
     │               └─ company_feedback: text (8개 회사 피드백)
     │
-    ├──→ credit_orders (1:N, user_id FK)
-    │       └─ 크레딧 결제 주문 이력
-    │
-    └──→ tutoring_orders (1:N, user_id FK)
-            └─ 컨설팅 결제 주문 이력
+    └──→ credit_orders (1:N, user_id FK)
+            └─ 크레딧 결제 주문 이력
 
 portfolios (user 연관 없음 — 관리자가 관리하는 학습 데이터)
     │

@@ -41,7 +41,6 @@
 | free | - | "무료 체험" + 남은 분석 횟수 |
 | monthly | active | "월 구독" + 만료일 + 해지 버튼 |
 | three_month | active | "3개월 패스 (프리미엄)" + 만료일 + 해지 버튼 |
-| tutoring | active | "컨설팅 구독" + 만료일 |
 | 모든 유료 | cancelled | "해지됨" + "만료일까지 이용 가능" |
 | 모든 유료 | expired | "만료됨" + 구독 갱신 버튼 |
 
@@ -88,7 +87,7 @@
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
 | user_id | UUID (PK, FK) | 사용자 ID |
-| plan | text | free/monthly/three_month/tutoring |
+| plan | text | free/monthly/three_month |
 | status | text | active/cancelled/expired |
 | billing_key | text | TossPayments 빌링키 |
 | customer_key | text | 고객 키 |

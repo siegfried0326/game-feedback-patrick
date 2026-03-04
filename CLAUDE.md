@@ -34,7 +34,7 @@ components/analyze-dashboard.tsx — 분석 결과 대시보드 (~1387줄)
 ```
 
 ### DB 주요 테이블
-- `users_subscription` — 구독 정보 (plan, status, billing_key, expires_at)
+- `users_subscription` — 구독 정보 (plan: free/monthly/three_month, status, billing_key, expires_at)
 - `projects` / `analysis_history` — 프로젝트 + 분석 결과
 - `portfolios` — 학습용 포트폴리오 데이터 (관리자 관리)
 - `portfolio_chunks` — 포트폴리오 텍스트 청크 + vector(1536) 임베딩

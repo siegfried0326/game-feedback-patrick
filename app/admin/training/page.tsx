@@ -24,7 +24,8 @@ import { Progress } from "@/components/ui/progress"
 import {
   analyzeAndSavePortfolio, getPortfolioList,
   getCompanyStats, deletePortfolio, deleteMultiplePortfolios,
-  reclassifyAllCompanies, rebuildAllPortfolioChunks
+  reclassifyAllCompanies, rebuildAllPortfolioChunks,
+  analyzePortfoliosBatch, getPortfolioAnalysisStats
 } from "@/app/actions/admin"
 import { createClient } from "@/lib/supabase/client"
 import { v4 as uuidv4 } from "uuid"
@@ -49,6 +50,8 @@ export default function TrainingPage() {
   const [isReclassifying, setIsReclassifying] = useState(false)
   const [isRebuilding, setIsRebuilding] = useState(false)
   const [rebuildProgress, setRebuildProgress] = useState({ processed: 0, total: 0, remaining: 0 })
+  const [isDeepAnalyzing, setIsDeepAnalyzing] = useState(false)
+  const [deepAnalysisProgress, setDeepAnalysisProgress] = useState({ analyzed: 0, total: 0, remaining: 0 })
 
   // ── 업로드 탭 상태 ──
   const [files, setFiles] = useState<TrainingFile[]>([])
@@ -420,6 +423,48 @@ export default function TrainingPage() {
               {isRebuilding
                 ? `재임베딩 중... (${rebuildProgress.processed}/${rebuildProgress.processed + rebuildProgress.remaining})`
                 : "전체 재임베딩"}
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!confirm("187개 포트폴리오를 Claude로 심층 분석합니다.\n(portfolio_analysis 테이블 필요)\n미분석 포트폴리오만 처리됩니다.\n\n계속하시겠습니까?")) return
+                setIsDeepAnalyzing(true)
+                setDeepAnalysisProgress({ analyzed: 0, total: 0, remaining: 0 })
+                try {
+                  let hasMore = true
+                  while (hasMore) {
+                    const result = await analyzePortfoliosBatch(5)
+                    if (!result.success) {
+                      alert("심층 분석 실패: " + result.error)
+                      break
+                    }
+                    setDeepAnalysisProgress({
+                      analyzed: result.data.analyzed,
+                      total: result.data.total,
+                      remaining: result.data.remaining,
+                    })
+                    hasMore = result.data.remaining > 0
+                  }
+                  const stats = await getPortfolioAnalysisStats()
+                  if (stats.success) {
+                    alert(`심층 분석 완료! ${stats.data.analyzed}/${stats.data.total}개 분석됨 (평균 ${stats.data.avgScore}점)`)
+                  }
+                } catch (err: any) {
+                  alert("심층 분석 오류: " + err.message)
+                }
+                setIsDeepAnalyzing(false)
+              }}
+              disabled={isDeepAnalyzing}
+              variant="outline"
+              className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+            >
+              {isDeepAnalyzing ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Brain className="w-4 h-4 mr-2" />
+              )}
+              {isDeepAnalyzing
+                ? `심층 분석 중... (${deepAnalysisProgress.analyzed}/${deepAnalysisProgress.total})`
+                : "심층 분석"}
             </Button>
             <Button
               onClick={async () => {

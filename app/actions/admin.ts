@@ -1095,43 +1095,85 @@ export async function extractSuccessPatterns() {
       return { success: false, error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
     }
 
-    // ── 3. 모든 청크 텍스트 가져오기 (스킵 마커 제외) ──
-    const { data: chunks, error: chunksError } = await supabase
-      .from("portfolio_chunks")
-      .select("portfolio_id, chunk_text, metadata")
-      .gte("chunk_index", 0)
-      .order("portfolio_id")
+    // ── 3. portfolio_analysis 데이터 우선 사용, 없으면 청크 폴백 ──
+    const { data: analyses, error: analysisError } = await supabase
+      .from("portfolio_analysis")
+      .select("portfolio_id, file_name, companies, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, core_loop_score, content_taxonomy_score, economy_score, player_experience_score, data_design_score, feature_connection_score, motivation_score, difficulty_score, ui_ux_score, dev_plan_score, strengths, weaknesses, key_features, summary, detailed_feedback")
 
-    if (chunksError) {
-      return { success: false, error: `청크 조회 실패: ${chunksError.message}` }
-    }
+    const hasAnalysis = analyses && analyses.length > 0
 
-    if (!chunks || chunks.length === 0) {
-      return { success: false, error: "임베딩된 청크가 없습니다. 먼저 임베딩을 실행하세요." }
-    }
+    // portfolio_analysis가 있으면 구조화 데이터 활용, 없으면 기존 청크 방식 폴백
+    type PortfolioEntry = { text: string; companies: string[]; fileName: string }
+    const portfolioTexts: Record<string, PortfolioEntry> = {}
 
-    // ── 4. 포트폴리오별 텍스트 그룹핑 ──
-    const portfolioTexts: Record<string, { text: string; companies: string[]; fileName: string }> = {}
-    for (const chunk of chunks) {
-      const pid = chunk.portfolio_id
-      if (!portfolioTexts[pid]) {
-        const meta = (chunk.metadata as Record<string, unknown>) || {}
-        portfolioTexts[pid] = {
-          text: "",
-          companies: Array.isArray(meta.companies) ? meta.companies as string[] : [],
-          fileName: (meta.fileName as string) || "알 수 없음",
+    if (hasAnalysis) {
+      // 구조화된 분석 결과 → 훨씬 풍부한 컨텍스트
+      for (const a of analyses) {
+        const scoreLines = [
+          `종합 ${a.overall_score}`,
+          `논리력 ${a.logic_score}`, `구체성 ${a.specificity_score}`,
+          `가독성 ${a.readability_score}`, `기술이해 ${a.technical_score}`, `창의성 ${a.creativity_score}`,
+          `핵심반복 ${a.core_loop_score}`, `콘텐츠분류 ${a.content_taxonomy_score}`,
+          `재화설계 ${a.economy_score}`, `플레이경험 ${a.player_experience_score}`,
+          `수치데이터 ${a.data_design_score}`, `기능연결 ${a.feature_connection_score}`,
+          `동기부여 ${a.motivation_score}`, `난이도 ${a.difficulty_score}`,
+          `UI/UX ${a.ui_ux_score}`, `개발계획 ${a.dev_plan_score}`,
+        ].join(", ")
+
+        const text = [
+          `[${a.file_name}] (${(a.companies || []).join(", ")})`,
+          `점수: ${scoreLines}`,
+          `강점: ${(a.strengths || []).join(" | ")}`,
+          `약점: ${(a.weaknesses || []).join(" | ")}`,
+          `특징: ${(a.key_features || []).join(", ")}`,
+          a.summary ? `요약: ${a.summary}` : "",
+          a.detailed_feedback ? `상세: ${a.detailed_feedback}` : "",
+        ].filter(Boolean).join("\n")
+
+        portfolioTexts[a.portfolio_id] = {
+          text,
+          companies: a.companies || [],
+          fileName: a.file_name,
         }
       }
-      portfolioTexts[pid].text += chunk.chunk_text + "\n"
+    } else {
+      // 폴백: 기존 청크 방식
+      const { data: chunks, error: chunksError } = await supabase
+        .from("portfolio_chunks")
+        .select("portfolio_id, chunk_text, metadata")
+        .gte("chunk_index", 0)
+        .order("portfolio_id")
+
+      if (chunksError) {
+        return { success: false, error: `청크 조회 실패: ${chunksError.message}` }
+      }
+
+      if (!chunks || chunks.length === 0) {
+        return { success: false, error: "분석 데이터가 없습니다. 먼저 심층 분석 또는 임베딩을 실행하세요." }
+      }
+
+      for (const chunk of chunks) {
+        const pid = chunk.portfolio_id
+        if (!portfolioTexts[pid]) {
+          const meta = (chunk.metadata as Record<string, unknown>) || {}
+          portfolioTexts[pid] = {
+            text: "",
+            companies: Array.isArray(meta.companies) ? meta.companies as string[] : [],
+            fileName: (meta.fileName as string) || "알 수 없음",
+          }
+        }
+        portfolioTexts[pid].text += chunk.chunk_text + "\n"
+      }
     }
 
     const portfolioEntries = Object.entries(portfolioTexts)
     const totalCount = portfolioEntries.length
 
     // ── 5. 배치 분할 ──
-    // 포트폴리오당 1000자 × 45개 = 45,000자(~15K 토큰) per batch
-    const BATCH_SIZE = 45
-    const CHARS_PER_PORTFOLIO = 1000
+    // portfolio_analysis 기반: 구조화 데이터라 배치당 70개 가능
+    // 청크 기반 폴백: 기존 45개 유지
+    const BATCH_SIZE = hasAnalysis ? 70 : 45
+    const CHARS_PER_PORTFOLIO = hasAnalysis ? 2000 : 1000
     const batches: typeof portfolioEntries[] = []
     for (let i = 0; i < portfolioEntries.length; i += BATCH_SIZE) {
       batches.push(portfolioEntries.slice(i, i + BATCH_SIZE))
@@ -1174,6 +1216,7 @@ export async function extractSuccessPatterns() {
 
       const batchPrompt = `당신은 게임 업계 채용 전문 분석가입니다.
 아래는 총 ${totalCount}개 합격 포트폴리오 중 ${batchStart}~${batchEnd}번째 (${batch.length}개) 포트폴리오입니다.
+${hasAnalysis ? "각 포트폴리오에는 15개 카테고리 점수(논리력, 구체성, 가독성, 기술이해, 창의성, 핵심반복, 콘텐츠분류, 재화설계, 플레이경험, 수치데이터, 기능연결, 동기부여, 난이도, UI/UX, 개발계획)와 강점/약점/핵심특징이 포함되어 있습니다." : ""}
 
 이 ${batch.length}개 포트폴리오에서 발견되는 합격자 공통 특징을 최대한 많이 추출해주세요.
 
@@ -1542,5 +1585,263 @@ function buildRichPortfolioText(portfolio: {
 }
 
 // ============================================================
-// ■ 포트폴리오 개별 분석 (TODO: Phase 2에서 구현 예정)
+// ■ 포트폴리오 개별 심층 분석 (Phase 2)
+//   portfolio_analysis 테이블에 15개 카테고리 점수 + 강점/약점/핵심특징 저장
 // ============================================================
+
+/**
+ * 미분석 포트폴리오를 배치로 심층 분석하여 portfolio_analysis에 저장
+ * - 입력: content_text(있으면) + Gemini 메타데이터 + 기존 청크 텍스트
+ * - 분석: Claude Sonnet으로 15개 카테고리 점수 + 강점/약점 + 핵심특징
+ * - 배치: batchLimit개씩 처리 (Vercel 5분 제한 고려)
+ */
+export async function analyzePortfoliosBatch(batchLimit: number = 5) {
+  try {
+    const { supabase } = await verifyAdmin()
+
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      return { success: false, error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
+    }
+
+    // 1. 전체 포트폴리오 조회
+    const { data: portfolios, error: pError } = await supabase
+      .from("portfolios")
+      .select(`
+        id, file_name, companies, document_type, content_text,
+        summary, strengths, weaknesses, tags,
+        overall_score, logic_score, specificity_score, readability_score,
+        technical_score, creativity_score
+      `)
+      .order("created_at", { ascending: true })
+
+    if (pError || !portfolios) {
+      return { success: false, error: `포트폴리오 조회 실패: ${pError?.message}` }
+    }
+
+    // 2. 이미 분석 완료된 포트폴리오 제외
+    const { data: analyzed } = await supabase
+      .from("portfolio_analysis")
+      .select("portfolio_id")
+
+    const analyzedIds = new Set((analyzed || []).map(a => a.portfolio_id))
+    const unanalyzed = portfolios.filter(p => !analyzedIds.has(p.id))
+
+    if (unanalyzed.length === 0) {
+      return {
+        success: true,
+        data: { total: portfolios.length, processed: 0, remaining: 0, errors: [] },
+      }
+    }
+
+    // 3. 미분석 포트폴리오에 대해 청크 텍스트도 가져오기
+    const batchPortfolios = unanalyzed.slice(0, batchLimit)
+    const batchIds = batchPortfolios.map(p => p.id)
+
+    const { data: chunks } = await supabase
+      .from("portfolio_chunks")
+      .select("portfolio_id, chunk_text")
+      .in("portfolio_id", batchIds)
+      .order("chunk_index")
+
+    // 포트폴리오별 청크 그룹핑
+    const chunksByPortfolio: Record<string, string[]> = {}
+    for (const c of chunks || []) {
+      if (!chunksByPortfolio[c.portfolio_id]) chunksByPortfolio[c.portfolio_id] = []
+      chunksByPortfolio[c.portfolio_id].push(c.chunk_text)
+    }
+
+    // 4. 배치 분석 실행
+    const anthropic = new Anthropic({ apiKey })
+    let successCount = 0
+    let failCount = 0
+    const errors: string[] = []
+
+    for (const portfolio of batchPortfolios) {
+      try {
+        // 분석 대상 텍스트 구성: content_text > 청크 > 메타데이터
+        let analysisText = ""
+        if (portfolio.content_text && portfolio.content_text.trim().length > 200) {
+          analysisText = portfolio.content_text.slice(0, 15000)
+        } else if (chunksByPortfolio[portfolio.id]?.length) {
+          analysisText = chunksByPortfolio[portfolio.id].join("\n\n").slice(0, 15000)
+        } else {
+          analysisText = buildRichPortfolioText(portfolio)
+        }
+
+        const prompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
+아래 합격 포트폴리오를 **15개 카테고리**로 심층 분석해주세요.
+
+## 포트폴리오 정보
+- 파일명: ${portfolio.file_name}
+- 지원사: ${(portfolio.companies || []).join(", ") || "미상"}
+- 문서유형: ${portfolio.document_type || "포트폴리오"}
+- Gemini 종합 점수: ${portfolio.overall_score || "없음"}/100
+
+## 평가 카테고리 (15개)
+### 기본 역량 5개
+1. logic (논리력): 주장-근거-결론의 논리적 연결
+2. specificity (구체성): 수치, 데이터, 구체적 사례 제시
+3. readability (가독성): 문서 구조, 시각화, 읽기 편의성
+4. technical (기술이해): 개발 제약, 기술 구현 가능성 고려
+5. creativity (창의성): 차별화된 아이디어, 독창적 접근
+
+### 게임디자인 역량 10개
+6. core_loop (핵심반복구조): 코어 루프, 게임 흐름 설계
+7. content_taxonomy (콘텐츠분류체계): 콘텐츠 구분, 분류, 체계적 정리
+8. economy (재화흐름설계): 재화 획득/소비 구조, 경제 밸런스
+9. player_experience (플레이경험목표): 감정 곡선, 플레이어 경험 설계
+10. data_design (수치데이터정리): 수치 테이블, 밸런스 데이터 정리
+11. feature_connection (기능간연결관계): 시스템 간 연결, 의존 관계 명시
+12. motivation (동기부여설계): 보상, 목표, 진행감 설계
+13. difficulty (난이도균형): 난이도 곡선, 적절한 도전감
+14. ui_ux (화면및조작설계): UI/UX 와이어프레임, 조작 흐름
+15. dev_plan (개발일정및산출물): 개발 일정, 마일스톤, 산출물 목록
+
+## 응답 형식 (JSON만, 코드펜스 없이):
+{
+  "overall_score": 85,
+  "logic_score": 80, "specificity_score": 75, "readability_score": 90,
+  "technical_score": 70, "creativity_score": 85,
+  "core_loop_score": 80, "content_taxonomy_score": 75, "economy_score": 60,
+  "player_experience_score": 85, "data_design_score": 70,
+  "feature_connection_score": 65, "motivation_score": 80,
+  "difficulty_score": 70, "ui_ux_score": 75, "dev_plan_score": 60,
+  "strengths": ["강점1", "강점2", "강점3", "강점4"],
+  "weaknesses": ["약점1", "약점2", "약점3"],
+  "key_features": ["핵심특징1", "핵심특징2", "핵심특징3", "핵심특징4", "핵심특징5"],
+  "summary": "200자 이내 종합 분석 요약",
+  "detailed_feedback": "카테고리별 1줄씩 총 15줄 피드백"
+}
+
+## 주의사항:
+- 문서에 해당 카테고리 내용이 없으면 0~30점 부여
+- 문서 주제와 무관한 카테고리는 낮게 평가 (시스템기획서에 캐릭터 평가 등)
+- 후한 점수 금지. 부족하면 확실히 낮게
+- strengths 4~6개, weaknesses 3~4개, key_features 5~8개`
+
+        const message = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 4000,
+          messages: [{
+            role: "user",
+            content: `아래 포트폴리오를 15개 카테고리로 심층 분석해주세요. JSON만 출력.\n\n${analysisText}`
+          }],
+          system: prompt,
+        })
+
+        const responseText = message.content[0].type === "text" ? message.content[0].text : ""
+
+        // JSON 파싱
+        let jsonStr = responseText
+        const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/)
+        if (jsonMatch) jsonStr = jsonMatch[1]
+        else {
+          const objMatch = responseText.match(/\{[\s\S]*\}/)
+          if (objMatch) jsonStr = objMatch[0]
+        }
+
+        const result = JSON.parse(jsonStr)
+
+        // portfolio_analysis에 UPSERT
+        const { error: upsertError } = await supabase
+          .from("portfolio_analysis")
+          .upsert({
+            portfolio_id: portfolio.id,
+            file_name: portfolio.file_name,
+            companies: portfolio.companies || [],
+            overall_score: result.overall_score || 0,
+            logic_score: result.logic_score || 0,
+            specificity_score: result.specificity_score || 0,
+            readability_score: result.readability_score || 0,
+            technical_score: result.technical_score || 0,
+            creativity_score: result.creativity_score || 0,
+            core_loop_score: result.core_loop_score || 0,
+            content_taxonomy_score: result.content_taxonomy_score || 0,
+            economy_score: result.economy_score || 0,
+            player_experience_score: result.player_experience_score || 0,
+            data_design_score: result.data_design_score || 0,
+            feature_connection_score: result.feature_connection_score || 0,
+            motivation_score: result.motivation_score || 0,
+            difficulty_score: result.difficulty_score || 0,
+            ui_ux_score: result.ui_ux_score || 0,
+            dev_plan_score: result.dev_plan_score || 0,
+            strengths: result.strengths || [],
+            weaknesses: result.weaknesses || [],
+            key_features: result.key_features || [],
+            summary: result.summary || "",
+            detailed_feedback: result.detailed_feedback || "",
+            analyzed_at: new Date().toISOString(),
+          }, { onConflict: "portfolio_id" })
+
+        if (upsertError) {
+          failCount++
+          errors.push(`${portfolio.file_name}: DB 저장 실패 — ${upsertError.message}`)
+        } else {
+          successCount++
+          console.log(`✅ 심층 분석 완료: ${portfolio.file_name}`)
+        }
+
+        // API 속도 제한 방지
+        await new Promise(resolve => setTimeout(resolve, 500))
+      } catch (err) {
+        failCount++
+        errors.push(`${portfolio.file_name}: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        total: portfolios.length,
+        analyzed: analyzedIds.size + successCount,
+        processed: successCount,
+        failed: failCount,
+        remaining: unanalyzed.length - batchPortfolios.length,
+        errors: errors.slice(0, 10),
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `심층 분석 실패: ${error instanceof Error ? error.message : String(error)}`
+    }
+  }
+}
+
+/**
+ * portfolio_analysis 통계 조회 (관리자용)
+ */
+export async function getPortfolioAnalysisStats() {
+  try {
+    const { supabase } = await verifyAdmin()
+
+    const { data: analyses, error } = await supabase
+      .from("portfolio_analysis")
+      .select("portfolio_id, overall_score, companies")
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    const { data: totalPortfolios } = await supabase
+      .from("portfolios")
+      .select("id", { count: "exact", head: true })
+
+    return {
+      success: true,
+      data: {
+        analyzed: analyses?.length || 0,
+        total: totalPortfolios?.length || 0,
+        avgScore: analyses?.length
+          ? Math.round(analyses.reduce((a, b) => a + (b.overall_score || 0), 0) / analyses.length)
+          : 0,
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error)
+    }
+  }
+}

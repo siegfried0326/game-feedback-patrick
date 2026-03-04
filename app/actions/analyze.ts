@@ -350,6 +350,13 @@ export async function analyzeUrlDirect(input: {
       firstItem: portfolios?.[0] ? { file_name: portfolios[0].file_name, companies: portfolios[0].companies } : null,
     })
 
+    // portfolio_analysis에서 15개 카테고리 심층 분석 통계 조회
+    const { data: analysisData } = await supabase
+      .from("portfolio_analysis")
+      .select("portfolio_id, file_name, companies, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, core_loop_score, content_taxonomy_score, economy_score, player_experience_score, data_design_score, feature_connection_score, motivation_score, difficulty_score, ui_ux_score, dev_plan_score, strengths, weaknesses, key_features, summary")
+
+    const hasDeepAnalysis = analysisData && analysisData.length > 0
+
     let referenceStats = ""
     const companyStats: Record<string, { total: number; count: number }> = {}
 
@@ -387,6 +394,35 @@ export async function analyzeUrlDirect(input: {
         .slice(0, 15)
         .map(([tag]) => tag)
 
+      // 15개 카테고리 심층 통계 (portfolio_analysis 있을 때)
+      let deepStatsSection = ""
+      if (hasDeepAnalysis) {
+        const avg15 = (field: string) => {
+          const vals = analysisData.map((a: Record<string, unknown>) => (a[field] as number) || 0)
+          return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+        }
+        deepStatsSection = `
+### 15개 카테고리 심층 통계 (${analysisData.length}개 포트폴리오 심층 분석 기준)
+- 기본 역량: 논리력 ${avg15("logic_score")} | 구체성 ${avg15("specificity_score")} | 가독성 ${avg15("readability_score")} | 기술이해 ${avg15("technical_score")} | 창의성 ${avg15("creativity_score")}
+- 게임디자인: 핵심반복 ${avg15("core_loop_score")} | 콘텐츠분류 ${avg15("content_taxonomy_score")} | 재화설계 ${avg15("economy_score")} | 플레이경험 ${avg15("player_experience_score")} | 수치데이터 ${avg15("data_design_score")}
+- 기획역량: 기능연결 ${avg15("feature_connection_score")} | 동기부여 ${avg15("motivation_score")} | 난이도 ${avg15("difficulty_score")} | UI/UX ${avg15("ui_ux_score")} | 개발계획 ${avg15("dev_plan_score")}
+
+### 고득점 포트폴리오(80점+)의 공통 특징
+${(() => {
+  const topAnalyses = analysisData.filter(a => (a.overall_score || 0) >= 80)
+  if (topAnalyses.length === 0) return "- 해당 없음"
+  const allKeyFeatures = topAnalyses.flatMap(a => a.key_features || [])
+  const featureCounts: Record<string, number> = {}
+  allKeyFeatures.forEach(f => { featureCounts[f] = (featureCounts[f] || 0) + 1 })
+  return Object.entries(featureCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([feature, count]) => `- ${feature} (${count}개 포트폴리오)`)
+    .join("\n")
+})()}
+`
+      }
+
       // 회사별 균형 잡힌 샘플링: 주요 회사별 최대 2개씩 + 나머지
       const priorityCompanies = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "스마일게이트", "펄어비스", "네오위즈", "웹젠"]
       const selectedExamples: typeof portfolios = []
@@ -403,9 +439,9 @@ export async function analyzeUrlDirect(input: {
         }
       }
 
-      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 12개)
+      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 20개)
       for (const p of portfolios) {
-        if (selectedExamples.length >= 12) break
+        if (selectedExamples.length >= 20) break
         if (!usedIds.has(p.file_name)) {
           selectedExamples.push(p)
           usedIds.add(p.file_name)
@@ -415,11 +451,18 @@ export async function analyzeUrlDirect(input: {
       const topExamples = selectedExamples.map((p, idx) => {
         const strengthsList = (p.strengths || []).slice(0, 3).map(s => `  · ${s}`).join("\n")
         const weaknessesList = (p.weaknesses || []).slice(0, 2).map(w => `  · ${w}`).join("\n")
+        // portfolio_analysis에서 추가 정보 가져오기
+        const deepInfo = hasDeepAnalysis
+          ? analysisData.find(a => a.file_name === p.file_name)
+          : null
+        const deepScores = deepInfo
+          ? `\n- 게임디자인: 핵심반복 ${deepInfo.core_loop_score} | 콘텐츠분류 ${deepInfo.content_taxonomy_score} | 재화설계 ${deepInfo.economy_score} | 플레이경험 ${deepInfo.player_experience_score} | 수치데이터 ${deepInfo.data_design_score} | 기능연결 ${deepInfo.feature_connection_score} | 동기부여 ${deepInfo.motivation_score} | 난이도 ${deepInfo.difficulty_score} | UI/UX ${deepInfo.ui_ux_score} | 개발계획 ${deepInfo.dev_plan_score}`
+          : ""
         return `
 ### 합격 사례 ${idx + 1}: ${p.file_name} (${p.overall_score}점)
 - 지원사: ${(p.companies || []).join(", ")}
 - 문서유형: ${p.document_type || "포트폴리오"}
-- 점수: 논리 ${p.logic_score}점 | 구체성 ${p.specificity_score}점 | 가독성 ${p.readability_score}점 | 기술이해 ${p.technical_score}점 | 창의성 ${p.creativity_score}점
+- 기본점수: 논리 ${p.logic_score} | 구체성 ${p.specificity_score} | 가독성 ${p.readability_score} | 기술이해 ${p.technical_score} | 창의성 ${p.creativity_score}${deepScores}
 - 핵심 강점:
 ${strengthsList}
 ${weaknessesList ? `- 개선 필요:
@@ -463,7 +506,7 @@ ${weaknessesList}` : ""}
 - 가독성 평균: ${avgScores.readability}점 | 기술이해 평균: ${avgScores.technical}점
 - 창의성 평균: ${avgScores.creativity}점
 - 주요 키워드: ${topTags.join(", ")}
-
+${deepStatsSection}
 ### 회사별 평균 점수
 ${Object.entries(companyStats).slice(0, 8).map(([company, stat]) =>
   `- ${company}: ${Math.round(stat.total / stat.count)}점 (${stat.count}개 샘플)`
@@ -673,7 +716,7 @@ ${vectorSearchSection}
       sampleCount: portfolios?.length || 0,
     })
 
-    const analysisData = {
+    const analysisResult = {
       score: analysis.score,
       categories: analysis.categories,
       strengths: analysis.strengths,
@@ -696,14 +739,14 @@ ${vectorSearchSection}
       categories: analysis.categories,
       strengths: analysis.strengths,
       weaknesses: analysis.weaknesses,
-      ranking: analysisData.ranking,
+      ranking: analysisResult.ranking,
       companyFeedback: analysis.companyFeedback || "",
       analysisSource: input.extractedText ? "pdf" : "url",
     }).catch(() => {})
 
     deductCredit().catch(() => {})
 
-    return { data: analysisData }
+    return { data: analysisResult }
   } catch (error) {
     console.error("URL Analysis error:", error)
     const errMsg = error instanceof Error ? error.message : String(error)
@@ -757,6 +800,13 @@ export async function analyzeDocumentDirect(input: {
       firstItem: portfolios?.[0] ? { file_name: portfolios[0].file_name, companies: portfolios[0].companies } : null,
     })
 
+    // portfolio_analysis에서 15개 카테고리 심층 분석 통계 조회
+    const { data: analysisData2 } = await supabase
+      .from("portfolio_analysis")
+      .select("portfolio_id, file_name, companies, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, core_loop_score, content_taxonomy_score, economy_score, player_experience_score, data_design_score, feature_connection_score, motivation_score, difficulty_score, ui_ux_score, dev_plan_score, strengths, weaknesses, key_features, summary")
+
+    const hasDeepAnalysis2 = analysisData2 && analysisData2.length > 0
+
     // 학습 데이터 통계 및 패턴 분석
     let referenceStats = ""
     const companyStats: Record<string, { total: number; count: number }> = {}
@@ -800,6 +850,35 @@ export async function analyzeDocumentDirect(input: {
         .slice(0, 15)
         .map(([tag]) => tag)
 
+      // 15개 카테고리 심층 통계 (portfolio_analysis 있을 때)
+      let deepStatsSection2 = ""
+      if (hasDeepAnalysis2) {
+        const avg15 = (field: string) => {
+          const vals = analysisData2.map((a: Record<string, unknown>) => (a[field] as number) || 0)
+          return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+        }
+        deepStatsSection2 = `
+### 15개 카테고리 심층 통계 (${analysisData2.length}개 포트폴리오 심층 분석 기준)
+- 기본 역량: 논리력 ${avg15("logic_score")} | 구체성 ${avg15("specificity_score")} | 가독성 ${avg15("readability_score")} | 기술이해 ${avg15("technical_score")} | 창의성 ${avg15("creativity_score")}
+- 게임디자인: 핵심반복 ${avg15("core_loop_score")} | 콘텐츠분류 ${avg15("content_taxonomy_score")} | 재화설계 ${avg15("economy_score")} | 플레이경험 ${avg15("player_experience_score")} | 수치데이터 ${avg15("data_design_score")}
+- 기획역량: 기능연결 ${avg15("feature_connection_score")} | 동기부여 ${avg15("motivation_score")} | 난이도 ${avg15("difficulty_score")} | UI/UX ${avg15("ui_ux_score")} | 개발계획 ${avg15("dev_plan_score")}
+
+### 고득점 포트폴리오(80점+)의 공통 특징
+${(() => {
+  const topAnalyses = analysisData2.filter(a => (a.overall_score || 0) >= 80)
+  if (topAnalyses.length === 0) return "- 해당 없음"
+  const allKeyFeatures = topAnalyses.flatMap(a => a.key_features || [])
+  const featureCounts: Record<string, number> = {}
+  allKeyFeatures.forEach(f => { featureCounts[f] = (featureCounts[f] || 0) + 1 })
+  return Object.entries(featureCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([feature, count]) => `- ${feature} (${count}개 포트폴리오)`)
+    .join("\n")
+})()}
+`
+      }
+
       // 회사별 균형 잡힌 샘플링: 주요 회사별 최대 2개씩 + 나머지
       const priorityCompanies = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "스마일게이트", "펄어비스", "네오위즈", "웹젠"]
       const selectedExamples: typeof portfolios = []
@@ -816,9 +895,9 @@ export async function analyzeDocumentDirect(input: {
         }
       }
 
-      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 12개)
+      // 2단계: 나머지 슬롯을 점수 상위로 채움 (최대 20개)
       for (const p of portfolios) {
-        if (selectedExamples.length >= 12) break
+        if (selectedExamples.length >= 20) break
         if (!usedIds.has(p.file_name)) {
           selectedExamples.push(p)
           usedIds.add(p.file_name)
@@ -828,11 +907,17 @@ export async function analyzeDocumentDirect(input: {
       const topExamples = selectedExamples.map((p, idx) => {
         const strengthsList = (p.strengths || []).slice(0, 3).map(s => `  · ${s}`).join("\n")
         const weaknessesList = (p.weaknesses || []).slice(0, 2).map(w => `  · ${w}`).join("\n")
+        const deepInfo = hasDeepAnalysis2
+          ? analysisData2.find(a => a.file_name === p.file_name)
+          : null
+        const deepScores = deepInfo
+          ? `\n- 게임디자인: 핵심반복 ${deepInfo.core_loop_score} | 콘텐츠분류 ${deepInfo.content_taxonomy_score} | 재화설계 ${deepInfo.economy_score} | 플레이경험 ${deepInfo.player_experience_score} | 수치데이터 ${deepInfo.data_design_score} | 기능연결 ${deepInfo.feature_connection_score} | 동기부여 ${deepInfo.motivation_score} | 난이도 ${deepInfo.difficulty_score} | UI/UX ${deepInfo.ui_ux_score} | 개발계획 ${deepInfo.dev_plan_score}`
+          : ""
         return `
 ### 합격 사례 ${idx + 1}: ${p.file_name} (${p.overall_score}점)
 - 지원사: ${(p.companies || []).join(", ")}
 - 문서유형: ${p.document_type || "포트폴리오"}
-- 점수: 논리 ${p.logic_score}점 | 구체성 ${p.specificity_score}점 | 가독성 ${p.readability_score}점 | 기술이해 ${p.technical_score}점 | 창의성 ${p.creativity_score}점
+- 기본점수: 논리 ${p.logic_score} | 구체성 ${p.specificity_score} | 가독성 ${p.readability_score} | 기술이해 ${p.technical_score} | 창의성 ${p.creativity_score}${deepScores}
 - 핵심 강점:
 ${strengthsList}
 ${weaknessesList ? `- 개선 필요:
@@ -876,7 +961,7 @@ ${weaknessesList}` : ""}
 - 가독성 평균: ${avgScores.readability}점 | 기술이해 평균: ${avgScores.technical}점
 - 창의성 평균: ${avgScores.creativity}점
 - 주요 키워드: ${topTags.join(", ")}
-
+${deepStatsSection2}
 ### 회사별 평균 점수
 ${Object.entries(companyStats).slice(0, 8).map(([company, stat]) =>
   `- ${company}: ${Math.round(stat.total / stat.count)}점 (${stat.count}개 샘플)`
@@ -1172,7 +1257,7 @@ ${vectorSearchSection}
 
       const allCompanyComparison = companyComparison
 
-      const analysisData = {
+      const analysisResult2 = {
         score: analysis.score,
         categories: analysis.categories,
         strengths: analysis.strengths,
@@ -1197,7 +1282,7 @@ ${vectorSearchSection}
         categories: analysis.categories,
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
-        ranking: analysisData.ranking,
+        ranking: analysisResult2.ranking,
         companyFeedback: analysis.companyFeedback || "",
         analysisSource: "pdf",
         readabilityCategories: analysis.readabilityCategories || [],
@@ -1206,7 +1291,7 @@ ${vectorSearchSection}
 
       deductCredit().catch(() => {})
 
-      return { data: analysisData }
+      return { data: analysisResult2 }
     } finally {
       // Supabase Storage에서 파일 삭제
       const supabaseClient = await createClient()

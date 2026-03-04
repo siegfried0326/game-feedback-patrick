@@ -379,130 +379,19 @@ export default function TrainingPage() {
               합격 포트폴리오를 업로드하고, 학습된 데이터를 관리하세요.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={async () => {
-                if (!confirm("전체 포트폴리오의 벡터 임베딩을 재생성합니다.\n기존 청크를 삭제하고 메타데이터 기반으로 다시 생성합니다.\n\n계속하시겠습니까?")) return
-                setIsRebuilding(true)
-                setRebuildProgress({ processed: 0, total: 0, remaining: 0 })
-                try {
-                  // 10개씩 배치 처리 반복
-                  let totalProcessed = 0
-                  let hasMore = true
-                  while (hasMore) {
-                    const result = await rebuildAllPortfolioChunks(10)
-                    if (!result.success) {
-                      alert("재임베딩 실패: " + result.error)
-                      break
-                    }
-                    totalProcessed += result.processed
-                    setRebuildProgress({
-                      processed: totalProcessed,
-                      total: totalProcessed + result.remaining,
-                      remaining: result.remaining,
-                    })
-                    hasMore = result.remaining > 0
-                  }
-                  if (totalProcessed > 0) {
-                    alert(`✅ 전체 재임베딩 완료! ${totalProcessed}개 포트폴리오 처리됨`)
-                  }
-                } catch (err: any) {
-                  alert("재임베딩 오류: " + err.message)
-                }
-                setIsRebuilding(false)
-              }}
-              disabled={isRebuilding}
-              variant="outline"
-              className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-            >
-              {isRebuilding ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Database className="w-4 h-4 mr-2" />
-              )}
-              {isRebuilding
-                ? `재임베딩 중... (${rebuildProgress.processed}/${rebuildProgress.processed + rebuildProgress.remaining})`
-                : "전체 재임베딩"}
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!confirm("187개 포트폴리오를 Claude로 심층 분석합니다.\n(portfolio_analysis 테이블 필요)\n미분석 포트폴리오만 처리됩니다.\n\n계속하시겠습니까?")) return
-                setIsDeepAnalyzing(true)
-                setDeepAnalysisProgress({ analyzed: 0, total: 0, remaining: 0 })
-                try {
-                  let hasMore = true
-                  while (hasMore) {
-                    const result = await analyzePortfoliosBatch(5)
-                    if (!result.success) {
-                      alert("심층 분석 실패: " + result.error)
-                      break
-                    }
-                    setDeepAnalysisProgress({
-                      analyzed: result.data.analyzed,
-                      total: result.data.total,
-                      remaining: result.data.remaining,
-                    })
-                    hasMore = result.data.remaining > 0
-                  }
-                  const stats = await getPortfolioAnalysisStats()
-                  if (stats.success) {
-                    alert(`심층 분석 완료! ${stats.data.analyzed}/${stats.data.total}개 분석됨 (평균 ${stats.data.avgScore}점)`)
-                  }
-                } catch (err: any) {
-                  alert("심층 분석 오류: " + err.message)
-                }
-                setIsDeepAnalyzing(false)
-              }}
-              disabled={isDeepAnalyzing}
-              variant="outline"
-              className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-            >
-              {isDeepAnalyzing ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Brain className="w-4 h-4 mr-2" />
-              )}
-              {isDeepAnalyzing
-                ? `심층 분석 중... (${deepAnalysisProgress.analyzed}/${deepAnalysisProgress.total})`
-                : "심층 분석"}
-            </Button>
-            <Button
-              onClick={async () => {
-                setIsReclassifying(true)
-                const result = await reclassifyAllCompanies()
-                if (result.success) {
-                  alert(`재분류 완료! ${result.total}개 중 ${result.updated}개 수정됨`)
-                  await loadAll()
-                } else {
-                  alert("재분류 실패: " + result.error)
-                }
-                setIsReclassifying(false)
-              }}
-              disabled={isReclassifying}
-              variant="outline"
-              className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-            >
-              {isReclassifying ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4 mr-2" />
-              )}
-              회사 재분류
-            </Button>
-            <Button
-              onClick={loadAll}
-              disabled={isLoadingStats || isLoadingData}
-              variant="outline"
-              className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
-            >
-              {(isLoadingStats || isLoadingData) ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4 mr-2" />
-              )}
-              새로고침
-            </Button>
-          </div>
+          <Button
+            onClick={loadAll}
+            disabled={isLoadingStats || isLoadingData}
+            variant="outline"
+            className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
+          >
+            {(isLoadingStats || isLoadingData) ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            새로고침
+          </Button>
         </div>
 
         {/* 회사별 학습 데이터 통계 (공통) */}
@@ -748,6 +637,135 @@ export default function TrainingPage() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* AI 학습 강화 */}
+            <Card className="bg-slate-900/80 border-[#1e3a5f] mt-6">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-purple-400" />
+                  AI 학습 강화
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  업로드된 포트폴리오의 벡터 임베딩을 재생성하거나, Claude로 15개 카테고리 심층 분석을 실행합니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 전체 재임베딩 */}
+                  <div className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
+                    <h3 className="text-emerald-400 font-medium mb-2 flex items-center gap-2">
+                      <Database className="w-4 h-4" />
+                      벡터 재임베딩
+                    </h3>
+                    <p className="text-slate-400 text-xs mb-3">
+                      메타데이터 기반으로 청크를 재구성하고 OpenAI 임베딩을 재생성합니다.
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        if (!confirm("전체 포트폴리오의 벡터 임베딩을 재생성합니다.\n기존 청크를 삭제하고 메타데이터 기반으로 다시 생성합니다.\n\n계속하시겠습니까?")) return
+                        setIsRebuilding(true)
+                        setRebuildProgress({ processed: 0, total: 0, remaining: 0 })
+                        try {
+                          let totalProcessed = 0
+                          let hasMore = true
+                          while (hasMore) {
+                            const result = await rebuildAllPortfolioChunks(10)
+                            if (!result.success) {
+                              alert("재임베딩 실패: " + result.error)
+                              break
+                            }
+                            totalProcessed += result.processed
+                            setRebuildProgress({
+                              processed: totalProcessed,
+                              total: totalProcessed + result.remaining,
+                              remaining: result.remaining,
+                            })
+                            hasMore = result.remaining > 0
+                          }
+                          if (totalProcessed > 0) {
+                            alert(`전체 재임베딩 완료! ${totalProcessed}개 포트폴리오 처리됨`)
+                          }
+                        } catch (err: any) {
+                          alert("재임베딩 오류: " + err.message)
+                        }
+                        setIsRebuilding(false)
+                      }}
+                      disabled={isRebuilding}
+                      className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
+                      variant="outline"
+                    >
+                      {isRebuilding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          재임베딩 중... ({rebuildProgress.processed}/{rebuildProgress.processed + rebuildProgress.remaining})
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          전체 재임베딩
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* 심층 분석 */}
+                  <div className="p-4 rounded-lg border border-purple-500/20 bg-purple-500/5">
+                    <h3 className="text-purple-400 font-medium mb-2 flex items-center gap-2">
+                      <Brain className="w-4 h-4" />
+                      심층 분석 (Claude)
+                    </h3>
+                    <p className="text-slate-400 text-xs mb-3">
+                      미분석 포트폴리오를 Claude로 15개 카테고리 심층 분석합니다. 5개씩 배치 처리.
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        if (!confirm("포트폴리오를 Claude로 심층 분석합니다.\n(portfolio_analysis 테이블 필요)\n미분석 포트폴리오만 처리됩니다.\n\n계속하시겠습니까?")) return
+                        setIsDeepAnalyzing(true)
+                        setDeepAnalysisProgress({ analyzed: 0, total: 0, remaining: 0 })
+                        try {
+                          let hasMore = true
+                          while (hasMore) {
+                            const result = await analyzePortfoliosBatch(5)
+                            if (!result.success) {
+                              alert("심층 분석 실패: " + result.error)
+                              break
+                            }
+                            setDeepAnalysisProgress({
+                              analyzed: result.data.analyzed,
+                              total: result.data.total,
+                              remaining: result.data.remaining,
+                            })
+                            hasMore = result.data.remaining > 0
+                          }
+                          const stats = await getPortfolioAnalysisStats()
+                          if (stats.success) {
+                            alert(`심층 분석 완료! ${stats.data.analyzed}/${stats.data.total}개 분석됨 (평균 ${stats.data.avgScore}점)`)
+                          }
+                        } catch (err: any) {
+                          alert("심층 분석 오류: " + err.message)
+                        }
+                        setIsDeepAnalyzing(false)
+                      }}
+                      disabled={isDeepAnalyzing}
+                      className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
+                      variant="outline"
+                    >
+                      {isDeepAnalyzing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          심층 분석 중... ({deepAnalysisProgress.analyzed}/{deepAnalysisProgress.total})
+                        </>
+                      ) : (
+                        <>
+                          <Brain className="w-4 h-4 mr-2" />
+                          심층 분석 실행
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </>
         )}
 
@@ -783,18 +801,44 @@ export default function TrainingPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white">학습 데이터 목록</CardTitle>
-                  {selectedIds.length > 0 && (
+                  <div className="flex gap-2">
                     <Button
-                      onClick={handleBulkDelete}
-                      disabled={isDeleting}
-                      variant="destructive"
+                      onClick={async () => {
+                        setIsReclassifying(true)
+                        const result = await reclassifyAllCompanies()
+                        if (result.success) {
+                          alert(`재분류 완료! ${result.total}개 중 ${result.updated}개 수정됨`)
+                          await loadAll()
+                        } else {
+                          alert("재분류 실패: " + result.error)
+                        }
+                        setIsReclassifying(false)
+                      }}
+                      disabled={isReclassifying}
+                      variant="outline"
                       size="sm"
-                      className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                      className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      선택 삭제 ({selectedIds.length})
+                      {isReclassifying ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                      )}
+                      회사 재분류
                     </Button>
-                  )}
+                    {selectedIds.length > 0 && (
+                      <Button
+                        onClick={handleBulkDelete}
+                        disabled={isDeleting}
+                        variant="destructive"
+                        size="sm"
+                        className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        선택 삭제 ({selectedIds.length})
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>

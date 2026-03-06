@@ -138,50 +138,28 @@ export default function RefundPolicyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">제6조 (환불 절차)</h2>
+            <p className="mb-3">
+              모든 환불은{" "}
+              <Link href="/mypage" className="text-[#5B8DEF] hover:underline">마이페이지</Link>에서
+              직접 처리할 수 있습니다. 별도의 문의가 필요하지 않습니다.
+            </p>
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-white mb-1">1. 회차권 (크레딧) 환불</h3>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>
-                    <Link href="/mypage" className="text-[#5B8DEF] hover:underline">마이페이지</Link>에서
-                    크레딧 구매 내역의 &quot;환불하기&quot; 버튼을 클릭
-                  </li>
+                  <li>마이페이지 → 크레딧 구매 내역에서 &quot;환불하기&quot; 버튼 클릭</li>
                   <li>환불 금액 확인 후 즉시 환불 처리</li>
                   <li>결제 수단에 따라 3~7영업일 이내 환불 금액 입금</li>
                 </ol>
-                <p className="text-sm text-slate-400 mt-2">
-                  * 별도의 문의 없이 마이페이지에서 직접 환불이 가능합니다.
-                </p>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 구독 서비스 환불</h3>
+                <h3 className="font-medium text-white mb-1">2. 구독 해지</h3>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>3개월 패스 환불은 아래 카카오톡 채널로 문의</li>
-                  <li>환불 사유 및 이용 이력 확인 (영업일 기준 1~2일)</li>
-                  <li>환불 승인 후 결제 수단에 따라 3~7영업일 이내 환불 처리</li>
+                  <li>마이페이지 → 구독 상태에서 &quot;구독 해지하기&quot; 클릭</li>
+                  <li>해지 후 만료일까지 계속 이용 가능</li>
                 </ol>
               </div>
             </div>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제7조 (문의)</h2>
-            <p>
-              구독 환불 등 추가 문의는 아래 채널을 통해 접수해주세요.
-            </p>
-            <ul className="list-disc list-inside space-y-1 mt-2">
-              <li>
-                카카오톡 채널:{" "}
-                <a
-                  href="http://pf.kakao.com/_bXgIX"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#5B8DEF] hover:underline"
-                >
-                  문의하기
-                </a>
-              </li>
-            </ul>
           </section>
 
           {/* 요약 박스 */}

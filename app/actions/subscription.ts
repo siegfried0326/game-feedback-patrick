@@ -199,29 +199,26 @@ export async function checkAnalysisAllowance() {
     return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
   }
 
-  // 유료 구독: 만료 확인
+  // ① 크레딧이 있으면 무조건 크레딧 우선 (구독 여부 무관)
+  const credits = subscription.analysis_credits || 0
+  if (credits > 0) {
+    return { allowed: true, plan: subscription.plan, remaining: credits, source: "credit" as const }
+  }
+
+  // ② 크레딧 없으면 → 유료 구독 확인
   if (subscription.plan !== "free") {
     const isExpired = subscription.expires_at && new Date(subscription.expires_at) < new Date()
     if (isExpired || subscription.status === "expired") {
-      // 구독 만료 → 크레딧 남아있으면 허용
-      const credits = subscription.analysis_credits || 0
-      if (credits > 0) {
-        return { allowed: true, plan: subscription.plan, remaining: credits }
-      }
       return { allowed: false, plan: subscription.plan, expired: true, remaining: 0 }
     }
-    return { allowed: true, plan: subscription.plan, unlimited: true }
+    return { allowed: true, plan: subscription.plan, unlimited: true, source: "subscription" as const }
   }
 
-  // 무료/비구독: 크레딧 확인
-  const credits = subscription.analysis_credits || 0
-  if (credits <= 0) {
-    return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
-  }
-  return { allowed: true, plan: "free" as const, remaining: credits }
+  // ③ 크레딧도 구독도 없음
+  return { allowed: false, plan: "free" as const, reason: "limit_reached", remaining: 0 }
 }
 
-// 분석 완료 후 크레딧 차감 (구독자는 차감 안 함)
+// 분석 완료 후 크레딧 차감 (크레딧 우선 소모 → 크레딧 0이면 구독 사용)
 export async function deductCredit() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -236,25 +233,28 @@ export async function deductCredit() {
 
   if (!subscription) return { error: "구독 정보를 찾을 수 없습니다." }
 
-  // 유효한 구독이면 차감 안 함 (무제한)
+  // ① 크레딧이 있으면 무조건 크레딧부터 차감 (구독 여부 무관)
+  const currentCredits = subscription.analysis_credits || 0
+  if (currentCredits > 0) {
+    const { error } = await supabase
+      .from("users_subscription")
+      .update({ analysis_credits: currentCredits - 1, updated_at: new Date().toISOString() })
+      .eq("user_id", user.id)
+
+    if (error) return dbError("크레딧 차감에 실패했습니다.", error)
+    return { success: true, remaining: currentCredits - 1, source: "credit" as const }
+  }
+
+  // ② 크레딧 없으면 → 유효한 구독이면 차감 안 함 (무제한)
   if (subscription.plan !== "free") {
     const isExpired = subscription.expires_at && new Date(subscription.expires_at) < new Date()
     if (!isExpired && subscription.status !== "expired") {
-      return { success: true, unlimited: true }
+      return { success: true, unlimited: true, source: "subscription" as const }
     }
   }
 
-  // 크레딧 차감
-  const currentCredits = subscription.analysis_credits || 0
-  if (currentCredits <= 0) return { error: "크레딧이 부족합니다." }
-
-  const { error } = await supabase
-    .from("users_subscription")
-    .update({ analysis_credits: currentCredits - 1, updated_at: new Date().toISOString() })
-    .eq("user_id", user.id)
-
-  if (error) return dbError("크레딧 차감에 실패했습니다.", error)
-  return { success: true, remaining: currentCredits - 1 }
+  // ③ 크레딧도 구독도 없음
+  return { error: "크레딧이 부족합니다." }
 }
 
 export async function getProjectAnalyses(projectId: string) {

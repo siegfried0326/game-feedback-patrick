@@ -32,6 +32,7 @@ import { loadTossPayments } from "@tosspayments/tosspayments-sdk"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { validateGamecanvasCode } from "@/app/actions/payment"
+import { getSubscription } from "@/app/actions/subscription"
 
 /**
  * TossPayments 클라이언트 키 (공개 키)
@@ -70,6 +71,9 @@ function BillingContent() {
   const [loading, setLoading] = useState(false)
   // 에러 메시지
   const [error, setError] = useState("")
+
+  // ─── 보유 크레딧 확인 (안내 배너용) ───
+  const [currentCredits, setCurrentCredits] = useState(0)
 
   // ─── 게임캔버스 할인코드 관련 상태 ───
   // 할인코드 입력 영역 표시 여부
@@ -126,6 +130,13 @@ function BillingContent() {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return // 비로그인이면 SDK 초기화 안 함
+
+        // 보유 크레딧 확인 (안내 배너용)
+        getSubscription().then(result => {
+          if (result.data?.analysis_credits) {
+            setCurrentCredits(result.data.analysis_credits)
+          }
+        })
 
         // TossPayments 고객 키 생성 (user.id에서 하이픈 제거 후 앞 20자)
         const custKey = `cust_${user.id.replace(/-/g, "").slice(0, 20)}`
@@ -328,6 +339,16 @@ function BillingContent() {
                 <span className="text-sm text-emerald-400 font-medium">게임캔버스 할인 적용 (월 5,900원)</span>
               </div>
             )}
+          </div>
+        )}
+
+        {/* 크레딧 보유 시 안내 배너 */}
+        {currentCredits > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-6">
+            <p className="text-sm text-amber-400">
+              현재 {currentCredits}회의 크레딧을 보유하고 있습니다.
+              구독 시작 후에도 보유 회차를 먼저 소모한 뒤 구독이 적용됩니다.
+            </p>
           </div>
         )}
 

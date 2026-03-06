@@ -16,6 +16,7 @@ import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject } from "@/app/actions/subscription"
 import { getUser } from "@/app/actions/auth"
 import { ScoreCard } from "@/components/score-card"
@@ -40,7 +41,9 @@ type Subscription = {
   status: string
   expires_at: string | null
   cancelled_at: string | null
+  started_at: string | null
   created_at: string
+  analysis_credits: number
 }
 
 type ProjectWithStats = {
@@ -357,20 +360,74 @@ export default function MyPage() {
           </div>
           {subscription ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-sm text-slate-400 mb-1">현재 플랜</p><p className="text-white font-medium">{getPlanLabel(subscription.plan)}</p></div>
+              {/* 현재 플랜 */}
+              <div>
+                <p className="text-sm text-slate-400 mb-1">현재 플랜</p>
+                <p className="text-white font-medium">{getPlanLabel(subscription.plan)}</p>
+              </div>
+
+              {/* 크레딧 게이지 (크레딧이 있을 때 항상 표시) */}
+              {(subscription.analysis_credits ?? 0) > 0 && (
                 <div>
-                  <p className="text-sm text-slate-400 mb-1">남은 크레딧</p>
-                  <p className="text-white font-medium">
-                    {isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date())
-                      ? "무제한"
-                      : `${subscription.analysis_credits ?? 0}회`
-                    }
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm text-slate-400">남은 크레딧</p>
+                    <p className="text-sm font-semibold text-white">{subscription.analysis_credits}회</p>
+                  </div>
+                  <Progress
+                    value={Math.min(((subscription.analysis_credits ?? 0) / 10) * 100, 100)}
+                    className="h-3 bg-slate-700 [&>[data-slot=progress-indicator]]:bg-[#5B8DEF]"
+                  />
+                </div>
+              )}
+
+              {/* 구독 기간 게이지 (활성 유료 구독일 때) */}
+              {isPaidPlan && subscription.status === "active" && subscription.expires_at && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (() => {
+                const now = new Date()
+                const expiresAt = new Date(subscription.expires_at!)
+                const startedAt = subscription.started_at ? new Date(subscription.started_at) : new Date(subscription.created_at)
+                const totalMs = expiresAt.getTime() - startedAt.getTime()
+                const elapsedMs = now.getTime() - startedAt.getTime()
+                const progressPct = totalMs > 0 ? Math.min((elapsedMs / totalMs) * 100, 100) : 0
+                const remainingDays = Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+                const startStr = startedAt.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
+                const endStr = expiresAt.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
+                return (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-slate-400">구독 기간</p>
+                      <p className="text-sm font-semibold text-emerald-400">D-{remainingDays}</p>
+                    </div>
+                    <Progress
+                      value={progressPct}
+                      className="h-3 bg-slate-700 [&>[data-slot=progress-indicator]]:bg-emerald-400"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">{startStr} ~ {endStr}</p>
+                  </div>
+                )
+              })()}
+
+              {/* 크레딧 없고 구독도 없을 때: "무제한" 또는 빈 상태 */}
+              {(subscription.analysis_credits ?? 0) === 0 && isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-slate-400">분석 크레딧</p>
+                  <p className="text-sm font-semibold text-emerald-400">무제한</p>
+                </div>
+              )}
+
+              {/* 크레딧+구독 동시 보유 시 안내 */}
+              {isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (subscription.analysis_credits ?? 0) > 0 && (
+                <div className="bg-[#5B8DEF]/5 rounded-lg p-3 border border-[#5B8DEF]/20">
+                  <p className="text-xs text-[#5B8DEF]">
+                    보유 회차({subscription.analysis_credits}회)를 먼저 소모한 뒤 구독이 적용됩니다.
                   </p>
                 </div>
-                {subscription.expires_at && <div><p className="text-sm text-slate-400 mb-1">만료일</p><p className="text-white font-medium">{formatDate(subscription.expires_at)}</p></div>}
-                {subscription.cancelled_at && <div><p className="text-sm text-slate-400 mb-1">해지일</p><p className="text-yellow-400 font-medium">{formatDate(subscription.cancelled_at)}</p></div>}
-              </div>
+              )}
+
+              {/* 만료일 / 해지일 */}
+              {subscription.cancelled_at && (
+                <div><p className="text-sm text-slate-400 mb-1">해지일</p><p className="text-yellow-400 font-medium">{formatDate(subscription.cancelled_at)}</p></div>
+              )}
+
               {(!isPaidPlan || subscription.status !== "active") && (subscription.analysis_credits ?? 0) === 0 && (
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
                   <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매하거나 무제한 구독을 시작해 보세요.</p>

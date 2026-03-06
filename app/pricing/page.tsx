@@ -228,6 +228,10 @@ export default function PricingPage() {
           ))}
         </div>
 
+        <p className="text-slate-500 text-xs mb-10">
+          * 회차권을 보유한 상태에서 구독 시, 보유 회차를 먼저 소모한 뒤 구독이 적용됩니다.
+        </p>
+
         {/* 서비스 상세 설명 */}
         <div className="bg-slate-900/50 rounded-2xl border border-[#1e3a5f] p-8 mb-12">
           <h2 className="text-xl font-bold text-white mb-6">서비스 상세 안내</h2>

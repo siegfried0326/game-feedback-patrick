@@ -34,6 +34,76 @@ import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
 
+/**
+ * 잘린 JSON 복구 유틸리티
+ * Claude API 응답이 max_tokens 제한으로 잘리거나,
+ * 배열/객체가 닫히지 않은 경우를 복구합니다.
+ */
+function repairJSON(jsonStr: string): string {
+  // 1단계: trailing comma 제거 (배열/객체 끝의 불필요한 쉼표)
+  let repaired = jsonStr.replace(/,\s*([\]}])/g, "$1")
+
+  // 2단계: 닫히지 않은 문자열 처리 — 마지막 불완전한 속성/값 제거
+  // 잘린 문자열이 있으면 마지막 불완전한 키-값 쌍을 제거
+  const lastBrace = Math.max(repaired.lastIndexOf("}"), repaired.lastIndexOf("]"))
+  if (lastBrace > 0) {
+    // 마지막 유효한 닫는 괄호 이후를 잘라냄
+    const afterLast = repaired.substring(lastBrace + 1).trim()
+    if (afterLast.length > 0 && !afterLast.match(/^[\s\]},]*$/)) {
+      repaired = repaired.substring(0, lastBrace + 1)
+    }
+  }
+
+  // 3단계: 열린 괄호/중괄호 개수 맞추기
+  let openBraces = 0, openBrackets = 0
+  let inString = false, escaped = false
+  for (let i = 0; i < repaired.length; i++) {
+    const ch = repaired[i]
+    if (escaped) { escaped = false; continue }
+    if (ch === "\\") { escaped = true; continue }
+    if (ch === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (ch === "{") openBraces++
+    else if (ch === "}") openBraces--
+    else if (ch === "[") openBrackets++
+    else if (ch === "]") openBrackets--
+  }
+
+  // 닫히지 않은 문자열이 있으면 닫기
+  if (inString) repaired += '"'
+
+  // 마지막에 trailing comma 다시 제거 (문자열 닫기 후 생길 수 있음)
+  repaired = repaired.replace(/,\s*$/gm, "")
+
+  // 부족한 닫는 괄호 추가
+  while (openBrackets > 0) { repaired += "]"; openBrackets-- }
+  while (openBraces > 0) { repaired += "}"; openBraces-- }
+
+  return repaired
+}
+
+/**
+ * 안전한 JSON 파싱 — 실패 시 복구 시도
+ */
+function safeParseJSON(jsonStr: string): Record<string, unknown> {
+  // 1차: 그대로 파싱
+  try {
+    return JSON.parse(jsonStr)
+  } catch {
+    // 2차: 복구 후 파싱
+    console.log("[분석] JSON 파싱 실패, 복구 시도 중...")
+    try {
+      const repaired = repairJSON(jsonStr)
+      const result = JSON.parse(repaired)
+      console.log("[분석] JSON 복구 성공")
+      return result
+    } catch (repairError) {
+      console.error("[분석] JSON 복구도 실패:", repairError)
+      throw new Error("AI 응답을 파싱할 수 없습니다. 다시 시도해 주세요.")
+    }
+  }
+}
+
 // 분석 전 인증 + 구독 확인
 export async function checkBeforeAnalysis() {
   const supabase = await createClient()
@@ -643,7 +713,7 @@ ${vectorSearchSection}
 
     const message = await anthropic.messages.create({
       model: selectedModel,
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [
         {
           role: "user",
@@ -673,7 +743,7 @@ ${vectorSearchSection}
       }
     }
 
-    const analysis = JSON.parse(jsonStr)
+    const analysis = safeParseJSON(jsonStr)
 
     // 랭킹 계산
     const DISPLAY_TOTAL = 187
@@ -1209,7 +1279,7 @@ ${vectorSearchSection}
         }
       }
 
-      const analysis = JSON.parse(jsonStr)
+      const analysis = safeParseJSON(jsonStr)
 
       // 랭킹 계산 - 항상 187개 기준으로 표시
       const DISPLAY_TOTAL = 187

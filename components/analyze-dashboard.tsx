@@ -495,12 +495,29 @@ export function AnalyzeDashboard() {
             idx === i ? { ...f, status: "analyzing" } : f
           ))
 
+          // PDF인 경우 벡터 서치용 텍스트 추출 (분석 정확도 향상)
+          let extractedTextForSearch: string | undefined
+          if (isPdf) {
+            try {
+              setStatusMessage("벡터 서치용 텍스트 추출 중...")
+              extractedTextForSearch = await extractTextFromPdf(fileStatus.file)
+              if (extractedTextForSearch && extractedTextForSearch.length < 100) {
+                extractedTextForSearch = undefined // 텍스트가 너무 짧으면 무시
+              }
+            } catch {
+              // 텍스트 추출 실패해도 분석은 계속 진행
+              console.log("벡터 서치용 텍스트 추출 실패 (무시)")
+            }
+            setStatusMessage("AI 분석 중...")
+          }
+
           analysisResult = await analyzeDocumentDirect({
             projectId: selectedProjectId,
             fileName: fileStatus.file.name,
             fileUrl: urlData.publicUrl,
             mimeType: fileStatus.file.type,
             filePath,
+            extractedText: extractedTextForSearch,
           })
 
           if (analysisResult.error) {

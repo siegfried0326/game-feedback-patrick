@@ -705,7 +705,7 @@ ${vectorSearchSection}
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "반드시 **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. 반드시 위 회사별 공통 패턴 데이터를 참고하여 작성하고, 이 문서에 실제로 있는 내용만 언급하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다."
+  "companyFeedback": "반드시 **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용(예: 특정 시스템명, 수치, 도표, 주제)을 인용하세요. 문서마다 다른 내용이 담겨있으므로 매번 다른 피드백이 나와야 합니다. 유사 합격 포트폴리오 발췌 내용이 있다면 그것도 참고하여 비교하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다."
 }`
 
     const anthropic = new Anthropic({ apiKey })
@@ -837,6 +837,7 @@ export async function analyzeDocumentDirect(input: {
   fileUrl: string
   mimeType: string
   filePath: string
+  extractedText?: string // 벡터 서치용 텍스트 (클라이언트에서 추출)
 }) {
   // 보안: 로그인 확인 (미인증 사용자의 API 호출 차단)
   const supabaseAuth = await createClient()
@@ -1056,20 +1057,33 @@ ${topExamples}
 `
     }
 
-    // [벡터 서치] analyzeDocumentDirect에서는 파일명 기반으로 유사 검색 시도
-    // (파일이 base64로 전달되어 텍스트 추출이 어려우므로, 파일명+문서유형으로 검색)
+    // [벡터 서치] 문서 내용 기반 유사 검색
     let vectorSearchSection = ""
-    try {
-      // 파일명과 문서유형을 검색 쿼리로 사용
-      const searchQuery = `게임 기획 포트폴리오 ${input.fileName}`
-      const searchResult = await searchSimilarContent(searchQuery, 15, 0.35)
-      if (searchResult.chunks.length > 0) {
-        vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
-        console.log(`[벡터 서치-문서] ${searchResult.chunks.length}개 유사 청크 발견`)
+    if (input.extractedText && input.extractedText.length >= 100) {
+      // 추출된 텍스트가 있으면 실제 문서 내용으로 벡터 서치 (정확도 높음)
+      try {
+        const searchResult = await searchSimilarContent(input.extractedText, 15, 0.4)
+        if (searchResult.chunks.length > 0) {
+          vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
+          console.log(`[벡터 서치-문서] 텍스트 기반 ${searchResult.chunks.length}개 유사 청크 발견`)
+        } else {
+          console.log("[벡터 서치-문서] 유사 청크 없음 (텍스트 기반)")
+        }
+      } catch (err) {
+        console.error("[벡터 서치-문서] 텍스트 기반 검색 실패 (무시):", err)
       }
-    } catch (err) {
-      // 벡터 서치 실패해도 기존 분석은 정상 진행
-      console.error("[벡터 서치-문서] 검색 실패 (무시):", err)
+    } else {
+      // 텍스트가 없으면 파일명 기반 폴백 (정확도 낮음)
+      try {
+        const searchQuery = `게임 기획 포트폴리오 ${input.fileName}`
+        const searchResult = await searchSimilarContent(searchQuery, 15, 0.35)
+        if (searchResult.chunks.length > 0) {
+          vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
+          console.log(`[벡터 서치-문서] 파일명 기반 ${searchResult.chunks.length}개 유사 청크 발견 (정확도 낮음)`)
+        }
+      } catch (err) {
+        console.error("[벡터 서치-문서] 파일명 기반 검색 실패 (무시):", err)
+      }
     }
 
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
@@ -1181,7 +1195,7 @@ ${vectorSearchSection}
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "반드시 **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. 반드시 위 회사별 공통 패턴 데이터를 참고하여 작성하고, 이 문서에 실제로 있는 내용만 언급하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다.",
+  "companyFeedback": "반드시 **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용(예: 특정 시스템명, 수치, 도표, 주제)을 인용하세요. 문서마다 다른 내용이 담겨있으므로 매번 다른 피드백이 나와야 합니다. 유사 합격 포트폴리오 발췌 내용이 있다면 그것도 참고하여 비교하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다.",
   "readabilityCategories": [
     { "subject": "글자크기구분", "value": 70, "fullMark": 100, "feedback": "제목과 본문의 크기 차이에 대한 구체적 피드백" },
     { "subject": "문단나누기", "value": 65, "fullMark": 100, "feedback": "문단 구성에 대한 피드백" },

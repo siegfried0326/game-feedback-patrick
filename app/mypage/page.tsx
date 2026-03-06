@@ -17,7 +17,7 @@ import Link from "next/link"
 import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shield, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject } from "@/app/actions/subscription"
+import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject } from "@/app/actions/subscription"
 import { getCreditOrders, refundCreditOrder } from "@/app/actions/payment"
 import { getUser } from "@/app/actions/auth"
 import { ScoreCard } from "@/components/score-card"
@@ -121,6 +121,11 @@ export default function MyPage() {
   const [deleting, setDeleting] = useState(false)
   const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
+
+  // 프로젝트 생성 상태
+  const [showNewProjectInput, setShowNewProjectInput] = useState(false)
+  const [newProjectName, setNewProjectName] = useState("")
+  const [creatingNewProject, setCreatingNewProject] = useState(false)
 
   // 크레딧 환불 상태
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -269,6 +274,27 @@ export default function MyPage() {
     }
     setRenamingProjectId(null)
     setRenameValue("")
+  }
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) return
+    setCreatingNewProject(true)
+    try {
+      const result = await createProject(newProjectName.trim())
+      if (result.data) {
+        const newProject = { ...result.data, analysis_count: 0, best_score: null } as ProjectWithStats
+        setProjects(prev => [newProject, ...prev])
+        setShowNewProjectInput(false)
+        setNewProjectName("")
+        setMessage({ type: "success", text: "프로젝트가 생성되었습니다." })
+      } else if (result.error) {
+        setMessage({ type: "error", text: result.error })
+      }
+    } catch {
+      setMessage({ type: "error", text: "프로젝트 생성에 실패했습니다." })
+    } finally {
+      setCreatingNewProject(false)
+    }
   }
 
   // 크레딧 환불 처리
@@ -754,31 +780,62 @@ export default function MyPage() {
                   </Link>
                 ))}
 
-                {/* 빈 슬롯 (유료 플랜 또는 프로젝트 0개) */}
+                {/* 새 프로젝트 생성 슬롯 (유료 플랜 또는 프로젝트 0개) */}
                 {(isPaidPlan || projects.length === 0) && (
-                  <Link
-                    href="/analyze"
-                    className="relative bg-[#0d1b2a]/50 rounded-xl border-2 border-dashed border-[#1e3a5f]/50 p-4
-                      flex flex-col items-center justify-center min-h-[160px] hover:border-[#5B8DEF]/30 transition-colors group"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-slate-800/50 flex items-center justify-center mb-2 group-hover:bg-[#5B8DEF]/10 transition-colors">
-                      <Plus className="w-5 h-5 text-slate-700 group-hover:text-[#5B8DEF] transition-colors" />
+                  showNewProjectInput ? (
+                    <div className="relative bg-[#0d1b2a] rounded-xl border-2 border-[#5B8DEF] p-4 flex flex-col min-h-[160px]">
+                      <p className="text-xs text-slate-400 mb-3">프로젝트 이름</p>
+                      <input
+                        type="text"
+                        value={newProjectName}
+                        onChange={(e) => setNewProjectName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleCreateProject()
+                          if (e.key === "Escape") { setShowNewProjectInput(false); setNewProjectName("") }
+                        }}
+                        placeholder="예: 넥슨 포트폴리오"
+                        autoFocus
+                        className="bg-slate-800 text-white text-xs rounded-lg px-3 py-2 border border-[#1e3a5f] focus:border-[#5B8DEF] outline-none mb-3 w-full"
+                      />
+                      <div className="flex gap-2 mt-auto">
+                        <Button
+                          onClick={handleCreateProject}
+                          disabled={creatingNewProject || !newProjectName.trim()}
+                          className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs px-3 py-1 h-7 flex-1"
+                        >
+                          {creatingNewProject ? <Loader2 className="w-3 h-3 animate-spin" /> : "생성"}
+                        </Button>
+                        <Button
+                          onClick={() => { setShowNewProjectInput(false); setNewProjectName("") }}
+                          variant="outline"
+                          className="border-[#1e3a5f] text-slate-400 text-xs px-3 py-1 h-7"
+                        >
+                          취소
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-[10px] text-slate-700 group-hover:text-slate-500 transition-colors">새 프로젝트</p>
-                  </Link>
+                  ) : (
+                    <button
+                      onClick={() => setShowNewProjectInput(true)}
+                      className="relative bg-[#0d1b2a]/50 rounded-xl border-2 border-dashed border-[#1e3a5f]/50 p-4
+                        flex flex-col items-center justify-center min-h-[160px] hover:border-[#5B8DEF]/30 transition-colors group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-slate-800/50 flex items-center justify-center mb-2 group-hover:bg-[#5B8DEF]/10 transition-colors">
+                        <Plus className="w-5 h-5 text-slate-700 group-hover:text-[#5B8DEF] transition-colors" />
+                      </div>
+                      <p className="text-[10px] text-slate-700 group-hover:text-slate-500 transition-colors">새 프로젝트</p>
+                    </button>
+                  )
                 )}
               </div>
 
-              {projects.length === 0 && (
+              {projects.length === 0 && !showNewProjectInput && (
                 <div className="text-center py-12">
                   <div className="w-20 h-20 rounded-2xl bg-[#162a4a] flex items-center justify-center mx-auto mb-4">
                     <Swords className="w-10 h-10 text-slate-600" />
                   </div>
                   <p className="text-slate-400 mb-1 font-medium">프로젝트가 비어있습니다</p>
-                  <p className="text-slate-500 text-sm mb-6">문서를 분석하여 첫 번째 프로젝트를 만드세요!</p>
-                  <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                    <Link href="/analyze">문서 분석하러 가기</Link>
-                  </Button>
+                  <p className="text-slate-500 text-sm mb-6">위의 + 버튼을 눌러 첫 프로젝트를 만드세요!</p>
                 </div>
               )}
             </>

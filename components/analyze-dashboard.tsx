@@ -308,11 +308,11 @@ export function AnalyzeDashboard() {
           continue
         }
 
-        const MAX_FILE_SIZE = 1024 * 1024 * 1024 // 1GB
+        const MAX_FILE_SIZE = 200 * 1024 * 1024 // 200MB
         if (fileStatus.file.size > MAX_FILE_SIZE) {
           const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 1GB를 초과합니다. 실제 게임 회사 채용에서도 이 크기의 파일은 요구하지 않습니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` } : f
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 200MB를 초과합니다. 30MB 이하를 권장합니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` } : f
           ))
           continue
         }
@@ -657,7 +657,7 @@ export function AnalyzeDashboard() {
       "text/plain": [".txt"],
     },
     maxFiles: MAX_FILES,
-    maxSize: 1024 * 1024 * 1024,
+    maxSize: 200 * 1024 * 1024,
     disabled: isLoggedIn && !selectedProjectId,
   })
 
@@ -959,7 +959,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 최대 1GB</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 권장 30MB 이하 (최대 200MB)</p>
                           </div>
                         </div>
                       </div>

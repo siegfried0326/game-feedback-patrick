@@ -60,7 +60,7 @@ PDF, JPEG, PNG, WebP, DOCX, PPTX, XLSX, XLS, PPT, TXT
 ```
 1. 인증 확인 (getUser)
 2. 파일 타입 검증
-3. 파일 크기 체크 (최대 1GB)
+3. 파일 크기 체크 (최대 200MB, 30MB 이하 권장)
 4. UUID 파일명 생성 → uploads/{uuid}.{ext}
 5. Supabase Storage "resumes" 버킷에 업로드
 6. Public URL 반환

@@ -3,7 +3,7 @@
  *
  * 핵심 함수:
  * - checkBeforeAnalysis(): 분석 전 인증 + 구독 확인
- * - uploadFileToStorage(): Supabase Storage에 파일 업로드 (1GB 제한)
+ * - uploadFileToStorage(): Supabase Storage에 파일 업로드 (200MB 제한, 30MB 권장)
  * - deleteFileFromStorage(): Storage 파일 삭제
  * - getModelForUser(): 구독 플랜별 Claude 모델 선택 (Sonnet/Opus)
  * - analyzeUrlDirect(): URL 크롤링 또는 추출된 텍스트 → Claude 분석
@@ -153,9 +153,9 @@ export async function uploadFileToStorage(formData: FormData) {
       return { error: "지원하지 않는 파일 형식입니다. (PDF, DOCX, PPTX, XLSX, TXT, 이미지)" }
     }
 
-    // 파일 크기 체크 (1GB)
-    if (file.size > 1024 * 1024 * 1024) {
-      return { error: `파일 크기(${(file.size / (1024 * 1024)).toFixed(1)}MB)가 1GB를 초과합니다. 실제 게임 회사 채용에서도 이 크기의 파일은 요구하지 않습니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` }
+    // 파일 크기 체크 (200MB, 30MB 권장)
+    if (file.size > 200 * 1024 * 1024) {
+      return { error: `파일 크기(${(file.size / (1024 * 1024)).toFixed(1)}MB)가 200MB를 초과합니다. 30MB 이하를 권장합니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` }
     }
 
     // 고유한 파일명 생성

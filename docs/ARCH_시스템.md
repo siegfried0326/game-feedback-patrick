@@ -1,6 +1,6 @@
 # 디자이닛(DesignIt) 시스템 아키텍처
 
-> 마지막 갱신: 2026-03-04
+> 마지막 갱신: 2026-03-06
 
 ## 서비스 개요
 
@@ -227,6 +227,144 @@ success_patterns (독립 테이블)
 |------|-------|---------------|
 | `components/analyze-dashboard.tsx` | ~1387 | 높음 — 컴포넌트 분리 필요 |
 | `app/actions/admin.ts` | ~1345 | 중간 — 공통점 추출 + 학습 데이터 관리 |
+| `app/mypage/page.tsx` | ~1187 | 중간 — 프로젝트/분석/구독/환불 탭별 분리 |
 | `app/actions/analyze.ts` | ~1128 | 높음 — analyzeUrlDirect/analyzeDocumentDirect 중복 |
-| `app/mypage/page.tsx` | ~987 | 중간 — 프로젝트/분석/구독 탭별 분리 |
 | `app/admin/training/page.tsx` | ~823 | 중간 |
+
+---
+
+## DB 테이블 상세 스키마
+
+### portfolios — 학습 데이터 (합격자 포트폴리오)
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | UUID | 고유 식별자 |
+| file_name | TEXT | 파일 이름 (예: "넥슨_01.pdf") |
+| companies | TEXT[] | 회사명 배열 |
+| year | INTEGER | 작성 연도 |
+| document_type | TEXT | 문서 유형 (시스템기획, 콘텐츠기획 등) |
+| overall_score | INTEGER | 종합 점수 (0~100) |
+| logic_score, specificity_score, readability_score, technical_score, creativity_score | INTEGER | 5개 기본 카테고리 점수 |
+| tags | TEXT[] | 키워드 태그 (최대 12개) |
+| summary | TEXT | 요약 (250자 이내) |
+| strengths | TEXT[] | 강점 4가지 |
+| weaknesses | TEXT[] | 약점 3가지 |
+| content_text | TEXT | 문서 본문 텍스트 (벡터 임베딩 원본) |
+| file_url | TEXT | Storage 다운로드 URL |
+
+**뷰(View):** `company_stats` (회사별 평균), `overall_stats` (전체 통계)
+
+### portfolio_chunks — 벡터 검색용 조각
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | UUID | 고유 식별자 |
+| portfolio_id | UUID | 원본 포트폴리오 FK |
+| chunk_index | INTEGER | 조각 순서 |
+| chunk_text | TEXT | 텍스트 조각 (800자 단위, 100자 겹침) |
+| embedding | VECTOR(1536) | OpenAI 임베딩 벡터 |
+| metadata | JSONB | 파일명, 회사명 등 |
+
+**인덱스:** HNSW (코사인 유사도)
+**RPC:** `match_portfolio_chunks(query_embedding, match_threshold, match_count)`
+
+### users_subscription — 구독/크레딧 관리
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| user_id | UUID | Supabase Auth FK |
+| plan | TEXT | 'free', 'monthly', 'three_month' |
+| status | TEXT | 'active', 'cancelled', 'expired' |
+| started_at / expires_at | TIMESTAMPTZ | 구독 기간 |
+| billing_key / customer_key | TEXT | TossPayments 자동결제 |
+| analysis_credits | INTEGER | 남은 분석 크레딧 수 |
+
+### credit_orders — 크레딧 구매 주문
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| user_id | UUID | 사용자 FK |
+| package_type | TEXT | 'credit_1', 'credit_5', 'credit_10' |
+| credits | INTEGER | 구매 크레딧 수 |
+| amount | INTEGER | 가격 (원) |
+| order_id / payment_key | TEXT | 주문/결제 키 |
+| payment_status | TEXT | 'pending', 'paid', 'refunded' |
+| paid_at | TIMESTAMPTZ | 결제 완료일 |
+| refunded_at | TIMESTAMPTZ | 환불일 |
+| refund_amount | INTEGER | 환불 금액 |
+
+### success_patterns — 합격자 공통점 50가지
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| pattern_number | INTEGER | 번호 (1~50) |
+| category | TEXT | 'general' 또는 회사명 |
+| title / description | TEXT | 패턴 제목/설명 |
+| importance | TEXT | 'high', 'medium', 'low' |
+| example_files | TEXT[] | 예시 파일명 |
+| batch_id | TEXT | 추출 세션 ID |
+
+---
+
+## 외부 API 연동
+
+| API | 용도 | 환경변수 | 모델/엔드포인트 | 사용 위치 |
+|-----|------|----------|----------------|-----------|
+| Claude | 사용자 분석 + 공통점 추출 | `ANTHROPIC_API_KEY` | Sonnet/Opus | analyze.ts, admin.ts |
+| Gemini 2.0 Flash | 학습 데이터 분석 | `GOOGLE_GENERATIVE_AI_API_KEY` | gemini-2.0-flash | admin.ts |
+| OpenAI Embeddings | 벡터 임베딩 | `OPENAI_API_KEY` | text-embedding-3-small (1536d) | admin.ts, analyze.ts |
+| TossPayments | 결제/환불 | `TOSS_SECRET_KEY` | 빌링키, 일반결제, 취소 API | payment.ts, toss-api.ts |
+| Jina AI Reader | URL 텍스트 추출 (폴백) | `JINA_API_KEY` | r.jina.ai | analyze.ts |
+
+---
+
+## RLS (Row Level Security)
+
+| 테이블 | 읽기 | 쓰기 | 삭제 |
+|--------|------|------|------|
+| portfolios | 모든 인증 사용자 | 인증 사용자 (서버에서 관리자 확인) | 인증 사용자 |
+| portfolio_chunks | 인증 사용자 | 인증 사용자 | 인증 사용자 |
+| users_subscription | 본인만 | 본인만 | 본인만 |
+| analysis_history | 본인만 | 본인만 | - |
+| projects | 본인만 | 본인만 | 본인만 |
+| credit_orders | 본인만 | 본인만 | - |
+| success_patterns | 인증 사용자 | 인증 사용자 | 인증 사용자 |
+
+---
+
+## SQL 마이그레이션 스크립트 (scripts/)
+
+| 번호 | 파일 | 내용 |
+|------|------|------|
+| 001 | create_tables.sql | portfolios, users_subscription 기본 테이블 |
+| 002 | create_analysis_history.sql | analysis_history 테이블 |
+| 003 | fix_subscription_rls.sql | 구독 테이블 RLS 정책 수정 |
+| 004 | add_ranking_columns.sql | 순위 컬럼 추가 |
+| 005 | add_projects.sql | projects 테이블 |
+| 006 | add_billing_columns.sql | billing_key, customer_key |
+| 007 | create_credit_orders.sql | credit_orders 테이블 |
+| 008 | create_tutoring_orders.sql | (삭제됨) |
+| 009 | add_content_text.sql | portfolios에 content_text |
+| 010 | create_portfolio_chunks.sql | pgvector + HNSW 인덱스 |
+| 011 | add_company_feedback.sql | company_feedback 컬럼 |
+| 012 | create_success_patterns.sql | success_patterns 테이블 |
+| 013 | create_portfolio_analysis.sql | portfolio_analysis 테이블 |
+| 014 | add_refund_columns.sql | credit_orders에 환불 컬럼 |
+
+---
+
+## 주요 수치/제한
+
+| 항목 | 값 |
+|------|-----|
+| 사용자 파일 최대 크기 | 1GB |
+| 관리자 파일 최대 크기 | 500MB |
+| 벡터 차원 | 1536 (OpenAI text-embedding-3-small) |
+| 청크 크기 | 800자 (100자 겹침) |
+| 벡터 검색 유사도 기준 | 0.3 이상 |
+| 벡터 검색 반환 개수 | 상위 5개 |
+| 분석 카테고리 수 | 15개 (기본 5 + 게임디자인 10) |
+| 순위 기준 인원 | 187명 |
+| 합격자 공통점 | 50개 (배치 분할 추출) |
+| 크레딧 정가 | 2,900원/회 |

@@ -7,7 +7,7 @@
 | PG사 | TossPayments |
 | 결제 방식 | 일반결제 (크레딧) + 빌링키 자동결제 (구독) |
 | DB | Supabase: users_subscription, credit_orders |
-| 마지막 갱신 | 2026-03-04 |
+| 마지막 갱신 | 2026-03-06 |
 | 가격 기준표 | → [PRD_가격표_요금제.md](./PRD_가격표_요금제.md) 참고 |
 
 > **가격 변경 시**: PRD_가격표_요금제.md를 먼저 수정하고, 거기 적힌 "코드 반영 위치"를 모두 수정하세요.
@@ -85,9 +85,11 @@ cancelSubscription():
 ### 6.1 분석 할당량 (`checkAnalysisAllowance`)
 | 조건 | 결과 |
 |------|------|
+| 크레딧 1개 이상 | **우선 허용** (크레딧 먼저 차감) |
 | 활성 구독 (monthly/three_month, 미만료) | 무제한 허용 |
-| 크레딧 1개 이상 | 허용 (분석 후 1개 차감) |
 | 크레딧 0개 + 구독 없음 | 차단 → 크레딧 구매 또는 구독 안내 |
+
+> **크레딧 우선 소모 정책**: 크레딧과 구독을 동시 보유 시, 크레딧을 먼저 소모한 후 구독이 적용됩니다.
 
 ### 6.2 프로젝트 할당량 (`checkProjectAllowance`)
 | 조건 | 결과 |
@@ -98,8 +100,9 @@ cancelSubscription():
 
 ### 6.3 크레딧 차감 (`deductCredit`)
 - 분석 완료 후 호출
-- 활성 구독자: 차감 없이 통과 (무제한)
-- 비구독자: `analysis_credits -= 1`
+- 크레딧 > 0: 크레딧 먼저 차감 (`analysis_credits -= 1`, source: "credit")
+- 크레딧 0 + 활성 구독: 차감 없이 통과 (source: "subscription")
+- 둘 다 없음: 에러
 
 ## 7. DB 테이블
 
@@ -129,14 +132,38 @@ cancelSubscription():
 | credits | integer | 지급 크레딧 수 |
 | amount | integer | 결제 금액 |
 | payment_key | text | TossPayments 결제 키 |
-| payment_status | text | pending / paid |
+| payment_status | text | pending / paid / refunded |
 | paid_at | timestamptz | 결제 확인 시각 |
+| refunded_at | timestamptz | 환불일 |
+| refund_amount | integer | 환불 금액 |
 
-## 8. 관련 파일
+## 8. 크레딧 환불
+
+### 8.1 환불 기준
+| 조건 | 환불 |
+|------|------|
+| 7일 이내 + 미사용 | 전액 환불 |
+| 7일 이내 + 부분 사용 | 정가(2,900원/회) × 사용 횟수 차감 후 환불 |
+| 7일 경과 또는 전부 사용 | 환불 불가 |
+
+### 8.2 환불 흐름
+```
+1. 마이페이지 → 크레딧 구매 내역에서 "환불하기" 클릭
+2. 확인 다이얼로그: "N원이 환불됩니다. 진행하시겠습니까?"
+3. refundCreditOrder(orderId):
+   a. 7일 이내 여부 + 남은 크레딧 확인
+   b. 환불 금액 계산: max(0, order.amount - usedCredits × 2900)
+   c. cancelPayment(paymentKey, cancelReason, cancelAmount)
+   d. credit_orders 업데이트 (refunded)
+   e. analysis_credits 차감
+```
+
+## 9. 관련 파일
 
 | 파일 | 역할 |
 |------|------|
-| `app/actions/payment.ts` | TossPayments API: 구독결제, 크레딧결제, 할인코드 |
+| `app/actions/payment.ts` | TossPayments API: 구독결제, 크레딧결제, 환불, 할인코드 |
+| `lib/toss-api.ts` | TossPayments API 헬퍼: confirmPayment, cancelPayment |
 | `app/actions/subscription.ts` | 구독 CRUD, 할당량 체크, 크레딧 차감 |
 | `app/payment/credits/page.tsx` | 크레딧 결제 페이지 |
 | `app/payment/credits/success/page.tsx` | 크레딧 결제 성공 페이지 |

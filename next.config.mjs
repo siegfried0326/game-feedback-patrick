@@ -48,7 +48,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.tosspayments.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.supabase.co https://*.tosspayments.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://*.tosspayments.com https://*.googleusercontent.com https://*.kakaocdn.net https://*.apple.com",
               "connect-src 'self' https://*.supabase.co https://*.tosspayments.com https://api.anthropic.com https://generativelanguage.googleapis.com",
               "frame-src https://*.tosspayments.com",
               "object-src 'none'",

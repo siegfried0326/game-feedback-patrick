@@ -393,7 +393,7 @@ export default function MyPage() {
           <h2 className="text-lg font-semibold text-white mb-4">프로필</h2>
           <div className="flex items-center gap-4">
             {user?.avatar ? (
-              <img src={user.avatar} alt="프로필" className="w-16 h-16 rounded-full border-2 border-[#1e3a5f]" />
+              <img src={user.avatar} alt="프로필" referrerPolicy="no-referrer" className="w-16 h-16 rounded-full border-2 border-[#1e3a5f] object-cover" />
             ) : (
               <div className="w-16 h-16 rounded-full bg-[#162a4a] flex items-center justify-center border-2 border-[#1e3a5f]">
                 <span className="text-2xl text-[#5B8DEF]">{(user?.name || user?.email || "U")[0].toUpperCase()}</span>

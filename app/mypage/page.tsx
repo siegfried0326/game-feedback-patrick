@@ -18,6 +18,7 @@ import { ArrowLeft, Crown, FileText, Calendar, Star, AlertCircle, Loader2, Shiel
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { getSubscription, cancelSubscription, getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject } from "@/app/actions/subscription"
+import { getCreditOrders, refundCreditOrder } from "@/app/actions/payment"
 import { getUser } from "@/app/actions/auth"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
@@ -121,6 +122,12 @@ export default function MyPage() {
   const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
 
+  // 크레딧 환불 상태
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [creditOrders, setCreditOrders] = useState<any[]>([])
+  const [showRefundConfirm, setShowRefundConfirm] = useState<string | null>(null) // orderId
+  const [refunding, setRefunding] = useState(false)
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -144,6 +151,12 @@ export default function MyPage() {
 
         if (projectsResult.data) {
           setProjects(projectsResult.data as ProjectWithStats[])
+        }
+
+        // 크레딧 환불 가능 주문 로드
+        const ordersResult = await getCreditOrders()
+        if (ordersResult.orders) {
+          setCreditOrders(ordersResult.orders)
         }
       } catch {
         console.error("데이터 로딩 실패")
@@ -256,6 +269,27 @@ export default function MyPage() {
     }
     setRenamingProjectId(null)
     setRenameValue("")
+  }
+
+  // 크레딧 환불 처리
+  const handleRefund = async (orderId: string) => {
+    setRefunding(true)
+    setMessage(null)
+    const result = await refundCreditOrder(orderId)
+    if (result.error) {
+      setMessage({ type: "error", text: result.error })
+    } else {
+      setMessage({ type: "success", text: `${result.refundAmount?.toLocaleString()}원이 환불되었습니다. (${result.refundedCredits}회 차감)` })
+      // 구독 정보 + 환불 목록 갱신
+      const [subResult, ordersResult] = await Promise.all([
+        getSubscription(),
+        getCreditOrders(),
+      ])
+      if (subResult.data) setSubscription(subResult.data as Subscription)
+      if (ordersResult.orders) setCreditOrders(ordersResult.orders)
+    }
+    setRefunding(false)
+    setShowRefundConfirm(null)
   }
 
   // 같은 파일명 그룹핑
@@ -473,6 +507,88 @@ export default function MyPage() {
             </div>
           ) : <p className="text-slate-400">구독 정보를 불러올 수 없습니다.</p>}
         </div>
+
+        {/* ========== 크레딧 환불 ========== */}
+        {creditOrders.length > 0 && (
+          <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 mb-6">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#5B8DEF]" /> 크레딧 구매 내역
+            </h2>
+            <div className="space-y-3">
+              {creditOrders.map((order: {
+                order_id: string; packageLabel: string; paidAtFormatted: string;
+                credits: number; amount: number; canRefund: boolean;
+                refundAmount: number; usedCredits: number; isWithin7Days: boolean;
+                refundableCredits: number; refunded_at: string | null;
+              }) => (
+                <div key={order.order_id} className="flex items-center justify-between p-4 bg-[#0d1b2a] rounded-xl border border-[#1e3a5f]">
+                  <div>
+                    <p className="text-white text-sm font-medium">{order.packageLabel}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {order.paidAtFormatted} · {order.amount.toLocaleString()}원
+                    </p>
+                    {order.refunded_at && (
+                      <p className="text-xs text-yellow-400 mt-0.5">환불 완료</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    {order.canRefund ? (
+                      <>
+                        <p className="text-xs text-slate-400 mb-1">
+                          환불 가능: {order.refundAmount.toLocaleString()}원
+                          {order.usedCredits > 0 && <span className="text-slate-500"> ({order.usedCredits}회 사용)</span>}
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => setShowRefundConfirm(order.order_id)}
+                          disabled={refunding}
+                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs h-7 px-3"
+                        >
+                          환불하기
+                        </Button>
+                      </>
+                    ) : (
+                      <p className="text-xs text-slate-600">
+                        {order.refunded_at ? "환불됨" : !order.isWithin7Days ? "7일 경과" : "환불 불가"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-600 mt-3">
+              * 결제일로부터 7일 이내, 사용하지 않은 회차에 대해 환불 가능합니다.
+              <Link href="/refund-policy" className="text-[#5B8DEF] hover:underline ml-1">환불정책 보기</Link>
+            </p>
+          </div>
+        )}
+
+        {/* 환불 확인 다이얼로그 */}
+        <AlertDialog open={!!showRefundConfirm} onOpenChange={() => setShowRefundConfirm(null)}>
+          <AlertDialogContent className="bg-[#0f1d32] border-[#1e3a5f] text-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle>환불 확인</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-400">
+                {(() => {
+                  const order = creditOrders.find((o: { order_id: string }) => o.order_id === showRefundConfirm)
+                  if (!order) return ""
+                  return `${order.packageLabel} (${order.amount.toLocaleString()}원)에서 ${order.refundAmount.toLocaleString()}원이 환불됩니다.${order.usedCredits > 0 ? ` 사용한 ${order.usedCredits}회(${(order.usedCredits * 2900).toLocaleString()}원)는 차감됩니다.` : ""} 환불된 크레딧(${order.refundableCredits}회)은 즉시 차감됩니다. 진행하시겠습니까?`
+                })()}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-[#1e3a5f] text-slate-400 hover:text-white" disabled={refunding}>취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => showRefundConfirm && handleRefund(showRefundConfirm)}
+                className="bg-red-500 hover:bg-red-600 text-white"
+                disabled={refunding}
+              >
+                {refunding && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                환불 진행
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* ========== 프로젝트 인벤토리 ========== */}
         <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6">

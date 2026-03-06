@@ -111,3 +111,36 @@ export async function confirmPayment(paymentKey: string, orderId: string, amount
 
   return { data }
 }
+
+/**
+ * 결제 취소 (환불)
+ * - cancelAmount가 없으면 전액 환불
+ * - cancelAmount가 있으면 부분 환불
+ */
+export async function cancelPayment(
+  paymentKey: string,
+  cancelReason: string,
+  cancelAmount?: number,
+) {
+  const body: Record<string, unknown> = { cancelReason }
+  if (cancelAmount !== undefined) {
+    body.cancelAmount = cancelAmount
+  }
+
+  const response = await fetch(`${TOSS_API_BASE}/payments/${paymentKey}/cancel`, {
+    method: "POST",
+    headers: {
+      Authorization: getAuthHeader(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    return { error: data.message || "환불 처리에 실패했습니다." }
+  }
+
+  return { data }
+}

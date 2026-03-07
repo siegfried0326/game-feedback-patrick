@@ -14,9 +14,10 @@
  * 2. 통계 계산 (전체 평균, 회사별 평균, 태그 빈도)
  * 3. 샘플 12개 선택 (회사별 균형 샘플링)
  * 4. [벡터 서치] 사용자 문서와 유사한 포트폴리오 실제 내용 검색
- * 5. 시스템 프롬프트 구성 (통계 + 샘플 + 유사 내용 + 평가 기준)
- * 6. Claude API 호출 (15개 카테고리 + 가독성 + 레이아웃 + 회사별 비교)
- * 7. JSON 파싱 + 랭킹 계산 (187명 기준)
+ * 5. [벤치마크] data/company-benchmarks.json에서 9개사×20항목 벤치마크 로드
+ * 6. 시스템 프롬프트 구성 (통계 + 샘플 + 유사 내용 + 벤치마크 + 평가 기준)
+ * 7. Claude API 호출 (15개 카테고리 + 가독성 + 레이아웃 + 회사별 비교)
+ * 8. JSON 파싱 + 랭킹 계산 (187명 기준)
  *
  * 벡터 서치: OpenAI 임베딩 + Supabase pgvector로 유사 포트폴리오 검색
  * URL 분석: 직접 fetch → HTML 텍스트 추출 → SPA는 Jina AI Reader 폴백
@@ -33,6 +34,8 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
+import fs from "fs"
+import path from "path"
 
 /**
  * 잘린 JSON 복구 유틸리티
@@ -102,6 +105,90 @@ function safeParseJSON(jsonStr: string): Record<string, unknown> {
       throw new Error("AI 응답을 파싱할 수 없습니다. 다시 시도해 주세요.")
     }
   }
+}
+
+/**
+ * 회사별 벤치마크 데이터 로드 및 프롬프트 포맷팅
+ *
+ * data/company-benchmarks.json에서 9개사 × 20항목 데이터를 읽어
+ * Claude 시스템 프롬프트에 주입할 텍스트로 변환합니다.
+ *
+ * - 8개 회사 데이터: 사용자에게 각각 비교 피드백 제공
+ * - 일반회사 데이터: "업계 공통" 라벨로 주입, 사용자 미노출 (판단 다각화용)
+ */
+interface CompanyBenchmark {
+  design: Record<string, string>
+  readability: Record<string, string>
+}
+
+let cachedBenchmarks: Record<string, CompanyBenchmark> | null = null
+
+function loadCompanyBenchmarks(): Record<string, CompanyBenchmark> {
+  if (cachedBenchmarks) return cachedBenchmarks
+  try {
+    const filePath = path.join(process.cwd(), "data", "company-benchmarks.json")
+    const raw = fs.readFileSync(filePath, "utf-8")
+    cachedBenchmarks = JSON.parse(raw)
+    console.log("[벤치마크] 데이터 로드 성공:", Object.keys(cachedBenchmarks!).length, "개사")
+    return cachedBenchmarks!
+  } catch (err) {
+    console.error("[벤치마크] 데이터 로드 실패:", err)
+    return {}
+  }
+}
+
+/**
+ * 벤치마크 데이터를 시스템 프롬프트용 텍스트로 변환
+ * @param includeReadability readability 벤치마크 포함 여부 (PDF 분석에만 true)
+ */
+function formatBenchmarkForPrompt(includeReadability: boolean = true): string {
+  const benchmarks = loadCompanyBenchmarks()
+  if (Object.keys(benchmarks).length === 0) return ""
+
+  const targetCompanies = ["넥슨", "네오위즈", "넷마블", "엔씨소프트", "크래프톤", "펄어비스", "스마일게이트", "웹젠"]
+  const generalData = benchmarks["일반회사"]
+
+  const designItems = ["핵심반복구조", "콘텐츠분류", "재화흐름", "플레이경험", "수치데이터", "기능연결", "동기부여", "난이도균형", "화면조작", "개발일정"]
+  const readabilityItems = ["글자크기구분", "문단나누기", "여백활용", "색상활용", "표와그림배치", "페이지구성", "읽는순서", "강조표현", "목차와번호", "전체통일감"]
+
+  let result = `\n---\n\n## 🏢 회사별 합격 포트폴리오 벤치마크 (187개 합격 사례 기반)\n\n`
+  result += `### 게임 디자인 역량 — 회사별 합격자 특징\n`
+  result += `각 평가 항목의 feedback 작성 시, 아래 벤치마크를 참고하여 "합격자들은 ~하는데, 이 문서는 ~하다"는 비교를 제공하세요.\n`
+  result += `"업계 공통"은 특정 회사에 국한되지 않는 전반적인 합격 기준이므로, 8개 회사별 판단과 함께 종합적으로 참고하세요.\n\n`
+
+  for (const item of designItems) {
+    result += `[${item}]\n`
+    for (const company of targetCompanies) {
+      const text = benchmarks[company]?.design?.[item]
+      if (text) result += `- ${company}: ${text}\n`
+    }
+    if (generalData?.design?.[item]) {
+      result += `- 업계 공통: ${generalData.design[item]}\n`
+    }
+    result += `\n`
+  }
+
+  if (includeReadability) {
+    result += `### 문서 가독성 — 회사별 합격자 특징\n\n`
+    for (const item of readabilityItems) {
+      result += `[${item}]\n`
+      for (const company of targetCompanies) {
+        const text = benchmarks[company]?.readability?.[item]
+        if (text) result += `- ${company}: ${text}\n`
+      }
+      if (generalData?.readability?.[item]) {
+        result += `- 업계 공통: ${generalData.readability[item]}\n`
+      }
+      result += `\n`
+    }
+  }
+
+  result += `### companyFeedback 작성 시 벤치마크 활용\n`
+  result += `- 8개 회사(넥슨~웹젠)에 대해 각각 위 벤치마크를 근거로 비교 피드백 작성\n`
+  result += `- 각 회사 피드백에서 해당 회사 벤치마크 + 업계 공통 벤치마크를 종합 참고\n`
+  result += `- "일반회사" 또는 "업계 공통"이라는 명칭은 사용자에게 노출하지 않음\n`
+
+  return result
 }
 
 // 분석 전 인증 + 구독 확인
@@ -619,12 +706,17 @@ ${topExamples}
       }
     }
 
+    // [벤치마크] 회사별 합격 포트폴리오 벤치마크 데이터 주입 (URL 분석: design만)
+    const benchmarkSection = formatBenchmarkForPrompt(false)
+
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}
 
 ${vectorSearchSection}
+
+${benchmarkSection}
 
 ---
 
@@ -678,25 +770,25 @@ ${vectorSearchSection}
 
 **게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 0점, 간접적으로라도 언급이 있으면 그 수준에 맞게 채점하세요.
 
-**게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 합격자 자료와 비교하여 [강점]과 [보완]을 구분해서 작성하세요.
+**게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 참고하여 합격자들의 구체적 특징과 비교하세요. [강점]과 [보완]을 구분해서 작성하세요.
 - [강점]으로 시작하는 줄: 이 문서에서 해당 항목이 잘 된 부분
-- [보완]으로 시작하는 줄: 합격자들과 비교했을 때 부족한 부분과 구체적 개선 방향
-- 해당 항목이 전혀 없으면 [보완]만 작성하되, 합격자들은 어떻게 하는지 설명
+- [보완]으로 시작하는 줄: 합격자들과 비교했을 때 부족한 부분과 구체적 개선 방향. 벤치마크의 합격자 특징을 인용하여 "합격자들은 ~하지만, 이 문서는 ~합니다"로 서술
+- 해당 항목이 전혀 없으면 [보완]만 작성하되, 벤치마크를 참고하여 합격자들은 어떻게 하는지 설명
 
 ## 응답 형식 (반드시 JSON만 출력, 다른 텍스트 없이)
 {
   "score": 72,
   "categories": [
-    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "[강점] 잘 된 부분 설명.\\n[보완] 합격자들과 비교하여 부족한 점과 개선 방향. 3줄 이상 작성." },
-    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 합격자 비교 부족한 점. 3줄 이상." },
+    { "subject": "논리력", "value": 75, "fullMark": 100, "feedback": "[강점] 잘 된 부분 설명.\\n[보완] 벤치마크 기준 합격자들과 비교하여 부족한 점과 개선 방향. 3줄 이상 작성." },
+    { "subject": "구체성", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 벤치마크 기준 부족한 점. 3줄 이상." },
     { "subject": "가독성", "value": 78, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
     { "subject": "기술이해", "value": 70, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
     { "subject": "창의성", "value": 68, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
-    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "[강점] 이동→전투→보상의 기본 순환이 정의됨.\\n[보완] 합격자들은 각 단계별 소요 시간과 보상 비율까지 구체적으로 설계합니다. 이 문서는 흐름만 있고 수치가 없어 실무 적용이 어렵습니다." },
-    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 합격자 비교 부족한 점. 3줄 이상." },
-    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "[보완] 합격자들은 재화 획득/소비/소멸 경로를 도표로 정리합니다. 이 문서에는 재화 흐름 관련 내용이 없습니다." },
+    { "subject": "핵심반복구조", "value": 60, "fullMark": 100, "feedback": "[강점] 이동→전투→보상의 기본 순환이 정의됨.\\n[보완] 벤치마크에 따르면 넥슨 합격자들은 각 단계별 소요 시간과 보상 비율까지 구체적으로 설계합니다. 이 문서는 흐름만 있고 수치가 없어 실무 적용이 어렵습니다." },
+    { "subject": "콘텐츠분류", "value": 55, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 벤치마크 기준 부족한 점. 3줄 이상." },
+    { "subject": "재화흐름", "value": 40, "fullMark": 100, "feedback": "[보완] 벤치마크에 따르면 합격자들은 재화 획득/소비/소멸 경로를 도표로 정리합니다. 이 문서에는 재화 흐름 관련 내용이 없습니다." },
     { "subject": "플레이경험", "value": 65, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
-    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "[보완] 합격자들은 주요 게임 요소의 수치를 표로 정리합니다. 이 문서에는 수치 테이블이 없습니다." },
+    { "subject": "수치데이터", "value": 30, "fullMark": 100, "feedback": "[보완] 벤치마크에 따르면 합격자들은 주요 게임 요소의 수치를 표로 정리합니다. 이 문서에는 수치 테이블이 없습니다." },
     { "subject": "기능연결", "value": 50, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
     { "subject": "동기부여", "value": 45, "fullMark": 100, "feedback": "[강점] 잘 된 부분.\\n[보완] 부족한 점. 3줄 이상." },
     { "subject": "난이도균형", "value": 35, "fullMark": 100, "feedback": "[보완] 부족한 점. 3줄 이상." },
@@ -705,7 +797,7 @@ ${vectorSearchSection}
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "반드시 **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용(예: 특정 시스템명, 수치, 도표, 주제)을 인용하세요. 문서마다 다른 내용이 담겨있으므로 매번 다른 피드백이 나와야 합니다. 유사 합격 포트폴리오 발췌 내용이 있다면 그것도 참고하여 비교하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다."
+  "companyFeedback": "위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 반드시 참고하여 작성. **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 벤치마크 데이터에서 해당 회사 합격자들의 핵심 특징(design/readability)을 인용하여 비교하세요. 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용을 인용하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다."
 }`
 
     const anthropic = new Anthropic({ apiKey })
@@ -1086,12 +1178,17 @@ ${topExamples}
       }
     }
 
+    // [벤치마크] 회사별 합격 포트폴리오 벤치마크 데이터 주입 (문서 분석: design + readability 모두)
+    const benchmarkSection = formatBenchmarkForPrompt(true)
+
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}
 
 ${vectorSearchSection}
+
+${benchmarkSection}
 
 ---
 
@@ -1144,12 +1241,13 @@ ${vectorSearchSection}
 
 **게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 0점, 간접적으로라도 언급이 있으면 그 수준에 맞게 채점하세요.
 
-**게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 합격자 자료와 비교하여 [강점]과 [보완]을 구분해서 작성하세요.
+**게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 참고하여 합격자들의 구체적 특징과 비교하세요. [강점]과 [보완]을 구분해서 작성하세요.
 - [강점]으로 시작하는 줄: 이 문서에서 해당 항목이 잘 된 부분
-- [보완]으로 시작하는 줄: 합격자들과 비교했을 때 부족한 부분과 구체적 개선 방향
-- 해당 항목이 전혀 없으면 [보완]만 작성하되, 합격자들은 어떻게 하는지 설명
+- [보완]으로 시작하는 줄: 합격자들과 비교했을 때 부족한 부분과 구체적 개선 방향. 벤치마크의 합격자 특징을 인용하여 "합격자들은 ~하지만, 이 문서는 ~합니다"로 서술
+- 해당 항목이 전혀 없으면 [보완]만 작성하되, 벤치마크를 참고하여 합격자들은 어떻게 하는지 설명
 
 ### 문서 가독성 평가 (10개) - PDF 문서 전용
+위의 '문서 가독성 — 회사별 합격자 특징' 벤치마크를 참고하여 각 항목의 feedback을 작성하세요.
 이 문서는 PDF로 업로드되었으므로, 문서의 시각적 상태를 직접 보고 평가하세요.
 16. **글자 크기 구분**: 제목, 소제목, 본문의 글자 크기가 확실히 다른가. 한눈에 무엇이 제목이고 무엇이 본문인지 알 수 있는가.
 17. **문단 나누기**: 내용이 적절한 길이로 문단이 나뉘어 있는가. 한 문단이 너무 길지 않은가. 관련 있는 내용끼리 묶여 있는가.
@@ -1195,18 +1293,18 @@ ${vectorSearchSection}
   ],
   "strengths": ["강점1", "강점2", "강점3", "강점4", "강점5", "강점6"],
   "weaknesses": ["보완점1", "보완점2", "보완점3", "보완점4", "보완점5", "보완점6"],
-  "companyFeedback": "반드시 **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용(예: 특정 시스템명, 수치, 도표, 주제)을 인용하세요. 문서마다 다른 내용이 담겨있으므로 매번 다른 피드백이 나와야 합니다. 유사 합격 포트폴리오 발췌 내용이 있다면 그것도 참고하여 비교하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다.",
+  "companyFeedback": "위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 반드시 참고하여 작성. **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 벤치마크 데이터에서 해당 회사 합격자들의 핵심 특징(design/readability)을 인용하여 비교하세요. 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용을 인용하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다.",
   "readabilityCategories": [
-    { "subject": "글자크기구분", "value": 70, "fullMark": 100, "feedback": "제목과 본문의 크기 차이에 대한 구체적 피드백" },
-    { "subject": "문단나누기", "value": 65, "fullMark": 100, "feedback": "문단 구성에 대한 피드백" },
-    { "subject": "여백활용", "value": 55, "fullMark": 100, "feedback": "여백 상태에 대한 피드백" },
-    { "subject": "색상활용", "value": 72, "fullMark": 100, "feedback": "색상 사용에 대한 피드백" },
-    { "subject": "표와그림배치", "value": 60, "fullMark": 100, "feedback": "표/그림 배치에 대한 피드백" },
-    { "subject": "페이지구성", "value": 68, "fullMark": 100, "feedback": "페이지 구성에 대한 피드백" },
-    { "subject": "읽는순서", "value": 75, "fullMark": 100, "feedback": "읽는 순서에 대한 피드백" },
-    { "subject": "강조표현", "value": 50, "fullMark": 100, "feedback": "강조 표현에 대한 피드백" },
-    { "subject": "목차와번호", "value": 40, "fullMark": 100, "feedback": "목차/번호에 대한 피드백" },
-    { "subject": "전체통일감", "value": 62, "fullMark": 100, "feedback": "전체 통일감에 대한 피드백" }
+    { "subject": "글자크기구분", "value": 70, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 제목/본문 크기 구분에 대한 구체적 피드백" },
+    { "subject": "문단나누기", "value": 65, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 문단 구성 피드백" },
+    { "subject": "여백활용", "value": 55, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 여백 상태 피드백" },
+    { "subject": "색상활용", "value": 72, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 색상 사용 피드백" },
+    { "subject": "표와그림배치", "value": 60, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 표/그림 배치 피드백" },
+    { "subject": "페이지구성", "value": 68, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 페이지 구성 피드백" },
+    { "subject": "읽는순서", "value": 75, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 읽는 순서 피드백" },
+    { "subject": "강조표현", "value": 50, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 강조 표현 피드백" },
+    { "subject": "목차와번호", "value": 40, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 목차/번호 피드백" },
+    { "subject": "전체통일감", "value": 62, "fullMark": 100, "feedback": "벤치마크 참고하여 합격자 대비 전체 통일감 피드백" }
   ],
   "layoutRecommendations": [
     {
@@ -1227,22 +1325,40 @@ ${vectorSearchSection}
       return { error: "파일을 다운로드할 수 없습니다." }
     }
     const fileBuffer = Buffer.from(await response.arrayBuffer())
-    const base64Data = fileBuffer.toString("base64")
+    const fileSizeMB = fileBuffer.length / (1024 * 1024)
 
-    // Claude가 지원하는 미디어 타입 매핑
-    const supportedMediaTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-    ]
+    // Claude API 요청 크기 제한: base64 변환 시 ~33% 증가 + 시스템 프롬프트
+    // 안전 임계치: 15MB (base64 → ~20MB + 시스템 프롬프트 → ~25MB 이하로 유지)
+    const MAX_FILE_SIZE_MB = 15
+    const useTextFallback = fileSizeMB > MAX_FILE_SIZE_MB
 
-    let mediaType = input.mimeType as "application/pdf" | "image/jpeg" | "image/png" | "image/gif" | "image/webp"
+    let base64Data = ""
+    let mediaType: "application/pdf" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" = "application/pdf"
 
-    // 지원하지 않는 타입이면 PDF로 기본 설정
-    if (!supportedMediaTypes.includes(input.mimeType)) {
-      mediaType = "application/pdf"
+    if (!useTextFallback) {
+      base64Data = fileBuffer.toString("base64")
+
+      // Claude가 지원하는 미디어 타입 매핑
+      const supportedMediaTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ]
+
+      mediaType = input.mimeType as typeof mediaType
+
+      // 지원하지 않는 타입이면 PDF로 기본 설정
+      if (!supportedMediaTypes.includes(input.mimeType)) {
+        mediaType = "application/pdf"
+      }
+    } else {
+      // 대용량 파일: 추출된 텍스트가 없으면 분석 불가
+      if (!input.extractedText || input.extractedText.length < 100) {
+        return { error: `파일 크기(${fileSizeMB.toFixed(1)}MB)가 너무 큽니다. PDF에서 텍스트를 추출할 수 없어 분석이 불가합니다. 30MB 이하로 압축하거나 텍스트가 포함된 PDF로 다시 시도해 주세요.` }
+      }
+      console.log(`[분석] 대용량 PDF(${fileSizeMB.toFixed(1)}MB) → 텍스트 추출 모드로 전환 (${input.extractedText.length}자)`)
     }
 
     try {
@@ -1250,28 +1366,43 @@ ${vectorSearchSection}
       const anthropic = new Anthropic({ apiKey })
       const selectedModel = await getModelForUser()
 
+      // 대용량 파일: 텍스트 기반 분석 / 일반 파일: 원본 문서 분석
+      let pageContent = input.extractedText || ""
+      if (pageContent.length > 100000) {
+        pageContent = pageContent.substring(0, 100000)
+      }
+
+      const messages: Anthropic.MessageParam[] = useTextFallback
+        ? [
+            {
+              role: "user" as const,
+              content: `아래는 "${input.fileName}" 문서(${fileSizeMB.toFixed(1)}MB)에서 추출한 텍스트 내용입니다. 원본 PDF가 너무 커서 텍스트만 추출하여 분석합니다. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다. 단, 텍스트 기반 분석이므로 readabilityCategories와 layoutRecommendations는 텍스트 구조를 기반으로 추정하여 작성해주세요.\n\n---\n\n${pageContent}`,
+            },
+          ]
+        : [
+            {
+              role: "user" as const,
+              content: [
+                {
+                  type: "document" as const,
+                  source: {
+                    type: "base64" as const,
+                    media_type: mediaType,
+                    data: base64Data,
+                  },
+                },
+                {
+                  type: "text" as const,
+                  text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다.",
+                },
+              ],
+            },
+          ]
+
       const message = await anthropic.messages.create({
         model: selectedModel,
         max_tokens: 8192,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "document",
-                source: {
-                  type: "base64",
-                  media_type: mediaType,
-                  data: base64Data,
-                },
-              },
-              {
-                type: "text",
-                text: "위 문서를 분석해주세요. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다.",
-              },
-            ],
-          },
-        ],
+        messages,
         system: systemPrompt,
       })
 
@@ -1392,6 +1523,9 @@ ${vectorSearchSection}
     }
     if (errMsg.includes("too many tokens") || errMsg.includes("context_length")) {
       return { error: "파일 내용이 너무 많아 분석할 수 없습니다. 더 짧은 문서로 시도해 주세요." }
+    }
+    if (errMsg.includes("request_too_large") || errMsg.includes("413") || errMsg.includes("maximum size")) {
+      return { error: "파일 크기가 API 제한을 초과했습니다. 파일을 30MB 이하로 압축하여 다시 시도해 주세요." }
     }
     return { error: `분석 중 오류가 발생했습니다. 다시 시도해 주세요. (${errMsg.slice(0, 100)})` }
   }

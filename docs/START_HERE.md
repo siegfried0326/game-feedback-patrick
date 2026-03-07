@@ -1,7 +1,7 @@
 # 디자이닛(DesignIt) 프로젝트 브리핑
 
 > **새 대화를 시작할 때 이 문서를 가장 먼저 읽어주세요.**
-> 마지막 갱신: 2026-03-06
+> 마지막 갱신: 2026-03-07
 
 ---
 
@@ -18,7 +18,7 @@
 |------|------|
 | 프론트/백 | Next.js 16 (App Router, Server Actions), React 19, TailwindCSS, shadcn/ui |
 | DB/Auth | Supabase (PostgreSQL + pgvector) |
-| AI | Claude (사용자 분석), Gemini Flash (학습 데이터), OpenAI embeddings (벡터 검색) |
+| AI | Claude (사용자 분석), Gemini Flash (학습 데이터), OpenAI embeddings (벡터 검색), NotebookLM (합격자 DB 직접 조회 → 회사별 벤치마크 추출) |
 | 결제 | TossPayments (일반결제 + 빌링키 자동결제 + 환불) |
 | 배포 | Vercel (git push → 자동 배포, maxDuration=300) |
 
@@ -35,6 +35,7 @@
 | `app/mypage/page.tsx` | 마이페이지 (게이지, 환불, 프로젝트) | ~1187 |
 | `components/analyze-dashboard.tsx` | 분석 결과 대시보드 | ~1387 |
 | `lib/toss-api.ts` | TossPayments API 헬퍼 | ~147 |
+| `data/company-benchmarks.json` | 회사별 벤치마크 (9개사 × 20항목) | ~236 |
 
 ---
 
@@ -42,17 +43,22 @@
 
 ### 완료된 주요 기능
 - ✅ 15개 카테고리 AI 분석 + 187명 대비 랭킹/백분위
-- ✅ 벡터 서치 기반 유사 합격 사례 비교
+- ✅ 벡터 서치 기반 유사 합격 사례 비교 (실제 문서 내용 기반)
 - ✅ 크레딧(회차권) + 구독 결제 시스템
 - ✅ 크레딧 우선 소모 정책 (크레딧 > 구독 순서)
 - ✅ 마이페이지 셀프 환불 (7일 이내, 토스 API 연동)
 - ✅ 합격자 공통점 50가지 자동 추출 (배치 분할)
 - ✅ 보안 감사 완료 (RLS, 헤더, SSRF 방어)
+- ✅ AI 응답 JSON 파싱 에러 자동 복구 (safeParseJSON/repairJSON)
+- ✅ 마이페이지 프로젝트 인라인 생성 UX 개선
+- ✅ 소셜 로그인 프로필 이미지 CSP 수정 (Google/Kakao/Apple)
 
 ### 진행 중 / 대기
+- ⏳ **회사별 벤치마크 → analyze.ts 연동** (데이터 완성, 구현 대기)
 - ⏳ 학습데이터 관련 문제개선 (사용자 테스트 후 확정)
 - ⏳ DB 마이그레이션 실행 (`scripts/014_add_refund_columns.sql`)
 - ⏳ 구독 자동갱신 cron, 만료 자동 처리
+
 
 ### 기술 부채
 - analyze.ts/analyze-dashboard.tsx 리팩토링 필요 (1000줄+)

@@ -2,7 +2,54 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-03-07
+
+### 회사별 벤치마크 → analyze.ts 연동 구현
+- `app/actions/analyze.ts`에 벤치마크 로드/포맷 함수 추가
+  - `loadCompanyBenchmarks()`: `data/company-benchmarks.json` 읽기 (서버 캐싱)
+  - `formatBenchmarkForPrompt(includeReadability)`: 프롬프트용 텍스트 변환
+- `analyzeUrlDirect()`: design 벤치마크만 주입 (URL은 시각 평가 불가)
+- `analyzeDocumentDirect()`: design + readability 벤치마크 모두 주입
+- companyFeedback 지시문 갱신: "벤치마크 데이터를 반드시 참고하여 작성"
+- categories feedback 규칙 갱신: "벤치마크의 합격자 특징을 인용하여 비교"
+- readabilityCategories feedback: "벤치마크 참고하여 합격자 대비 피드백"
+- 일반회사 데이터: "업계 공통" 라벨로 주입, 사용자 미노출
+- 빌드 확인 완료
+
+### 회사별 벤치마크 데이터 구축
+- `data/company-benchmarks.json` 신규 생성
+- NotebookLM에서 187개 합격 포트폴리오 기반 회사별 평가 기준 추출
+- 9개사 데이터 저장: 넥슨, 네오위즈, 넷마블, 엔씨소프트, 크래프톤, 펄어비스, 스마일게이트, 웹젠, 일반회사
+- 각 회사당 20개 항목 (게임디자인 10 + 문서가독성 10)
+
 ## 2026-03-06
+
+### 환불 UI 개선 + 환불 정책 가격 수정
+- 마이페이지 환불 UI: "환불 가능: N원" 표시 제거, 개별 환불 버튼 제거
+- "환불정책 보기" 옆에 작은 "환불하기" 링크로 변경 (환불 종용 느낌 제거)
+- 환불정책 페이지 구 가격 수정: 17,900원→13,900원, 49,000원→39,000원
+- 플랜명 업데이트: "월 구독"→"월 무제한", "3개월 패스"→"3개월 무제한"
+- 최종 수정일 업데이트 (2025-01-20 → 2026-03-06)
+
+### 구글 프로필 이미지 로딩 수정 (`595bc97`)
+- CSP `img-src`에 `googleusercontent.com`, `kakaocdn.net`, `apple.com` 추가
+- 프로필 이미지에 `referrerPolicy="no-referrer"` 추가
+
+### 회사별 비교 피드백 동일 문제 해결 (`51c1dff`)
+- **원인**: `analyzeDocumentDirect`의 벡터 서치가 파일명만 사용 → 동일 결과
+- `analyzeDocumentDirect`에 `extractedText` 파라미터 추가
+- 대시보드에서 PDF 텍스트 추출 → 벡터 서치에 실제 문서 내용 전달
+- companyFeedback 프롬프트에 문서별 구체적 내용 인용 필수 추가
+
+### 파일 업로드 제한 변경 + 프로젝트 생성 UX 개선 (`1882e2a`)
+- 파일 업로드 제한: 1GB → 200MB (권장 30MB 이하)
+- 마이페이지 "새 프로젝트": `/analyze` 이동 → 인라인 이름 입력으로 변경
+- 프로젝트 이름 입력 → 바로 리스트에 추가 (Enter/Escape 지원)
+
+### AI 응답 JSON 파싱 에러 복구 (`b06848f`)
+- `safeParseJSON()` + `repairJSON()` 함수 추가 (잘린 JSON 자동 복구)
+- `analyzeUrlDirect` max_tokens 4096 → 8192로 증가
+- 15개 카테고리 JSON이 잘리는 문제 해결
 
 ### 크레딧 셀프 환불 기능
 - 마이페이지에서 크레딧 직접 환불 (카카오톡 문의 불필요)

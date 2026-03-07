@@ -140,7 +140,23 @@ function loadCompanyBenchmarks(): Record<string, CompanyBenchmark> {
 /**
  * 벤치마크 데이터를 시스템 프롬프트용 텍스트로 변환
  * @param includeReadability readability 벤치마크 포함 여부 (PDF 분석에만 true)
+ *
+ * 토큰 절약: 각 항목을 BENCHMARK_MAX_CHARS(150자)로 잘라서 주입
+ * 전체 벤치마크가 ~72,000자(원본) → ~27,000자(절삭)로 축소
  */
+const BENCHMARK_MAX_CHARS = 150 // 항목당 최대 글자수 (조절 가능)
+
+function truncateBenchmark(text: string): string {
+  if (text.length <= BENCHMARK_MAX_CHARS) return text
+  // 마지막 완전한 문장("." 또는 "다")에서 자름
+  const cut = text.substring(0, BENCHMARK_MAX_CHARS)
+  const lastPeriod = Math.max(cut.lastIndexOf("."), cut.lastIndexOf("다"))
+  if (lastPeriod > BENCHMARK_MAX_CHARS * 0.5) {
+    return cut.substring(0, lastPeriod + 1)
+  }
+  return cut + "…"
+}
+
 function formatBenchmarkForPrompt(includeReadability: boolean = true): string {
   const benchmarks = loadCompanyBenchmarks()
   if (Object.keys(benchmarks).length === 0) return ""
@@ -160,10 +176,10 @@ function formatBenchmarkForPrompt(includeReadability: boolean = true): string {
     result += `[${item}]\n`
     for (const company of targetCompanies) {
       const text = benchmarks[company]?.design?.[item]
-      if (text) result += `- ${company}: ${text}\n`
+      if (text) result += `- ${company}: ${truncateBenchmark(text)}\n`
     }
     if (generalData?.design?.[item]) {
-      result += `- 업계 공통: ${generalData.design[item]}\n`
+      result += `- 업계 공통: ${truncateBenchmark(generalData.design[item])}\n`
     }
     result += `\n`
   }
@@ -174,10 +190,10 @@ function formatBenchmarkForPrompt(includeReadability: boolean = true): string {
       result += `[${item}]\n`
       for (const company of targetCompanies) {
         const text = benchmarks[company]?.readability?.[item]
-        if (text) result += `- ${company}: ${text}\n`
+        if (text) result += `- ${company}: ${truncateBenchmark(text)}\n`
       }
       if (generalData?.readability?.[item]) {
-        result += `- 업계 공통: ${generalData.readability[item]}\n`
+        result += `- 업계 공통: ${truncateBenchmark(generalData.readability[item])}\n`
       }
       result += `\n`
     }

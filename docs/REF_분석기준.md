@@ -115,7 +115,7 @@
 
 ---
 
-## 6. 회사별 벤치마크 데이터 연동 (구현 대기)
+## 6. 회사별 벤치마크 데이터 연동 (✅ 구현 완료)
 
 > 데이터 파일: `data/company-benchmarks.json`
 > 데이터 출처: NotebookLM에 187개 합격 포트폴리오를 업로드 → 회사별/항목별 특징 추출
@@ -156,7 +156,18 @@
 }
 ```
 
-### 프롬프트 주입 방식 (구현 시)
+### Claude API 호출 설정
+
+| 분석 유형 | 함수명 | max_tokens | 벤치마크 범위 | 비고 |
+|-----------|--------|-----------|-------------|------|
+| PDF/문서 분석 | `analyzeDocumentDirect` | **16384** | design + readability | 15카테고리 + 10가독성 + 3레이아웃 + 8회사피드백 |
+| URL 분석 | `analyzeUrlDirect` | 8192 | design만 | 가독성/레이아웃 평가 없어 출력량 적음 |
+
+- `stop_reason === "max_tokens"` 체크로 응답 잘림 감지 (양쪽 함수)
+- 벤치마크 항목당 최대 150자 truncation 적용 (`BENCHMARK_MAX_CHARS`)
+- PDF 분석이 URL보다 출력량이 2배 이상 많아 max_tokens 차등 설정
+
+### 프롬프트 주입 방식
 
 analyze.ts 시스템 프롬프트에 다음 섹션 추가:
 

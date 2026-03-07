@@ -822,6 +822,7 @@ ${benchmarkSection}
     const message = await anthropic.messages.create({
       model: selectedModel,
       max_tokens: 8192,
+      temperature: 0,
       messages: [
         {
           role: "user",
@@ -1423,6 +1424,7 @@ ${benchmarkSection}
       const message = await anthropic.messages.create({
         model: selectedModel,
         max_tokens: 16384,
+        temperature: 0,
         messages,
         system: systemPrompt,
       })

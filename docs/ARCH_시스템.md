@@ -23,6 +23,7 @@
 | AI (사용자 분석) | Anthropic Claude API (Sonnet / Opus) |
 | AI (학습 데이터) | Google Gemini 2.0 Flash |
 | AI (벡터 임베딩) | OpenAI text-embedding-3-small (1536차원) |
+| AI (합격자 DB 조회) | NotebookLM — 187개 포트폴리오를 소스로 업로드 후 직접 질의 (수동, API 없음) |
 | 결제 | TossPayments (일반결제 + 빌링키 자동결제) |
 | PDF 처리 | pdfjs-dist (읽기), jsPDF (쓰기) |
 | 배포 | Vercel (git push 자동, maxDuration=300) |
@@ -367,4 +368,7 @@ success_patterns (독립 테이블)
 | 분석 카테고리 수 | 15개 (기본 5 + 게임디자인 10) |
 | 순위 기준 인원 | 187명 |
 | 합격자 공통점 | 50개 (배치 분할 추출) |
+| Claude max_tokens (PDF 분석) | 16384 (`analyzeDocumentDirect`) |
+| Claude max_tokens (URL 분석) | 8192 (`analyzeUrlDirect`) |
+| 벤치마크 항목당 최대 글자 | 150자 (`BENCHMARK_MAX_CHARS`) |
 | 크레딧 정가 | 2,900원/회 |

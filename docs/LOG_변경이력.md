@@ -4,6 +4,19 @@
 
 ## 2026-03-07
 
+### PDF 분석 max_tokens 증가 + stop_reason 체크 (`ed54f62`)
+- `analyzeDocumentDirect` max_tokens: 8192 → **16384**로 증가
+- `analyzeUrlDirect` max_tokens: 8192 유지 (URL 분석은 가독성/레이아웃 없어 출력량 적음)
+- 양쪽 함수에 `stop_reason === "max_tokens"` 체크 로그 추가
+- **원인**: PDF 분석 출력(15카테고리 + 10가독성 + 3레이아웃 + 8회사피드백)이 8192 토큰 초과 → JSON 잘림 → 파싱 실패
+- 문서마다 벡터검색 결과 크기가 달라 일부 문서만 실패하던 현상 해결
+
+### 벤치마크 데이터 truncation (`0a2402b`)
+- `BENCHMARK_MAX_CHARS = 150` 상수 추가
+- `truncateBenchmark()` 함수로 항목당 150자 이내 절단 (마지막 완전한 문장에서 컷)
+- 벤치마크 전체 크기: ~72,000자 → ~27,000자로 축소
+- **원인**: 벤치마크 원본 데이터가 너무 커서 Claude 출력 토큰 부족
+
 ### 회사별 벤치마크 → analyze.ts 연동 구현
 - `app/actions/analyze.ts`에 벤치마크 로드/포맷 함수 추가
   - `loadCompanyBenchmarks()`: `data/company-benchmarks.json` 읽기 (서버 캐싱)

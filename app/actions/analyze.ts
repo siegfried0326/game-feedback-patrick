@@ -833,6 +833,11 @@ ${benchmarkSection}
       system: systemPrompt,
     })
 
+    // stop_reason 체크
+    if (message.stop_reason === "max_tokens") {
+      console.error("[분석-URL] ⚠️ Claude 응답이 max_tokens에 의해 잘렸습니다. 출력이 불완전할 수 있습니다.")
+    }
+
     // 응답 텍스트 추출
     const responseText = message.content
       .filter((block): block is Anthropic.TextBlock => block.type === "text")
@@ -1417,10 +1422,15 @@ ${benchmarkSection}
 
       const message = await anthropic.messages.create({
         model: selectedModel,
-        max_tokens: 8192,
+        max_tokens: 16384,
         messages,
         system: systemPrompt,
       })
+
+      // stop_reason 체크 — max_tokens로 잘리면 JSON 파싱 실패 가능
+      if (message.stop_reason === "max_tokens") {
+        console.error("[분석-문서] ⚠️ Claude 응답이 max_tokens에 의해 잘렸습니다. 출력이 불완전할 수 있습니다.")
+      }
 
       // 응답 텍스트 추출
       const responseText = message.content

@@ -11,7 +11,7 @@
 
 import crypto from "crypto"
 
-const NICE_API_BASE = "https://api.nicepay.co.kr/v1"
+const NICE_API_BASE = process.env.NICEPAY_API_BASE || "https://api.nicepay.co.kr/v1"
 
 function getClientId() {
   const id = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID

@@ -1,13 +1,12 @@
 /**
  * 크레딧 결제 성공 페이지
  *
- * 경로: /payment/credits/success?paymentKey=...&orderId=...&amount=...
+ * 경로: /payment/credits/success?tid=...&orderId=...&amount=...
  *
- * TossPayments 결제 완료 후 리다이렉트되는 페이지.
- * 1. URL 파라미터에서 paymentKey, orderId, amount 추출
- * 2. confirmCreditPayment()로 서버에서 결제 확인 + 크레딧 지급
+ * NICEPayments 결제 인증 후 callback에서 리다이렉트.
+ * 1. URL 파라미터에서 tid, orderId, amount 추출
+ * 2. confirmCreditPayment()로 서버에서 승인 + 크레딧 지급
  * 3. 성공 시 잔여 크레딧 표시 → 3초 후 마이페이지 이동
- * 4. 실패 시 에러 메시지 + 재시도 버튼
  */
 "use client"
 
@@ -18,7 +17,6 @@ import { confirmCreditPayment } from "@/app/actions/payment"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-/** 결제 확인 + 결과 표시 컴포넌트 */
 function CreditSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -27,18 +25,18 @@ function CreditSuccessContent() {
   const [credits, setCredits] = useState(0)
 
   useEffect(() => {
-    const paymentKey = searchParams.get("paymentKey")
+    const tid = searchParams.get("tid")
     const orderId = searchParams.get("orderId")
     const amount = searchParams.get("amount")
 
-    if (!paymentKey || !orderId || !amount) {
+    if (!tid || !orderId || !amount) {
       setStatus("error")
       setErrorMessage("결제 정보가 올바르지 않습니다.")
       return
     }
 
     async function confirm() {
-      const result = await confirmCreditPayment(paymentKey!, orderId!, Number(amount))
+      const result = await confirmCreditPayment(tid!, orderId!, Number(amount))
 
       if (result.error) {
         setStatus("error")

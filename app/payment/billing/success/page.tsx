@@ -1,10 +1,9 @@
 /**
- * 구독 결제 성공 페이지 (105줄)
+ * 구독 결제 성공 페이지
  *
- * TossPayments 결제 후 리다이렉트.
- * authKey로 빌링키 발급 → 첫 결제 → DB 구독 활성화.
- * 성공/실패 상태 표시 후 분석 페이지로 이동.
- * 라우트: /payment/billing/success?authKey=...&customerKey=...
+ * NICEPayments 결제 인증 후 callback에서 리다이렉트.
+ * tid로 승인 → DB 구독 활성화.
+ * 라우트: /payment/billing/success?tid=...&orderId=...&amount=...&plan=...
  */
 "use client"
 
@@ -22,19 +21,26 @@ function BillingSuccessContent() {
   const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
-    const customerKey = searchParams.get("customerKey")
-    const authKey = searchParams.get("authKey")
+    const tid = searchParams.get("tid")
+    const orderId = searchParams.get("orderId")
+    const amount = searchParams.get("amount")
     const plan = searchParams.get("plan") as "monthly" | "three_month"
     const discountCode = searchParams.get("discountCode")
 
-    if (!customerKey || !authKey || !plan) {
+    if (!tid || !orderId || !amount || !plan) {
       setStatus("error")
       setErrorMessage("결제 정보가 올바르지 않습니다.")
       return
     }
 
     async function processBilling() {
-      const result = await processSubscriptionPayment(authKey!, customerKey!, plan, discountCode || undefined)
+      const result = await processSubscriptionPayment(
+        tid!,
+        orderId!,
+        Number(amount),
+        plan,
+        discountCode || undefined,
+      )
 
       if (result.error) {
         setStatus("error")

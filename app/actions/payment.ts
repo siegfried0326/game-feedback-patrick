@@ -1,13 +1,13 @@
 /**
- * TossPayments 결제 서버 액션
+ * NICEPayments 결제 서버 액션
  *
  * 구독 결제:
- * - processSubscriptionPayment(): 빌링키→결제→DB 활성화
+ * - processSubscriptionPayment(): tid로 승인 → DB 구독 활성화
  * - validateGamecanvasCode(): 할인 코드 검증
  *
  * 크레딧 결제:
  * - createCreditOrder(): 크레딧 주문 생성
- * - confirmCreditPayment(): 결제 확인 + 크레딧 지급
+ * - confirmCreditPayment(): tid로 승인 → 크레딧 지급
  *
  * 크레딧 환불:
  * - getCreditOrders(): 환불 가능 크레딧 주문 목록
@@ -21,7 +21,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { issueBillingKey, approveBillingPayment, confirmPayment, cancelPayment } from "@/lib/toss-api"
+import { approvePayment, cancelPayment } from "@/lib/nice-api"
 
 // 서버 가격표 (클라이언트 조작 방지)
 const CREDIT_PRICES: Record<string, { credits: number; amount: number }> = {
@@ -61,11 +61,17 @@ export async function validateGamecanvasCode(code: string) {
 }
 
 /**
- * 구독 결제 처리 (빌링키 발급 → 첫 결제 → DB 활성화)
+ * 구독 결제 처리 (나이스 tid로 승인 → DB 활성화)
+ *
+ * 나이스 Server 승인 모델:
+ * 1. 결제창 인증 완료 → callback에서 tid 수신
+ * 2. 이 함수에서 tid로 승인 API 호출
+ * 3. 승인 성공 → DB 구독 활성화
  */
 export async function processSubscriptionPayment(
-  authKey: string,
-  customerKey: string,
+  tid: string,
+  orderId: string,
+  amount: number,
   plan: "monthly" | "three_month",
   discountCode?: string,
 ) {
@@ -74,42 +80,27 @@ export async function processSubscriptionPayment(
 
   if (!user) return { error: "로그인이 필요합니다." }
 
-  // 1. 빌링키 발급
-  const billingResult = await issueBillingKey(authKey, customerKey)
-  if (billingResult.error) return { error: billingResult.error }
-
-  const billingKey = billingResult.data.billingKey
-
-  // 2. 첫 결제 승인 — 금액은 서버 가격표에서 결정
-  let amount = SUBSCRIPTION_PRICES[plan] || 13900
-  let orderName = plan === "monthly" ? "디자이닛 월 무제한" : "디자이닛 3개월 무제한"
-
-  // 게임캔버스 할인 적용 (monthly만)
+  // 금액 검증 (서버 가격표 기준)
+  let expectedAmount = SUBSCRIPTION_PRICES[plan] || 13900
   if (discountCode && plan === "monthly") {
     const codeResult = await validateGamecanvasCode(discountCode)
     if (codeResult.valid) {
-      amount = 5900
-      orderName = "디자이닛 월 구독 (게임캔버스)"
+      expectedAmount = 5900
     }
   }
 
-  const orderId = `SUB_${plan}_${user.id.slice(0, 8)}_${Date.now()}`
+  if (amount !== expectedAmount) {
+    return { error: "결제 금액이 올바르지 않습니다." }
+  }
 
-  const paymentResult = await approveBillingPayment(
-    billingKey,
-    customerKey,
-    amount,
-    orderId,
-    orderName,
-  )
-
+  // 나이스페이먼츠 결제 승인 API 호출
+  const paymentResult = await approvePayment(tid, amount)
   if (paymentResult.error) return { error: paymentResult.error }
 
-  // 3. DB 구독 활성화
+  // DB 구독 활성화
   const now = new Date()
   const isTestAccount = user.email === "tossreview@gmail.com"
 
-  // 기존 구독 확인
   const { data: existingSub } = await supabase
     .from("users_subscription")
     .select("expires_at, status")
@@ -119,15 +110,12 @@ export async function processSubscriptionPayment(
   let expiresAt: Date
 
   if (isTestAccount) {
-    // 테스터 계정: 항상 새로 시작 (1개월)
     expiresAt = new Date(now)
     expiresAt.setMonth(expiresAt.getMonth() + 1)
   } else if (existingSub && existingSub.status === "active" && new Date(existingSub.expires_at) > now) {
-    // 기존 활성 구독이 있는 유저: 만료일에서 1개월 연장
     expiresAt = new Date(existingSub.expires_at)
     expiresAt.setMonth(expiresAt.getMonth() + 1)
   } else {
-    // 신규 또는 만료된 유저: 정상 기간 부여
     expiresAt = new Date(now)
     if (plan === "monthly") {
       expiresAt.setMonth(expiresAt.getMonth() + 1)
@@ -142,9 +130,9 @@ export async function processSubscriptionPayment(
       user_id: user.id,
       plan,
       status: "active",
-      billing_key: billingKey,
-      customer_key: customerKey,
-      payment_id: paymentResult.data.paymentKey,
+      billing_key: null, // 나이스 단건결제에서는 빌링키 미사용
+      customer_key: null,
+      payment_id: tid,
       started_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
       updated_at: now.toISOString(),
@@ -155,7 +143,7 @@ export async function processSubscriptionPayment(
     return { error: "구독 활성화에 실패했습니다." }
   }
 
-  return { success: true, paymentKey: paymentResult.data.paymentKey }
+  return { success: true, tid }
 }
 
 // ========== 크레딧 결제 ==========
@@ -194,9 +182,10 @@ export async function createCreditOrder(packageType: string) {
 
 /**
  * 크레딧 결제 확인 + 크레딧 지급
+ * 나이스 tid로 승인 API 호출 → 크레딧 지급
  */
 export async function confirmCreditPayment(
-  paymentKey: string,
+  tid: string,
   orderId: string,
   amount: number,
 ) {
@@ -217,15 +206,15 @@ export async function confirmCreditPayment(
   if (order.payment_status === "paid") return { error: "이미 처리된 주문입니다." }
   if (order.amount !== amount) return { error: "결제 금액이 일치하지 않습니다." }
 
-  // 토스페이먼츠 결제 확인
-  const paymentResult = await confirmPayment(paymentKey, orderId, amount)
+  // 나이스페이먼츠 결제 승인
+  const paymentResult = await approvePayment(tid, amount)
   if (paymentResult.error) return { error: paymentResult.error }
 
-  // 주문 상태 업데이트
+  // 주문 상태 업데이트 (payment_key → tid로 저장)
   await supabase
     .from("credit_orders")
     .update({
-      payment_key: paymentKey,
+      payment_key: tid,
       payment_status: "paid",
       paid_at: new Date().toISOString(),
     })
@@ -265,7 +254,6 @@ export async function getCreditOrders() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: "로그인이 필요합니다.", orders: [] }
 
-  // paid 상태 주문 조회 (최신순)
   const { data: orders } = await supabase
     .from("credit_orders")
     .select("id, order_id, package_type, credits, amount, payment_key, payment_status, paid_at, refunded_at, refund_amount")
@@ -275,7 +263,6 @@ export async function getCreditOrders() {
 
   if (!orders || orders.length === 0) return { orders: [] }
 
-  // 현재 남은 크레딧
   const { data: sub } = await supabase
     .from("users_subscription")
     .select("analysis_credits")
@@ -285,13 +272,11 @@ export async function getCreditOrders() {
   const remainingCredits = sub?.analysis_credits || 0
   const now = new Date()
 
-  // 각 주문별 환불 가능 여부 계산
   const enrichedOrders = orders.map(order => {
     const paidAt = order.paid_at ? new Date(order.paid_at) : null
     const daysSincePaid = paidAt ? (now.getTime() - paidAt.getTime()) / (1000 * 60 * 60 * 24) : 999
     const isWithin7Days = daysSincePaid <= 7
 
-    // 환불 가능 크레딧 = min(남은 크레딧, 주문 크레딧)
     const refundableCredits = Math.min(remainingCredits, order.credits)
     const usedCredits = order.credits - refundableCredits
     const refundAmount = Math.max(0, order.amount - usedCredits * CREDIT_UNIT_PRICE)
@@ -323,7 +308,6 @@ export async function refundCreditOrder(orderId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: "로그인이 필요합니다." }
 
-  // 1. 주문 조회
   const { data: order } = await supabase
     .from("credit_orders")
     .select("*")
@@ -334,13 +318,11 @@ export async function refundCreditOrder(orderId: string) {
 
   if (!order) return { error: "환불 가능한 주문을 찾을 수 없습니다." }
 
-  // 2. 7일 이내 확인
   const paidAt = order.paid_at ? new Date(order.paid_at) : null
   if (!paidAt) return { error: "결제 정보가 올바르지 않습니다." }
   const daysSincePaid = (new Date().getTime() - paidAt.getTime()) / (1000 * 60 * 60 * 24)
   if (daysSincePaid > 7) return { error: "결제일로부터 7일이 경과하여 환불이 불가합니다." }
 
-  // 3. 남은 크레딧 확인
   const { data: sub } = await supabase
     .from("users_subscription")
     .select("analysis_credits")
@@ -356,7 +338,7 @@ export async function refundCreditOrder(orderId: string) {
     return { error: "사용한 회차가 많아 환불 가능 금액이 없습니다." }
   }
 
-  // 4. 토스페이먼츠 환불 API 호출
+  // 나이스페이먼츠 환불 API 호출 (payment_key에 tid 저장됨)
   if (!order.payment_key) return { error: "결제 정보가 올바르지 않습니다." }
 
   const isFullRefund = refundAmount === order.amount
@@ -368,7 +350,6 @@ export async function refundCreditOrder(orderId: string) {
 
   if (cancelResult.error) return { error: cancelResult.error }
 
-  // 5. DB 업데이트: 주문 상태 변경
   await supabase
     .from("credit_orders")
     .update({
@@ -378,7 +359,6 @@ export async function refundCreditOrder(orderId: string) {
     })
     .eq("order_id", orderId)
 
-  // 6. 크레딧 차감
   await supabase
     .from("users_subscription")
     .update({

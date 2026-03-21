@@ -11,7 +11,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { deleteBillingKey } from "@/lib/toss-api"
+import { deleteBillingKey } from "@/lib/nice-api"
 
 // 보안: DB 에러 메시지를 사용자에게 직접 노출하지 않음
 function dbError(msg: string, error: unknown): { error: string } {
@@ -63,7 +63,7 @@ export async function cancelSubscription() {
   if (subscription.plan === "free") return { error: "무료 체험은 해지할 수 없습니다." }
   if (subscription.status === "cancelled") return { error: "이미 해지된 구독입니다." }
 
-  // 빌링키가 있으면 토스페이먼츠에서 삭제
+  // 빌링키가 있으면 나이스페이먼츠에서 삭제
   if (subscription.billing_key) {
     await deleteBillingKey(subscription.billing_key)
   }

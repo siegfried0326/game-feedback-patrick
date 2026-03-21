@@ -60,15 +60,12 @@ function BillingContent() {
   // NICEPayments JS SDK 로드
   useEffect(() => {
     async function initSDK() {
-      if (!NICEPAY_CLIENT_ID) {
-        setError("결제 시스템 설정 오류입니다. 관리자에게 문의해주세요.")
-        return
-      }
-
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
+
+        console.log("[billing] clientId:", NICEPAY_CLIENT_ID || "(비어있음)")
 
         getSubscription().then(result => {
           if (result.data?.analysis_credits) {

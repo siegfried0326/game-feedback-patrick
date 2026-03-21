@@ -93,7 +93,9 @@ function CreditsContent() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setIsLoggedIn(!!user)
-      if (!user || !NICEPAY_CLIENT_ID) return
+      if (!user) return
+
+      console.log("[credits] clientId:", NICEPAY_CLIENT_ID || "(비어있음)")
 
       // NICEPayments JS SDK 스크립트 로드
       if (!document.querySelector('script[src*="nicepay.co.kr"]')) {

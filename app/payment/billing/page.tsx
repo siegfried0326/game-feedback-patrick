@@ -151,6 +151,10 @@ function BillingContent() {
         }),
         buyerName: user.user_metadata?.name || "구매자",
         buyerEmail: user.email || "",
+        fnError: (result: { errorCode?: string; errorMsg?: string }) => {
+          setError(result.errorMsg || "결제 처리 중 오류가 발생했습니다.")
+          setLoading(false)
+        },
       })
     } catch (err: unknown) {
       console.error("[billing] 결제 에러:", err)

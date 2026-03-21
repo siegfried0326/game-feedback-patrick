@@ -139,6 +139,10 @@ function CreditsContent() {
         goodsName: `디자이닛 분석 ${pkg.name}`,
         returnUrl: `${window.location.origin}/api/nicepay/callback`,
         mallReserved: JSON.stringify({ type: "credits" }),
+        fnError: (result: { errorCode?: string; errorMsg?: string }) => {
+          setError(result.errorMsg || "결제 처리 중 오류가 발생했습니다.")
+          setLoading(false)
+        },
       })
     } catch (err: unknown) {
       console.error("[credits] 결제 에러:", err)

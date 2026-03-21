@@ -14,8 +14,16 @@ const nextConfig = {
   // 보안 헤더
   async headers() {
     return [
+      // 나이스 콜백: iframe 안에서 로드되므로 X-Frame-Options 제외
       {
-        source: '/(.*)',
+        source: '/api/nicepay/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+        ],
+      },
+      // 나머지 모든 페이지
+      {
+        source: '/((?!api/nicepay).*)',
         headers: [
           {
             key: 'X-Frame-Options',

@@ -534,7 +534,7 @@ export default function MyPage() {
           ) : <p className="text-slate-400">구독 정보를 불러올 수 없습니다.</p>}
         </div>
 
-        {/* ========== 크레딧 환불 ========== */}
+        {/* ========== 크레딧 구매 내역 ========== */}
         {creditOrders.length > 0 && (
           <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 mb-6">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -553,38 +553,32 @@ export default function MyPage() {
                     <p className="text-xs text-slate-500 mt-0.5">
                       {order.paidAtFormatted} · {order.amount.toLocaleString()}원
                     </p>
-                    {order.refunded_at && (
-                      <p className="text-xs text-yellow-400 mt-0.5">환불 완료</p>
-                    )}
                   </div>
-                  <div className="text-right">
-                    {order.canRefund ? (
-                      <>
-                        <p className="text-xs text-slate-400 mb-1">
-                          환불 가능: {order.refundAmount.toLocaleString()}원
-                          {order.usedCredits > 0 && <span className="text-slate-500"> ({order.usedCredits}회 사용)</span>}
-                        </p>
-                        <Button
-                          size="sm"
-                          onClick={() => setShowRefundConfirm(order.order_id)}
-                          disabled={refunding}
-                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs h-7 px-3"
-                        >
-                          환불하기
-                        </Button>
-                      </>
-                    ) : (
-                      <p className="text-xs text-slate-600">
-                        {order.refunded_at ? "환불됨" : !order.isWithin7Days ? "7일 경과" : "환불 불가"}
-                      </p>
-                    )}
-                  </div>
+                  {order.refunded_at ? (
+                    <span className="text-xs text-yellow-400">환불됨</span>
+                  ) : !order.isWithin7Days ? (
+                    <span className="text-xs text-slate-600">7일 경과</span>
+                  ) : null}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-600 mt-3">
-              * 결제일로부터 7일 이내, 사용하지 않은 회차에 대해 환불 가능합니다.
-              <Link href="/refund-policy" className="text-[#5B8DEF] hover:underline ml-1">환불정책 보기</Link>
+            <p className="text-xs text-slate-600 mt-3 flex items-center gap-1.5">
+              <Link href="/refund-policy" className="text-[#5B8DEF] hover:underline">환불정책 보기</Link>
+              {creditOrders.some((o: { canRefund: boolean }) => o.canRefund) && (
+                <>
+                  <span className="text-slate-700">·</span>
+                  <button
+                    onClick={() => {
+                      const refundable = creditOrders.find((o: { canRefund: boolean }) => o.canRefund)
+                      if (refundable) setShowRefundConfirm(refundable.order_id)
+                    }}
+                    className="text-slate-500 hover:text-slate-300 transition-colors"
+                    disabled={refunding}
+                  >
+                    환불하기
+                  </button>
+                </>
+              )}
             </p>
           </div>
         )}

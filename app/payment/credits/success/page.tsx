@@ -45,7 +45,7 @@ function CreditSuccessContent() {
         setStatus("success")
         setCredits(result.credits || 0)
         setTimeout(() => {
-          router.push("/mypage")
+          router.push("/analyze")
         }, 3000)
       }
     }
@@ -71,10 +71,10 @@ function CreditSuccessContent() {
             <p className="text-slate-400 mb-6">
               현재 보유 크레딧: <span className="text-[#5B8DEF] font-bold">{credits}회</span>
               <br />
-              잠시 후 마이페이지로 이동합니다.
+              잠시 후 분석 페이지로 이동합니다.
             </p>
             <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-              <Link href="/mypage">마이페이지로 이동</Link>
+              <Link href="/analyze">분석하러 가기</Link>
             </Button>
           </>
         )}

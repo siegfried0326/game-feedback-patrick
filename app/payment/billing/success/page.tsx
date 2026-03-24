@@ -48,7 +48,7 @@ function BillingSuccessContent() {
       } else {
         setStatus("success")
         setTimeout(() => {
-          router.push("/mypage")
+          router.push("/analyze")
         }, 3000)
       }
     }
@@ -77,10 +77,10 @@ function BillingSuccessContent() {
                 : "이제 무제한 분석과 버전 비교 기능을 이용하실 수 있습니다."
               }
               <br />
-              잠시 후 마이페이지로 이동합니다.
+              잠시 후 분석 페이지로 이동합니다.
             </p>
             <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-              <Link href="/mypage">마이페이지로 이동</Link>
+              <Link href="/analyze">분석하러 가기</Link>
             </Button>
           </>
         )}

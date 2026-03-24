@@ -1352,29 +1352,27 @@ ${benchmarkSection}
     // Anthropic API PDF 제한: base64 변환 시 ~33% 증가
     // 25MB 이상은 텍스트 폴백, API 에러 시에도 자동 폴백
     const MAX_FILE_SIZE_MB = 25
-    const useTextFallback = fileSizeMB > MAX_FILE_SIZE_MB
+    // Claude API 문서 블록은 PDF/이미지만 지원 — PPTX, DOCX 등은 텍스트 폴백
+    const supportedDocTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ]
+    const isDocTypeSupported = supportedDocTypes.includes(input.mimeType)
+    const useTextFallback = fileSizeMB > MAX_FILE_SIZE_MB || !isDocTypeSupported
+
+    if (!isDocTypeSupported) {
+      console.log(`[분석] 비지원 파일형식(${input.mimeType}) → 텍스트 추출 모드로 전환`)
+    }
 
     let base64Data = ""
     let mediaType: "application/pdf" | "image/jpeg" | "image/png" | "image/gif" | "image/webp" = "application/pdf"
 
     if (!useTextFallback) {
       base64Data = fileBuffer.toString("base64")
-
-      // Claude가 지원하는 미디어 타입 매핑
-      const supportedMediaTypes = [
-        "application/pdf",
-        "image/jpeg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-      ]
-
       mediaType = input.mimeType as typeof mediaType
-
-      // 지원하지 않는 타입이면 PDF로 기본 설정
-      if (!supportedMediaTypes.includes(input.mimeType)) {
-        mediaType = "application/pdf"
-      }
     } else {
       // 대용량 파일: 추출된 텍스트가 없으면 분석 불가
       if (!input.extractedText || input.extractedText.length < 100) {

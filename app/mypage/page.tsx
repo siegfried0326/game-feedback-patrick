@@ -557,7 +557,7 @@ export default function MyPage() {
                   {order.refunded_at ? (
                     <span className="text-xs text-yellow-400">환불됨</span>
                   ) : !order.isWithin7Days ? (
-                    <span className="text-xs text-slate-600">7일 경과</span>
+                    <span className="text-xs text-slate-600">만료됨</span>
                   ) : null}
                 </div>
               ))}

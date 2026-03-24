@@ -1349,9 +1349,9 @@ ${benchmarkSection}
     const fileBuffer = Buffer.from(await response.arrayBuffer())
     const fileSizeMB = fileBuffer.length / (1024 * 1024)
 
-    // Claude 1M 컨텍스트: 큰 PDF도 처리 가능
-    // base64 변환 시 ~33% 증가하지만 50MB까지는 안전
-    const MAX_FILE_SIZE_MB = 50
+    // Anthropic API PDF 제한: base64 변환 시 ~33% 증가
+    // 25MB 이상은 텍스트 폴백, API 에러 시에도 자동 폴백
+    const MAX_FILE_SIZE_MB = 25
     const useTextFallback = fileSizeMB > MAX_FILE_SIZE_MB
 
     let base64Data = ""
@@ -1421,13 +1421,39 @@ ${benchmarkSection}
             },
           ]
 
-      const message = await anthropic.messages.create({
-        model: selectedModel,
-        max_tokens: 16384,
-        temperature: 0,
-        messages,
-        system: systemPrompt,
-      })
+      let message
+      try {
+        message = await anthropic.messages.create({
+          model: selectedModel,
+          max_tokens: 16384,
+          temperature: 0,
+          messages,
+          system: systemPrompt,
+        })
+      } catch (apiError: unknown) {
+        // PDF 직접 전송 실패 시 텍스트 폴백 재시도
+        const errMsg = apiError instanceof Error ? apiError.message : String(apiError)
+        if (!useTextFallback && input.extractedText && input.extractedText.length >= 100) {
+          console.error(`[분석-문서] PDF 직접 전송 실패(${errMsg}), 텍스트 폴백 재시도`)
+          let fallbackContent = input.extractedText
+          if (fallbackContent.length > 100000) fallbackContent = fallbackContent.substring(0, 100000)
+
+          const fallbackMessages: Anthropic.MessageParam[] = [{
+            role: "user" as const,
+            content: `아래는 "${input.fileName}" 문서(${fileSizeMB.toFixed(1)}MB)에서 추출한 텍스트 내용입니다. 원본 PDF 전송이 실패하여 텍스트만 추출하여 분석합니다. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다.\n\n---\n\n${fallbackContent}`,
+          }]
+
+          message = await anthropic.messages.create({
+            model: selectedModel,
+            max_tokens: 16384,
+            temperature: 0,
+            messages: fallbackMessages,
+            system: systemPrompt,
+          })
+        } else {
+          throw apiError
+        }
+      }
 
       // stop_reason 체크 — max_tokens로 잘리면 JSON 파싱 실패 가능
       if (message.stop_reason === "max_tokens") {

@@ -1349,9 +1349,9 @@ ${benchmarkSection}
     const fileBuffer = Buffer.from(await response.arrayBuffer())
     const fileSizeMB = fileBuffer.length / (1024 * 1024)
 
-    // Claude API 요청 크기 제한: base64 변환 시 ~33% 증가 + 시스템 프롬프트
-    // 안전 임계치: 15MB (base64 → ~20MB + 시스템 프롬프트 → ~25MB 이하로 유지)
-    const MAX_FILE_SIZE_MB = 15
+    // Claude 1M 컨텍스트: 큰 PDF도 처리 가능
+    // base64 변환 시 ~33% 증가하지만 50MB까지는 안전
+    const MAX_FILE_SIZE_MB = 50
     const useTextFallback = fileSizeMB > MAX_FILE_SIZE_MB
 
     let base64Data = ""

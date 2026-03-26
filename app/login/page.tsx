@@ -118,26 +118,28 @@ function LoginContent() {
               Google로 계속하기
             </button>
 
-            {/* 카카오 로그인 */}
+            {/* 카카오 로그인 (준비 중) */}
             <button
-              onClick={() => handleSocialLogin("kakao")}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#FEE500] hover:bg-[#FDD800] active:scale-95 active:bg-[#F5D000] text-[#191919] font-medium transition-all"
+              disabled
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-[#FEE500]/40 text-[#191919]/50 font-medium cursor-not-allowed relative"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#191919">
+              <svg className="w-5 h-5 opacity-50" viewBox="0 0 24 24" fill="#191919">
                 <path d="M12 3C6.48 3 2 6.36 2 10.44c0 2.63 1.76 4.95 4.41 6.26-.19.71-.7 2.58-.8 2.98-.13.49.18.48.37.35.16-.1 2.46-1.67 3.44-2.35.84.12 1.71.18 2.58.18 5.52 0 10-3.36 10-7.42C22 6.36 17.52 3 12 3z" />
               </svg>
               카카오로 계속하기
+              <span className="absolute right-3 text-xs text-slate-500">준비 중</span>
             </button>
 
-            {/* Apple 로그인 */}
+            {/* Apple 로그인 (준비 중) */}
             <button
-              onClick={() => handleSocialLogin("apple")}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-black hover:bg-gray-900 active:scale-95 active:bg-gray-800 text-white font-medium transition-all border border-gray-700"
+              disabled
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-black/40 text-white/40 font-medium cursor-not-allowed border border-gray-700/50 relative"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
+              <svg className="w-5 h-5 opacity-50" viewBox="0 0 24 24" fill="white">
                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.52-3.23 0-1.44.64-2.2.52-3.06-.4C3.79 16.17 4.36 9.53 8.82 9.28c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.3 4.11zM12.03 9.2C11.88 7.15 13.5 5.45 15.4 5.3c.27 2.32-2.1 4.06-3.37 3.9z" />
               </svg>
               Apple로 계속하기
+              <span className="absolute right-3 text-xs text-slate-500">준비 중</span>
             </button>
 
             {/* 구분선 */}

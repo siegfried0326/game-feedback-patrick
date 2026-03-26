@@ -23,7 +23,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Link2, Globe, Eye } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -33,7 +33,7 @@ import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
-import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
+import { analyzeDocumentDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
@@ -147,9 +147,6 @@ export function AnalyzeDashboard() {
   const [newProjectName, setNewProjectName] = useState("")
   const [creatingProject, setCreatingProject] = useState(false)
   const [canCreateProject, setCanCreateProject] = useState(true)
-  const [uploadMode, setUploadMode] = useState<"file" | "url">("file")
-  const [urlInput, setUrlInput] = useState("")
-  const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
   const isLoggedIn = allowanceInfo?.reason !== "login_required"
 
@@ -598,66 +595,6 @@ export function AnalyzeDashboard() {
     }
   }, [selectedProjectId, isLoggedIn, router])
 
-  // URL 분석
-  const handleAnalyzeUrl = async () => {
-    if (isAnalyzing) return // 분석 중에는 중복 실행 차단
-    if (!isLoggedIn) {
-      router.push("/login?redirect=/analyze")
-      return
-    }
-    if (!selectedProjectId) {
-      setError("프로젝트를 먼저 선택해 주세요.")
-      return
-    }
-    if (!urlInput.trim()) {
-      setError("URL을 입력해 주세요.")
-      return
-    }
-
-    // URL 유효성 간단 체크
-    let url = urlInput.trim()
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      url = "https://" + url
-    }
-
-    setIsAnalyzingUrl(true)
-    setIsAnalyzing(true)
-    setError(null)
-    setResults([])
-    // 로딩 메시지는 useEffect에서 자동 순환
-
-    try {
-      const result = await analyzeUrlDirect({
-        projectId: selectedProjectId,
-        url,
-      })
-
-      if (result.error) {
-        if (result.error === "CREDIT_LIMIT_EXCEEDED") {
-          setShowCreditError(true)
-        } else {
-          setError(result.error)
-        }
-      } else if (result.data) {
-        const analysisResult = {
-          ...result.data,
-          fileName: url,
-        } as AnalysisResult
-        setResults([analysisResult])
-      }
-    } catch (err) {
-      console.error("URL analysis error:", err)
-      setError("URL 분석 중 오류가 발생했습니다. 다시 시도해 주세요.")
-    } finally {
-      setIsAnalyzingUrl(false)
-      setIsAnalyzing(false)
-      setStatusMessage("")
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-      }, 200)
-    }
-  }
-
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
@@ -888,35 +825,10 @@ export function AnalyzeDashboard() {
                   업로드된 문서는 분석 즉시 서버에서 완전 삭제됩니다. 분석 결과는 본인만 조회 가능합니다.
                 </p>
               </div>
-              {/* 파일 / URL 탭 */}
-              <div className="flex gap-1 mt-3 bg-slate-800/50 rounded-lg p-1">
-                <button
-                  onClick={() => setUploadMode("file")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    uploadMode === "file"
-                      ? "bg-[#5B8DEF] text-white"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  파일 업로드
-                </button>
-                <button
-                  onClick={() => setUploadMode("url")}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    uploadMode === "url"
-                      ? "bg-[#5B8DEF] text-white"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Globe className="w-4 h-4" />
-                  URL 링크
-                </button>
-              </div>
             </CardHeader>
             <CardContent>
-              {/* 파일 업로드 모드 */}
-              {uploadMode === "file" && (
+              {/* 파일 업로드 */}
+              {(
                 <>
                   {isAnalyzing ? (
                     /* 분석 진행 중 — 드롭존을 로딩 화면으로 대체 */
@@ -1056,58 +968,6 @@ export function AnalyzeDashboard() {
                 </div>
               )}
 
-              {/* URL 링크 모드 */}
-              {uploadMode === "url" && (
-                <div className={`${isLoggedIn && !selectedProjectId ? "opacity-50 pointer-events-none" : ""}`}>
-                  <div className="border-2 border-dashed border-[#1e3a5f] rounded-xl p-8">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-                        <Link2 className="w-8 h-8 text-slate-400" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-medium text-white">
-                          {!isLoggedIn ? "무료로 URL을 분석해 보세요" : "웹 페이지 URL을 입력하세요"}
-                        </p>
-                        <p className="text-sm text-slate-400 mt-1">
-                          {!isLoggedIn ? "URL을 입력하고 분석 버튼을 누르면 로그인 후 바로 분석됩니다" : "노션, 웹 포트폴리오, 블로그 등의 링크를 분석합니다"}
-                        </p>
-                      </div>
-                      <div className="w-full max-w-lg flex gap-2 mt-2">
-                        <input
-                          type="url"
-                          value={urlInput}
-                          onChange={e => setUrlInput(e.target.value)}
-                          onKeyDown={e => e.key === "Enter" && !isAnalyzing && handleAnalyzeUrl()}
-                          placeholder="https://notion.so/... 또는 포트폴리오 URL"
-                          className="flex-1 bg-[#0d1b2a] border border-[#1e3a5f] rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#5B8DEF]"
-                          disabled={isAnalyzing}
-                        />
-                        <Button
-                          onClick={handleAnalyzeUrl}
-                          disabled={isAnalyzing || !urlInput.trim() || (isLoggedIn && !selectedProjectId)}
-                          className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-6"
-                        >
-                          {isAnalyzingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : "분석"}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-slate-500">Notion, 개인 웹사이트, 블로그, Google Docs(공개) 등</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* URL 분석 중 로딩 (파일 분석은 드롭존 안에 표시) */}
-              {isAnalyzing && isAnalyzingUrl && (
-                <div className="mt-6">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-[#5B8DEF]" />
-                    <span className="text-sm text-slate-400">
-                      {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
-                    </span>
-                  </div>
-                  <Progress value={fakeProgress} className="h-2" />
-                </div>
-              )}
 
               {error && (
                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">

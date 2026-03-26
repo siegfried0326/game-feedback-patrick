@@ -111,7 +111,7 @@ export function HeroSection() {
                     PDF, DOCX, PPT, Excel, URL 링크 — 대용량도 OK
                   </p>
 
-                  <div className="inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm">
+                  <div className="inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] active:scale-95 active:bg-[#3A6CD0] text-white font-semibold rounded-xl transition-all text-sm">
                     무료로 분석 시작
                     <ArrowRight className="w-4 h-4" />
                   </div>

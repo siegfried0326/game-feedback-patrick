@@ -87,7 +87,7 @@ export function PricingSection() {
 
             <div className="mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-white">13,900</span>
+                <span className="text-4xl font-bold text-white">13,800</span>
                 <span className="text-slate-400">원</span>
                 <span className="text-slate-400 text-sm">/ 월</span>
               </div>

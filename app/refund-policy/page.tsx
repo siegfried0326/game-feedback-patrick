@@ -23,7 +23,7 @@ export default function RefundPolicyPage() {
         </Link>
 
         <h1 className="text-3xl font-bold text-white mb-2">환불정책</h1>
-        <p className="text-sm text-slate-500 mb-10">최종 수정일: 2025년 1월 20일</p>
+        <p className="text-sm text-slate-500 mb-10">최종 수정일: 2026년 3월 6일</p>
 
         <div className="space-y-8 leading-relaxed">
           <section>
@@ -41,8 +41,8 @@ export default function RefundPolicyPage() {
                 <h3 className="font-medium text-white mb-1">1. 구독 서비스 (AI 문서 분석)</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>무료 체험: 1회 무료 분석 (결제 불필요)</li>
-                  <li>월 구독: 월 17,900원 - 결제일부터 1개월간 무제한 문서 분석</li>
-                  <li>3개월 패스: 49,000원 - 결제일부터 3개월간 무제한 문서 분석</li>
+                  <li>월 무제한: 월 13,800원 - 결제일부터 1개월간 무제한 문서 분석</li>
+                  <li>3개월 무제한: 39,000원 - 결제일부터 3개월간 무제한 문서 분석</li>
                 </ul>
               </div>
             </div>
@@ -84,14 +84,14 @@ export default function RefundPolicyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">제4조 (구독 서비스 환불 기준)</h2>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 월 구독</h3>
+                <h3 className="font-medium text-white mb-1">1. 월 무제한</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>월 구독은 해지만 가능하며, 부분 환불은 제공되지 않습니다.</li>
+                  <li>월 무제한은 해지만 가능하며, 부분 환불은 제공되지 않습니다.</li>
                   <li>해지 시 잔여 기간까지 서비스를 이용할 수 있습니다.</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 3개월 패스</h3>
+                <h3 className="font-medium text-white mb-1">2. 3개월 무제한</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>결제일로부터 7일 이내에 서비스를 1회도 이용하지 않은 경우 전액 환불이 가능합니다.</li>
                   <li>결제일로부터 7일 경과 또는 서비스 이용 이력이 있는 경우 환불이 불가합니다.</li>
@@ -102,7 +102,7 @@ export default function RefundPolicyPage() {
                 <ul className="list-disc list-inside space-y-1">
                   <li>구독 기간이 모두 경과한 경우</li>
                   <li>이용약관 위반으로 서비스 이용이 제한된 경우</li>
-                  <li>서비스를 이용한 이력이 있는 월 구독의 경우</li>
+                  <li>서비스를 이용한 이력이 있는 월 무제한의 경우</li>
                 </ul>
               </div>
             </div>
@@ -176,12 +176,12 @@ export default function RefundPolicyPage() {
                 </thead>
                 <tbody className="text-slate-300">
                   <tr className="border-b border-[#1e3a5f]/50">
-                    <td className="py-3 pr-4 font-medium text-white">월 구독</td>
+                    <td className="py-3 pr-4 font-medium text-white">월 무제한</td>
                     <td className="py-3 pr-4">마이페이지에서 즉시 해지<br />(잔여 기간까지 이용 가능)</td>
                     <td className="py-3">환불 불가<br />(해지로 대체)</td>
                   </tr>
                   <tr className="border-b border-[#1e3a5f]/50">
-                    <td className="py-3 pr-4 font-medium text-white">3개월 패스</td>
+                    <td className="py-3 pr-4 font-medium text-white">3개월 무제한</td>
                     <td className="py-3 pr-4">마이페이지에서 즉시 해지<br />(잔여 기간까지 이용 가능)</td>
                     <td className="py-3">7일 이내 미이용 시 전액 환불<br />그 외 환불 불가</td>
                   </tr>

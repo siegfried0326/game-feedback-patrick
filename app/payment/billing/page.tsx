@@ -34,7 +34,7 @@ declare global {
 const NICEPAY_CLIENT_ID = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID ?? ""
 
 const PLANS = {
-  monthly: { name: "월 무제한", price: "13,900", amount: 13900, period: "월", description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
+  monthly: { name: "월 무제한", price: "13,800", amount: 13800, period: "월", description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
   three_month: { name: "3개월 무제한", price: "39,000", amount: 39000, period: "3개월", description: "무제한 분석 + 버전 비교 + 프리미엄 Claude Opus" },
 } as const
 

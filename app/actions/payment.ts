@@ -14,7 +14,7 @@
  * - refundCreditOrder(): 크레딧 환불 처리
  *
  * 요금:
- * - monthly: 13,900원/월 (게임캔버스 할인 시 5,900원)
+ * - monthly: 13,800원/월 (게임캔버스 할인 시 5,900원)
  * - three_month: 39,000원/3개월
  * - credit_1: 2,900원, credit_5: 7,900원, credit_10: 12,900원
  */
@@ -31,7 +31,7 @@ const CREDIT_PRICES: Record<string, { credits: number; amount: number }> = {
 }
 
 const SUBSCRIPTION_PRICES: Record<string, number> = {
-  monthly: 13900,
+  monthly: 13800,
   three_month: 39000,
 }
 
@@ -81,7 +81,7 @@ export async function processSubscriptionPayment(
   if (!user) return { error: "로그인이 필요합니다." }
 
   // 금액 검증 (서버 가격표 기준)
-  let expectedAmount = SUBSCRIPTION_PRICES[plan] || 13900
+  let expectedAmount = SUBSCRIPTION_PRICES[plan] || 13800
   if (discountCode && plan === "monthly") {
     const codeResult = await validateGamecanvasCode(discountCode)
     if (codeResult.valid) {

@@ -222,7 +222,7 @@ function CreditsContent() {
             <Zap className="w-4 h-4 inline text-amber-400 mr-1" />
             10회 이상 사용한다면?{" "}
             <Link href="/payment/billing?plan=monthly" className="text-[#5B8DEF] hover:underline">
-              월 13,900원 무제한 구독
+              월 13,800원 무제한 구독
             </Link>
             이 더 합리적이에요.
           </p>

@@ -37,7 +37,7 @@ const plans = [
   },
   {
     name: "월 무제한",
-    price: "13,900",
+    price: "13,800",
     period: "월",
     description: "집중적인 포트폴리오 준비에 최적",
     discountNote: "게임캔버스 수강생 월 5,900원",

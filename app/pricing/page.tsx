@@ -90,6 +90,7 @@ const subscriptionPlans = [
     cta: "3개월 구매",
     href: "/payment/billing?plan=three_month",
     highlighted: false,
+    amber: true,
   },
 ]
 
@@ -169,12 +170,16 @@ export default function PricingPage() {
               className={`relative bg-slate-900/80 rounded-2xl p-8 border transition-all duration-300 ${
                 plan.highlighted
                   ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
+                  : plan.amber
+                  ? "border-amber-500/40 shadow-lg shadow-amber-500/5 hover:border-amber-500/70"
                   : "border-[#1e3a5f] hover:border-[#5B8DEF]/30"
               }`}
             >
               {"badge" in plan && plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-medium ${
+                    plan.amber ? "bg-amber-500" : "bg-[#5B8DEF]"
+                  }`}>
                     <Sparkles className="w-3 h-3" />
                     {plan.badge}
                   </span>
@@ -190,7 +195,7 @@ export default function PricingPage() {
 
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-white mb-2">{plan.name}</h3>
-                <p className="text-sm text-slate-400">{plan.description}</p>
+                <p className={`text-sm ${plan.amber ? "text-amber-400/80" : "text-slate-400"}`}>{plan.description}</p>
               </div>
 
               <div className="mb-6">
@@ -218,6 +223,8 @@ export default function PricingPage() {
                 className={`w-full ${
                   plan.highlighted
                     ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+                    : plan.amber
+                    ? "bg-amber-500 hover:bg-amber-600 text-white"
                     : "bg-[#162a4a] hover:bg-[#1e3a5f] text-white"
                 }`}
               >

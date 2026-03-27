@@ -66,6 +66,7 @@ const plans = [
     cta: "3개월 구매",
     href: "/payment/billing?plan=three_month",
     highlighted: false,
+    amber: true,
   },
 ]
 
@@ -95,12 +96,16 @@ export function PricingModal() {
               className={`relative bg-card rounded-xl p-6 border transition-all duration-300 flex flex-col ${
                 plan.highlighted
                   ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
+                  : plan.amber
+                  ? "border-amber-500/40 shadow-lg shadow-amber-500/5 hover:border-amber-500/70"
                   : "border-border hover:border-[#5B8DEF]/30"
               }`}
             >
               {plan.badge && (
                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-xs font-medium ${
+                    plan.amber ? "bg-amber-500" : "bg-[#5B8DEF]"
+                  }`}>
                     <Sparkles className="w-3 h-3" />
                     {plan.badge}
                   </span>
@@ -155,6 +160,8 @@ export function PricingModal() {
                 className={`w-full mt-auto ${
                   plan.highlighted
                     ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+                    : plan.amber
+                    ? "bg-amber-500 hover:bg-amber-600 text-white"
                     : "bg-secondary hover:bg-secondary/80 text-foreground"
                 }`}
               >

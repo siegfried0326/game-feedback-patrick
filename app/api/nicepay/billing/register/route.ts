@@ -25,7 +25,7 @@ function encryptCardData(plainText: string): string {
   const key = Buffer.from(secretKey.slice(0, 16), "utf8")
   const cipher = crypto.createCipheriv("aes-128-ecb", key, null)
   cipher.setAutoPadding(true)
-  return cipher.update(plainText, "utf8", "base64") + cipher.final("base64")
+  return cipher.update(plainText, "utf8", "hex") + cipher.final("hex")
 }
 
 export async function POST(request: NextRequest) {

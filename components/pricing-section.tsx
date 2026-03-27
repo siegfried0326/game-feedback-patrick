@@ -108,20 +108,20 @@ export function PricingSection() {
           </div>
 
           {/* 3개월 무제한 */}
-          <div className="relative bg-slate-900/80 rounded-2xl p-8 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-all duration-300 flex flex-col">
+          <div className="relative bg-slate-900/80 rounded-2xl p-8 border border-amber-500/40 hover:border-amber-500/70 shadow-lg shadow-amber-500/5 transition-all duration-300 flex flex-col">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-medium">
                 <Sparkles className="w-3 h-3" />
-                프리미엄 AI
+                Claude Opus 탑재
               </span>
             </div>
 
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-white mb-2">3개월 무제한</h3>
-              <p className="text-sm text-slate-400">월 13,000원 수준 + 프리미엄 AI</p>
+              <p className="text-sm text-slate-400">월 13,000원 수준 · 최고 성능 AI 엔진</p>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-2">
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-white">39,000</span>
                 <span className="text-slate-400">원</span>
@@ -129,16 +129,22 @@ export function PricingSection() {
               </div>
             </div>
 
+            <p className="text-xs text-amber-400/80 mb-6">월 구독(Claude Sonnet)보다 훨씬 깊은 분석 제공</p>
+
             <ul className="space-y-3 mb-8 flex-1">
-              {["무제한 분석", "무제한 프로젝트", "상세 코멘트 제공", "포지션별 맞춤 피드백", "버전별 점수 비교 분석", "프리미엄 AI (Claude Opus)"].map((f, i) => (
+              {["무제한 분석", "무제한 프로젝트", "상세 코멘트 제공", "포지션별 맞춤 피드백", "버전별 점수 비교 분석"].map((f, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm">
                   <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
                   <span className="text-slate-400">{f}</span>
                 </li>
               ))}
+              <li className="flex items-start gap-3 text-sm">
+                <Check className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                <span className="text-amber-300 font-medium">Claude Opus — 최고 성능 AI 모델</span>
+              </li>
             </ul>
 
-            <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
+            <Button asChild className="w-full bg-amber-500 hover:bg-amber-600 text-white active:scale-95">
               <Link href="/payment/billing?plan=three_month">3개월 구매</Link>
             </Button>
           </div>

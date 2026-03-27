@@ -1,8 +1,8 @@
 # 태스크 리스트 — 학습데이터 + 결제/환불 시스템 개선
 
 > 작성일: 2026-03-06
-> 최종 수정: 2026-03-06
-> 상태: 태스크 2 완료 / 태스크 1 대기
+> 최종 수정: 2026-03-27
+> 상태: 태스크 2, 3 완료 / 태스크 1 대기
 
 ---
 
@@ -19,6 +19,7 @@
 | 2-3 | 크레딧 우선 소모 로직 변경 | ✅ 완료 |
 | 2-4 | 안내 문구 추가 | ✅ 완료 |
 | 2-5 | 크레딧 셀프 환불 기능 | ✅ 완료 |
+| 3 | 자동갱신(빌링키) 구독 결제 | ✅ 완료 (Supabase SQL 실행 필요) |
 
 ---
 
@@ -109,6 +110,36 @@
 
 #### ⚠️ DB 마이그레이션 필요
 `scripts/014_add_refund_columns.sql`을 Supabase SQL Editor에서 실행해야 함
+
+---
+
+---
+
+## 태스크 3: 자동갱신(빌링키) 구독 결제 구현 ✅
+
+**상태**: 완료 (커밋 `a2a9b26`)
+**배경**: 토스페이먼츠 팝업 방식은 빌링키 저장이 어려움 → NICEPayments 비인증 빌링키 방식으로 전환
+
+### 구현 내용
+
+| 파일 | 설명 |
+|------|------|
+| `app/payment/billing/page.tsx` | 카드 직접 입력 폼으로 전면 교체 (카드번호/유효기간/비밀번호앞2자리/생년월일) |
+| `app/api/nicepay/billing/register/route.ts` (신규) | AES-128-ECB 암호화 → 빌링키 발급 → 첫 결제 → DB upsert |
+| `app/api/cron/renew-subscriptions/route.ts` (신규) | Vercel Cron: 만료 25시간 전 구독 자동 갱신, 3회 실패 시 빌링키 삭제+구독 만료 |
+| `vercel.json` (신규) | Cron 스케줄: `0 17 * * *` UTC (= 매일 오전 2시 KST) |
+| `scripts/015_add_auto_renewal.sql` (신규) | `auto_renewal`, `renewal_failed_at`, `renewal_fail_count` 컬럼 추가 |
+
+### 자동갱신 로직 요약
+1. Vercel Cron이 매일 오전 2시(KST) GET `/api/cron/renew-subscriptions` 호출
+2. `expires_at`이 25시간 이내인 `active` + `auto_renewal=true` + `billing_key 있는` 구독 조회
+3. 각 구독에 대해 `approveBillingPayment()` 호출 → 성공 시 `expires_at` +1개월/+3개월 연장
+4. 실패 시 `renewal_fail_count` +1, 3회 실패 도달 시 `deleteBillingKey()` + `status='expired'` 처리
+
+### ⚠️ 배포 후 필수 작업
+- [ ] **Supabase SQL Editor에서 `scripts/015_add_auto_renewal.sql` 실행** (컬럼 추가)
+- [ ] **Vercel 환경변수 `CRON_SECRET` 추가** (Cron endpoint 무단 호출 방지)
+- [ ] 커스텀 도메인에서 실제 카드 등록 테스트 (빌링키 발급 + 첫 결제 확인)
 
 ---
 

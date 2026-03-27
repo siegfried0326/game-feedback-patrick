@@ -4,7 +4,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 서비스명 | 디자이닛 (DesignIt) |
+| 서비스명 | 아카이브 187 (Archive187) |
 | 인증 기반 | Supabase Auth (PKCE flow) |
 | 소셜 로그인 | Google, Kakao, Apple |
 | 세션 유지 | 30일 쿠키 기반 |

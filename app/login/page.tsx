@@ -83,7 +83,7 @@ function LoginContent() {
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
-            <span className="text-lg font-bold text-white">DesignIt</span>
+            <span className="text-lg font-bold text-white">Archive187</span>
             <p className="text-xs text-slate-400">by 문라이트커리어랩</p>
           </div>
         </Link>

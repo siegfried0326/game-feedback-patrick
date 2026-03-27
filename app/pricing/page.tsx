@@ -10,8 +10,8 @@ import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export const metadata = {
-  title: "요금제 | 디자이닛(DesignIt)",
-  description: "디자이닛(DesignIt) 요금제 안내. 1회 2,900원부터. 월 무제한 13,800원.",
+  title: "요금제 | 아카이브 187(Archive187)",
+  description: "아카이브 187(Archive187) 요금제 안내. 1회 2,900원부터. 월 무제한 13,800원.",
 }
 
 const creditPlans = [

@@ -21,7 +21,7 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-  title: '디자이닛(DesignIt) | 게임 기획 포트폴리오 AI 피드백',
+  title: '아카이브 187(Archive187) | 게임 기획 포트폴리오 AI 피드백',
   description: '현업 기획자의 전문 피드백으로 포트폴리오의 완성도를 높이세요. 첫 1회 무료 체험, AI 즉시 분석.',
   generator: 'v0.app',
   icons: {

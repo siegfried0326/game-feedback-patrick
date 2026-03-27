@@ -138,7 +138,7 @@ function CreditsContent() {
         method: "card",
         orderId: orderResult.orderId!,
         amount: orderResult.amount!,
-        goodsName: `디자이닛 분석 ${pkg.name}`,
+        goodsName: `아카이브 187 분석 ${pkg.name}`,
         returnUrl: `${window.location.origin}/api/nicepay/callback`,
         mallReserved: JSON.stringify({ type: "credits" }),
         fnError: (result: { errorCode?: string; errorMsg?: string }) => {

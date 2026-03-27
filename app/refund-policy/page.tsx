@@ -6,8 +6,8 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
-  title: "환불정책 | 디자이닛(DesignIt)",
-  description: "디자이닛(DesignIt) 서비스의 환불정책 안내",
+  title: "환불정책 | 아카이브 187(Archive187)",
+  description: "아카이브 187(Archive187) 서비스의 환불정책 안내",
 }
 
 export default function RefundPolicyPage() {
@@ -29,7 +29,7 @@ export default function RefundPolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">제1조 (목적)</h2>
             <p>
-              본 환불정책은 문라이트커리어랩(이하 &quot;회사&quot;)이 제공하는 디자이닛(DesignIt) 서비스(이하 &quot;서비스&quot;)의
+              본 환불정책은 문라이트커리어랩(이하 &quot;회사&quot;)이 제공하는 아카이브 187(Archive187) 서비스(이하 &quot;서비스&quot;)의
               구독 결제 및 회차권(크레딧) 결제에 대한 환불 기준을 규정합니다.
             </p>
           </section>

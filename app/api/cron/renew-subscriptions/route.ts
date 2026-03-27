@@ -12,8 +12,8 @@ import { createClient } from "@/lib/supabase/server"
 import { approveBillingPayment, deleteBillingKey } from "@/lib/nice-api"
 
 const PLAN_CONFIG = {
-  monthly:     { amount: 13800, name: "디자이닛 월 무제한",    months: 1 },
-  three_month: { amount: 39000, name: "디자이닛 3개월 무제한", months: 3 },
+  monthly:     { amount: 13800, name: "아카이브 187 월 무제한",    months: 1 },
+  three_month: { amount: 39000, name: "아카이브 187 3개월 무제한", months: 3 },
 } as const
 
 const MAX_FAIL_COUNT = 3 // 3회 실패 시 구독 만료 처리

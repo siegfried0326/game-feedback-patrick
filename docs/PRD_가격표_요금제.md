@@ -50,7 +50,7 @@
 - 환경변수: `GAMECANVAS_DISCOUNT_CODES` (쉼표 구분)
 - 검증: `app/actions/payment.ts` → `validateGamecanvasCode()`
 - 적용 대상: **monthly 플랜만** (three_month은 대상 아님)
-- 할인 적용 시 주문명: "디자이닛 월 구독 (게임캔버스)"
+- 할인 적용 시 주문명: "아카이브 187 월 구독 (게임캔버스)"
 
 ---
 

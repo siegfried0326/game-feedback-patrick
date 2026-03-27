@@ -6,8 +6,8 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
-  title: "개인정보처리방침 | 디자이닛(DesignIt)",
-  description: "디자이닛(DesignIt) 서비스의 개인정보처리방침 안내",
+  title: "개인정보처리방침 | 아카이브 187(Archive187)",
+  description: "아카이브 187(Archive187) 서비스의 개인정보처리방침 안내",
 }
 
 export default function PrivacyPage() {
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">제1조 (개인정보의 처리 목적)</h2>
             <p>
-              문라이트커리어랩(이하 &quot;회사&quot;)은 디자이닛(DesignIt) 서비스 제공을 위해 다음과 같은 목적으로 개인정보를 처리합니다.
+              문라이트커리어랩(이하 &quot;회사&quot;)은 아카이브 187(Archive187) 서비스 제공을 위해 다음과 같은 목적으로 개인정보를 처리합니다.
               처리한 개인정보는 다음의 목적 이외의 용도로는 사용되지 않으며, 목적이 변경될 경우 사전 동의를 받겠습니다.
             </p>
             <ul className="list-disc list-inside space-y-1 mt-3">

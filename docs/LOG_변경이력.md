@@ -2,6 +2,39 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-03-27
+
+### 자동갱신(빌링키) 구독 결제 구현 (`a2a9b26`)
+- **핵심 변경**: 토스페이먼츠 팝업 방식 → NICEPayments 빌링키(카드 직접 등록) 방식으로 전환
+- `app/payment/billing/page.tsx`: AUTHNICE.requestPay() 제거 → 카드 직접 입력 폼 (카드번호/유효기간/비밀번호2자리/생년월일)
+- `app/api/nicepay/billing/register/route.ts` (신규): AES-128-ECB 암호화 → 빌링키 발급 → 첫 결제 → DB 저장
+- `app/api/cron/renew-subscriptions/route.ts` (신규): 매일 만료 구독 자동 결제 (3회 실패 시 빌링키 삭제 + 만료 처리)
+- `vercel.json` (신규): Cron 스케줄 `0 17 * * *` UTC (= 매일 오전 2시 KST)
+- `scripts/015_add_auto_renewal.sql` (신규): `auto_renewal`, `renewal_failed_at`, `renewal_fail_count` 컬럼 추가
+- ⚠️ **Supabase SQL Editor에서 `scripts/015_add_auto_renewal.sql` 실행 필요**
+- ⚠️ **Vercel 환경변수 `CRON_SECRET` 추가 권장**
+
+### Claude Opus 마케팅 강화 — 3개월 플랜 amber 테마 (`6399200`)
+- `components/pricing-section.tsx`, `pricing-modal.tsx`, `app/pricing/page.tsx`, `app/payment/billing/page.tsx` 4곳 수정
+- 3개월 플랜: amber 테두리/배지/버튼, "Claude Opus 탑재" 배지, "Claude Sonnet 대비 더 심층 분석" 문구 추가
+
+### 개인정보처리방침 페이지 추가 (`37f1bc9`)
+- `app/privacy/page.tsx` 신규 생성 → `/privacy` 라우트
+- footer에 링크 추가: 이용약관 | 개인정보처리방침 | 환불정책
+
+### 게임캔버스 할인 문구 전면 제거 (`3b32b6a`)
+- `components/pricing-section.tsx`, `components/pricing-modal.tsx`, `app/pricing/page.tsx` 3곳에서 "게임캔버스 수강생 월 5,900원" 문구 삭제
+
+### 푸터 주소 동호수 정리 (`0a85f51`)
+- `components/footer.tsx`: "1008호", "202동" 제거
+- 최종 주소: `경기도 수원시 영통구 센트럴타운로 107(이의동, 광교푸르지오 월드마크)`
+
+### NICEPay 무한로딩 원인 확인
+- Vercel 로그 분석: `/api/nicepay/callback` 미호출 → 프리뷰 URL(`.vercel.app`) 사용 시 NICEPay가 returnUrl 도달 불가
+- 해결: 커스텀 도메인에서 테스트 시 정상 작동 확인
+
+---
+
 ## 2026-03-07
 
 ### PDF 분석 max_tokens 증가 + stop_reason 체크 (`ed54f62`)
@@ -249,7 +282,7 @@
 ## 2026-02-22
 
 ### 서비스명 적용
-- '디자이닛(DesignIt)' 전체 반영
+- '아카이브 187(Archive187)' 전체 반영
 
 ### 게임디자인 역량 분석
 - 10개 항목 추가 (총 15개 카테고리)

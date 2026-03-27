@@ -90,7 +90,7 @@ function BillingContent() {
       }
 
       setSuccess(true)
-      setTimeout(() => router.push("/analyze"), 3000)
+      setTimeout(() => { window.location.href = "/analyze" }, 3000)
     } catch {
       setError("네트워크 오류가 발생했습니다. 다시 시도해주세요.")
       setLoading(false)

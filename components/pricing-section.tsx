@@ -91,7 +91,6 @@ export function PricingSection() {
                 <span className="text-slate-400">원</span>
                 <span className="text-slate-400 text-sm">/ 월</span>
               </div>
-              <p className="text-xs text-emerald-400 mt-2">게임캔버스 수강생 월 5,900원</p>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1">

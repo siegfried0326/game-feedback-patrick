@@ -1,138 +1,121 @@
 /**
- * 구독 결제 페이지
- *
- * NICEPayments Server 승인 모델로 첫 결제를 처리하고,
- * 이후 빌링키로 자동 갱신이 가능하다.
+ * 구독 결제 페이지 — 빌링키 자동갱신 방식
  *
  * ── 동작 흐름 ──
- * 1. 나이스 JS SDK 스크립트 로드
- * 2. 사용자가 플랜(월/3개월) 선택
- * 3. (선택) 게임캔버스 할인 코드 입력 → 서버에서 유효성 검증
- * 4. "결제하기" 버튼 클릭 → AUTHNICE.requestPay()로 결제창 표시
- * 5. 인증 성공 → /api/nicepay/callback (POST) → /payment/billing/success (redirect)
- * 6. 인증 실패 → /api/nicepay/callback (POST) → /payment/billing/fail (redirect)
+ * 1. 사용자가 플랜(월/3개월) 선택
+ * 2. 카드 정보 입력 (카드번호, 유효기간, 비밀번호 앞 2자리, 생년월일 6자리)
+ * 3. "구독 시작하기" 클릭 → /api/nicepay/billing/register POST
+ * 4. 서버: AES 암호화 → 빌링키 발급 → 첫 결제 → DB 저장
+ * 5. 성공 시 분석 페이지로 이동 (이후 매월/3개월 Cron 자동 갱신)
  */
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, CreditCard, Loader2 } from "lucide-react"
+import { ArrowLeft, CheckCircle, CreditCard, Eye, EyeOff, Loader2, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { getSubscription } from "@/app/actions/subscription"
 
-declare global {
-  interface Window {
-    AUTHNICE?: {
-      requestPay: (options: Record<string, unknown>) => void
-    }
-  }
-}
-
-const NICEPAY_CLIENT_ID = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID ?? ""
-
 const PLANS = {
-  monthly: { name: "월 무제한", price: "13,800", amount: 13800, period: "월", description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
+  monthly:     { name: "월 무제한",    price: "13,800", amount: 13800, period: "월",    description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
   three_month: { name: "3개월 무제한", price: "39,000", amount: 39000, period: "3개월", description: "🏆 Claude Opus 탑재 — 월 구독 대비 더 심층적인 분석 제공" },
 } as const
 
+function formatCardNumber(val: string) {
+  return val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim()
+}
+
 function BillingContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const planParam = searchParams.get("plan") as keyof typeof PLANS | null
 
-  const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>(planParam && PLANS[planParam] ? planParam : "monthly")
+  const [selectedPlan, setSelectedPlan] = useState<keyof typeof PLANS>(
+    planParam && PLANS[planParam] ? planParam : "monthly"
+  )
+  const [currentCredits, setCurrentCredits] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [currentCredits, setCurrentCredits] = useState(0)
-  const [sdkReady, setSdkReady] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [showPw, setShowPw] = useState(false)
+
+  // 카드 입력값
+  const [cardNo, setCardNo]   = useState("")
+  const [expMonth, setExpMonth] = useState("")
+  const [expYear, setExpYear]   = useState("")
+  const [cardPw, setCardPw]   = useState("")
+  const [idNo, setIdNo]       = useState("")
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.push("/login?redirect=/payment/billing")
+    })
+    getSubscription().then(r => {
+      if (r.data?.analysis_credits) setCurrentCredits(r.data.analysis_credits)
+    })
+  }, [router])
 
   const plan = PLANS[selectedPlan]
-  const finalAmount = plan.amount
-  const finalPrice = finalAmount.toLocaleString()
 
-  // NICEPayments JS SDK 로드
-  useEffect(() => {
-    async function initSDK() {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-
-        console.log("[billing] clientId:", NICEPAY_CLIENT_ID || "(비어있음)")
-
-        getSubscription().then(result => {
-          if (result.data?.analysis_credits) {
-            setCurrentCredits(result.data.analysis_credits)
-          }
-        })
-
-        // NICEPayments JS SDK 스크립트 로드
-        if (!document.querySelector('script[src*="nicepay.co.kr"]')) {
-          const script = document.createElement("script")
-          script.src = "https://pay.nicepay.co.kr/v1/js/"
-          script.onload = () => setSdkReady(true)
-          script.onerror = () => setError("결제 모듈을 불러오지 못했습니다.")
-          document.head.appendChild(script)
-        } else {
-          setSdkReady(true)
-        }
-      } catch (err) {
-        console.error("[billing] SDK 초기화 에러:", err)
-      }
-    }
-
-    initSDK()
-  }, [])
-
-  // 결제 요청
-  async function handlePayment() {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     setLoading(true)
     setError("")
 
+    const cardNoClean = cardNo.replace(/\s/g, "")
+
     try {
-      if (!sdkReady || !window.AUTHNICE) {
-        setError("결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해주세요.")
-        setLoading(false)
-        return
-      }
-
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        setError("로그인이 필요합니다.")
-        setLoading(false)
-        return
-      }
-
-      const orderId = `SUB_${selectedPlan}_${user.id.slice(0, 8)}_${Date.now()}`
-      const orderName = selectedPlan === "monthly" ? "디자이닛 월 무제한" : "디자이닛 3개월 무제한"
-
-      // NICEPayments 결제창 호출
-      window.AUTHNICE.requestPay({
-        clientId: NICEPAY_CLIENT_ID,
-        method: "card",
-        orderId,
-        amount: finalAmount,
-        goodsName: orderName,
-        returnUrl: `${window.location.origin}/api/nicepay/callback`,
-        mallReserved: JSON.stringify({
-          type: "billing",
+      const res = await fetch("/api/nicepay/billing/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cardNo: cardNoClean,
+          expYear,
+          expMonth,
+          idNo,
+          cardPw,
           plan: selectedPlan,
         }),
-        buyerName: user.user_metadata?.name || "구매자",
-        buyerEmail: user.email || "",
-        fnError: (result: { errorCode?: string; errorMsg?: string }) => {
-          setError(result.errorMsg || "결제 처리 중 오류가 발생했습니다.")
-          setLoading(false)
-        },
       })
-    } catch (err: unknown) {
-      console.error("[billing] 결제 에러:", err)
-      const message = err instanceof Error ? err.message : "결제 처리 중 문제가 발생했습니다."
-      setError(message)
+
+      const data = await res.json()
+
+      if (!res.ok || data.error) {
+        setError(data.error || "결제 처리 중 오류가 발생했습니다.")
+        setLoading(false)
+        return
+      }
+
+      setSuccess(true)
+      setTimeout(() => router.push("/analyze"), 3000)
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 다시 시도해주세요.")
       setLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 text-center">
+          <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-white mb-2">구독이 시작되었습니다!</h1>
+          <p className="text-slate-400 mb-6">
+            {selectedPlan === "three_month"
+              ? "이제 프리미엄 Claude Opus AI로 더 정밀한 분석을 받으실 수 있습니다."
+              : "이제 무제한 분석과 버전 비교 기능을 이용하실 수 있습니다."}
+            <br />
+            매월 자동으로 갱신됩니다. 잠시 후 분석 페이지로 이동합니다.
+          </p>
+          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <Link href="/analyze">분석하러 가기</Link>
+          </Button>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -147,17 +130,20 @@ function BillingContent() {
         </Link>
 
         <h1 className="text-2xl font-bold text-white mb-2">구독 결제</h1>
-        <p className="text-slate-400 mb-8">카드로 결제하고 구독을 시작하세요.</p>
+        <p className="text-slate-400 mb-8">카드를 등록하면 매월 자동으로 갱신됩니다.</p>
 
         {/* 플랜 선택 */}
         <div className="space-y-3 mb-6">
           {(Object.entries(PLANS) as [keyof typeof PLANS, typeof PLANS[keyof typeof PLANS]][]).map(([key, p]) => (
             <button
               key={key}
+              type="button"
               onClick={() => setSelectedPlan(key)}
               className={`w-full p-4 rounded-xl border text-left transition-all ${
                 selectedPlan === key
-                  ? "border-[#5B8DEF] bg-[#5B8DEF]/10"
+                  ? key === "three_month"
+                    ? "border-amber-500 bg-amber-500/10"
+                    : "border-[#5B8DEF] bg-[#5B8DEF]/10"
                   : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
               }`}
             >
@@ -168,9 +154,13 @@ function BillingContent() {
                   <p className="text-xs text-slate-500 mt-0.5">{p.description}</p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedPlan === key ? "border-[#5B8DEF]" : "border-slate-600"
+                  selectedPlan === key
+                    ? key === "three_month" ? "border-amber-500" : "border-[#5B8DEF]"
+                    : "border-slate-600"
                 }`}>
-                  {selectedPlan === key && <div className="w-2.5 h-2.5 rounded-full bg-[#5B8DEF]" />}
+                  {selectedPlan === key && (
+                    <div className={`w-2.5 h-2.5 rounded-full ${key === "three_month" ? "bg-amber-500" : "bg-[#5B8DEF]"}`} />
+                  )}
                 </div>
               </div>
             </button>
@@ -181,47 +171,141 @@ function BillingContent() {
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-6">
             <p className="text-sm text-amber-400">
               현재 {currentCredits}회의 크레딧을 보유하고 있습니다.
-              구독 시작 후에도 보유 회차를 먼저 소모한 뒤 구독이 적용됩니다.
+              구독 시작 후에도 보유 크레딧을 먼저 소모한 뒤 구독이 적용됩니다.
             </p>
           </div>
         )}
 
-        {/* 결제 요약 */}
-        <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-slate-400">상품</span>
-            <span className="text-white font-medium">{plan.name}</span>
-          </div>
-          <div className="flex items-center justify-between border-t border-slate-700 pt-4">
-            <span className="text-white font-semibold">결제 금액</span>
-            <span className="text-xl font-bold text-white">{finalPrice}원</span>
-          </div>
-        </div>
+        {/* 카드 정보 입력 */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-6 space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <CreditCard className="w-4 h-4 text-slate-400" />
+              <span className="text-sm font-medium text-slate-300">카드 정보 입력</span>
+            </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 mb-6 text-sm">
-            {error}
-          </div>
-        )}
+            {/* 카드번호 */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1.5">카드번호</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="0000 0000 0000 0000"
+                value={cardNo}
+                onChange={e => setCardNo(formatCardNumber(e.target.value))}
+                required
+                maxLength={19}
+                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm tracking-widest"
+              />
+            </div>
 
-        <Button
-          onClick={handlePayment}
-          disabled={loading || !sdkReady}
-          className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white py-6 text-lg font-semibold"
-        >
-          {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin mr-2" />
-          ) : (
-            <CreditCard className="w-5 h-5 mr-2" />
+            {/* 유효기간 */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1.5">유효기간 (월)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="MM"
+                  value={expMonth}
+                  onChange={e => setExpMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                  required
+                  maxLength={2}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm text-center"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1.5">유효기간 (년)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="YY"
+                  value={expYear}
+                  onChange={e => setExpYear(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                  required
+                  maxLength={2}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm text-center"
+                />
+              </div>
+            </div>
+
+            {/* 비밀번호 앞 2자리 */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1.5">비밀번호 앞 2자리</label>
+              <div className="relative">
+                <input
+                  type={showPw ? "text" : "password"}
+                  inputMode="numeric"
+                  placeholder="••"
+                  value={cardPw}
+                  onChange={e => setCardPw(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                  required
+                  maxLength={2}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* 생년월일 / 사업자번호 */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1.5">생년월일 6자리 (개인) 또는 사업자번호 10자리</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="예) 901225 또는 1234567890"
+                value={idNo}
+                onChange={e => setIdNo(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                required
+                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm"
+              />
+            </div>
+          </div>
+
+          {/* 결제 요약 */}
+          <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-slate-400 text-sm">플랜</span>
+              <span className="text-white text-sm font-medium">{plan.name}</span>
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-700 pt-3">
+              <span className="text-white font-semibold">결제 금액</span>
+              <span className="text-xl font-bold text-white">{plan.price}원</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              {selectedPlan === "monthly" ? "매월 자동 갱신됩니다." : "3개월 후 자동 갱신됩니다."}
+              언제든지 마이페이지에서 해지할 수 있습니다.
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 text-sm">
+              {error}
+            </div>
           )}
-          {loading ? "처리 중..." : !sdkReady ? "결제 모듈 로딩 중..." : `${finalPrice}원 결제하기`}
-        </Button>
 
-        <p className="text-xs text-slate-500 text-center mt-4">
-          결제 후 즉시 구독이 시작됩니다.
-          <br />
-          구독은 언제든지 해지할 수 있습니다.
-        </p>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] active:scale-95 text-white py-6 text-lg font-semibold"
+          >
+            {loading ? (
+              <><Loader2 className="w-5 h-5 animate-spin mr-2" /> 결제 처리 중...</>
+            ) : (
+              <><Lock className="w-5 h-5 mr-2" /> {plan.price}원 결제하기</>
+            )}
+          </Button>
+
+          <p className="text-xs text-slate-500 text-center">
+            카드 정보는 나이스페이먼츠를 통해 안전하게 처리되며, 서버에 저장되지 않습니다.
+          </p>
+        </form>
       </div>
     </main>
   )

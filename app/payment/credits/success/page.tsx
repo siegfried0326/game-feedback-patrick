@@ -45,7 +45,7 @@ function CreditSuccessContent() {
         setStatus("success")
         setCredits(result.credits || 0)
         setTimeout(() => {
-          router.push("/analyze")
+          window.location.href = "/analyze"
         }, 3000)
       }
     }

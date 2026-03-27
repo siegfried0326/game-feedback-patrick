@@ -48,7 +48,7 @@ function BillingSuccessContent() {
       } else {
         setStatus("success")
         setTimeout(() => {
-          router.push("/analyze")
+          window.location.href = "/analyze"
         }, 3000)
       }
     }

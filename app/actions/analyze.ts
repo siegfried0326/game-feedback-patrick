@@ -816,7 +816,7 @@ ${benchmarkSection}
   "companyFeedback": "위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 반드시 참고하여 작성. **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 벤치마크 데이터에서 해당 회사 합격자들의 핵심 특징(design/readability)을 인용하여 비교하세요. 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용을 인용하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다."
 }`
 
-    const anthropic = new Anthropic({ apiKey })
+    const anthropic = new Anthropic({ apiKey, maxRetries: 3 })
     const selectedModel = await getModelForUser()
 
     const message = await anthropic.messages.create({
@@ -939,6 +939,9 @@ ${benchmarkSection}
     }
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
       return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+    }
+    if (errMsg.includes("Internal server error") || errMsg.includes("api_error") || errMsg.includes("overloaded") || errMsg.includes("529")) {
+      return { error: "AI 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요." }
     }
     return { error: "URL 분석 중 오류가 발생했습니다. 다시 시도해 주세요." }
   }
@@ -1382,8 +1385,8 @@ ${benchmarkSection}
     }
 
     try {
-      // Claude API 호출 (플랜에 따라 모델 선택)
-      const anthropic = new Anthropic({ apiKey })
+      // Claude API 호출 (플랜에 따라 모델 선택, 500 에러 자동 재시도)
+      const anthropic = new Anthropic({ apiKey, maxRetries: 3 })
       const selectedModel = await getModelForUser()
 
       // 대용량 파일: 텍스트 기반 분석 / 일반 파일: 원본 문서 분석
@@ -1578,6 +1581,9 @@ ${benchmarkSection}
     }
     if (errMsg.includes("request_too_large") || errMsg.includes("413") || errMsg.includes("maximum size")) {
       return { error: "파일 크기가 API 제한을 초과했습니다. 파일을 30MB 이하로 압축하여 다시 시도해 주세요." }
+    }
+    if (errMsg.includes("Internal server error") || errMsg.includes("api_error") || errMsg.includes("overloaded") || errMsg.includes("529")) {
+      return { error: "AI 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요." }
     }
     return { error: `분석 중 오류가 발생했습니다. 다시 시도해 주세요. (${errMsg.slice(0, 100)})` }
   }

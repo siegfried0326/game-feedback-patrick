@@ -143,6 +143,9 @@ export default function RefundPolicyPage() {
               <Link href="/mypage" className="text-[#5B8DEF] hover:underline">마이페이지</Link>에서
               직접 처리할 수 있습니다. 별도의 문의가 필요하지 않습니다.
             </p>
+            <p className="mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-300 text-sm">
+              카드결제를 통한 구매 건의 환불은 원칙적으로 카드 매출 취소 환불을 통해서만 가능합니다.
+            </p>
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-white mb-1">1. 회차권 (크레딧) 환불</h3>

@@ -23,7 +23,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye } from "lucide-react"
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -130,6 +130,8 @@ export function AnalyzeDashboard() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [showCreditError, setShowCreditError] = useState(false)
+  const [showCreditConfirm, setShowCreditConfirm] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState<FileStatus[]>([])
   const [statusMessage, setStatusMessage] = useState("")
   const [allowanceInfo, setAllowanceInfo] = useState<{
     allowed: boolean
@@ -589,11 +591,35 @@ export function AnalyzeDashboard() {
       setResults([])
       setError(null)
 
-      setTimeout(() => {
-        handleAnalyzeFiles(newFiles)
-      }, 100)
+      // 크레딧 유저 (무제한 구독이 아닌 경우) → 차감 확인 모달 표시
+      if (allowanceInfo?.allowed && !allowanceInfo?.unlimited && allowanceInfo?.remaining !== undefined) {
+        setPendingFiles(newFiles)
+        setShowCreditConfirm(true)
+      } else {
+        // 무제한 구독자는 바로 분석 시작
+        setTimeout(() => {
+          handleAnalyzeFiles(newFiles)
+        }, 100)
+      }
     }
-  }, [selectedProjectId, isLoggedIn, router])
+  }, [selectedProjectId, isLoggedIn, router, allowanceInfo])
+
+  // 크레딧 차감 확인 → 분석 진행
+  const handleCreditConfirm = () => {
+    setShowCreditConfirm(false)
+    const filesToAnalyze = [...pendingFiles]
+    setPendingFiles([])
+    setTimeout(() => {
+      handleAnalyzeFiles(filesToAnalyze)
+    }, 100)
+  }
+
+  // 크레딧 차감 취소
+  const handleCreditCancel = () => {
+    setShowCreditConfirm(false)
+    setPendingFiles([])
+    setFiles([])
+  }
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
@@ -1258,6 +1284,122 @@ export function AnalyzeDashboard() {
           </div>
         )}
       </div>
+
+      {/* 크레딧 차감 확인 모달 */}
+      {showCreditConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+            {/* 헤더 */}
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-[#5B8DEF]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Coins className="w-7 h-7 text-[#5B8DEF]" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1">크레딧 차감 안내</h3>
+              <p className="text-slate-400 text-sm">
+                {allowanceInfo?.plan === "free"
+                  ? "무료 체험 크레딧이 사용됩니다"
+                  : "분석 시 보유 크레딧에서 차감됩니다"}
+              </p>
+            </div>
+
+            {/* 파일 정보 */}
+            {pendingFiles.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 mb-5 bg-slate-800/60 rounded-lg border border-slate-700/50">
+                <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
+                <span className="text-sm text-white truncate">{pendingFiles[0].file.name}</span>
+                <span className="text-xs text-slate-500 shrink-0">
+                  {(pendingFiles[0].file.size / 1024 / 1024).toFixed(1)} MB
+                </span>
+              </div>
+            )}
+
+            {/* 크레딧 차감 내역 */}
+            <div className="bg-[#0d1b2a] rounded-xl p-5 mb-5 border border-[#1e3a5f]/50">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">현재 보유</span>
+                  <span className="text-lg font-bold text-white">{allowanceInfo?.remaining ?? 0}회</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">이번 분석</span>
+                  <span className="text-lg font-bold text-red-400">−{pendingFiles.length}회</span>
+                </div>
+                <div className="border-t border-[#1e3a5f] pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-400">분석 후 잔여</span>
+                    <span className="text-lg font-bold text-[#5B8DEF]">
+                      {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length, 0)}회
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 게이지 바 */}
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                  <span>잔여 크레딧</span>
+                  <span>{Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length, 0)} / {allowanceInfo?.remaining ?? 0}</span>
+                </div>
+                <div className="h-3 bg-slate-800 rounded-full overflow-hidden relative">
+                  {/* 현재 보유량 (흐린 배경) */}
+                  <div
+                    className="absolute inset-y-0 left-0 bg-[#5B8DEF]/20 rounded-full"
+                    style={{ width: "100%" }}
+                  />
+                  {/* 차감 후 잔여량 (밝은 게이지) */}
+                  <div
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#5B8DEF] to-[#4A7CE0] rounded-full transition-all duration-500"
+                    style={{
+                      width: `${((allowanceInfo?.remaining ?? 0) - pendingFiles.length) / (allowanceInfo?.remaining ?? 1) * 100}%`
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 무료 플랜 안내 */}
+            {allowanceInfo?.plan === "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 0 && (
+              <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <p className="text-xs text-amber-400">
+                  <Zap className="w-3.5 h-3.5 inline mr-1" />
+                  마지막 무료 크레딧입니다. 추가 분석이 필요하시면{" "}
+                  <Link href="/pricing" className="underline hover:text-amber-300">요금제를 확인</Link>해 주세요.
+                </p>
+              </div>
+            )}
+
+            {/* 크레딧 유저 안내 (잔여 1회 이하) */}
+            {allowanceInfo?.plan !== "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 1 && (allowanceInfo?.remaining ?? 0) > 0 && (
+              <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <p className="text-xs text-amber-400">
+                  <Zap className="w-3.5 h-3.5 inline mr-1" />
+                  크레딧이 얼마 남지 않았습니다.{" "}
+                  <Link href="/payment/credits" className="underline hover:text-amber-300">크레딧 충전</Link>
+                  {" 또는 "}
+                  <Link href="/pricing" className="underline hover:text-amber-300">무제한 구독</Link>을 확인해 보세요.
+                </p>
+              </div>
+            )}
+
+            {/* 버튼 */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleCreditCancel}
+                className="flex-1 py-3 border border-slate-600 text-slate-300 rounded-xl font-medium hover:bg-slate-800 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleCreditConfirm}
+                className="flex-1 py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                분석하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 크레딧 한도 초과 팝업 */}
       {showCreditError && (

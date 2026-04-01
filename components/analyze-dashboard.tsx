@@ -964,35 +964,33 @@ export function AnalyzeDashboard() {
                 </>
               )}
 
-              {/* 파일 크기 사용팁 — 파일 업로드 모드일 때 항상 표시 (분석 중에도 유지) */}
-              {uploadMode === "file" && (
-                <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
-                  <p className="text-sm font-semibold text-[#5B8DEF] mb-2 flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4" />
-                    더 정확한 분석을 받고 싶나요?
-                  </p>
-                  <p className="text-[11px] text-slate-400 mb-3">
-                    파일 크기에 따라 분석 방식이 달라집니다. 작을수록 이미지·레이아웃까지 꼼꼼하게 봐요.
-                  </p>
-                  <div className="flex flex-col gap-2 mb-3">
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                      <span className="text-emerald-400 text-xs font-bold whitespace-nowrap mt-0.5">30MB 이하</span>
-                      <span className="text-[11px] text-slate-300 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-emerald-400 font-medium">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
-                    </div>
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                      <span className="text-yellow-400 text-xs font-bold whitespace-nowrap mt-0.5">30~100MB</span>
-                      <span className="text-[11px] text-slate-300 leading-relaxed">PDF를 자동으로 압축한 뒤 풀 분석해요 — 약간 시간이 걸릴 수 있어요</span>
-                    </div>
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                      <span className="text-orange-400 text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
-                      <span className="text-[11px] text-slate-300 leading-relaxed">텍스트만 추출해서 분석해요 — 이미지·레이아웃 평가는 빠져요</span>
-                    </div>
+              {/* 파일 크기 사용팁 — 항상 표시 (분석 중에도 유지) */}
+              <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
+                <p className="text-sm font-semibold text-[#5B8DEF] mb-2 flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" />
+                  더 정확한 분석을 받고 싶나요?
+                </p>
+                <p className="text-[11px] text-slate-400 mb-3">
+                  파일 크기에 따라 분석 방식이 달라집니다. 작을수록 이미지·레이아웃까지 꼼꼼하게 봐요.
+                </p>
+                <div className="flex flex-col gap-2 mb-3">
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <span className="text-emerald-400 text-xs font-bold whitespace-nowrap mt-0.5">30MB 이하</span>
+                    <span className="text-[11px] text-slate-300 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-emerald-400 font-medium">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
                   </div>
-                  <p className="text-[11px] text-slate-500">
-                    💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 30MB 이하로 줄일 수 있어요.
-                  </p>
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                    <span className="text-yellow-400 text-xs font-bold whitespace-nowrap mt-0.5">30~100MB</span>
+                    <span className="text-[11px] text-slate-300 leading-relaxed">PDF를 자동으로 압축한 뒤 풀 분석해요 — 약간 시간이 걸릴 수 있어요</span>
+                  </div>
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                    <span className="text-orange-400 text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
+                    <span className="text-[11px] text-slate-300 leading-relaxed">텍스트만 추출해서 분석해요 — 이미지·레이아웃 평가는 빠져요</span>
+                  </div>
                 </div>
-              )}
+                <p className="text-[11px] text-slate-500">
+                  💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 30MB 이하로 줄일 수 있어요.
+                </p>
+              </div>
 
 
               {error && (

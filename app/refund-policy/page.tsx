@@ -30,7 +30,7 @@ export default function RefundPolicyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">제1조 (목적)</h2>
             <p>
               본 환불정책은 문라이트커리어랩(이하 &quot;회사&quot;)이 제공하는 아카이브 187(Archive187) 서비스(이하 &quot;서비스&quot;)의
-              구독 결제 및 회차권(크레딧) 결제에 대한 환불 기준을 규정합니다.
+              구독 결제 및 크레딧 결제에 대한 환불 기준을 규정합니다.
             </p>
           </section>
 
@@ -47,12 +47,12 @@ export default function RefundPolicyPage() {
               </div>
             </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 회차권 (크레딧)</h3>
+                <h3 className="font-medium text-white mb-1">2. 크레딧</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>1회권: 2,900원</li>
-                  <li>5회권: 7,900원 (회당 1,580원)</li>
-                  <li>10회권: 12,900원 (회당 1,290원)</li>
-                  <li>회차권은 만료되지 않으며, 분석 1회당 1개씩 차감됩니다.</li>
+                  <li>1크레딧: 2,900원</li>
+                  <li>5크레딧: 7,900원 (크레딧당 1,580원)</li>
+                  <li>10크레딧: 12,900원 (크레딧당 1,290원)</li>
+                  <li>크레딧은 만료되지 않으며, 분석 1회당 1개씩 차감됩니다.</li>
                 </ul>
               </div>
           </section>
@@ -110,26 +110,26 @@ export default function RefundPolicyPage() {
 
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제5조 (회차권 환불 기준)</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">제5조 (크레딧 환불 기준)</h2>
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-white mb-1">1. 미사용 전체 환불</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>구매한 회차를 1회도 사용하지 않은 경우, 결제일로부터 7일 이내 전액 환불이 가능합니다.</li>
+                  <li>구매한 크레딧을 1회도 사용하지 않은 경우, 결제일로부터 7일 이내 전액 환불이 가능합니다.</li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-medium text-white mb-1">2. 부분 사용 환불</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>일부 회차를 사용한 경우, 사용한 회차 수 &times; 정가(1회 2,900원)를 차감한 잔여 금액을 환불합니다.</li>
-                  <li>예시: 5회권(7,900원) 구매 후 2회 사용 → 7,900원 - (2,900원 &times; 2) = 2,100원 환불</li>
+                  <li>일부 크레딧을 사용한 경우, 사용한 크레딧 수 &times; 정가(1크레딧 2,900원)를 차감한 잔여 금액을 환불합니다.</li>
+                  <li>예시: 5크레딧(7,900원) 구매 후 2크레딧 사용 → 7,900원 - (2,900원 &times; 2) = 2,100원 환불</li>
                   <li>결제일로부터 7일 이내 요청 시에만 가능합니다.</li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-medium text-white mb-1">3. 환불 불가 사유</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>구매한 회차를 모두 사용한 경우</li>
+                  <li>구매한 크레딧을 모두 사용한 경우</li>
                   <li>결제일로부터 7일이 경과한 경우</li>
                 </ul>
               </div>
@@ -148,7 +148,7 @@ export default function RefundPolicyPage() {
             </p>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 회차권 (크레딧) 환불</h3>
+                <h3 className="font-medium text-white mb-1">1. 크레딧 환불</h3>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>마이페이지 → 크레딧 구매 내역에서 &quot;환불하기&quot; 버튼 클릭</li>
                   <li>환불 금액 확인 후 즉시 환불 처리</li>
@@ -189,7 +189,7 @@ export default function RefundPolicyPage() {
                     <td className="py-3">7일 이내 미이용 시 전액 환불<br />그 외 환불 불가</td>
                   </tr>
                   <tr className="border-b border-[#1e3a5f]/50">
-                    <td className="py-3 pr-4 font-medium text-white">회차권</td>
+                    <td className="py-3 pr-4 font-medium text-white">크레딧</td>
                     <td className="py-3 pr-4">해당 없음<br />(만료 없음)</td>
                     <td className="py-3">마이페이지에서 직접 환불<br />7일 이내 · 미사용 시 전액<br />부분 사용 시 정가 차감 후 환불</td>
                   </tr>

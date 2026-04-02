@@ -246,7 +246,7 @@ export async function confirmCreditPayment(
 // 크레딧 환불
 // ────────────────────────────────────────────
 
-const CREDIT_UNIT_PRICE = 2900 // 정가 1회당 2,900원
+const CREDIT_UNIT_PRICE = 2900 // 정가 1크레딧당 2,900원
 
 /** 환불 가능한 크레딧 주문 목록 조회 */
 export async function getCreditOrders() {
@@ -282,9 +282,9 @@ export async function getCreditOrders() {
     const refundAmount = Math.max(0, order.amount - usedCredits * CREDIT_UNIT_PRICE)
     const canRefund = isWithin7Days && refundAmount > 0 && refundableCredits > 0
 
-    const packageLabel = order.package_type === "credit_1" ? "1회권"
-      : order.package_type === "credit_5" ? "5회권"
-      : order.package_type === "credit_10" ? "10회권"
+    const packageLabel = order.package_type === "credit_1" ? "1크레딧"
+      : order.package_type === "credit_5" ? "5크레딧"
+      : order.package_type === "credit_10" ? "10크레딧"
       : order.package_type
 
     return {
@@ -335,7 +335,7 @@ export async function refundCreditOrder(orderId: string) {
   const refundAmount = Math.max(0, order.amount - usedCredits * CREDIT_UNIT_PRICE)
 
   if (refundAmount <= 0 || refundableCredits <= 0) {
-    return { error: "사용한 회차가 많아 환불 가능 금액이 없습니다." }
+    return { error: "사용한 크레딧이 많아 환불 가능 금액이 없습니다." }
   }
 
   // 나이스페이먼츠 환불 API 호출 (payment_key에 tid 저장됨)

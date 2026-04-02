@@ -478,7 +478,7 @@ export default function MyPage() {
               {isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (subscription.analysis_credits ?? 0) > 0 && (
                 <div className="bg-[#5B8DEF]/5 rounded-lg p-3 border border-[#5B8DEF]/20">
                   <p className="text-xs text-[#5B8DEF]">
-                    보유 회차({subscription.analysis_credits}회)를 먼저 소모한 뒤 구독이 적용됩니다.
+                    보유 크레딧({subscription.analysis_credits}크레딧)을 먼저 소모한 뒤 구독이 적용됩니다.
                   </p>
                 </div>
               )}

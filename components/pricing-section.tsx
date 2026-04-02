@@ -19,12 +19,12 @@ export function PricingSection() {
           </p>
         </div>
 
-        {/* 회차권 + 구독 통합 */}
+        {/* 크레딧 + 구독 통합 */}
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-          {/* 회차권 묶음 */}
+          {/* 크레딧 묶음 */}
           <div className="bg-slate-900/80 rounded-2xl p-8 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-all duration-300 flex flex-col">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-white mb-2">회차권</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">크레딧</h3>
               <p className="text-sm text-slate-400">필요한 만큼만 구매</p>
             </div>
 
@@ -38,20 +38,20 @@ export function PricingSection() {
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
                 <div>
-                  <span className="text-white font-medium">1회권</span>
+                  <span className="text-white font-medium">1크레딧</span>
                 </div>
                 <span className="text-white font-bold">2,900원</span>
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
                 <div>
-                  <span className="text-white font-medium">5회권</span>
+                  <span className="text-white font-medium">5크레딧</span>
                   <span className="text-amber-400 text-xs ml-2">45%↓</span>
                 </div>
                 <span className="text-white font-bold">7,900원</span>
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
                 <div>
-                  <span className="text-white font-medium">10회권</span>
+                  <span className="text-white font-medium">10크레딧</span>
                   <span className="text-amber-400 text-xs ml-2">55%↓</span>
                 </div>
                 <span className="text-white font-bold">12,900원</span>

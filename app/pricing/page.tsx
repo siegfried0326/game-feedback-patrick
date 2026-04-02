@@ -1,7 +1,7 @@
 /**
  * 요금제 상세 페이지
  *
- * 전체 요금제 비교 (무료/회차권/월구독/3개월).
+ * 전체 요금제 비교 (무료/크레딧/월구독/3개월).
  * PricingSection 컴포넌트와 유사하나 독립 페이지로 더 상세한 정보 포함.
  * 라우트: /pricing (공개)
  */
@@ -25,32 +25,32 @@ const creditPlans = [
     href: "/analyze",
   },
   {
-    name: "1회권",
+    name: "1크레딧",
     price: "2,900",
-    period: "1회",
+    period: "1크레딧",
     description: "필요할 때 한 번만",
     perCredit: null as string | null,
-    features: ["1회 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    features: ["1크레딧 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_1",
   },
   {
-    name: "5회권",
+    name: "5크레딧",
     price: "7,900",
-    period: "5회",
-    description: "회당 1,580원 (45% 할인)",
+    period: "5크레딧",
+    description: "크레딧당 1,580원 (45% 할인)",
     badge: "45% 할인",
-    features: ["5회 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    features: ["5크레딧 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_5",
   },
   {
-    name: "10회권",
+    name: "10크레딧",
     price: "12,900",
-    period: "10회",
-    description: "회당 1,290원 (55% 할인)",
+    period: "10크레딧",
+    description: "크레딧당 1,290원 (55% 할인)",
     badge: "55% 할인",
-    features: ["10회 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    features: ["10크레딧 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_10",
   },
@@ -115,8 +115,8 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* 크레딧 (회차권) */}
-        <h2 className="text-xl font-bold text-white mb-4">회차권</h2>
+        {/* 크레딧 */}
+        <h2 className="text-xl font-bold text-white mb-4">크레딧</h2>
         <p className="text-slate-400 text-sm mb-6">크레딧은 만료되지 않습니다. 필요할 때 사용하세요.</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {creditPlans.map((plan, index) => (
@@ -235,7 +235,7 @@ export default function PricingPage() {
         </div>
 
         <p className="text-slate-500 text-xs mb-10">
-          * 회차권을 보유한 상태에서 구독 시, 보유 회차를 먼저 소모한 뒤 구독이 적용됩니다.
+          * 크레딧을 보유한 상태에서 구독 시, 보유 크레딧을 먼저 소모한 뒤 구독이 적용됩니다.
         </p>
 
         {/* 서비스 상세 설명 */}
@@ -256,7 +256,7 @@ export default function PricingPage() {
               <div>
                 <h3 className="font-medium text-white mb-1">서비스 제공 기간</h3>
                 <p className="text-sm text-slate-400">
-                  회차권: 만료 없음<br />
+                  크레딧: 만료 없음<br />
                   월 구독: 결제일부터 1개월<br />
                   3개월: 결제일부터 3개월
                 </p>

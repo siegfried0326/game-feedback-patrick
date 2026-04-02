@@ -1,12 +1,12 @@
 /**
- * 크레딧(회차권) 결제 페이지
+ * 크레딧 결제 페이지
  *
  * NICEPayments Server 승인 모델로 결제 처리.
  *
  * ── 동작 흐름 ──
  * 1. 로그인 확인
  * 2. 나이스 JS SDK 스크립트 로드
- * 3. 사용자가 패키지 선택 (1회/5회/10회)
+ * 3. 사용자가 패키지 선택 (1/5/10크레딧)
  * 4. "결제하기" 버튼 클릭
  *    → createCreditOrder()로 서버에 주문 생성
  *    → AUTHNICE.requestPay()로 나이스 결제창 표시
@@ -36,7 +36,7 @@ const NICEPAY_CLIENT_ID = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID ?? ""
 const PACKAGES = [
   {
     key: "credit_1",
-    name: "1회권",
+    name: "1크레딧",
     credits: 1,
     price: 2900,
     perCredit: "2,900",
@@ -44,7 +44,7 @@ const PACKAGES = [
   },
   {
     key: "credit_5",
-    name: "5회권",
+    name: "5크레딧",
     credits: 5,
     price: 7900,
     perCredit: "1,580",
@@ -52,7 +52,7 @@ const PACKAGES = [
   },
   {
     key: "credit_10",
-    name: "10회권",
+    name: "10크레딧",
     credits: 10,
     price: 12900,
     perCredit: "1,290",
@@ -206,11 +206,11 @@ function CreditsContent() {
                       <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">{p.badge}</span>
                     )}
                   </div>
-                  <p className="text-slate-400 text-sm mt-1">회당 {p.perCredit}원</p>
+                  <p className="text-slate-400 text-sm mt-1">크레딧당 {p.perCredit}원</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white font-bold text-xl">{p.price.toLocaleString()}원</p>
-                  <p className="text-slate-500 text-sm">{p.credits}회 분석</p>
+                  <p className="text-slate-500 text-sm">{p.credits}크레딧</p>
                 </div>
               </div>
             </button>

@@ -674,7 +674,7 @@ export function AnalyzeDashboard() {
                 <>
                   <h2 className="text-xl font-bold text-white mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
                   <p className="text-slate-400 mb-6">
-                    무료 플랜은 총 1회 분석이 가능합니다.<br />
+                    무료 플랜은 총 1크레딧 분석이 가능합니다.<br />
                     무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.
                   </p>
                 </>
@@ -694,9 +694,9 @@ export function AnalyzeDashboard() {
             <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-amber-400">
-                무료 플랜은 총 <span className="font-bold">1회 분석</span>이 가능합니다.
+                무료 플랜은 총 <span className="font-bold">1크레딧 분석</span>이 가능합니다.
                 {allowanceInfo.remaining !== undefined && (
-                  <> 현재 <span className="font-bold">{allowanceInfo.remaining}회</span> 남았습니다.</>
+                  <> 현재 <span className="font-bold">{allowanceInfo.remaining}크레딧</span> 남았습니다.</>
                 )}
               </p>
               <p className="text-xs text-amber-400/70 mt-1">
@@ -1316,17 +1316,17 @@ export function AnalyzeDashboard() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-400">현재 보유</span>
-                  <span className="text-lg font-bold text-white">{allowanceInfo?.remaining ?? 0}회</span>
+                  <span className="text-lg font-bold text-white">{allowanceInfo?.remaining ?? 0}크레딧</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-400">이번 분석</span>
-                  <span className="text-lg font-bold text-red-400">−{pendingFiles.length}회</span>
+                  <span className="text-lg font-bold text-red-400">−{pendingFiles.length}크레딧</span>
                 </div>
                 <div className="border-t border-[#1e3a5f] pt-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-400">분석 후 잔여</span>
                     <span className="text-lg font-bold text-[#5B8DEF]">
-                      {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length, 0)}회
+                      {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length, 0)}크레딧
                     </span>
                   </div>
                 </div>
@@ -1366,7 +1366,7 @@ export function AnalyzeDashboard() {
               </div>
             )}
 
-            {/* 크레딧 유저 안내 (잔여 1회 이하) */}
+            {/* 크레딧 유저 안내 (잔여 1크레딧 이하) */}
             {allowanceInfo?.plan !== "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 1 && (allowanceInfo?.remaining ?? 0) > 0 && (
               <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <p className="text-xs text-amber-400">

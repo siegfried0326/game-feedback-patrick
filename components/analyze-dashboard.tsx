@@ -37,6 +37,7 @@ import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBe
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
+import { extractTextFromOffice, isOfficeFile } from "@/lib/office-extract"
 import { compressPdf } from "@/lib/pdf-compress"
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link"
@@ -319,7 +320,7 @@ export function AnalyzeDashboard() {
         if (fileStatus.file.size > MAX_FILE_SIZE) {
           const sizeMB = (fileStatus.file.size / (1024 * 1024)).toFixed(1)
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 200MB를 초과합니다. 30MB 이하를 권장합니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` } : f
+            idx === i ? { ...f, status: "error", error: `파일 크기(${sizeMB}MB)가 200MB를 초과합니다. 10MB 이하를 권장합니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` } : f
           ))
           continue
         }
@@ -504,10 +505,14 @@ export function AnalyzeDashboard() {
 
           // 텍스트 확보: 1단계에서 저장된 텍스트 우선 사용, 없으면 재추출
           let extractedTextForSearch: string | undefined = uploadedFileInfo?.extractedText || undefined
-          if (!extractedTextForSearch && isPdf) {
+          if (!extractedTextForSearch) {
             try {
               setStatusMessage("텍스트 추출 중...")
-              extractedTextForSearch = await extractTextFromPdf(fileStatus.file)
+              if (isPdf) {
+                extractedTextForSearch = await extractTextFromPdf(fileStatus.file)
+              } else if (isOfficeFile(fileStatus.file.type)) {
+                extractedTextForSearch = await extractTextFromOffice(fileStatus.file)
+              }
             } catch {
               console.log("텍스트 추출 실패 (무시)")
             }
@@ -627,12 +632,19 @@ export function AnalyzeDashboard() {
       const fileStatus = filesToProcess[0]
       let extractedText = ""
 
-      // PDF 텍스트 추출
+      // 파일 형식에 따라 텍스트 추출
       if (fileStatus.file.type === "application/pdf") {
         try {
           extractedText = await extractTextFromPdf(fileStatus.file) || ""
         } catch {
-          console.log("텍스트 추출 실패 (무시)")
+          console.log("PDF 텍스트 추출 실패 (무시)")
+        }
+      } else if (isOfficeFile(fileStatus.file.type)) {
+        try {
+          setStatusMessage("문서에서 텍스트를 추출하는 중...")
+          extractedText = await extractTextFromOffice(fileStatus.file) || ""
+        } catch {
+          console.log("Office 텍스트 추출 실패 (무시)")
         }
       }
 
@@ -1015,7 +1027,7 @@ export function AnalyzeDashboard() {
                                 <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 권장 30MB 이하 (최대 200MB)</p>
+                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 권장 10MB 이하 (최대 200MB)</p>
                           </div>
                         </div>
                       </div>
@@ -1076,12 +1088,12 @@ export function AnalyzeDashboard() {
                 </p>
                 <div className="flex flex-col gap-2 mb-3">
                   <div className="flex items-start gap-2.5 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                    <span className="text-emerald-400 text-xs font-bold whitespace-nowrap mt-0.5">30MB 이하</span>
+                    <span className="text-emerald-400 text-xs font-bold whitespace-nowrap mt-0.5">10MB 이하</span>
                     <span className="text-[11px] text-slate-300 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-emerald-400 font-medium">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
                   </div>
                   <div className="flex items-start gap-2.5 px-3 py-2.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                    <span className="text-yellow-400 text-xs font-bold whitespace-nowrap mt-0.5">30~100MB</span>
-                    <span className="text-[11px] text-slate-300 leading-relaxed">PDF를 자동으로 압축한 뒤 풀 분석해요 — 약간 시간이 걸릴 수 있어요</span>
+                    <span className="text-yellow-400 text-xs font-bold whitespace-nowrap mt-0.5">10~100MB</span>
+                    <span className="text-[11px] text-slate-300 leading-relaxed">텍스트를 추출해서 분석해요 — 이미지·레이아웃 평가는 추정으로 작성돼요</span>
                   </div>
                   <div className="flex items-start gap-2.5 px-3 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
                     <span className="text-orange-400 text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
@@ -1089,7 +1101,7 @@ export function AnalyzeDashboard() {
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-500">
-                  💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 30MB 이하로 줄일 수 있어요.
+                  💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 10MB 이하로 줄일 수 있어요.
                 </p>
               </div>
 

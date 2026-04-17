@@ -135,7 +135,7 @@ function CreditsContent() {
       // NICEPayments 결제창 호출 (Server 승인 모델)
       window.AUTHNICE.requestPay({
         clientId: NICEPAY_CLIENT_ID,
-        method: "card",
+        method: "cardAndEasyPay",
         orderId: orderResult.orderId!,
         amount: orderResult.amount!,
         goodsName: `아카이브 187 분석 ${pkg.name}`,

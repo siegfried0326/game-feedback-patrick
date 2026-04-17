@@ -34,6 +34,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
+import { DOCUMENT_CATEGORIES, getCategoryByKey, getTypeSpecificCriteria } from "@/lib/document-categories"
 import fs from "fs"
 import path from "path"
 
@@ -955,6 +956,7 @@ export async function analyzeDocumentDirect(input: {
   mimeType: string
   filePath: string
   extractedText?: string // 벡터 서치용 텍스트 (클라이언트에서 추출)
+  documentCategory?: string // 문서 유형 키 (system_design, level_design 등)
 }) {
   // 보안: 로그인 확인 (미인증 사용자의 API 호출 차단)
   const supabaseAuth = await createClient()
@@ -971,12 +973,49 @@ export async function analyzeDocumentDirect(input: {
   try {
     const supabase = await createClient()
 
-    // 학습된 포트폴리오 데이터 가져오기
-    const { data: portfolios, error: portfolioError } = await supabase
-      .from("portfolios")
-      .select("file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type")
-      .order("overall_score", { ascending: false })
-      .limit(50)
+    // 학습된 포트폴리오 데이터 가져오기 (유형 기반 필터링)
+    const categoryConfig = input.documentCategory ? getCategoryByKey(input.documentCategory) : undefined
+    const selectFields = "file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type"
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let portfolios: any[] | null = null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let portfolioError: any = null
+
+    if (categoryConfig && categoryConfig.tags.length > 0) {
+      // 같은 유형의 합격작 우선 로딩
+      const typedPortfoliosResult = await supabase
+        .from("portfolios")
+        .select(selectFields)
+        .overlaps("tags", categoryConfig.tags)
+        .order("overall_score", { ascending: false })
+        .limit(30)
+
+      if (typedPortfoliosResult.data && typedPortfoliosResult.data.length >= 10) {
+        portfolios = typedPortfoliosResult.data
+        portfolioError = typedPortfoliosResult.error
+        console.log(`[유형 필터] "${categoryConfig.label}" 태그 매칭 ${portfolios?.length ?? 0}개 로드`)
+      } else {
+        // 유형 매칭 결과가 10개 미만이면 전체에서 가져오기 (폴백)
+        console.log(`[유형 필터] "${categoryConfig.label}" 매칭 ${typedPortfoliosResult.data?.length ?? 0}개 부족 → 전체 쿼리 폴백`)
+        const allResult = await supabase
+          .from("portfolios")
+          .select(selectFields)
+          .order("overall_score", { ascending: false })
+          .limit(50)
+        portfolios = allResult.data
+        portfolioError = allResult.error
+      }
+    } else {
+      // 기타 또는 미선택: 기존 로직 (전체 상위 50개)
+      const allResult = await supabase
+        .from("portfolios")
+        .select(selectFields)
+        .order("overall_score", { ascending: false })
+        .limit(50)
+      portfolios = allResult.data
+      portfolioError = allResult.error
+    }
 
     if (portfolioError) {
       console.error("Portfolio fetch error:", portfolioError.message, portfolioError.code, portfolioError.details)
@@ -985,6 +1024,7 @@ export async function analyzeDocumentDirect(input: {
       hasData: !!portfolios,
       count: portfolios?.length ?? 0,
       error: portfolioError?.message ?? null,
+      category: categoryConfig?.label ?? "전체",
       firstItem: portfolios?.[0] ? { file_name: portfolios[0].file_name, companies: portfolios[0].companies } : null,
     })
 
@@ -1174,12 +1214,13 @@ ${topExamples}
 `
     }
 
-    // [벡터 서치] 문서 내용 기반 유사 검색
+    // [벡터 서치] 문서 내용 기반 유사 검색 (카테고리 키워드 추가로 정확도 향상)
     let vectorSearchSection = ""
+    const searchPrefix = categoryConfig ? `${categoryConfig.label} ` : ""
     if (input.extractedText && input.extractedText.length >= 100) {
       // 추출된 텍스트가 있으면 실제 문서 내용으로 벡터 서치 (정확도 높음)
       try {
-        const searchResult = await searchSimilarContent(input.extractedText, 15, 0.4)
+        const searchResult = await searchSimilarContent(searchPrefix + input.extractedText, 15, 0.4)
         if (searchResult.chunks.length > 0) {
           vectorSearchSection = formatChunksForPrompt(searchResult.chunks)
           console.log(`[벡터 서치-문서] 텍스트 기반 ${searchResult.chunks.length}개 유사 청크 발견`)
@@ -1206,7 +1247,27 @@ ${topExamples}
     // [벤치마크] 회사별 합격 포트폴리오 벤치마크 데이터 주입 (문서 분석: design + readability 모두)
     const benchmarkSection = formatBenchmarkForPrompt(true)
 
+    // [유형별 맞춤 평가] 사용자가 선택한 문서 유형에 따른 추가 프롬프트
+    const categoryLabel = categoryConfig?.label || "게임 기획"
+    const typeSpecificSection = (input.documentCategory && input.documentCategory !== "other" && categoryConfig)
+      ? `
+## 📌 문서 유형: ${categoryLabel}
+이 문서는 사용자가 **${categoryLabel}** 유형으로 분류했습니다.
+학습 데이터 중 같은 유형(${categoryConfig.tags.join(", ")})의 합격 포트폴리오 ${portfolios?.length || 0}개를 기반으로 평가합니다.
+
+### ${categoryLabel} 유형 특화 평가 기준
+${getTypeSpecificCriteria(input.documentCategory)}
+
+**주의**: 이 문서는 ${categoryLabel} 문서이므로, 관련 없는 항목에 대해 "~가 없다"고 지적하지 마세요.
+예를 들어 캐릭터 문서에 "레벨 디자인이 없다", 시스템 기획서에 "캐릭터 설정이 부족하다" 같은 피드백은 부적절합니다.
+해당 항목이 이 유형과 관련 없으면 "이 문서의 주제(${categoryLabel})에서는 해당 항목이 직접적으로 다뤄지지 않았습니다" 정도로 짧게 언급하세요.
+
+---
+`
+      : ""
+
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
+${typeSpecificSection}
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}

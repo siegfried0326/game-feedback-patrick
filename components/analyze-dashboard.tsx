@@ -38,6 +38,7 @@ import { getProjects, createProject, checkProjectAllowance } from "@/app/actions
 import { createClient } from "@/lib/supabase/client"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
 import { compressPdf } from "@/lib/pdf-compress"
+import { DOCUMENT_CATEGORIES } from "@/lib/document-categories"
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -131,6 +132,7 @@ export function AnalyzeDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [showCreditError, setShowCreditError] = useState(false)
   const [showCreditConfirm, setShowCreditConfirm] = useState(false)
+  const [showCategorySelect, setShowCategorySelect] = useState(false)
   const [pendingFiles, setPendingFiles] = useState<FileStatus[]>([])
   const [statusMessage, setStatusMessage] = useState("")
   const [allowanceInfo, setAllowanceInfo] = useState<{
@@ -265,7 +267,7 @@ export function AnalyzeDashboard() {
   }
 
   // 여러 파일 분석
-  const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[]) => {
+  const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], category?: string) => {
     if (!selectedProjectId) {
       setError("프로젝트를 먼저 선택해 주세요.")
       return
@@ -517,6 +519,7 @@ export function AnalyzeDashboard() {
             mimeType: fileStatus.file.type,
             filePath,
             extractedText: extractedTextForSearch,
+            documentCategory: category,
           })
 
           if (analysisResult.error) {
@@ -596,22 +599,34 @@ export function AnalyzeDashboard() {
         setPendingFiles(newFiles)
         setShowCreditConfirm(true)
       } else {
-        // 무제한 구독자는 바로 분석 시작
-        setTimeout(() => {
-          handleAnalyzeFiles(newFiles)
-        }, 100)
+        // 무제한 구독자 → 카테고리 선택 후 분석 시작
+        setPendingFiles(newFiles)
+        setShowCategorySelect(true)
       }
     }
   }, [selectedProjectId, isLoggedIn, router, allowanceInfo])
 
-  // 크레딧 차감 확인 → 분석 진행
+  // 크레딧 차감 확인 → 카테고리 선택으로 이동
   const handleCreditConfirm = () => {
     setShowCreditConfirm(false)
+    setShowCategorySelect(true)
+  }
+
+  // 카테고리 선택 → 분석 진행
+  const handleCategorySelect = (categoryKey: string) => {
+    setShowCategorySelect(false)
     const filesToAnalyze = [...pendingFiles]
     setPendingFiles([])
     setTimeout(() => {
-      handleAnalyzeFiles(filesToAnalyze)
+      handleAnalyzeFiles(filesToAnalyze, categoryKey)
     }, 100)
+  }
+
+  // 카테고리 선택 취소
+  const handleCategoryCancel = () => {
+    setShowCategorySelect(false)
+    setPendingFiles([])
+    setFiles([])
   }
 
   // 크레딧 차감 취소
@@ -1395,6 +1410,60 @@ export function AnalyzeDashboard() {
                 분석하기
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 문서 유형 선택 모달 */}
+      {showCategorySelect && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
+            {/* 헤더 */}
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 bg-[#5B8DEF]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <FileText className="w-6 h-6 text-[#5B8DEF]" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1">문서 유형을 선택해주세요</h3>
+              <p className="text-sm text-slate-400">
+                분석 정확도를 높이기 위해 문서와 가장 가까운 유형을 골라주세요
+              </p>
+            </div>
+
+            {/* 파일 정보 */}
+            {pendingFiles.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-slate-800/60 rounded-lg border border-slate-700/50">
+                <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
+                <span className="text-sm text-white truncate">{pendingFiles[0].file.name}</span>
+                <span className="text-xs text-slate-500 shrink-0">
+                  {(pendingFiles[0].file.size / 1024 / 1024).toFixed(1)} MB
+                </span>
+              </div>
+            )}
+
+            {/* 카테고리 그리드 */}
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {DOCUMENT_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.key}
+                  onClick={() => handleCategorySelect(cat.key)}
+                  className="flex items-start gap-3 p-3 rounded-xl border border-slate-700 bg-slate-800/50 hover:border-[#5B8DEF] hover:bg-[#5B8DEF]/10 transition-all text-left group"
+                >
+                  <span className="text-xl mt-0.5">{cat.icon}</span>
+                  <div>
+                    <p className="text-sm font-medium text-white group-hover:text-[#5B8DEF]">{cat.label}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{cat.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* 취소 버튼 */}
+            <button
+              onClick={handleCategoryCancel}
+              className="w-full py-2.5 border border-slate-600 text-slate-400 rounded-xl text-sm hover:bg-slate-800 transition-colors"
+            >
+              취소
+            </button>
           </div>
         </div>
       )}

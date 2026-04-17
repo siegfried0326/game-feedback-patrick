@@ -502,21 +502,20 @@ export function AnalyzeDashboard() {
             idx === i ? { ...f, status: "analyzing" } : f
           ))
 
-          // PDF인 경우 벡터 서치용 텍스트 추출 (분석 정확도 향상)
-          let extractedTextForSearch: string | undefined
-          if (isPdf) {
+          // 텍스트 확보: 1단계에서 저장된 텍스트 우선 사용, 없으면 재추출
+          let extractedTextForSearch: string | undefined = uploadedFileInfo?.extractedText || undefined
+          if (!extractedTextForSearch && isPdf) {
             try {
-              setStatusMessage("벡터 서치용 텍스트 추출 중...")
+              setStatusMessage("텍스트 추출 중...")
               extractedTextForSearch = await extractTextFromPdf(fileStatus.file)
-              if (extractedTextForSearch && extractedTextForSearch.length < 100) {
-                extractedTextForSearch = undefined // 텍스트가 너무 짧으면 무시
-              }
             } catch {
-              // 텍스트 추출 실패해도 분석은 계속 진행
-              console.log("벡터 서치용 텍스트 추출 실패 (무시)")
+              console.log("텍스트 추출 실패 (무시)")
             }
-            setStatusMessage("AI 분석 중...")
           }
+          if (extractedTextForSearch && extractedTextForSearch.length < 100) {
+            extractedTextForSearch = undefined
+          }
+          setStatusMessage("AI 분석 중...")
 
           analysisResult = await analyzeDocumentDirect({
             projectId: selectedProjectId,
@@ -637,10 +636,13 @@ export function AnalyzeDashboard() {
         }
       }
 
-      // 텍스트가 충분하면 키워드 추출
+      // 추출된 텍스트를 저장 (2단계에서 재사용 — 대용량 파일 폴백용)
+      setUploadedFileInfo({ fileUrl: "", filePath: "", mimeType: fileStatus.file.type, extractedText })
+
+      // 텍스트가 충분하면 키워드 추출 (서버에는 앞 3000자만 전송)
       if (extractedText.length >= 50) {
         const result = await extractKeywords({
-          extractedText,
+          extractedText: extractedText.slice(0, 5000),
           fileName: fileStatus.file.name,
         })
         if (result.keywords.length > 0) {
@@ -708,6 +710,7 @@ export function AnalyzeDashboard() {
   const handleKeywordCancel = () => {
     setShowKeywordEditor(false)
     setExtractedKeywords([])
+    setUploadedFileInfo(null)
     setPendingFiles([])
     setFiles([])
   }

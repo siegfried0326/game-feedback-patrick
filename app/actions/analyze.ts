@@ -1474,9 +1474,9 @@ ${benchmarkSection}
     const fileBuffer = Buffer.from(await response.arrayBuffer())
     const fileSizeMB = fileBuffer.length / (1024 * 1024)
 
-    // Anthropic API PDF 제한: base64 변환 시 ~33% 증가
-    // 25MB 이상은 텍스트 폴백, API 에러 시에도 자동 폴백
-    const MAX_FILE_SIZE_MB = 25
+    // Anthropic API 제한: base64 변환 시 ~33% 증가 + 시스템 프롬프트(포트폴리오 30개 + 벤치마크)가 대용량
+    // 10MB 이상: base64 + 시스템 프롬프트 합산 시 API 요청 제한 초과 가능 → 텍스트 우선
+    const MAX_FILE_SIZE_MB = 10
     // Claude API 문서 블록은 PDF/이미지만 지원 — PPTX, DOCX 등은 텍스트 폴백
     const supportedDocTypes = [
       "application/pdf",
@@ -1486,10 +1486,14 @@ ${benchmarkSection}
       "image/webp",
     ]
     const isDocTypeSupported = supportedDocTypes.includes(input.mimeType)
-    const useTextFallback = fileSizeMB > MAX_FILE_SIZE_MB || !isDocTypeSupported
+    // 추출 텍스트가 충분하면 텍스트 모드 우선 (대용량), 텍스트 없으면 원본 전송 시도
+    const hasExtractedText = !!input.extractedText && input.extractedText.length >= 100
+    const useTextFallback = !isDocTypeSupported || (fileSizeMB > MAX_FILE_SIZE_MB && hasExtractedText)
 
     if (!isDocTypeSupported) {
       console.log(`[분석] 비지원 파일형식(${input.mimeType}) → 텍스트 추출 모드로 전환`)
+    } else if (useTextFallback) {
+      console.log(`[분석] ${fileSizeMB.toFixed(1)}MB > ${MAX_FILE_SIZE_MB}MB → 텍스트 추출 모드 (${input.extractedText!.length}자)`)
     }
 
     let base64Data = ""
@@ -1498,12 +1502,12 @@ ${benchmarkSection}
     if (!useTextFallback) {
       base64Data = fileBuffer.toString("base64")
       mediaType = input.mimeType as typeof mediaType
-    } else {
-      // 대용량 파일: 추출된 텍스트가 없으면 분석 불가
-      if (!input.extractedText || input.extractedText.length < 100) {
-        return { error: `파일 크기(${fileSizeMB.toFixed(1)}MB)가 너무 큽니다. PDF에서 텍스트를 추출할 수 없어 분석이 불가합니다. 30MB 이하로 압축하거나 텍스트가 포함된 PDF로 다시 시도해 주세요.` }
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        console.log(`[분석] ${fileSizeMB.toFixed(1)}MB — 텍스트 없어 원본 전송 시도 (폴백 불가)`)
       }
-      console.log(`[분석] 대용량 PDF(${fileSizeMB.toFixed(1)}MB) → 텍스트 추출 모드로 전환 (${input.extractedText.length}자)`)
+    } else if (!isDocTypeSupported && !hasExtractedText) {
+      // 비-PDF + 텍스트도 없음 → 분석 불가
+      return { error: `이 파일 형식(${input.mimeType})은 직접 분석할 수 없고, 텍스트 추출도 실패했습니다. PDF로 변환하여 다시 시도해 주세요.` }
     }
 
     try {
@@ -1554,16 +1558,22 @@ ${benchmarkSection}
           system: systemPrompt,
         })
       } catch (apiError: unknown) {
-        // PDF 직접 전송 실패 시 텍스트 폴백 재시도
+        // API 실패 시 텍스트 폴백 재시도 (PDF 원본 전송 실패 OR 텍스트 전송도 실패)
         const errMsg = apiError instanceof Error ? apiError.message : String(apiError)
-        if (!useTextFallback && input.extractedText && input.extractedText.length >= 100) {
-          console.error(`[분석-문서] PDF 직접 전송 실패(${errMsg}), 텍스트 폴백 재시도`)
-          let fallbackContent = input.extractedText
-          if (fallbackContent.length > 100000) fallbackContent = fallbackContent.substring(0, 100000)
+        const hasText = input.extractedText && input.extractedText.length >= 100
+        const isRequestTooLarge = errMsg.includes("request_too_large") || errMsg.includes("too many tokens") || errMsg.includes("context_length") || errMsg.includes("413") || errMsg.includes("maximum size")
+
+        if (hasText) {
+          // 텍스트가 있으면 항상 폴백 시도
+          console.error(`[분석-문서] API 실패(${errMsg.slice(0, 200)}), 텍스트 폴백 재시도`)
+          // 요청이 너무 큰 경우 텍스트를 더 짧게 자름
+          const maxChars = isRequestTooLarge ? 50000 : 100000
+          let fallbackContent = input.extractedText!
+          if (fallbackContent.length > maxChars) fallbackContent = fallbackContent.substring(0, maxChars)
 
           const fallbackMessages: Anthropic.MessageParam[] = [{
             role: "user" as const,
-            content: `아래는 "${input.fileName}" 문서(${fileSizeMB.toFixed(1)}MB)에서 추출한 텍스트 내용입니다. 원본 PDF 전송이 실패하여 텍스트만 추출하여 분석합니다. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다.\n\n---\n\n${fallbackContent}`,
+            content: `아래는 "${input.fileName}" 문서(${fileSizeMB.toFixed(1)}MB)에서 추출한 텍스트 내용입니다. 원본 PDF 전송이 실패하여 텍스트만 추출하여 분석합니다. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다. 단, 텍스트 기반 분석이므로 readabilityCategories와 layoutRecommendations는 텍스트 구조를 기반으로 추정하여 작성해주세요.\n\n---\n\n${fallbackContent}`,
           }]
 
           message = await anthropic.messages.create({
@@ -1698,11 +1708,8 @@ ${benchmarkSection}
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
       return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
     }
-    if (errMsg.includes("too many tokens") || errMsg.includes("context_length")) {
-      return { error: "파일 내용이 너무 많아 분석할 수 없습니다. 더 짧은 문서로 시도해 주세요." }
-    }
-    if (errMsg.includes("request_too_large") || errMsg.includes("413") || errMsg.includes("maximum size")) {
-      return { error: "파일 크기가 API 제한을 초과했습니다. 파일을 30MB 이하로 압축하여 다시 시도해 주세요." }
+    if (errMsg.includes("too many tokens") || errMsg.includes("context_length") || errMsg.includes("request_too_large") || errMsg.includes("413") || errMsg.includes("maximum size")) {
+      return { error: "파일 내용이 너무 많아 AI가 한번에 처리할 수 없습니다. 불필요한 페이지를 줄이거나, 이미지를 압축하여 다시 시도해 주세요." }
     }
     if (errMsg.includes("Internal server error") || errMsg.includes("api_error") || errMsg.includes("overloaded") || errMsg.includes("529")) {
       return { error: "AI 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요." }

@@ -33,12 +33,11 @@ import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
-import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis } from "@/app/actions/analyze"
+import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, extractKeywords } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
 import { compressPdf } from "@/lib/pdf-compress"
-import { DOCUMENT_CATEGORIES } from "@/lib/document-categories"
 import { v4 as uuidv4 } from "uuid"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -132,8 +131,15 @@ export function AnalyzeDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [showCreditError, setShowCreditError] = useState(false)
   const [showCreditConfirm, setShowCreditConfirm] = useState(false)
-  const [showCategorySelect, setShowCategorySelect] = useState(false)
+  const [showKeywordEditor, setShowKeywordEditor] = useState(false)
+  const [extractedKeywords, setExtractedKeywords] = useState<string[]>([])
+  const [isExtractingKeywords, setIsExtractingKeywords] = useState(false)
+  const [newKeywordInput, setNewKeywordInput] = useState("")
   const [pendingFiles, setPendingFiles] = useState<FileStatus[]>([])
+  // 1단계에서 업로드된 파일 정보 (2단계에서 재사용)
+  const [uploadedFileInfo, setUploadedFileInfo] = useState<{
+    fileUrl: string; filePath: string; mimeType: string; extractedText?: string
+  } | null>(null)
   const [statusMessage, setStatusMessage] = useState("")
   const [allowanceInfo, setAllowanceInfo] = useState<{
     allowed: boolean
@@ -266,8 +272,8 @@ export function AnalyzeDashboard() {
     }
   }
 
-  // 여러 파일 분석
-  const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], category?: string) => {
+  // 여러 파일 분석 (2단계: 합격작 비교)
+  const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], _unused?: string, keywords?: string[]) => {
     if (!selectedProjectId) {
       setError("프로젝트를 먼저 선택해 주세요.")
       return
@@ -519,7 +525,7 @@ export function AnalyzeDashboard() {
             mimeType: fileStatus.file.type,
             filePath,
             extractedText: extractedTextForSearch,
-            documentCategory: category,
+            keywords,
           })
 
           if (analysisResult.error) {
@@ -599,32 +605,109 @@ export function AnalyzeDashboard() {
         setPendingFiles(newFiles)
         setShowCreditConfirm(true)
       } else {
-        // 무제한 구독자 → 카테고리 선택 후 분석 시작
+        // 무제한 구독자 → 바로 키워드 추출 시작
         setPendingFiles(newFiles)
-        setShowCategorySelect(true)
+        startKeywordExtraction(newFiles)
       }
     }
   }, [selectedProjectId, isLoggedIn, router, allowanceInfo])
 
-  // 크레딧 차감 확인 → 카테고리 선택으로 이동
+  // 크레딧 차감 확인 → 키워드 추출 시작
   const handleCreditConfirm = () => {
     setShowCreditConfirm(false)
-    setShowCategorySelect(true)
+    startKeywordExtraction(pendingFiles)
   }
 
-  // 카테고리 선택 → 분석 진행
-  const handleCategorySelect = (categoryKey: string) => {
-    setShowCategorySelect(false)
+  // 1단계: 키워드 추출 (파일 업로드 + 텍스트 추출 + Claude 키워드 추출)
+  const startKeywordExtraction = async (filesToProcess: FileStatus[]) => {
+    if (filesToProcess.length === 0) return
+    setIsExtractingKeywords(true)
+    setStatusMessage("문서를 스캔하는 중...")
+
+    try {
+      const fileStatus = filesToProcess[0]
+      let extractedText = ""
+
+      // PDF 텍스트 추출
+      if (fileStatus.file.type === "application/pdf") {
+        try {
+          extractedText = await extractTextFromPdf(fileStatus.file) || ""
+        } catch {
+          console.log("텍스트 추출 실패 (무시)")
+        }
+      }
+
+      // 텍스트가 충분하면 키워드 추출
+      if (extractedText.length >= 50) {
+        const result = await extractKeywords({
+          extractedText,
+          fileName: fileStatus.file.name,
+        })
+        if (result.keywords.length > 0) {
+          setExtractedKeywords(result.keywords)
+        } else {
+          // 키워드 추출 실패 시 파일명에서 기본 추출
+          setExtractedKeywords(extractFallbackKeywords(fileStatus.file.name))
+        }
+      } else {
+        // 텍스트 부족 시 파일명에서 기본 추출
+        setExtractedKeywords(extractFallbackKeywords(fileStatus.file.name))
+      }
+
+      setShowKeywordEditor(true)
+    } catch (err) {
+      console.error("키워드 추출 오류:", err)
+      setExtractedKeywords(extractFallbackKeywords(filesToProcess[0]?.file.name || ""))
+      setShowKeywordEditor(true)
+    } finally {
+      setIsExtractingKeywords(false)
+      setStatusMessage("")
+    }
+  }
+
+  // 파일명에서 키워드 폴백 추출
+  const extractFallbackKeywords = (fileName: string): string[] => {
+    const keywords: string[] = []
+    const patterns = [
+      "시스템", "레벨", "전투", "캐릭터", "몬스터", "UI", "UX", "역기획",
+      "데이터", "테이블", "콘텐츠", "퀘스트", "밸런", "스킬", "제안서", "기획서",
+      "강화", "재화", "인벤토리", "보스", "던전", "PvP",
+    ]
+    const lower = fileName.toLowerCase()
+    for (const p of patterns) {
+      if (lower.includes(p.toLowerCase())) keywords.push(p)
+    }
+    return keywords.length > 0 ? keywords : ["게임기획"]
+  }
+
+  // 키워드 추가
+  const handleAddKeyword = () => {
+    const trimmed = newKeywordInput.trim()
+    if (trimmed && !extractedKeywords.includes(trimmed)) {
+      setExtractedKeywords(prev => [...prev, trimmed])
+      setNewKeywordInput("")
+    }
+  }
+
+  // 키워드 삭제
+  const handleRemoveKeyword = (keyword: string) => {
+    setExtractedKeywords(prev => prev.filter(k => k !== keyword))
+  }
+
+  // 2단계: 합격작 비교 시작
+  const handleStartComparison = () => {
+    setShowKeywordEditor(false)
     const filesToAnalyze = [...pendingFiles]
     setPendingFiles([])
     setTimeout(() => {
-      handleAnalyzeFiles(filesToAnalyze, categoryKey)
+      handleAnalyzeFiles(filesToAnalyze, undefined, extractedKeywords)
     }, 100)
   }
 
-  // 카테고리 선택 취소
-  const handleCategoryCancel = () => {
-    setShowCategorySelect(false)
+  // 키워드 편집 취소
+  const handleKeywordCancel = () => {
+    setShowKeywordEditor(false)
+    setExtractedKeywords([])
     setPendingFiles([])
     setFiles([])
   }
@@ -1414,18 +1497,29 @@ export function AnalyzeDashboard() {
         </div>
       )}
 
-      {/* 문서 유형 선택 모달 */}
-      {showCategorySelect && (
+      {/* 1단계: 키워드 추출 로딩 */}
+      {isExtractingKeywords && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
+            <Loader2 className="w-10 h-10 text-[#5B8DEF] animate-spin mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-white mb-2">1단계: 키워드 스캔</h3>
+            <p className="text-slate-400 text-sm">문서를 스캔하는 중...</p>
+          </div>
+        </div>
+      )}
+
+      {/* 2단계 전: 키워드 편집 모달 */}
+      {showKeywordEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
             {/* 헤더 */}
             <div className="text-center mb-5">
-              <div className="w-12 h-12 bg-[#5B8DEF]/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <FileText className="w-6 h-6 text-[#5B8DEF]" />
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">문서 유형을 선택해주세요</h3>
+              <h3 className="text-lg font-bold text-white mb-1">키워드 스캔 완료</h3>
               <p className="text-sm text-slate-400">
-                분석 정확도를 높이기 위해 문서와 가장 가까운 유형을 골라주세요
+                키워드를 수정하면 비교 대상 합격작이 달라집니다
               </p>
             </div>
 
@@ -1434,36 +1528,78 @@ export function AnalyzeDashboard() {
               <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-slate-800/60 rounded-lg border border-slate-700/50">
                 <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
                 <span className="text-sm text-white truncate">{pendingFiles[0].file.name}</span>
-                <span className="text-xs text-slate-500 shrink-0">
-                  {(pendingFiles[0].file.size / 1024 / 1024).toFixed(1)} MB
-                </span>
               </div>
             )}
 
-            {/* 카테고리 그리드 */}
-            <div className="grid grid-cols-2 gap-2 mb-5">
-              {DOCUMENT_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.key}
-                  onClick={() => handleCategorySelect(cat.key)}
-                  className="flex items-start gap-3 p-3 rounded-xl border border-slate-700 bg-slate-800/50 hover:border-[#5B8DEF] hover:bg-[#5B8DEF]/10 transition-all text-left group"
-                >
-                  <span className="text-xl mt-0.5">{cat.icon}</span>
-                  <div>
-                    <p className="text-sm font-medium text-white group-hover:text-[#5B8DEF]">{cat.label}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{cat.description}</p>
-                  </div>
-                </button>
-              ))}
+            {/* 키워드 칩 */}
+            <div className="mb-4">
+              <p className="text-xs text-slate-500 mb-2">AI가 추출한 키워드</p>
+              <div className="flex flex-wrap gap-2">
+                {extractedKeywords.map((kw) => (
+                  <span
+                    key={kw}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#5B8DEF]/15 border border-[#5B8DEF]/30 text-[#5B8DEF] rounded-full text-sm"
+                  >
+                    {kw}
+                    <button
+                      onClick={() => handleRemoveKeyword(kw)}
+                      className="hover:text-red-400 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+                {extractedKeywords.length === 0 && (
+                  <span className="text-xs text-slate-500">키워드를 추가해주세요</span>
+                )}
+              </div>
             </div>
 
-            {/* 취소 버튼 */}
-            <button
-              onClick={handleCategoryCancel}
-              className="w-full py-2.5 border border-slate-600 text-slate-400 rounded-xl text-sm hover:bg-slate-800 transition-colors"
-            >
-              취소
-            </button>
+            {/* 키워드 추가 입력 */}
+            <div className="flex gap-2 mb-5">
+              <input
+                type="text"
+                value={newKeywordInput}
+                onChange={(e) => setNewKeywordInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddKeyword() } }}
+                placeholder="키워드 추가 입력..."
+                className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF]"
+              />
+              <button
+                onClick={handleAddKeyword}
+                disabled={!newKeywordInput.trim()}
+                className="px-3 py-2 bg-[#5B8DEF]/20 text-[#5B8DEF] rounded-lg text-sm hover:bg-[#5B8DEF]/30 disabled:opacity-30 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 안내 */}
+            <div className="mb-5 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+              <p className="text-xs text-slate-400">
+                <Shield className="w-3.5 h-3.5 inline mr-1" />
+                187개 합격 포트폴리오 중 키워드가 일치하는 문서를 찾아 비교합니다.
+                매 분석마다 다른 합격작을 참조하여 다양한 피드백을 제공합니다.
+              </p>
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleKeywordCancel}
+                className="flex-1 py-3 border border-slate-600 text-slate-300 rounded-xl font-medium hover:bg-slate-800 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleStartComparison}
+                disabled={extractedKeywords.length === 0}
+                className="flex-1 py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Eye className="w-4 h-4" />
+                합격작 비교 시작
+              </button>
+            </div>
           </div>
         </div>
       )}

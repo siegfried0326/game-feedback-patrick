@@ -34,7 +34,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
-import { getCategoryByKey, getTypeSpecificCriteria, buildFileNameFilter } from "@/lib/document-categories"
+// document-categories 삭제됨 — 키워드 기반 매칭으로 전환
 import fs from "fs"
 import path from "path"
 
@@ -948,7 +948,69 @@ ${benchmarkSection}
   }
 }
 
-// Claude API로 문서 분석
+// 1단계: 문서에서 키워드 추출 (경량 Claude 호출)
+export async function extractKeywords(input: {
+  extractedText: string
+  fileName: string
+}): Promise<{ keywords: string[]; error?: string }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return { keywords: [], error: "API 키가 설정되지 않았습니다." }
+  }
+
+  try {
+    const anthropic = new Anthropic({ apiKey })
+
+    // 텍스트 앞 3000자만 사용 (비용 절감)
+    const truncatedText = input.extractedText.slice(0, 3000)
+
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 300,
+      temperature: 0,
+      system: `당신은 게임 기획 문서 분석 전문가입니다.
+주어진 문서에서 핵심 키워드 5~10개를 추출하세요.
+
+키워드 추출 규칙:
+1. 문서의 주제/유형을 나타내는 키워드 (예: 시스템기획, 레벨디자인, 역기획, UI/UX 등)
+2. 문서에서 다루는 구체적 게임 요소 (예: 전투, 강화, 재화, 캐릭터, 퀘스트, 밸런싱 등)
+3. 관련 게임 타이틀명이 있으면 포함 (예: 메이플스토리, 로스트아크 등)
+4. 이 키워드들은 합격 포트폴리오 DB의 태그와 매칭하는 용도입니다.
+
+반드시 JSON 배열만 출력하세요. 다른 텍스트 없이.
+예시: ["시스템기획", "강화", "재화", "UI/UX", "확률"]`,
+      messages: [{
+        role: "user",
+        content: `파일명: ${input.fileName}\n\n문서 내용:\n${truncatedText}`
+      }]
+    })
+
+    const text = response.content[0].type === "text" ? response.content[0].text : ""
+    // JSON 배열 파싱
+    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    if (jsonMatch) {
+      const keywords = JSON.parse(jsonMatch[0]) as string[]
+      return { keywords: keywords.filter(k => typeof k === "string" && k.length > 0) }
+    }
+
+    return { keywords: [], error: "키워드 추출 실패" }
+  } catch (err) {
+    console.error("키워드 추출 오류:", err)
+    return { keywords: [], error: "키워드 추출 중 오류가 발생했습니다." }
+  }
+}
+
+// Fisher-Yates 셔플 유틸리티
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+// 2단계: Claude API로 문서 분석 (합격작 비교)
 export async function analyzeDocumentDirect(input: {
   projectId: string
   fileName: string
@@ -956,7 +1018,7 @@ export async function analyzeDocumentDirect(input: {
   mimeType: string
   filePath: string
   extractedText?: string // 벡터 서치용 텍스트 (클라이언트에서 추출)
-  documentCategory?: string // 문서 유형 키 (system_design, level_design 등)
+  keywords?: string[] // 1단계에서 추출+사용자 확정된 키워드
 }) {
   // 보안: 로그인 확인 (미인증 사용자의 API 호출 차단)
   const supabaseAuth = await createClient()
@@ -973,42 +1035,47 @@ export async function analyzeDocumentDirect(input: {
   try {
     const supabase = await createClient()
 
-    // 학습된 포트폴리오 데이터 가져오기 (유형 기반 file_name 패턴 필터링)
-    const categoryConfig = input.documentCategory ? getCategoryByKey(input.documentCategory) : undefined
-    const selectFields = "file_name, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type"
+    // 학습된 포트폴리오 데이터 가져오기 (키워드 기반 태그 매칭 + 셔플)
+    const selectFields = "file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type"
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let portfolios: any[] | null = null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let portfolioError: any = null
 
-    if (categoryConfig && categoryConfig.fileNameKeywords.length > 0) {
-      // 같은 유형의 합격작 우선 로딩 (file_name 키워드 매칭)
-      const orFilter = buildFileNameFilter(categoryConfig)
-      const typedResult = await supabase
+    if (input.keywords && input.keywords.length > 0) {
+      // 전체 포트폴리오 로드 (187개 → 작은 데이터셋)
+      const allResult = await supabase
         .from("portfolios")
         .select(selectFields)
-        .or(orFilter)
-        .order("overall_score", { ascending: false })
-        .limit(30)
 
-      if (typedResult.data && typedResult.data.length >= 5) {
-        portfolios = typedResult.data
-        portfolioError = typedResult.error
-        console.log(`[유형 필터] "${categoryConfig.label}" file_name 매칭 ${portfolios?.length ?? 0}개 로드`)
-      } else {
-        // 매칭 결과가 5개 미만이면 전체에서 가져오기 (폴백)
-        console.log(`[유형 필터] "${categoryConfig.label}" 매칭 ${typedResult.data?.length ?? 0}개 부족 → 전체 쿼리 폴백`)
-        const allResult = await supabase
-          .from("portfolios")
-          .select(selectFields)
-          .order("overall_score", { ascending: false })
-          .limit(50)
-        portfolios = allResult.data
-        portfolioError = allResult.error
+      if (allResult.data) {
+        // 키워드 매칭: 사용자 키워드가 포트폴리오 tags에 포함된 것 필터
+        const matched = allResult.data.filter((p: any) => {
+          const tags = (p.tags as string[]) || []
+          return tags.some((tag: string) =>
+            input.keywords!.some((kw: string) =>
+              tag.toLowerCase().includes(kw.toLowerCase()) || kw.toLowerCase().includes(tag.toLowerCase())
+            )
+          )
+        })
+
+        // 셔플 (Fisher-Yates) → 매번 다른 합격작 참조
+        const shuffled = shuffleArray(matched)
+
+        // 셔플된 결과에서 최대 30개 사용
+        portfolios = shuffled.slice(0, 30)
+        console.log(`[키워드 매칭] ${input.keywords.join(",")} → ${matched.length}개 매칭, 셔플 후 ${portfolios.length}개 사용`)
+
+        // 매칭 부족 시 전체에서 셔플하여 폴백
+        if (portfolios.length < 5) {
+          console.log(`[키워드 매칭] 매칭 부족(${portfolios.length}개) → 전체 셔플 폴백`)
+          portfolios = shuffleArray(allResult.data).slice(0, 50)
+        }
       }
+      portfolioError = allResult.error
     } else {
-      // 기타 또는 미선택: 기존 로직 (전체 상위 50개)
+      // 키워드 없으면 기존 로직 (전체 상위 50개)
       const allResult = await supabase
         .from("portfolios")
         .select(selectFields)
@@ -1025,7 +1092,7 @@ export async function analyzeDocumentDirect(input: {
       hasData: !!portfolios,
       count: portfolios?.length ?? 0,
       error: portfolioError?.message ?? null,
-      category: categoryConfig?.label ?? "전체",
+      keywords: input.keywords?.join(",") ?? "없음",
       firstItem: portfolios?.[0] ? { file_name: portfolios[0].file_name, companies: portfolios[0].companies } : null,
     })
 
@@ -1215,9 +1282,9 @@ ${topExamples}
 `
     }
 
-    // [벡터 서치] 문서 내용 기반 유사 검색 (카테고리 키워드 추가로 정확도 향상)
+    // [벡터 서치] 문서 내용 기반 유사 검색 (키워드 추가로 정확도 향상)
     let vectorSearchSection = ""
-    const searchPrefix = categoryConfig ? `${categoryConfig.label} ` : ""
+    const searchPrefix = (input.keywords && input.keywords.length > 0) ? `${input.keywords.slice(0, 3).join(" ")} ` : ""
     if (input.extractedText && input.extractedText.length >= 100) {
       // 추출된 텍스트가 있으면 실제 문서 내용으로 벡터 서치 (정확도 높음)
       try {
@@ -1248,27 +1315,20 @@ ${topExamples}
     // [벤치마크] 회사별 합격 포트폴리오 벤치마크 데이터 주입 (문서 분석: design + readability 모두)
     const benchmarkSection = formatBenchmarkForPrompt(true)
 
-    // [유형별 맞춤 평가] 사용자가 선택한 문서 유형에 따른 추가 프롬프트
-    const categoryLabel = categoryConfig?.label || "게임 기획"
-    const typeSpecificSection = (input.documentCategory && input.documentCategory !== "other" && categoryConfig)
+    // [키워드 기반 맞춤 평가] 사용자가 확정한 키워드에 따른 추가 프롬프트
+    const keywordSection = (input.keywords && input.keywords.length > 0)
       ? `
-## 📌 문서 유형: ${categoryLabel}
-이 문서는 사용자가 **${categoryLabel}** 유형으로 분류했습니다.
-학습 데이터 중 같은 유형(${categoryConfig.label})의 합격 포트폴리오 ${portfolios?.length || 0}개를 기반으로 평가합니다.
-
-### ${categoryLabel} 유형 특화 평가 기준
-${getTypeSpecificCriteria(input.documentCategory)}
-
-**주의**: 이 문서는 ${categoryLabel} 문서이므로, 관련 없는 항목에 대해 "~가 없다"고 지적하지 마세요.
-예를 들어 캐릭터 문서에 "레벨 디자인이 없다", 시스템 기획서에 "캐릭터 설정이 부족하다" 같은 피드백은 부적절합니다.
-해당 항목이 이 유형과 관련 없으면 "이 문서의 주제(${categoryLabel})에서는 해당 항목이 직접적으로 다뤄지지 않았습니다" 정도로 짧게 언급하세요.
+## 📌 사용자 확정 키워드: ${input.keywords.join(", ")}
+이 키워드와 관련된 합격 포트폴리오 ${portfolios?.length || 0}개를 기반으로 평가합니다.
+문서의 주제에 맞게 평가하세요. 관련 없는 항목에 대해 "~가 없다"고 불필요하게 지적하지 마세요.
+해당 항목이 문서 주제와 관련 없으면 짧게 언급하세요.
 
 ---
 `
       : ""
 
     const systemPrompt = `당신은 게임 업계 11년차 현업 기획자이자 채용 담당자입니다.
-${typeSpecificSection}
+${keywordSection}
 ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했으며, 그 패턴을 기반으로 현재 문서를 **철저히 비교 평가**해야 합니다.
 
 ${referenceStats}

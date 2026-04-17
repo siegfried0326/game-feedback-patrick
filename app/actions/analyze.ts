@@ -34,7 +34,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
-import { DOCUMENT_CATEGORIES, getCategoryByKey, getTypeSpecificCriteria } from "@/lib/document-categories"
+import { getCategoryByKey, getTypeSpecificCriteria, buildFileNameFilter } from "@/lib/document-categories"
 import fs from "fs"
 import path from "path"
 
@@ -973,31 +973,32 @@ export async function analyzeDocumentDirect(input: {
   try {
     const supabase = await createClient()
 
-    // 학습된 포트폴리오 데이터 가져오기 (유형 기반 필터링)
+    // 학습된 포트폴리오 데이터 가져오기 (유형 기반 file_name 패턴 필터링)
     const categoryConfig = input.documentCategory ? getCategoryByKey(input.documentCategory) : undefined
-    const selectFields = "file_name, tags, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type"
+    const selectFields = "file_name, overall_score, logic_score, specificity_score, readability_score, technical_score, creativity_score, companies, strengths, weaknesses, summary, document_type"
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let portfolios: any[] | null = null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let portfolioError: any = null
 
-    if (categoryConfig && categoryConfig.tags.length > 0) {
-      // 같은 유형의 합격작 우선 로딩
-      const typedPortfoliosResult = await supabase
+    if (categoryConfig && categoryConfig.fileNameKeywords.length > 0) {
+      // 같은 유형의 합격작 우선 로딩 (file_name 키워드 매칭)
+      const orFilter = buildFileNameFilter(categoryConfig)
+      const typedResult = await supabase
         .from("portfolios")
         .select(selectFields)
-        .overlaps("tags", categoryConfig.tags)
+        .or(orFilter)
         .order("overall_score", { ascending: false })
         .limit(30)
 
-      if (typedPortfoliosResult.data && typedPortfoliosResult.data.length >= 10) {
-        portfolios = typedPortfoliosResult.data
-        portfolioError = typedPortfoliosResult.error
-        console.log(`[유형 필터] "${categoryConfig.label}" 태그 매칭 ${portfolios?.length ?? 0}개 로드`)
+      if (typedResult.data && typedResult.data.length >= 5) {
+        portfolios = typedResult.data
+        portfolioError = typedResult.error
+        console.log(`[유형 필터] "${categoryConfig.label}" file_name 매칭 ${portfolios?.length ?? 0}개 로드`)
       } else {
-        // 유형 매칭 결과가 10개 미만이면 전체에서 가져오기 (폴백)
-        console.log(`[유형 필터] "${categoryConfig.label}" 매칭 ${typedPortfoliosResult.data?.length ?? 0}개 부족 → 전체 쿼리 폴백`)
+        // 매칭 결과가 5개 미만이면 전체에서 가져오기 (폴백)
+        console.log(`[유형 필터] "${categoryConfig.label}" 매칭 ${typedResult.data?.length ?? 0}개 부족 → 전체 쿼리 폴백`)
         const allResult = await supabase
           .from("portfolios")
           .select(selectFields)
@@ -1253,7 +1254,7 @@ ${topExamples}
       ? `
 ## 📌 문서 유형: ${categoryLabel}
 이 문서는 사용자가 **${categoryLabel}** 유형으로 분류했습니다.
-학습 데이터 중 같은 유형(${categoryConfig.tags.join(", ")})의 합격 포트폴리오 ${portfolios?.length || 0}개를 기반으로 평가합니다.
+학습 데이터 중 같은 유형(${categoryConfig.label})의 합격 포트폴리오 ${portfolios?.length || 0}개를 기반으로 평가합니다.
 
 ### ${categoryLabel} 유형 특화 평가 기준
 ${getTypeSpecificCriteria(input.documentCategory)}

@@ -3,16 +3,18 @@
  *
  * 사용처:
  * - components/analyze-dashboard.tsx — 카테고리 선택 UI
- * - app/actions/analyze.ts — DB 태그 필터링 + 시스템 프롬프트 유형 주입
+ * - app/actions/analyze.ts — DB file_name 패턴 필터링 + 시스템 프롬프트 유형 주입
  *
- * DB portfolios 테이블의 tags(text[]) 필드와 매핑.
+ * DB portfolios 테이블의 file_name 필드에서 키워드 매칭으로 필터링.
+ * (tags 컬럼이 없으므로 파일명 기반)
  */
 
 export interface DocumentCategory {
   key: string
   label: string
   icon: string
-  tags: string[] // DB tags 필드와 매칭되는 값들
+  /** file_name에서 매칭할 키워드 (ilike 패턴용) */
+  fileNameKeywords: string[]
   description: string // UI에 표시할 간단한 설명
 }
 
@@ -21,70 +23,70 @@ export const DOCUMENT_CATEGORIES: DocumentCategory[] = [
     key: "system_design",
     label: "시스템기획",
     icon: "⚙️",
-    tags: ["시스템기획", "시스템 기획", "시스템", "게임 시스템"],
+    fileNameKeywords: ["시스템", "재화", "강화", "매칭", "인벤토리", "상점", "가챠", "뽑기"],
     description: "재화, 강화, 매칭 등 게임 시스템",
   },
   {
     key: "level_design",
     label: "레벨디자인",
     icon: "🗺️",
-    tags: ["레벨디자인", "레벨 디자인", "레벨", "맵", "맵 디자인"],
+    fileNameKeywords: ["레벨", "맵", "스테이지", "던전", "지역", "월드"],
     description: "맵, 스테이지, 레벨 구성",
   },
   {
     key: "combat_balance",
     label: "전투/밸런스",
     icon: "⚔️",
-    tags: ["밸런싱", "밸런스", "전투", "전투 시스템", "스킬"],
+    fileNameKeywords: ["밸런", "전투", "스킬", "데미지", "PvP", "로스트아크", "소드"],
     description: "전투, 스킬, 수치 밸런싱",
   },
   {
     key: "character_monster",
     label: "캐릭터/몬스터",
     icon: "👾",
-    tags: ["캐릭터", "몬스터", "보스", "NPC", "캐릭터 디자인"],
+    fileNameKeywords: ["캐릭터", "몬스터", "보스", "NPC", "팀원_카드", "플레이어", "파티"],
     description: "캐릭터, 몬스터, 보스 설계",
   },
   {
     key: "ui_ux",
     label: "UI/UX",
     icon: "🎨",
-    tags: ["UI/UX", "UI", "UX", "인터페이스", "화면설계", "화면 설계"],
+    fileNameKeywords: ["UI", "UX", "UIUX", "인터페이스", "화면", "게이지", "HUD", "개선제안"],
     description: "인터페이스, 화면 구성, UX 흐름",
   },
   {
     key: "reverse_engineer",
     label: "역기획",
     icon: "🔍",
-    tags: ["역기획", "게임 분석", "역기획서"],
+    fileNameKeywords: ["역기획", "분석", "역기획서", "체험시스템"],
     description: "기존 게임의 시스템 분석",
   },
   {
     key: "data_table",
     label: "데이터테이블",
     icon: "📊",
-    tags: ["데이터 테이블", "테이블 설계", "데이터테이블", "수치 설계", "데이터"],
+    fileNameKeywords: ["데이터", "테이블", "Table", "수치", "밸런스설계", "데이터테이블"],
     description: "수치 테이블, 데이터 설계",
   },
   {
     key: "content_design",
     label: "콘텐츠기획",
     icon: "📝",
-    tags: ["콘텐츠", "퀘스트", "스토리", "이벤트", "콘텐츠 기획", "내러티브"],
+    fileNameKeywords: ["콘텐츠", "퀘스트", "Quest", "스토리", "이벤트", "내러티브", "미션"],
     description: "퀘스트, 스토리, 이벤트 기획",
   },
   {
     key: "game_proposal",
     label: "게임제안서",
     icon: "📋",
-    tags: ["기획서", "제안서", "게임 컨셉", "컨셉", "게임 제안서"],
+    fileNameKeywords: ["기획서", "제안서", "컨셉", "게임제안", "제안", "창작"],
     description: "신규 게임 컨셉, 기획 제안서",
   },
   {
     key: "other",
     label: "기타",
     icon: "📄",
-    tags: [],
+    fileNameKeywords: [],
     description: "위 분류에 해당하지 않는 문서",
   },
 ]
@@ -94,6 +96,16 @@ export const DOCUMENT_CATEGORIES: DocumentCategory[] = [
  */
 export function getCategoryByKey(key: string): DocumentCategory | undefined {
   return DOCUMENT_CATEGORIES.find((c) => c.key === key)
+}
+
+/**
+ * 카테고리의 fileNameKeywords를 Supabase .or() 필터 문자열로 변환
+ * 예: "file_name.ilike.%시스템%,file_name.ilike.%재화%"
+ */
+export function buildFileNameFilter(category: DocumentCategory): string {
+  return category.fileNameKeywords
+    .map((kw) => `file_name.ilike.%${kw}%`)
+    .join(",")
 }
 
 /**

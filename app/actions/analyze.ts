@@ -34,6 +34,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
+import { validateMimeMatchesSignature } from "@/lib/file-validation"
 // document-categories 삭제됨 — 키워드 기반 매칭으로 전환
 import fs from "fs"
 import path from "path"
@@ -260,6 +261,13 @@ export async function uploadFileToStorage(formData: FormData) {
     // 파일 크기 체크 (200MB, 10MB 권장)
     if (file.size > 200 * 1024 * 1024) {
       return { error: `파일 크기(${(file.size / (1024 * 1024)).toFixed(1)}MB)가 200MB를 초과합니다. 10MB 이하를 권장합니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` }
+    }
+
+    // 매직 바이트 검증 — 클라이언트 MIME 조작 방지 (PDF로 위장한 악성 파일 등 차단)
+    const sigResult = await validateMimeMatchesSignature(file)
+    if (!sigResult.valid) {
+      console.warn("[uploadFileToStorage] 파일 시그니처 검증 실패:", { name: file.name, type: file.type, reason: sigResult.reason })
+      return { error: sigResult.reason || "파일 형식이 올바르지 않습니다. 허용된 파일만 업로드해 주세요." }
     }
 
     // 고유한 파일명 생성

@@ -39,6 +39,7 @@ import { extractCompanyFromFileName } from "@/lib/company-parser"
 import { parseExcelToText, parseCsvToText, isSpreadsheetFile } from "@/lib/excel-parser"
 import { embedAndStorePortfolio, embedAllPortfolios, chunkText } from "@/lib/vector-search"
 import { generateEmbedding, generateEmbeddings } from "@/lib/openai-embedding"
+import { validateFileSignature } from "@/lib/file-validation"
 import pdfParse from "pdf-parse"
 
 interface PortfolioInput {
@@ -90,7 +91,14 @@ export async function uploadAdminFile(formData: FormData) {
     if (file.size > maxSize) {
       return { error: `파일 크기는 ${Math.round(maxSize / 1024 / 1024)}MB를 초과할 수 없습니다. (현재: ${Math.round(file.size / 1024 / 1024)}MB)` }
     }
-    
+
+    // 매직 바이트 검증 — 관리자 업로드에도 파일 위변조 방지 적용
+    const sigResult = await validateFileSignature(file)
+    if (!sigResult.valid) {
+      console.warn("[uploadAdminFile] 파일 시그니처 검증 실패:", { name: file.name, type: file.type, reason: sigResult.reason })
+      return { error: sigResult.reason || "파일 형식이 올바르지 않습니다. 허용된 파일만 업로드해 주세요." }
+    }
+
     const fileExt = file.name.split(".").pop()
     const uniqueFileName = `${uuidv4()}.${fileExt}`
     const filePath = `admin/${uniqueFileName}`

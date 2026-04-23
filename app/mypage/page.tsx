@@ -909,7 +909,7 @@ export default function MyPage() {
                   )}
                   <Button asChild size="sm" className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs">
                     <Link href={`/analyze?projectId=${selectedProject.id}`}>
-                      <Plus className="w-3.5 h-3.5 mr-1" /> 새 버전 분석
+                      <Plus className="w-3.5 h-3.5 mr-1" /> 문서 분석하기
                     </Link>
                   </Button>
                 </div>

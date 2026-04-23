@@ -159,7 +159,8 @@ export function AnalyzeDashboard() {
   const [creatingProject, setCreatingProject] = useState(false)
   const [canCreateProject, setCanCreateProject] = useState(true)
   const resultsRef = useRef<HTMLDivElement>(null)
-  const isLoggedIn = allowanceInfo?.reason !== "login_required"
+  // 로그인 판별: allowanceInfo가 로드된 후에만 판단 (초기 null 상태에서는 false로 취급)
+  const isLoggedIn = allowanceInfo !== null && allowanceInfo.reason !== "login_required" && allowanceInfo.plan !== "none"
 
   // 분석 중 로딩 메시지 (순서대로 표시)
   const loadingMessages = [
@@ -856,28 +857,38 @@ export function AnalyzeDashboard() {
             <CardContent>
               <div className="space-y-3">
                 {/* 기존 프로젝트 목록 */}
-                {projects.map(project => (
-                  <button
-                    key={project.id}
-                    onClick={() => { setSelectedProjectId(project.id); setShowNewProject(false) }}
-                    className={`w-full text-left p-3 rounded-lg border transition-all ${
-                      selectedProjectId === project.id
-                        ? "border-[#5B8DEF] bg-[#5B8DEF]/10"
-                        : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 bg-[#0d1b2a]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FolderOpen className={`w-4 h-4 ${selectedProjectId === project.id ? "text-[#5B8DEF]" : "text-slate-500"}`} />
-                        <span className="text-white text-sm font-medium">{project.name}</span>
+                {projects.map(project => {
+                  const isSelected = selectedProjectId === project.id
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => { setSelectedProjectId(project.id); setShowNewProject(false) }}
+                      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? "border-[#5B8DEF] bg-[#5B8DEF]/15 ring-2 ring-[#5B8DEF]/30 shadow-lg shadow-[#5B8DEF]/10"
+                          : "border-[#1e3a5f]/60 hover:border-[#5B8DEF]/40 bg-[#0d1b2a]/50 opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className={`w-4 h-4 ${isSelected ? "text-[#5B8DEF]" : "text-slate-600"}`} />
+                          <span className={`text-sm ${isSelected ? "text-white font-semibold" : "text-slate-400 font-medium"}`}>
+                            {project.name}
+                          </span>
+                          {isSelected && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 bg-[#5B8DEF] text-white rounded-full">
+                              ✓ 선택됨
+                            </span>
+                          )}
+                        </div>
+                        <span className={`text-xs ${isSelected ? "text-slate-400" : "text-slate-600"}`}>
+                          {project.analysis_count}개 분석
+                          {project.best_score !== null && ` · 최고 ${project.best_score}점`}
+                        </span>
                       </div>
-                      <span className="text-xs text-slate-500">
-                        {project.analysis_count}개 분석
-                        {project.best_score !== null && ` · 최고 ${project.best_score}점`}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  )
+                })}
 
                 {/* 새 프로젝트 만들기 */}
                 {!showNewProject ? (
@@ -1529,12 +1540,12 @@ export function AnalyzeDashboard() {
           <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
             {/* 헤더 */}
             <div className="text-center mb-5">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+              <div className="w-12 h-12 bg-[#5B8DEF]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Plus className="w-6 h-6 text-[#5B8DEF]" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">키워드 스캔 완료</h3>
+              <h3 className="text-lg font-bold text-white mb-1">키워드를 직접 추가해주세요</h3>
               <p className="text-sm text-slate-400">
-                키워드를 수정하면 비교 대상 합격작이 달라집니다
+                키워드가 많을수록 비교 정확도가 높아집니다
               </p>
             </div>
 
@@ -1548,7 +1559,7 @@ export function AnalyzeDashboard() {
 
             {/* 키워드 칩 */}
             <div className="mb-4">
-              <p className="text-xs text-slate-500 mb-2">AI가 추출한 키워드</p>
+              <p className="text-xs text-slate-500 mb-2">AI가 추출한 키워드 (원하면 삭제/추가 가능)</p>
               <div className="flex flex-wrap gap-2">
                 {extractedKeywords.map((kw) => (
                   <span
@@ -1571,13 +1582,13 @@ export function AnalyzeDashboard() {
             </div>
 
             {/* 키워드 추가 입력 */}
-            <div className="flex gap-2 mb-5">
+            <div className="flex gap-2 mb-2">
               <input
                 type="text"
                 value={newKeywordInput}
                 onChange={(e) => setNewKeywordInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddKeyword() } }}
-                placeholder="키워드 추가 입력..."
+                placeholder="키워드 입력 후 Enter 또는 + 버튼"
                 className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF]"
               />
               <button
@@ -1588,6 +1599,19 @@ export function AnalyzeDashboard() {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
+            <p className="text-[11px] text-slate-500 mb-5 px-1">
+              💡 입력 후 <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-300">Enter</kbd> 키를 누르면 추가됩니다
+            </p>
+
+            {/* 키워드 부족 경고 (항목 8) */}
+            {extractedKeywords.length < 3 && (
+              <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-300 leading-relaxed">
+                  <strong>키워드가 {extractedKeywords.length}개뿐이에요.</strong> 키워드가 적으면 비교 대상 합격작이 적어져 분석 정확도가 떨어집니다. 3개 이상 추가해주세요.
+                </p>
+              </div>
+            )}
 
             {/* 안내 */}
             <div className="mb-5 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
@@ -1612,7 +1636,7 @@ export function AnalyzeDashboard() {
                 className="flex-1 py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye className="w-4 h-4" />
-                합격작 비교 시작
+                문서 분석하기
               </button>
             </div>
           </div>

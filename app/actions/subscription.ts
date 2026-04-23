@@ -12,6 +12,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { deleteBillingKey } from "@/lib/nice-api"
+import { isAdminEmail } from "@/lib/admin"
 
 // 보안: DB 에러 메시지를 사용자에게 직접 노출하지 않음
 function dbError(msg: string, error: unknown): { error: string } {
@@ -186,7 +187,12 @@ export async function checkAnalysisAllowance() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return { allowed: false, plan: "none" as const }
+  if (!user) return { allowed: false, plan: "none" as const, reason: "login_required" as const }
+
+  // 관리자는 크레딧/구독 무관하게 무제한
+  if (isAdminEmail(user.email)) {
+    return { allowed: true, plan: "admin" as const, unlimited: true, source: "admin" as const }
+  }
 
   // 구독 확인
   const { data: subscription } = await supabase
@@ -224,6 +230,11 @@ export async function deductCredit() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: "로그인이 필요합니다." }
+
+  // 관리자는 크레딧 차감 안 함 (무제한)
+  if (isAdminEmail(user.email)) {
+    return { success: true, unlimited: true, source: "admin" as const }
+  }
 
   const { data: subscription } = await supabase
     .from("users_subscription")

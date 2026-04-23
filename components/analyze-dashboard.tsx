@@ -1153,7 +1153,7 @@ export function AnalyzeDashboard() {
                     asChild
                     className="border-[#5B8DEF]/30 text-[#5B8DEF] hover:bg-[#5B8DEF]/10 bg-transparent"
                   >
-                    <Link href="/mypage">
+                    <Link href="/projects">
                       <FolderOpen className="w-3.5 h-3.5 mr-1" /> 프로젝트로 가기
                     </Link>
                   </Button>
@@ -1340,7 +1340,7 @@ export function AnalyzeDashboard() {
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                            <Link href="/mypage">
+                            <Link href="/projects">
                               <FolderOpen className="w-4 h-4 mr-1" /> 프로젝트로 가기
                             </Link>
                           </Button>

@@ -9,7 +9,7 @@
 "use client"
 
 import Link from "next/link"
-import { FileText, LogOut, User, Shield } from "lucide-react"
+import { FileText, LogOut, User, Shield, FolderOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PricingModal } from "@/components/pricing-modal"
 import { signOut } from "@/app/actions/auth"
@@ -59,8 +59,15 @@ export function Header({ user }: HeaderProps) {
                 </Link>
               )}
               <Link
+                href="/projects"
+                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors"
+              >
+                <FolderOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">프로젝트</span>
+              </Link>
+              <Link
                 href="/mypage"
-                className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
               >
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">

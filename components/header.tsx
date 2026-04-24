@@ -9,7 +9,7 @@
 "use client"
 
 import Link from "next/link"
-import { FileText, LogOut, User, Shield, FolderOpen } from "lucide-react"
+import { FileText, LogOut, User, Shield, FolderOpen, Mic } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PricingModal } from "@/components/pricing-modal"
 import { signOut } from "@/app/actions/auth"
@@ -50,13 +50,23 @@ export function Header({ user }: HeaderProps) {
           {user ? (
             <>
               {user.isAdmin && (
-                <Link
-                  href="/admin/training"
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-colors"
-                >
-                  <Shield className="w-3 h-3" />
-                  관리자
-                </Link>
+                <>
+                  <Link
+                    href="/admin/training"
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-colors"
+                  >
+                    <Shield className="w-3 h-3" />
+                    관리자
+                  </Link>
+                  <Link
+                    href="/interview"
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-colors"
+                    title="면접 연습 (관리자 테스트)"
+                  >
+                    <Mic className="w-3 h-3" />
+                    <span className="hidden sm:inline">면접연습</span>
+                  </Link>
+                </>
               )}
               <Link
                 href="/projects"

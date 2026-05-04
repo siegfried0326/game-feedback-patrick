@@ -828,7 +828,8 @@ ${benchmarkSection}
     const anthropic = new Anthropic({ apiKey, maxRetries: 3 })
     const selectedModel = await getModelForUser()
 
-    const message = await anthropic.messages.create({
+    // 스트리밍 사용: 대용량 텍스트 + 거대한 시스템 프롬프트 조합 시 10분 초과 가능
+    const message = await anthropic.messages.stream({
       model: selectedModel,
       max_tokens: 8192,
       temperature: 0,
@@ -841,7 +842,7 @@ ${benchmarkSection}
         },
       ],
       system: systemPrompt,
-    })
+    }).finalMessage()
 
     // stop_reason 체크
     if (message.stop_reason === "max_tokens") {
@@ -948,6 +949,9 @@ ${benchmarkSection}
     }
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
       return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+    }
+    if (errMsg.includes("Streaming is required")) {
+      return { error: "AI 처리가 너무 오래 걸려 일시적으로 차단되었습니다. 잠시 후 다시 시도해 주세요." }
     }
     if (errMsg.includes("Internal server error") || errMsg.includes("api_error") || errMsg.includes("overloaded") || errMsg.includes("529")) {
       return { error: "AI 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요." }
@@ -1558,13 +1562,15 @@ ${benchmarkSection}
 
       let message
       try {
-        message = await anthropic.messages.create({
+        // 스트리밍 사용: 대용량 PDF + 거대한 시스템 프롬프트 조합 시 10분 초과 가능 → API가 비스트리밍 거부
+        // .finalMessage()는 스트림이 끝날 때까지 대기 후 완성된 Message 반환 (기존 create()와 동일한 타입)
+        message = await anthropic.messages.stream({
           model: selectedModel,
           max_tokens: 16384,
           temperature: 0,
           messages,
           system: systemPrompt,
-        })
+        }).finalMessage()
       } catch (apiError: unknown) {
         // API 실패 시 텍스트 폴백 재시도 (PDF 원본 전송 실패 OR 텍스트 전송도 실패)
         const errMsg = apiError instanceof Error ? apiError.message : String(apiError)
@@ -1584,13 +1590,13 @@ ${benchmarkSection}
             content: `아래는 "${input.fileName}" 문서(${fileSizeMB.toFixed(1)}MB)에서 추출한 텍스트 내용입니다. 원본 PDF 전송이 실패하여 텍스트만 추출하여 분석합니다. 시스템 프롬프트의 평가 기준과 합격 사례들을 참고하여 JSON 형식으로만 응답해주세요. 반드시 15개 categories, companyFeedback, readabilityCategories(10개), layoutRecommendations(3개)를 모두 포함해야 합니다. 단, 텍스트 기반 분석이므로 readabilityCategories와 layoutRecommendations는 텍스트 구조를 기반으로 추정하여 작성해주세요.\n\n---\n\n${fallbackContent}`,
           }]
 
-          message = await anthropic.messages.create({
+          message = await anthropic.messages.stream({
             model: selectedModel,
             max_tokens: 16384,
             temperature: 0,
             messages: fallbackMessages,
             system: systemPrompt,
-          })
+          }).finalMessage()
         } else {
           throw apiError
         }
@@ -1715,6 +1721,10 @@ ${benchmarkSection}
     }
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
       return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+    }
+    // Anthropic Streaming 강제 에러 — 이미 stream() 적용했지만 혹시 모를 라이브러리 차이 대비
+    if (errMsg.includes("Streaming is required")) {
+      return { error: "AI 처리가 너무 오래 걸려 일시적으로 차단되었습니다. 파일을 더 작게 만들거나 잠시 후 다시 시도해 주세요." }
     }
     if (errMsg.includes("too many tokens") || errMsg.includes("context_length") || errMsg.includes("request_too_large") || errMsg.includes("413") || errMsg.includes("maximum size")) {
       return { error: "파일 내용이 너무 많아 AI가 한번에 처리할 수 없습니다. 불필요한 페이지를 줄이거나, 이미지를 압축하여 다시 시도해 주세요." }

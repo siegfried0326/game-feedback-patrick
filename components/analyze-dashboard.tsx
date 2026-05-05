@@ -268,7 +268,7 @@ export function AnalyzeDashboard() {
         setError(result.error)
       }
     } catch {
-      setError("프로젝트 생성에 실패했습니다.")
+      setError("프로젝트 생성에 실패했어요. 잠시 후 다시 시도해주세요.")
     } finally {
       setCreatingProject(false)
     }
@@ -277,7 +277,7 @@ export function AnalyzeDashboard() {
   // 여러 파일 분석 (2단계: 합격작 비교)
   const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], _unused?: string, keywords?: string[]) => {
     if (!selectedProjectId) {
-      setError("프로젝트를 먼저 선택해 주세요.")
+      setError("먼저 프로젝트를 선택해주세요.")
       return
     }
 
@@ -329,7 +329,7 @@ export function AnalyzeDashboard() {
         // 빈 파일 체크
         if (fileStatus.file.size === 0) {
           setFiles(prev => prev.map((f, idx) =>
-            idx === i ? { ...f, status: "error", error: "빈 파일입니다. 내용이 있는 파일을 업로드해 주세요." } : f
+            idx === i ? { ...f, status: "error", error: "파일이 비어있어요. 내용이 있는 파일을 업로드해주세요." } : f
           ))
           continue
         }
@@ -357,7 +357,7 @@ export function AnalyzeDashboard() {
           })
           if (extractedText.length < 100) {
             setFiles(prev => prev.map((f, idx) =>
-              idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지로만 구성된 문서일 수 있습니다." } : f
+              idx === i ? { ...f, status: "error", error: "PDF에서 텍스트를 읽어올 수 없어요. 스캔된 이미지로만 만든 문서일 수 있어요. 텍스트가 포함된 PDF로 다시 시도해주세요." } : f
             ))
             return false
           }
@@ -405,7 +405,7 @@ export function AnalyzeDashboard() {
               await doTextAnalysis()
             } catch {
               setFiles(prev => prev.map((f, idx) =>
-                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했어요. 파일이 손상되었거나 암호가 걸려있는지 확인해주세요." } : f
               ))
             }
             continue
@@ -432,7 +432,7 @@ export function AnalyzeDashboard() {
                 await doTextAnalysis()
               } catch {
                 setFiles(prev => prev.map((f, idx) =>
-                  idx === i ? { ...f, status: "error", error: "파일 처리에 실패했습니다. 파일을 수동으로 압축하여 다시 시도해 주세요." } : f
+                  idx === i ? { ...f, status: "error", error: "파일 처리에 실패했어요. 파일을 직접 압축한 뒤 다시 올려주세요." } : f
                 ))
               }
               continue
@@ -452,7 +452,7 @@ export function AnalyzeDashboard() {
             } catch { /* 텍스트 추출도 실패 */ }
             if (files[i]?.status !== "success" && files[i]?.status !== "error") {
               setFiles(prev => prev.map((f, idx) =>
-                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했습니다. 파일이 손상되었거나 암호화되어 있을 수 있습니다." } : f
+                idx === i ? { ...f, status: "error", error: "PDF 처리에 실패했어요. 파일이 손상되었거나 암호가 걸려있는지 확인해주세요." } : f
               ))
             }
             continue
@@ -476,19 +476,19 @@ export function AnalyzeDashboard() {
 
           if (uploadError) {
             console.error("Upload error:", uploadError)
-            let errorMsg = "파일 업로드에 실패했습니다."
+            let errorMsg = "파일 업로드에 실패했어요. 잠시 후 다시 시도해주세요."
             const errMsg = uploadError.message || ""
             if (errMsg.includes("exceeded") || errMsg.includes("too large") || errMsg.includes("413") || errMsg.includes("size")) {
               const fileSizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(1)
-              errorMsg = `파일(${fileSizeMB}MB) 업로드가 서버에서 거부되었습니다. 파일 용량을 줄여서 다시 시도해 주세요.`
+              errorMsg = `파일이 너무 커요(${fileSizeMB}MB). 파일을 더 작게 만들어서 다시 올려주세요.`
             } else if (errMsg.includes("not found") || errMsg.includes("bucket")) {
-              errorMsg = "저장소 설정 오류입니다. 관리자에게 문의하세요."
+              errorMsg = "저장소에 일시적인 문제가 있어요. 잠시 후 다시 시도해주세요."
             } else if (errMsg.includes("permission") || errMsg.includes("policy") || errMsg.includes("403")) {
-              errorMsg = "업로드 권한이 없습니다. 다시 로그인해 주세요."
+              errorMsg = "로그인 세션이 만료됐어요. 다시 로그인해주세요."
             } else if (errMsg.includes("network") || errMsg.includes("fetch") || errMsg.includes("timeout")) {
-              errorMsg = "네트워크 오류입니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
+              errorMsg = "인터넷 연결이 불안정해요. 연결 상태를 확인하고 다시 시도해주세요."
             } else if (errMsg.includes("duplicate") || errMsg.includes("already exists")) {
-              errorMsg = "파일 업로드 충돌이 발생했습니다. 다시 시도해 주세요."
+              errorMsg = "잠시 후 다시 시도해주세요."
             }
             setFiles(prev => prev.map((f, idx) =>
               idx === i ? { ...f, status: "error", error: errorMsg } : f
@@ -566,7 +566,7 @@ export function AnalyzeDashboard() {
       } catch (err) {
         console.error("Analysis error:", err)
         setFiles(prev => prev.map((f, idx) =>
-          idx === i ? { ...f, status: "error", error: "분석 실패" } : f
+          idx === i ? { ...f, status: "error", error: "분석에 실패했어요. 잠시 후 다시 시도해주세요." } : f
         ))
       }
 
@@ -590,9 +590,15 @@ export function AnalyzeDashboard() {
       return
     }
     if (!selectedProjectId) {
-      setError("프로젝트를 먼저 선택해 주세요.")
+      setError("먼저 프로젝트를 선택해주세요.")
       return
     }
+
+    // 다중 파일 업로드 안내 — MAX_FILES 초과 시 사용자에게 명확히 알림
+    if (acceptedFiles.length > MAX_FILES) {
+      setError(`한 번에 ${MAX_FILES}개의 파일만 분석할 수 있어요. 첫 번째 파일(${acceptedFiles[0].name})만 진행됩니다. 다른 파일은 분석 후 따로 올려주세요.`)
+    }
+
     if (acceptedFiles.length > 0) {
       const filesToAdd = acceptedFiles.slice(0, MAX_FILES)
 
@@ -603,7 +609,10 @@ export function AnalyzeDashboard() {
 
       setFiles(newFiles)
       setResults([])
-      setError(null)
+      // 다중 파일 안내가 없는 경우에만 에러 초기화
+      if (acceptedFiles.length <= MAX_FILES) {
+        setError(null)
+      }
 
       // 크레딧 유저 (무제한 구독이 아닌 경우) → 차감 확인 모달 표시
       if (allowanceInfo?.allowed && !allowanceInfo?.unlimited && allowanceInfo?.remaining !== undefined) {
@@ -739,8 +748,28 @@ export function AnalyzeDashboard() {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
+  // dropzone 거부 파일 안내 (형식 미지원 / 크기 초과 / 개수 초과)
+  const onDropRejected = useCallback((rejections: { file: File; errors: { code: string; message: string }[] }[]) => {
+    if (rejections.length === 0) return
+    const first = rejections[0]
+    const errorCode = first.errors[0]?.code
+
+    if (errorCode === "too-many-files") {
+      setError(`한 번에 ${MAX_FILES}개의 파일만 분석할 수 있어요. 한 파일을 먼저 분석한 후 다른 파일을 올려주세요.`)
+    } else if (errorCode === "file-too-large") {
+      const sizeMB = (first.file.size / (1024 * 1024)).toFixed(1)
+      setError(`파일이 너무 커요(${sizeMB}MB). 최대 200MB, 권장 10MB 이하예요. 이미지를 압축하거나 페이지를 줄여서 다시 올려주세요.`)
+    } else if (errorCode === "file-invalid-type") {
+      const ext = first.file.name.split(".").pop()?.toUpperCase() || "알 수 없음"
+      setError(`이 파일 형식(.${ext})은 지원하지 않아요. PDF, DOCX, PPTX, XLSX, TXT만 분석할 수 있어요.`)
+    } else {
+      setError(`'${first.file.name}' 파일을 업로드할 수 없어요. 형식과 크기를 확인하고 다시 시도해주세요.`)
+    }
+  }, [])
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     accept: {
       "application/pdf": [".pdf"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],

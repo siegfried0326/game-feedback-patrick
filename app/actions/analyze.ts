@@ -235,12 +235,12 @@ export async function uploadFileToStorage(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      return { error: "로그인이 필요합니다." }
+      return { error: "먼저 로그인해주세요." }
     }
 
     const file = formData.get("file") as File
     if (!file) {
-      return { error: "파일이 없습니다." }
+      return { error: "파일을 찾을 수 없어요. 다시 업로드해주세요." }
     }
 
     // 허용된 파일 타입만
@@ -255,19 +255,19 @@ export async function uploadFileToStorage(formData: FormData) {
       "text/plain", // txt
     ]
     if (!allowedTypes.includes(file.type)) {
-      return { error: "지원하지 않는 파일 형식입니다. (PDF, DOCX, PPTX, XLSX, TXT, 이미지)" }
+      return { error: "지원하지 않는 파일 형식이에요. PDF, DOCX, PPTX, XLSX, TXT, 이미지 파일만 업로드할 수 있어요." }
     }
 
     // 파일 크기 체크 (200MB, 10MB 권장)
     if (file.size > 200 * 1024 * 1024) {
-      return { error: `파일 크기(${(file.size / (1024 * 1024)).toFixed(1)}MB)가 200MB를 초과합니다. 10MB 이하를 권장합니다. 이미지 압축, 불필요한 페이지 제거 등으로 파일을 최적화해 주세요.` }
+      return { error: `파일이 너무 커요(${(file.size / (1024 * 1024)).toFixed(1)}MB). 최대 200MB, 권장 10MB 이하예요. 이미지를 압축하거나 페이지를 줄여서 다시 올려주세요.` }
     }
 
     // 매직 바이트 검증 — 클라이언트 MIME 조작 방지 (PDF로 위장한 악성 파일 등 차단)
     const sigResult = await validateMimeMatchesSignature(file)
     if (!sigResult.valid) {
       console.warn("[uploadFileToStorage] 파일 시그니처 검증 실패:", { name: file.name, type: file.type, reason: sigResult.reason })
-      return { error: sigResult.reason || "파일 형식이 올바르지 않습니다. 허용된 파일만 업로드해 주세요." }
+      return { error: "파일 내용이 형식과 다른 것 같아요. 정상적인 PDF, 이미지, 또는 Office 파일만 업로드할 수 있어요." }
     }
 
     // 고유한 파일명 생성
@@ -289,7 +289,7 @@ export async function uploadFileToStorage(formData: FormData) {
 
     if (error) {
       console.error("Upload error:", error)
-      return { error: "파일 업로드에 실패했습니다." }
+      return { error: "파일 업로드에 실패했어요. 인터넷 연결을 확인하고 다시 시도해주세요." }
     }
 
     // Public URL 생성
@@ -308,7 +308,7 @@ export async function uploadFileToStorage(formData: FormData) {
     }
   } catch (error) {
     console.error("Upload error:", error)
-    return { error: "파일 업로드 중 오류가 발생했습니다." }
+    return { error: "파일 업로드 중 문제가 생겼어요. 잠시 후 다시 시도해주세요." }
   }
 }
 
@@ -318,19 +318,19 @@ export async function deleteFileFromStorage(filePath: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      return { error: "로그인이 필요합니다." }
+      return { error: "먼저 로그인해주세요." }
     }
 
     // 보안: uploads/ 경로만 허용 (다른 경로 삭제 차단)
     if (!filePath.startsWith("uploads/")) {
-      return { error: "잘못된 파일 경로입니다." }
+      return { error: "파일을 처리할 수 없어요. 다시 시도해주세요." }
     }
 
     await supabase.storage.from("resumes").remove([filePath])
     return { success: true }
   } catch (error) {
     console.error("Delete error:", error)
-    return { error: "파일 삭제에 실패했습니다." }
+    return { error: "임시 파일 정리에 실패했어요. 분석 결과에는 영향 없어요." }
   }
 }
 
@@ -409,18 +409,18 @@ export async function analyzeUrlDirect(input: {
   const supabaseAuth = await createClient()
   const { data: { user: authUser } } = await supabaseAuth.auth.getUser()
   if (!authUser) {
-    return { error: "로그인이 필요합니다." }
+    return { error: "먼저 로그인해주세요." }
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
+    return { error: "AI 서비스 설정에 문제가 있어요. 잠시 후 다시 시도해주세요." }
   }
 
   // URL 모드일 때만 검증
   if (input.url && !input.extractedText) {
     if (isInternalUrl(input.url)) {
-      return { error: "허용되지 않는 URL입니다." }
+      return { error: "이 URL은 분석할 수 없어요. 공개된 웹 페이지 주소만 입력해주세요." }
     }
   }
 
@@ -455,7 +455,7 @@ export async function analyzeUrlDirect(input: {
         pageContent = pageContent.substring(0, 100000)
       }
       if (pageContent.length < 100) {
-        return { error: "PDF에서 충분한 텍스트를 추출할 수 없습니다. 스캔된 이미지로만 구성된 문서일 수 있습니다. 30MB 이하로 압축하여 원본 PDF 분석을 이용해 주세요." }
+        return { error: "PDF에서 텍스트를 읽어올 수 없어요. 스캔된 이미지로만 만든 문서일 수 있어요. 텍스트가 포함된 PDF를 10MB 이하로 줄여서 다시 올려주세요." }
       }
     } else {
 
@@ -470,7 +470,7 @@ export async function analyzeUrlDirect(input: {
       })
 
       if (!response.ok) {
-        return { error: `웹 페이지를 가져올 수 없습니다. (HTTP ${response.status})` }
+        return { error: "웹 페이지를 가져올 수 없어요. URL이 올바르고 공개되어 있는지 확인해주세요." }
       }
 
       const html = await response.text()
@@ -499,7 +499,7 @@ export async function analyzeUrlDirect(input: {
 
       // 그래도 부족하면 오류
       if (pageContent.length < 100) {
-        return { error: "페이지에서 충분한 텍스트를 추출할 수 없습니다. 자바스크립트로만 동작하는 페이지이거나, 공개 접근이 불가능한 URL일 수 있습니다. 파일 업로드를 이용해 주세요." }
+        return { error: "페이지에서 텍스트를 읽어올 수 없어요. JavaScript로 동작하거나 비공개 페이지일 수 있어요. 파일을 직접 업로드해주세요." }
       }
 
       // 너무 길면 잘라내기 (Claude 컨텍스트 제한)
@@ -508,9 +508,9 @@ export async function analyzeUrlDirect(input: {
       }
     } catch (fetchError: unknown) {
       if (fetchError instanceof Error && fetchError.name === "TimeoutError") {
-        return { error: "웹 페이지 응답 시간이 초과되었습니다. URL을 다시 확인해 주세요." }
+        return { error: "웹 페이지 응답이 너무 느려요. 잠시 후 다시 시도하거나 다른 URL로 시도해주세요." }
       }
-      return { error: "웹 페이지를 가져올 수 없습니다. URL이 올바르고 공개 접근이 가능한지 확인해 주세요." }
+      return { error: "웹 페이지를 가져올 수 없어요. URL이 올바르고 공개되어 있는지 확인해주세요." }
     }
 
     } // extractedText else 블록 끝
@@ -786,14 +786,33 @@ ${benchmarkSection}
 14. **화면 및 조작 설계**: 게임 화면 구성(메뉴, 버튼 배치 등)의 밑그림이 포함되었는가. 모든 메뉴에서 조작 방법이 통일되어 있으면서도, 전투/탐험/퍼즐 등 다양한 플레이 경험을 제공하는가.
 15. **개발 일정 및 산출물**: 개발을 어떤 단계로 나눠서 진행하는지(기획→첫 버전→테스트→출시) 계획이 있는가. 기능 목록, 테스트 항목, 수치 조정표 같은 실무에서 쓰는 문서가 포함되었는가.
 
-## 점수 기준 (합격자 평균: ${avgScores.overall}점)
-- 90-100점: 즉시 합격 수준
-- 80-89점: 합격 가능 수준
-- 70-79점: 보완 필요
-- 60-69점: 상당한 보완 필요
+## 점수 기준 (합격자 평균: ${avgScores.overall}점) — 1점 단위로 정밀하게 채점
+
+### 구간별 의미
+- 95-100점: 합격자 최상위와 동급 (드물게 부여)
+- 90-94점: 즉시 합격 수준
+- 85-89점: 합격자 평균 이상
+- 80-84점: 합격 가능 수준
+- 75-79점: 합격까지 약간의 보완 필요
+- 70-74점: 합격까지 명확한 보완 필요
+- 65-69점: 상당한 보완 필요
+- 60-64점: 핵심 요소 다수 누락
 - 60점 미만: 전면 재작성 권장
 
-**게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 0점, 간접적으로라도 언급이 있으면 그 수준에 맞게 채점하세요.
+### ⚠️ 점수 차별화 필수 규칙 (반드시 지킬 것!)
+1. **15개 categories의 value를 모두 다른 값으로 매겨라.** 같은 점수가 3개 이상 나오면 안 됨.
+   - 잘못된 예: 모든 항목이 70-78 사이에 몰림 (수렴 현상)
+   - 올바른 예: 60, 65, 68, 72, 75, 78, 80, 82 등 1~5점 단위로 분산
+2. **70점대 후반(75~79)으로 수렴하지 마라.** 특히 78, 75, 76 같은 "안전한 중간값"을 남발하면 안 됨.
+   - 잘 된 항목은 과감히 80점대로, 부족한 항목은 60점대로 내려라.
+3. **전체 score는 15개 categories의 가중평균이지만, 단순 평균 ±2점 안에 머물지 마라.**
+   - 강점이 명확한 문서 → 80점대 부여
+   - 보통 문서 → 65~75점 분산
+   - 약점이 큰 문서 → 50~65점 부여
+4. **흔한 정수(70, 75, 78, 80)를 회피하고 73, 67, 84, 91 같은 다양한 숫자 사용.**
+5. **이 문서가 합격 평균(${avgScores.overall}점)보다 명확히 좋으면 ${avgScores.overall + 5}점 이상, 명확히 부족하면 ${avgScores.overall - 8}점 이하로 부여.**
+
+**게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 30~45점, 간접적으로라도 언급이 있으면 그 수준에 맞게 50~75점으로 채점하세요.
 
 **게임 디자인 역량 feedback 작성 규칙**: 각 항목의 feedback은 반드시 3줄 이상 작성하세요. 위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 참고하여 합격자들의 구체적 특징과 비교하세요. [강점]과 [보완]을 구분해서 작성하세요.
 - [강점]으로 시작하는 줄: 이 문서에서 해당 항목이 잘 된 부분
@@ -948,15 +967,15 @@ ${benchmarkSection}
       return { error: "CREDIT_LIMIT_EXCEEDED" }
     }
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
-      return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+      return { error: "분석 시간이 길어져 중단됐어요. 파일을 더 작게 만들거나 잠시 후 다시 시도해주세요." }
     }
     if (errMsg.includes("Streaming is required")) {
-      return { error: "AI 처리가 너무 오래 걸려 일시적으로 차단되었습니다. 잠시 후 다시 시도해 주세요." }
+      return { error: "AI 처리가 길어져 일시적으로 차단됐어요. 잠시 후 다시 시도해주세요." }
     }
     if (errMsg.includes("Internal server error") || errMsg.includes("api_error") || errMsg.includes("overloaded") || errMsg.includes("529")) {
-      return { error: "AI 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요." }
+      return { error: "AI 서버가 잠시 불안정해요. 1~2분 후 다시 시도해주세요." }
     }
-    return { error: "URL 분석 중 오류가 발생했습니다. 다시 시도해 주세요." }
+    return { error: "분석 중 문제가 생겼어요. 잠시 후 다시 시도해주세요." }
   }
 }
 
@@ -1036,12 +1055,12 @@ export async function analyzeDocumentDirect(input: {
   const supabaseAuth = await createClient()
   const { data: { user: authUser } } = await supabaseAuth.auth.getUser()
   if (!authUser) {
-    return { error: "로그인이 필요합니다." }
+    return { error: "먼저 로그인해주세요." }
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }
+    return { error: "AI 서비스 설정에 문제가 있어요. 잠시 후 다시 시도해주세요." }
   }
 
   try {
@@ -1391,12 +1410,32 @@ ${benchmarkSection}
 14. **화면 및 조작 설계**: 게임 화면 구성(메뉴, 버튼 배치 등)의 밑그림이 포함되었는가. 모든 메뉴에서 조작 방법이 통일되어 있으면서도, 전투/탐험/퍼즐 등 다양한 플레이 경험을 제공하는가.
 15. **개발 일정 및 산출물**: 개발을 어떤 단계로 나눠서 진행하는지(기획→첫 버전→테스트→출시) 계획이 있는가. 기능 목록, 테스트 항목, 수치 조정표 같은 실무에서 쓰는 문서가 포함되었는가.
 
-## 점수 기준 (합격자 평균: ${avgScores.overall}점)
-- 90-100점: 즉시 합격 수준 (합격 상위 문서와 동급)
-- 80-89점: 합격 가능 수준 (합격자 평균 근처)
-- 70-79점: 보완 필요 (합격까지 개선 필요)
-- 60-69점: 상당한 보완 필요
+## 점수 기준 (합격자 평균: ${avgScores.overall}점) — 1점 단위로 정밀하게 채점
+
+### 구간별 의미
+- 95-100점: 합격자 최상위와 동급 (드물게 부여)
+- 90-94점: 즉시 합격 수준 (합격 상위 문서와 동급)
+- 85-89점: 합격자 평균 이상
+- 80-84점: 합격 가능 수준 (합격자 평균 근처)
+- 75-79점: 합격까지 약간의 보완 필요
+- 70-74점: 합격까지 명확한 보완 필요
+- 65-69점: 상당한 보완 필요
+- 60-64점: 핵심 요소 다수 누락
 - 60점 미만: 전면 재작성 권장
+
+### ⚠️ 점수 차별화 필수 규칙 (반드시 지킬 것!)
+1. **15개 categories의 value를 모두 다른 값으로 매겨라.** 같은 점수가 3개 이상 나오면 안 됨.
+   - 잘못된 예: 모든 항목이 70-78 사이에 몰림 (수렴 현상)
+   - 올바른 예: 60, 65, 68, 72, 75, 78, 80, 82 등 1~5점 단위로 분산
+2. **70점대 후반(75~79)으로 수렴하지 마라.** 특히 78, 75, 76 같은 "안전한 중간값"을 남발하면 안 됨.
+   - 잘 된 항목은 과감히 80점대로, 부족한 항목은 60점대로 내려라.
+3. **전체 score는 15개 categories와 readabilityCategories(10개)의 가중평균이지만, 단순 평균 ±2점 안에 머물지 마라.**
+   - 강점이 명확한 문서 → 80점대 부여
+   - 보통 문서 → 65~75점 분산
+   - 약점이 큰 문서 → 50~65점 부여
+4. **흔한 정수(70, 75, 78, 80)를 회피하고 73, 67, 84, 91 같은 다양한 숫자 사용.**
+5. **이 문서가 합격 평균(${avgScores.overall}점)보다 명확히 좋으면 ${avgScores.overall + 5}점 이상, 명확히 부족하면 ${avgScores.overall - 8}점 이하로 부여.**
+6. **readabilityCategories(10개)도 같은 규칙 적용.** 가독성 항목들도 60~90점 사이에서 다양하게 분산.
 
 **게임 디자인 역량 채점 주의**: 문서가 게임 기획서가 아닌 일반 포트폴리오인 경우, 해당 항목들은 관련 내용이 전혀 없으면 0점, 간접적으로라도 언급이 있으면 그 수준에 맞게 채점하세요.
 
@@ -1481,7 +1520,7 @@ ${benchmarkSection}
     // 파일 다운로드하여 base64로 변환
     const response = await fetch(input.fileUrl)
     if (!response.ok) {
-      return { error: "파일을 다운로드할 수 없습니다." }
+      return { error: "업로드된 파일을 가져올 수 없어요. 다시 업로드해주세요." }
     }
     const fileBuffer = Buffer.from(await response.arrayBuffer())
     const fileSizeMB = fileBuffer.length / (1024 * 1024)
@@ -1519,7 +1558,7 @@ ${benchmarkSection}
       }
     } else if (!isDocTypeSupported && !hasExtractedText) {
       // 비-PDF + 텍스트도 없음 → 분석 불가
-      return { error: `이 파일 형식(${input.mimeType})은 직접 분석할 수 없고, 텍스트 추출도 실패했습니다. PDF로 변환하여 다시 시도해 주세요.` }
+      return { error: "이 파일에서 텍스트를 읽어올 수 없어요. PDF로 변환해서 다시 올려주세요." }
     }
 
     try {
@@ -1720,18 +1759,20 @@ ${benchmarkSection}
       return { error: "CREDIT_LIMIT_EXCEEDED" }
     }
     if (errMsg.includes("timeout") || errMsg.includes("FUNCTION_INVOCATION_TIMEOUT")) {
-      return { error: "분석 시간이 초과되었습니다. 파일 크기가 큰 경우 시간이 오래 걸릴 수 있습니다. 다시 시도해 주세요." }
+      return { error: "분석 시간이 길어져 중단됐어요. 파일을 더 작게 만들거나 잠시 후 다시 시도해주세요." }
     }
     // Anthropic Streaming 강제 에러 — 이미 stream() 적용했지만 혹시 모를 라이브러리 차이 대비
     if (errMsg.includes("Streaming is required")) {
-      return { error: "AI 처리가 너무 오래 걸려 일시적으로 차단되었습니다. 파일을 더 작게 만들거나 잠시 후 다시 시도해 주세요." }
+      return { error: "AI 처리가 길어져 일시적으로 차단됐어요. 파일을 더 작게 만들거나 잠시 후 다시 시도해주세요." }
     }
     if (errMsg.includes("too many tokens") || errMsg.includes("context_length") || errMsg.includes("request_too_large") || errMsg.includes("413") || errMsg.includes("maximum size")) {
-      return { error: "파일 내용이 너무 많아 AI가 한번에 처리할 수 없습니다. 불필요한 페이지를 줄이거나, 이미지를 압축하여 다시 시도해 주세요." }
+      return { error: "문서 내용이 너무 많아요. 불필요한 페이지를 줄이거나 이미지를 압축한 뒤 다시 시도해주세요." }
     }
     if (errMsg.includes("Internal server error") || errMsg.includes("api_error") || errMsg.includes("overloaded") || errMsg.includes("529")) {
-      return { error: "AI 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요." }
+      return { error: "AI 서버가 잠시 불안정해요. 1~2분 후 다시 시도해주세요." }
     }
-    return { error: `분석 중 오류가 발생했습니다. 다시 시도해 주세요. (${errMsg.slice(0, 100)})` }
+    // 기술적 에러 메시지를 사용자에게 노출하지 않음 (보안 + UX)
+    console.error("[분석 오류 상세]", errMsg)
+    return { error: "분석 중 문제가 생겼어요. 잠시 후 다시 시도해주세요." }
   }
 }

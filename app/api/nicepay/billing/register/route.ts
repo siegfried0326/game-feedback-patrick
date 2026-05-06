@@ -67,6 +67,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "생년월일 6자리 또는 사업자번호 10자리를 입력해주세요." }, { status: 400 })
     }
 
+    // 중복 결제 방지 1단계: 이미 active 구독이 있으면 차단
+    // (이전 결함: hk 사용자가 결제 후 분석 실패로 재결제 시도 → 두 번 차감됨)
+    const { data: existingSub } = await supabase
+      .from("users_subscription")
+      .select("plan, status, expires_at, updated_at")
+      .eq("user_id", user.id)
+      .maybeSingle()
+
+    if (existingSub && existingSub.status === "active" && existingSub.plan !== "free") {
+      const expiresAt = existingSub.expires_at ? new Date(existingSub.expires_at) : null
+      const isStillActive = !expiresAt || expiresAt > new Date()
+
+      if (isStillActive) {
+        const planLabel = existingSub.plan === "monthly" ? "월 무제한" : "3개월 무제한"
+        const expireStr = expiresAt ? expiresAt.toLocaleDateString("ko-KR") : "무기한"
+        console.warn(`[billing-register] 중복 결제 차단(active) userId=${user.id} 기존=${existingSub.plan} 시도=${plan}`)
+        return NextResponse.json({
+          error: `이미 활성 구독이 있습니다. (${planLabel}, 만료: ${expireStr})\n마이페이지에서 구독 상태를 확인해주세요.`,
+          alreadySubscribed: true,
+          currentPlan: existingSub.plan,
+          expiresAt: existingSub.expires_at,
+        }, { status: 409 })
+      }
+    }
+
+    // 중복 결제 방지 2단계: 짧은 시간(15초) 내 재시도 차단 (race condition 방어)
+    // 시나리오: 첫 결제 처리 중(6-10초) 사용자가 새로고침/다른 탭에서 다시 결제
+    // → DB에 active가 아직 반영되지 않아 1단계를 통과할 수 있음
+    // → updated_at을 atomic하게 갱신하여 lock 효과
+    const LOCK_WINDOW_MS = 15_000
+    const lockThreshold = new Date(Date.now() - LOCK_WINDOW_MS).toISOString()
+    if (existingSub?.updated_at && new Date(existingSub.updated_at) > new Date(lockThreshold)) {
+      console.warn(`[billing-register] 중복 결제 차단(lock) userId=${user.id} updated_at=${existingSub.updated_at}`)
+      return NextResponse.json({
+        error: "결제가 진행 중입니다. 잠시 후 다시 시도해주세요. (중복 결제 방지)",
+        paymentInProgress: true,
+      }, { status: 429 })
+    }
+
+    // lock 획득: updated_at 갱신 → 동시에 들어온 다른 요청은 위 체크에서 차단됨
+    const lockTs = new Date().toISOString()
+    const { error: lockError } = await supabase
+      .from("users_subscription")
+      .update({ updated_at: lockTs })
+      .eq("user_id", user.id)
+    if (lockError) {
+      // 구독 row가 아직 없으면 생성 (free 플랜으로) — getSubscription와 동일 동작
+      await supabase
+        .from("users_subscription")
+        .insert({ user_id: user.id, plan: "free", status: "active", updated_at: lockTs })
+    }
+
     const planConfig = PLAN_CONFIG[plan]
     const ts = Date.now()
     const userPrefix = user.id.slice(0, 8)

@@ -8,6 +8,33 @@
 
 ## 진행 중
 
+- [x] **중복 결제 방지 — 4단계 다층 방어** ✅ 2026-05-06
+  - 배경: 5/4 hk 사용자가 3개월권 두 번 결제(78,000원) — 분석 실패 후 재결제 시도
+  - 1단계(서버): 활성 구독 사전 검증 → 409
+  - 2단계(서버): 15초 내 재시도 차단 (`updated_at` atomic lock) → 429
+  - 3단계(클라이언트): 결제 페이지 진입 시 활성 구독이면 결제 폼 대신 안내
+  - 4단계(클라이언트): `sessionStorage` 락 (5분 만료) — 새로고침/재진입 차단
+  - 상세: `docs/LOG_변경이력.md` 2026-05-06 항목
+
+- [ ] **`processSubscriptionPayment` 결함 점검** (잠재적 문제)
+  - `app/actions/payment.ts:115-117`: 이미 active + 미만료 시 plan 무관하게 `+1개월`만 연장
+  - 3개월권 재결제 시 1개월만 추가되는 버그
+  - 현재 NICEPay 빌링키 방식만 사용 중이라 호출되지 않을 가능성 → 호출 흐름 확인 후 수정/제거 결정
+
+- [x] **Claude Opus 제거 — 비용 폭증 방지** ✅ 2026-05-06
+  - 배경: 5/4 hk 사용자 분석 시도 시 270만 토큰 사용, 매출 ≈ 비용 손익분기
+  - 모든 플랜에서 Sonnet 단일 사용
+  - UI 텍스트 "Claude AI"로 통일
+  - 상세: `docs/LOG_변경이력.md` 2026-05-06 항목 참고
+
+- [ ] **추가 비용 누수 차단 (후속 작업)**
+  - [ ] SDK `maxRetries: 3` → `1` 축소 (analyze.ts:866, 1597)
+  - [ ] catch 폴백 재호출 시 max_tokens 8192로 축소 (analyze.ts:1665)
+  - [ ] `analyzeUrlDirect`/`analyzeDocumentDirect` 진입부에 `checkAnalysisAllowance` 강제 호출
+  - [ ] 3개월권에 일/월 분석 횟수 한도 도입 (예: 일 5회, 월 30회)
+  - [ ] 프롬프트 캐싱(`cache_control`) 적용 — 시스템 프롬프트 + 벤치마크 데이터
+  - [ ] 같은 사용자 동시 호출 락 (in-flight check)
+
 - [x] **회사별 벤치마크 데이터 → analyze.ts 연동** ✅ 2026-03-07
   - `data/company-benchmarks.json` 데이터 완성 (9개사 × 20항목)
   - analyze.ts 양쪽 함수(URL/Document)에 벤치마크 프롬프트 주입 완료

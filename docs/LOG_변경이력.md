@@ -2,6 +2,62 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-05-06
+
+### 중복 결제 방지 — 활성 구독 사전 검증 + race condition 차단
+**배경**: 2026-05-04 hk(hkpark1125@gmail.com) 사용자가 3개월권을 두 번 결제(78,000원). 결제 후 분석 실패("Streaming required" 에러)로 인해 "결제가 안 됐나?" 하고 결제 페이지에서 다시 카드 정보 입력 → 또 결제됨. NICEPay 빌링키 등록 API에 이미 활성 구독이 있는지 검증하는 로직이 없어서 발생.
+
+**다층 방어 도입**:
+
+**1단계: 활성 구독 사전 검증 (서버)**
+- `app/api/nicepay/billing/register/route.ts`: 입력 검증 직후 `users_subscription` 조회 → active + 미만료 + 비-free 플랜이면 `409 Conflict` 응답으로 차단. 빌링키 발급 + 결제 호출 자체를 막음.
+
+**2단계: 짧은 시간(15초) 내 재시도 차단 (서버, race condition 방어)**
+- 첫 결제 처리 중(6-10초) 같은 사용자가 새로고침/다른 탭에서 또 결제 시도 시 → DB에 active가 아직 반영되지 않아 1단계 통과 가능 → `updated_at`을 atomic하게 갱신하여 lock 효과
+- 15초 이내 재시도 시 `429 Too Many Requests` 응답
+
+**3단계: 활성 구독자 결제 페이지 차단 (클라이언트)**
+- `app/payment/billing/page.tsx`: 페이지 진입 시 `getSubscription` 결과로 활성 구독 확인 → 있으면 결제 폼 대신 안내 화면(마이페이지 / 분석 페이지로 유도) 표시
+
+**4단계: sessionStorage 락 — 새로고침/재진입 차단 (클라이언트)**
+- 결제 시작 직전 `sessionStorage.billing_payment_lock_at`에 timestamp 저장 (5분 만료)
+- 페이지 로드 시 lock 존재하면 "결제가 처리 중입니다" 화면 표시 + "다시 시도" 버튼 제공
+- 결제 실패/네트워크 오류 시 즉시 lock 해제 (재시도 가능)
+- 결제 성공 후에도 `/analyze`로 이동 직전까지 lock 유지
+
+**기대 효과**:
+- 결제 후 사용자가 페이지를 새로고침/재진입해도 카드 차감 차단
+- 첫 결제 진행 중 사용자가 빠르게 다시 시도해도 race condition 차단
+- 다른 탭에서 동시 시도 차단 (sessionStorage는 탭별 분리이지만 서버 lock으로 보완)
+- NICEPay 측에 도달하기 전에 모든 차단 → 환불 절차 불필요
+
+**남은 관련 결함 (별도 작업)**:
+- `app/actions/payment.ts:115-117` (`processSubscriptionPayment`): 이미 active 구독 + 미만료 시 plan 무관하게 `+1개월`만 연장하는 버그. 3개월권 재결제 시 1개월만 추가되는 문제. 현재 NICEPay 빌링키 방식 사용 중이라 호출되지 않을 가능성 높지만, 토스페이먼츠 단건결제 흐름이 살아있다면 수정 필요.
+
+### Claude Opus 제거 — 단일 모델(Sonnet)로 통일
+**배경**: 2026-05-04 hk(hkpark1125@gmail.com) 사용자가 3개월권 결제 후 분석 시도, 비스트리밍 호출의 "Streaming required" 에러 + SDK maxRetries=3 + catch 폴백 재호출 + 거대 시스템 프롬프트 조합으로 분석 1회 시도당 최대 8회 Opus 호출. 270만 입력 토큰 + 18만 출력 토큰 사용, 약 $54 비용 발생. 매출 78,000원 vs Anthropic 비용 ≈ 75,600원으로 거의 손익분기. 향후 동일 패턴 반복 시 적자 확정.
+
+**조치**:
+- `app/actions/analyze.ts`: `getModelForUser()` 단순화 — 모든 플랜이 `claude-sonnet-4-20250514` 반환
+- 사용자 노출 텍스트 통일: "Claude Sonnet AI", "Claude Opus AI" → "Claude AI"
+- 차별화 포인트 재정의: 모델 차별 → 기간/가격 차별 (3개월권 = "장기 합리가")
+
+**변경 파일**:
+- 코드: `app/actions/analyze.ts`
+- UI: `app/payment/billing/page.tsx`, `app/payment/billing/success/page.tsx`, `app/mypage/page.tsx`, `app/pricing/page.tsx`, `components/pricing-section.tsx`, `components/pricing-modal.tsx`
+- 문서: `docs/PRD_가격표_요금제.md`, `docs/PRD_결제_구독.md`, `docs/PRD_문서분석.md`, `docs/PRD_마이페이지_구독.md`, `docs/ARCH_시스템.md`, `docs/REF_기능목록.md`
+
+**기대 효과**:
+- 분석 1회 비용 약 $1.77 → $0.35 (5배 절감)
+- Sonnet은 Opus보다 응답 빠름 — "10분 초과" 차단 발생률 감소
+- 모델 분기 제거로 코드 단순화
+
+**남은 비용 누수 (별도 작업 필요)**:
+- SDK `maxRetries: 3` → 1로 축소 권장
+- catch 폴백 재호출 시 max_tokens 축소 또는 호출 차단
+- 3개월권에 일/월 분석 횟수 한도 도입 권장
+- 프롬프트 캐싱(`cache_control`) 적용 시 input 비용 추가 90% 절감 가능
+
 ## 2026-04-17
 
 ### 크레딧 결제에 간편결제(네이버페이·카카오페이) 추가 (`f1e259d`)

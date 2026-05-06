@@ -19,9 +19,13 @@ import { createClient } from "@/lib/supabase/client"
 import { getSubscription } from "@/app/actions/subscription"
 
 const PLANS = {
-  monthly:     { name: "월 무제한",    price: "13,800", amount: 13800, period: "월",    description: "무제한 분석 + 버전 비교 + Claude Sonnet" },
-  three_month: { name: "3개월 무제한", price: "39,000", amount: 39000, period: "3개월", description: "🏆 Claude Opus 탑재 — 월 구독 대비 더 심층적인 분석 제공" },
+  monthly:     { name: "월 무제한",    price: "13,800", amount: 13800, period: "월",    description: "무제한 분석 + 버전 비교 + Claude AI" },
+  three_month: { name: "3개월 무제한", price: "39,000", amount: 39000, period: "3개월", description: "🏆 3개월 무제한 — 가장 합리적인 장기 플랜" },
 } as const
+
+// 결제 중복 방지: sessionStorage에 결제 시작 시각을 저장하여 새로고침/재진입 시 차단
+const PAYMENT_LOCK_KEY = "billing_payment_lock_at"
+const PAYMENT_LOCK_WINDOW_MS = 5 * 60 * 1000 // 5분
 
 function formatCardNumber(val: string) {
   return val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim()
@@ -40,6 +44,8 @@ function BillingContent() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [showPw, setShowPw] = useState(false)
+  const [activeSubInfo, setActiveSubInfo] = useState<{ plan: string; expiresAt: string | null } | null>(null)
+  const [paymentInFlight, setPaymentInFlight] = useState(false)
 
   // 카드 입력값
   const [cardNo, setCardNo]   = useState("")
@@ -55,13 +61,54 @@ function BillingContent() {
     })
     getSubscription().then(r => {
       if (r.data?.analysis_credits) setCurrentCredits(r.data.analysis_credits)
+      // 이미 활성 구독이 있으면 안내 (중복 결제 방지)
+      if (r.data && r.data.plan !== "free" && r.data.status === "active") {
+        const expiresAt = r.data.expires_at ? new Date(r.data.expires_at) : null
+        const isStillActive = !expiresAt || expiresAt > new Date()
+        if (isStillActive) {
+          setActiveSubInfo({
+            plan: r.data.plan,
+            expiresAt: r.data.expires_at,
+          })
+        }
+      }
     })
+
+    // 결제 진행 중 락 확인 (새로고침/재진입 시 중복 결제 방지)
+    try {
+      const lockTsStr = sessionStorage.getItem(PAYMENT_LOCK_KEY)
+      if (lockTsStr) {
+        const lockTs = parseInt(lockTsStr, 10)
+        if (!Number.isNaN(lockTs) && Date.now() - lockTs < PAYMENT_LOCK_WINDOW_MS) {
+          setPaymentInFlight(true)
+        } else {
+          sessionStorage.removeItem(PAYMENT_LOCK_KEY)
+        }
+      }
+    } catch { /* sessionStorage 사용 불가 환경 무시 */ }
   }, [router])
 
   const plan = PLANS[selectedPlan]
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // 클라이언트 측 중복 클릭 방지: 이미 결제 처리 중이면 무시
+    if (loading || paymentInFlight) return
+
+    // sessionStorage 락 — 새로고침/다른 탭에서 다시 결제 시도 차단
+    try {
+      const existingLock = sessionStorage.getItem(PAYMENT_LOCK_KEY)
+      if (existingLock) {
+        const lockTs = parseInt(existingLock, 10)
+        if (!Number.isNaN(lockTs) && Date.now() - lockTs < PAYMENT_LOCK_WINDOW_MS) {
+          setPaymentInFlight(true)
+          return
+        }
+      }
+      sessionStorage.setItem(PAYMENT_LOCK_KEY, String(Date.now()))
+    } catch { /* sessionStorage 사용 불가 환경 무시 */ }
+
     setLoading(true)
     setError("")
 
@@ -84,14 +131,21 @@ function BillingContent() {
       const data = await res.json()
 
       if (!res.ok || data.error) {
+        // 결제 실패 시 lock 해제 (재시도 가능하도록)
+        try { sessionStorage.removeItem(PAYMENT_LOCK_KEY) } catch {}
         setError(data.error || "결제 처리 중 오류가 발생했습니다.")
         setLoading(false)
         return
       }
 
+      // 결제 성공: lock 유지(만료 5분)하여 success 페이지 이동 중 재결제 차단
       setSuccess(true)
-      setTimeout(() => { window.location.href = "/analyze" }, 3000)
+      setTimeout(() => {
+        try { sessionStorage.removeItem(PAYMENT_LOCK_KEY) } catch {}
+        window.location.href = "/analyze"
+      }, 3000)
     } catch {
+      try { sessionStorage.removeItem(PAYMENT_LOCK_KEY) } catch {}
       setError("네트워크 오류가 발생했습니다. 다시 시도해주세요.")
       setLoading(false)
     }
@@ -105,7 +159,7 @@ function BillingContent() {
           <h1 className="text-2xl font-bold text-white mb-2">구독이 시작되었습니다!</h1>
           <p className="text-slate-400 mb-6">
             {selectedPlan === "three_month"
-              ? "이제 프리미엄 Claude Opus AI로 더 정밀한 분석을 받으실 수 있습니다."
+              ? "이제 3개월 동안 무제한 분석과 모든 기능을 이용하실 수 있습니다."
               : "이제 무제한 분석과 버전 비교 기능을 이용하실 수 있습니다."}
             <br />
             매월 자동으로 갱신됩니다. 잠시 후 분석 페이지로 이동합니다.
@@ -113,6 +167,70 @@ function BillingContent() {
           <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
             <Link href="/analyze">분석하러 가기</Link>
           </Button>
+        </div>
+      </main>
+    )
+  }
+
+  // 결제 진행 중인 경우 안내 (새로고침/재진입 시 중복 결제 방지)
+  if (paymentInFlight) {
+    return (
+      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 text-center">
+          <Loader2 className="w-16 h-16 text-[#5B8DEF] animate-spin mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-white mb-2">결제가 처리 중입니다</h1>
+          <p className="text-slate-400 mb-2">방금 시작한 결제가 아직 처리 중이에요.</p>
+          <p className="text-sm text-slate-500 mb-6">중복 결제를 방지하기 위해 잠시 차단됩니다.<br />몇 분 뒤 마이페이지에서 결과를 확인해주세요.</p>
+          <div className="flex gap-3 justify-center">
+            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
+              <Link href="/mypage">마이페이지로 이동</Link>
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                try { sessionStorage.removeItem(PAYMENT_LOCK_KEY) } catch {}
+                setPaymentInFlight(false)
+              }}
+              variant="outline"
+              className="border-slate-600 text-slate-400 hover:text-white"
+            >
+              결제가 안 됐다면 다시 시도
+            </Button>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  // 이미 활성 구독이 있는 경우 결제 페이지 차단 + 안내
+  if (activeSubInfo) {
+    const planLabel = activeSubInfo.plan === "monthly" ? "월 무제한" : "3개월 무제한"
+    const expireStr = activeSubInfo.expiresAt
+      ? new Date(activeSubInfo.expiresAt).toLocaleDateString("ko-KR")
+      : "무기한"
+    return (
+      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 text-center">
+          <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-white mb-2">이미 활성 구독이 있습니다</h1>
+          <p className="text-slate-400 mb-2">
+            현재 <span className="text-white font-medium">{planLabel}</span> 플랜을 이용 중입니다.
+          </p>
+          <p className="text-slate-400 mb-6">
+            만료일: <span className="text-white">{expireStr}</span>
+          </p>
+          <p className="text-sm text-amber-400/80 mb-6">
+            중복 결제를 방지하기 위해 결제 페이지가 차단되었습니다.<br />
+            플랜 변경이나 해지는 마이페이지에서 가능합니다.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
+              <Link href="/mypage">마이페이지로 이동</Link>
+            </Button>
+            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+              <Link href="/analyze">분석하러 가기</Link>
+            </Button>
+          </div>
         </div>
       </main>
     )

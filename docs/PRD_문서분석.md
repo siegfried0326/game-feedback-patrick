@@ -5,7 +5,7 @@
 | 항목 | 내용 |
 |------|------|
 | 서비스명 | 아카이브 187 (Archive187) |
-| AI 엔진 | Anthropic Claude API (Sonnet/Opus) |
+| AI 엔진 | Anthropic Claude API (claude-sonnet-4-20250514, 2026-05-06부터 단일 모델) |
 | 파일 처리 | 클라이언트 압축/텍스트추출 + 서버 업로드 + AI 분석 |
 | 마지막 갱신 | 2026-02-27 |
 
@@ -68,11 +68,12 @@ PDF, JPEG, PNG, WebP, DOCX, PPTX, XLSX, XLS, PPT, TXT
 
 ## 5. AI 분석 프롬프트
 
-### 5.1 Claude 모델 선택
+### 5.1 Claude 모델 (단일)
 | 구독 플랜 | 모델 |
 |-----------|------|
-| free, monthly | claude-sonnet-4-20250514 |
-| three_month | claude-opus-4-20250514 |
+| 모든 플랜 (free, monthly, three_month) | claude-sonnet-4-20250514 |
+
+> 2026-05-06: Opus 제거. 이전에는 three_month 플랜에 Opus를 적용했으나, 한 사용자의 폭주 사용으로 적자 발생 가능성이 확인되어 단일 모델로 통일. 사용자 노출 표기는 "Claude AI"로 통일.
 
 ### 5.2 평가 카테고리 (15개)
 

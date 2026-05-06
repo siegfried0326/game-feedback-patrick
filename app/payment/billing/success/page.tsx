@@ -73,7 +73,7 @@ function BillingSuccessContent() {
             <h1 className="text-2xl font-bold text-white mb-2">구독이 시작되었습니다!</h1>
             <p className="text-slate-400 mb-6">
               {searchParams.get("plan") === "three_month"
-                ? "이제 프리미엄 Claude Opus AI로 더 정밀한 분석을 받으실 수 있습니다."
+                ? "이제 3개월 동안 무제한 분석과 모든 기능을 이용하실 수 있습니다."
                 : "이제 무제한 분석과 버전 비교 기능을 이용하실 수 있습니다."
               }
               <br />

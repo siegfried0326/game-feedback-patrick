@@ -112,13 +112,13 @@ export function PricingSection() {
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-medium">
                 <Sparkles className="w-3 h-3" />
-                Claude Opus 탑재
+                장기 합리가
               </span>
             </div>
 
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-white mb-2">3개월 무제한</h3>
-              <p className="text-sm text-slate-400">월 13,000원 수준 · 최고 성능 AI 엔진</p>
+              <p className="text-sm text-slate-400">월 13,000원 수준 · 가장 합리적인 장기 플랜</p>
             </div>
 
             <div className="mb-2">
@@ -129,7 +129,7 @@ export function PricingSection() {
               </div>
             </div>
 
-            <p className="text-xs text-amber-400/80 mb-6">월 구독(Claude Sonnet)보다 훨씬 깊은 분석 제공</p>
+            <p className="text-xs text-amber-400/80 mb-6">월 구독 대비 약 25% 할인 · 3개월 안심 사용</p>
 
             <ul className="space-y-3 mb-8 flex-1">
               {["무제한 분석", "무제한 프로젝트", "상세 코멘트 제공", "포지션별 맞춤 피드백", "버전별 점수 비교 분석"].map((f, i) => (
@@ -140,7 +140,7 @@ export function PricingSection() {
               ))}
               <li className="flex items-start gap-3 text-sm">
                 <Check className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-                <span className="text-amber-300 font-medium">Claude Opus — 최고 성능 AI 모델</span>
+                <span className="text-amber-300 font-medium">3개월 동안 모든 기능 무제한 이용</span>
               </li>
             </ul>
 

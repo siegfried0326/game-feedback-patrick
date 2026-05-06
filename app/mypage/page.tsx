@@ -271,12 +271,12 @@ export default function MyPage() {
               )}
               {subscription.plan === "monthly" && subscription.status === "active" && (
                 <div className="bg-[#5B8DEF]/5 rounded-lg p-3 border border-[#5B8DEF]/20">
-                  <p className="text-xs text-[#5B8DEF]">🤖 Claude Sonnet AI 사용 중</p>
+                  <p className="text-xs text-[#5B8DEF]">🤖 Claude AI 사용 중</p>
                 </div>
               )}
               {subscription.plan === "three_month" && subscription.status === "active" && (
                 <div className="bg-purple-500/5 rounded-lg p-3 border border-purple-500/20">
-                  <p className="text-xs text-purple-400">✨ 프리미엄 Claude Opus AI 사용 중</p>
+                  <p className="text-xs text-purple-400">✨ Claude AI 사용 중 · 3개월 무제한</p>
                 </div>
               )}
               {subscription.plan !== "free" && subscription.status === "active" && (

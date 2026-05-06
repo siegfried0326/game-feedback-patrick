@@ -5,7 +5,7 @@
  * - checkBeforeAnalysis(): 분석 전 인증 + 구독 확인
  * - uploadFileToStorage(): Supabase Storage에 파일 업로드 (200MB 제한, 30MB 권장)
  * - deleteFileFromStorage(): Storage 파일 삭제
- * - getModelForUser(): 구독 플랜별 Claude 모델 선택 (Sonnet/Opus)
+ * - getModelForUser(): Claude 모델 반환 (모든 플랜에서 Sonnet 사용)
  * - analyzeUrlDirect(): URL 크롤링 또는 추출된 텍스트 → Claude 분석
  * - analyzeDocumentDirect(): 업로드된 파일 → Claude 분석
  *
@@ -334,32 +334,10 @@ export async function deleteFileFromStorage(filePath: string) {
   }
 }
 
-// 사용자 구독 플랜에 따라 Claude 모델 선택
+// Claude 모델 반환 — 모든 플랜에서 Sonnet 사용 (Opus 제거: 비용 폭증 방지)
+// 이전: 3개월권은 Opus, 그 외는 Sonnet — 한 사용자의 폭주 사용으로 적자 발생 가능
+// 현재: 단일 모델로 통일하여 비용 안정화 + 응답 속도 개선
 async function getModelForUser(): Promise<string> {
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return "claude-sonnet-4-20250514"
-
-    const { data: subscription } = await supabase
-      .from("users_subscription")
-      .select("plan, status, expires_at")
-      .eq("user_id", user.id)
-      .single()
-
-    // 3개월 패스 (active, 미만료) → Claude Opus
-    if (
-      subscription?.plan === "three_month" &&
-      subscription.status === "active" &&
-      (!subscription.expires_at || new Date(subscription.expires_at) > new Date())
-    ) {
-      return "claude-opus-4-20250514"
-    }
-  } catch {
-    // fallback to sonnet
-  }
-
-  // free, monthly → Claude Sonnet
   return "claude-sonnet-4-20250514"
 }
 

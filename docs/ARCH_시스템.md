@@ -20,7 +20,7 @@
 | UI 컴포넌트 | shadcn/ui, recharts (차트) |
 | 백엔드 | Next.js Server Actions (`app/actions/`) |
 | DB / Auth / Storage | Supabase (PostgreSQL + pgvector) |
-| AI (사용자 분석) | Anthropic Claude API (Sonnet / Opus) |
+| AI (사용자 분석) | Anthropic Claude API (Sonnet 단일 — 2026-05-06부터) |
 | AI (학습 데이터) | Google Gemini 2.0 Flash |
 | AI (벡터 임베딩) | OpenAI text-embedding-3-small (1536차원) |
 | AI (합격자 DB 조회) | NotebookLM — 187개 포트폴리오를 소스로 업로드 후 직접 질의 (수동, API 없음) |
@@ -312,7 +312,7 @@ success_patterns (독립 테이블)
 
 | API | 용도 | 환경변수 | 모델/엔드포인트 | 사용 위치 |
 |-----|------|----------|----------------|-----------|
-| Claude | 사용자 분석 + 공통점 추출 | `ANTHROPIC_API_KEY` | Sonnet/Opus | analyze.ts, admin.ts |
+| Claude | 사용자 분석 + 공통점 추출 | `ANTHROPIC_API_KEY` | claude-sonnet-4-20250514 (단일) | analyze.ts, admin.ts |
 | Gemini 2.0 Flash | 학습 데이터 분석 | `GOOGLE_GENERATIVE_AI_API_KEY` | gemini-2.0-flash | admin.ts |
 | OpenAI Embeddings | 벡터 임베딩 | `OPENAI_API_KEY` | text-embedding-3-small (1536d) | admin.ts, analyze.ts |
 | TossPayments | 결제/환불 | `TOSS_SECRET_KEY` | 빌링키, 일반결제, 취소 API | payment.ts, toss-api.ts |

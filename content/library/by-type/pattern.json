@@ -1,0 +1,3519 @@
+[
+  {
+    "id": "pattern:Apex Legends-핑시스템",
+    "slug": "Apex Legends-핑시스템",
+    "fileName": "Apex Legends-핑시스템",
+    "filePath": "03_패턴/Apex Legends-핑시스템.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Apex Legends-핑시스템",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "배틀로얄",
+      "FPS",
+      "비음성협력",
+      "핑시스템",
+      "접근성"
+    ],
+    "designers": [
+      "매키 맥캔들리시",
+      "Carlos Pineda",
+      "Drew McCoy"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2019-주요강연",
+      "GDC-2020-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Apex Legends — 핑 시스템\n\n> 음성 채팅을 의도적으로 봉쇄한 플레이테스트가 만든 디자인 결정. *Apex Legends*가 배틀로얄 장르에서 차별화한 핵심 메카닉이며, FPS 협력의 새 표준을 세웠다.\n\n## 적용된 원칙\n\n- [[시스템-SK010-UI명확성과스타일]] — 시각 신호로 의도 전달\n- [[시스템-SK002-접근성우선]] — 청각 장애·언어 장벽·내성적 플레이어 포용\n- [[시스템-SK006-최소복잡도]] — 단일 버튼이 컨텍스트에 따라 다른 의미\n- [[전투-SK003-조임과해방]] — 30초 교전 중 빠른 정보 교환\n\n## 출처 강연\n\n- **GDC 2019**: Respawn 인프라 강연 (깜짝 출시 직후, 첫 달 5,000만 명) ([[GDC-2019-주요강연]])\n- **GDC 2020**: Carlos Pineda — \"Becoming a Living Legend: An 'Apex Legends' Postmortem\" ([[GDC-2020-주요강연]])\n\n## 구현 방식\n\n### 핵심 결정: 음성 채널 의존을 끊는다\n\n[[매키 맥캔들리시]]는 *Apex Legends* 디자인 초기에 다음 가설을 세웠다:\n\n> \"랜덤 매칭 환경에서 음성 채팅은 신뢰할 수 없다. 음성 없이도 협력이 가능해야 한다.\"\n\n이를 검증하기 위해 Respawn은 플레이테스트 중 **음성 채팅을 강제 비활성화**했다. 가짜 ID, 가짜 이름을 부여하고 익명 매칭 환경을 시뮬레이션. 이 환경에서 핑 시스템이 작동하지 않으면 게임이 출시되지 않을 거라는 압박.\n\n### 컨텍스트 인식 단일 버튼\n\nLB(또는 컨트롤러 핑 버튼) 하나로:\n\n- 빈 공간을 보면 → \"여기로 가자\" 위치 마커\n- 적을 보면 → \"적!\" 경고 + 위치\n- 무기를 보면 → \"이 무기 어때?\" + 무기 등급\n- 아이템을 보면 → \"이 회복약\" + 아이템 이름\n- 죽은 자리에 → \"여기서 죽었어\" 마커\n- 더블 핑 → \"강조: 진짜 적!\"\n- 핑 휠 (홀드) → \"고마워\" / \"미안해\" / \"방어 자세\" 등\n\n같은 버튼이 컨텍스트에 따라 다른 의미. 이는 [[시스템-SK010-UI명확성과스타일]]의 정수.\n\n### 3인 스쿼드의 결정\n\nCarlos Pineda(GDC 2020): 3인이 sweet spot인 이유:\n\n- 4인 = 결정 합의가 느림, 음성 없이는 마찰\n- 2인 = 사망 시 외로움, 사회적 결속 부족\n- 3인 = 두 명이 한쪽, 한 명이 정찰. 사망해도 2명이 회복\n\n이 3인 결정 자체가 핑 시스템 효과를 극대화한다.\n\n### 부활(Respawn) 메카닉의 핑 통합\n\n팀원이 죽으면 배너를 핑할 수 있다 → \"이거 가져가서 부활시켜\" 메시지. 음성 없이도 *부활 작전*이 자동으로 형성됨.\n\n## 왜 효과적인가\n\n1. **언어 장벽 제거** — 글로벌 매칭에서 한국·일본·미국 플레이어가 즉시 협력\n2. **내향적 플레이어 포용** — 음성 켜기 부담 제거\n3. **청각 장애 접근성** — 시각 신호 우선\n4. **소셜 기대치 리셋** — \"음성 안 켰다고 화내는\" 문화 자체를 바꿈\n5. **인지 부하 절약** — 한 버튼 = 한 행동 = 한 의도\n\n## 산업 영향\n\n*Apex* 출시 후 *Fortnite*, *Valorant*, *PUBG*, *Warzone* 등이 핑 시스템을 도입. FPS 멀티플레이의 표준이 됨.\n\n## 안티패턴 / 위험\n\n- 핑 스팸 — 한 명이 반복 핑하면 짜증 유발 → 쿨다운 도입\n- 의미 혼동 — \"이 위치\" vs \"여기 적\" 구분이 첫 시간 어려움 → 색상 코딩 명확화\n\n## 연결 게임 패턴\n\n- [[Halo-30초의재미루프]] — Bungie/Respawn 디자이너 계보 (Carlos Pineda 등)\n- [[Destiny-레이드설계와30초의재미확장]] — 음성 의존을 끊는 vs 강제하는 양극\n- [[The Last of Us-컴패니언 AI 설계]] — AI 동료 vs 인간 동료 협력 디자인\n\n## 연결 원칙\n\n- [[시스템-SK002-접근성우선]] — 사쿠라이의 접근성 원칙\n- [[시스템-SK010-UI명확성과스타일]] — 시각 정보 명확성\n- [[시스템-TC009-색맹접근성]] — 핑 색상 코딩의 접근성\n\n## 출처 링크\n\n- Game Developer — [Come to GDC for a postmortem look at the making of Apex Legends](https://www.gamedeveloper.com/design/come-to-gdc-for-a-postmortem-look-at-the-making-of-i-apex-legends-i-)\n- GamesRadar — [Respawn used fake names and disabled voice chat to test Apex Legends' amazing ping system](https://www.gamesradar.com/respawn-used-fake-names-and-disabled-voice-chat-to-test-apex-legends-amazing-ping-system/)\n- ResetEra — [Apex Legends' ping system as the most revolutionary advancement in the FPS genre](https://www.resetera.com/threads/i-believe-apex-legends-ping-system-was-the-most-revolutionary-advancement-in-the-fps-genre-last-gen.591447/)",
+    "wikilinks": [
+      {
+        "target": "시스템-SK010-UI명확성과스타일",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "GDC-2019-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2020-주요강연",
+        "display": null
+      },
+      {
+        "target": "매키 맥캔들리시",
+        "display": null
+      },
+      {
+        "target": "시스템-SK010-UI명확성과스타일",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "시스템-SK010-UI명확성과스타일",
+        "display": null
+      },
+      {
+        "target": "시스템-TC009-색맹접근성",
+        "display": null
+      }
+    ],
+    "bodyLength": 2726,
+    "topics": [
+      "ui",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:BioShock-환경스토리텔링",
+    "slug": "BioShock-환경스토리텔링",
+    "fileName": "BioShock-환경스토리텔링",
+    "filePath": "03_패턴/BioShock-환경스토리텔링.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "BioShock-환경스토리텔링",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "환경스토리텔링",
+      "메카닉=서사",
+      "Rapture",
+      "이머시브심",
+      "침묵의주인공",
+      "WouldYouKindly"
+    ],
+    "designers": [
+      "켄 레빈"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2008/01_게임디자인/Levine_BioShock_Narrative"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# BioShock — 환경 스토리텔링 (메카닉이 곧 서사)\n\n> 컷씬·텍스트 박스가 아니라 **공간·메카닉·플레이어 행동**이 서사를 운반한다. *Rapture*의 잔해, 오디오 다이어리, \"Would you kindly?\", Little Sister 선택 — 모든 게임 요소가 동시에 게임 메카닉이고 서사 단위.\n\n## 적용된 원칙\n\n- [[내러티브-KL001-환경스토리텔링]] — *Rapture* 자체가 1960년대 유토피아 → 1968년 디스토피아의 시간선을 새긴 공간\n- [[내러티브-KL002-복종의메타반전]] — \"Would you kindly?\" — 플레이어의 복종이 서사 반전을 만든다\n- [[내러티브-JB001-메카닉이테마를말한다]] — Plasmid 사용·Little Sister 처리가 곧 도덕적 진술\n- [[시스템-WS003-선택의대가]] — Harvest/Save 선택이 엔딩을 결정\n\n## 출처 강연\n\n- **GDC 2008**: Ken Levine — \"Empowering Players to Care About Your Stupid Story\" ([[GDC_2008/01_게임디자인/Levine_BioShock_Narrative]])\n- 도발적 시작: *\"I'm not really a fan of game story.\"* — 전통적 게임 서사(긴 컷씬 + 텍스트 박스)를 거부\n\n## 구현 방식\n\n### Rapture = 환경 = 시간선\n\n*Rapture*는 그 자체가 이야기. 플레이어는 침몰한 도시를 통과하며 환경의 기호를 읽는다:\n\n- 1960년 호황기 광고 포스터 → \"Welcome to Rapture\"\n- 1968년 멸망의 잔해 → 시신, 그래피티, 폭동의 흔적\n- 빈 술병·약병·마약 흔적 → ADAM 의존의 사회적 비극\n- 매 공간이 \"여기서 무슨 일이 있었나\"를 암시\n\n→ **공간을 읽는 것이 곧 서사를 읽는 것**. 컷씬 0개로 1960~1968년 8년의 흥망성쇠 전달.\n\n### 오디오 다이어리 — 비선형 시간 단편\n\nNPC 캐릭터들이 남긴 오디오 일기를 플레이어가 발견:\n\n- 시간 순서가 아닌 *공간 순서*로 들음\n- 각 다이어리가 짧은 단편 (1~2분)\n- 플레이어가 모자이크를 자기 머릿속에서 조립\n- \"발견\"의 쾌감 = 서사의 보상\n\n### \"Would You Kindly?\" — 메카닉 = 서사의 정점\n\n게임 내내 NPC Atlas가 \"Would you kindly...\" 명령:\n\n- 플레이어는 의식 없이 따름 (게임의 자연스러운 진행)\n- 결말 반전: \"Would you kindly\"는 마인드 컨트롤 트리거 단어\n- → **플레이어가 시키는 대로 한 모든 것이 서사적 의미를 갖게 된다**\n\n게임을 플레이하는 행위 자체가 마인드 컨트롤된 캐릭터의 행동이라는 *메타*적 반전. *플레이어 = Jack*의 동일시가 침묵의 주인공 설계로 보강됨.\n\n### Little Sister — 도덕적 메카닉\n\n플레이어가 Little Sister를 마주칠 때마다:\n\n- **Harvest**: ADAM(자원) 더 많이 — 도덕적 부담\n- **Save**: ADAM 적게 — 도덕적 만족\n\n엔딩이 이 누적 선택에 영향. 메카닉(자원 획득)이 곧 도덕적 진술.\n\n### 침묵의 주인공의 정당화\n\nJack은 침묵. 이유:\n\n- 플레이어가 Jack에 자기 투영 → 동일시 강화\n- 마지막 반전이 더 강력 — *플레이어 = Jack*이 동시에 마인드 컨트롤됨\n- *Half-Life*의 Gordon Freeman 사상의 진화 + 메타 반전 추가\n\n## 왜 효과적인가\n\n1. **읽는 부담 0** — 컷씬·긴 텍스트 없이 환경만으로 8년 시간선 전달\n2. **발견의 쾌감 = 서사 진행** — 모자이크를 조립하는 능동적 참여\n3. **메카닉의 의미 부여** — 평범한 게임 행동(이동·선택·복종)이 서사 단위\n4. **다회차 가치** — \"Would you kindly?\"를 안 후 다시 플레이하면 모든 행동이 다르게 보임\n\n## 한계\n\n- **놓친 다이어리 = 놓친 서사** — 비선형이라 일부 플레이어는 핵심 단편을 놓침\n- **\"Would you kindly?\" 한 번뿐** — 메타 반전 카드는 한 번 쓰면 후속작에서 재사용 어려움 (*BioShock Infinite*가 다른 카드를 시도)\n- **Little Sister 선택의 이분법** — 도덕적 회색지대가 약함, 후대 게임이 더 정교화\n\n## 후속 영향\n\n- *BioShock Infinite* (2013) — Levine의 후속 진화, 다른 메타 반전 카드\n- *Gone Home* (2013) — 환경 스토리텔링만으로 게임 한 편\n- *Dark Souls* (2011) — 환경·아이템 설명 = 서사의 미니멀 정점\n- *Hades* (2020) — 메카닉(죽음) = 서사 진화\n- *What Remains of Edith Finch* (2017) — 환경 + 단편 모자이크의 인디 진화\n\n## 연결 게임 패턴\n\n- [[다크소울-미니맵 없는 월드 연결]] — 환경 스토리텔링의 *침묵* 영역 (BioShock는 더 명시적)\n- [[Hades-내러티브와로그라이크통합]] — 메카닉 = 서사 사상의 로그라이크 영역\n- [[ShadowOfMordor-네메시스시스템]] — 적이 만드는 서사 vs 환경이 만드는 서사\n\n## 연결 원칙\n\n- [[내러티브-KL001-환경스토리텔링]] — 직계\n- [[내러티브-KL002-복종의메타반전]] — Would you kindly?\n- [[내러티브-JB001-메카닉이테마를말한다]] — Jonathan Blow 사상의 BioShock 사례\n- [[시스템-WS003-선택의대가]] — 워런 스펙터 영향\n\n## 관련 키워드\n\n`BioShock`, `Ken Levine`, `Irrational Games`, `2K Boston`, `Rapture`, `Andrew Ryan`, `Atlas`, `Would you kindly`, `Little Sister`, `Big Daddy`, `Plasmid`, `ADAM`, `오디오 다이어리`, `환경 스토리텔링`, `이머시브 심`",
+    "wikilinks": [
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL002-복종의메타반전",
+        "display": null
+      },
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "GDC_2008/01_게임디자인/Levine_BioShock_Narrative",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "ShadowOfMordor-네메시스시스템",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL002-복종의메타반전",
+        "display": null
+      },
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      }
+    ],
+    "bodyLength": 2974,
+    "topics": [
+      "character",
+      "narrative",
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:Bloodborne-Rally시스템",
+    "slug": "Bloodborne-Rally시스템",
+    "fileName": "Bloodborne-Rally시스템",
+    "filePath": "03_패턴/Bloodborne-Rally시스템.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Bloodborne-Rally시스템",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "액션",
+      "소울라이크",
+      "Rally",
+      "빅토리아호러",
+      "코스믹호러"
+    ],
+    "designers": [
+      "Hidetaka Miyazaki"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2016-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Bloodborne — Rally 시스템 (공격이 곧 회복)\n\n> *Dark Souls*의 신중한 방패 굴림을 정반대로 뒤집은 메카닉. 피격 직후 1.5초 안에 반격하면 체력이 일부 회복된다. 이 한 룰이 *Bloodborne*의 모든 전투를 push forward로 바꿨다.\n\n## 적용된 원칙\n\n- [[전투-SK001-위험과보상]] — 후퇴(안전)와 전진(회복)의 리스크/리워드 역전\n- [[전투-SK003-조임과해방]] — 1.5초 윈도우의 압축된 호흡\n- [[전투-KH001-오토와매뉴얼의공존]] — 자동 회복 vs 의도적 반격의 양립\n- [[내러티브-MK002-모호한로어의힘]] — Yharnam 세계관의 침묵\n\n## 출처 강연\n\n- **GDC 2016**: *Bloodborne* 포스트모템 패널 ([[GDC-2016-주요강연]])\n- **다양한 외부 분석**: From Software 디자인 진화 트랙\n\n## 구현 방식\n\n### Rally 시스템의 룰\n\n플레이어가 적 공격으로 피해를 받으면:\n\n1. 받은 피해의 일부가 **회복 가능 영역(주황 게이지)**으로 표시됨\n2. **1.5초 윈도우** 내 적을 공격해 피해를 입히면 그만큼 회복\n3. 1.5초 지나면 회복 가능 영역 사라짐 → 영구 손실\n\n이 단순 룰이 전투를 완전히 바꾼다:\n\n- **방패 사용 무력화** — *Dark Souls*에서 핵심이던 방패가 *Bloodborne*에는 한 개만 (놀림용)\n- **굴림 ≠ 답** — 회피하면 회복 못함, 반격하면 회복\n- **공격적 플레이가 곧 안전** — push forward의 다크 판타지 버전\n\n### *Dark Souls* 사상의 의도적 전복\n\n[[Hidetaka Miyazaki]] (감독)의 의도:\n\n> \"Bloodborne을 *Dark Souls*의 후속이 아닌 빅토리아 호러로 만들고 싶었다.\"\n\n이 의도가 메카닉으로 표현됨:\n\n| *Dark Souls* | *Bloodborne* |\n|---|---|\n| 방패로 막기 | 권총으로 패리(parry) |\n| 신중한 굴림 | 빠른 dash |\n| Estus Flask 회복 | Blood Vial 회복 + Rally |\n| 무기 슬롯 다양 | Trick Weapon 1개 = 2형태 |\n| 멀티 플레이어 백업 | 더 어두운 코어 호러 |\n\n### Trick Weapon — Light/Heavy 두 형태\n\n각 무기가 **변형 가능**. R1+L1으로 형태 전환:\n\n- *Saw Cleaver*: 톱(짧고 빠름) ↔ 도끼(길고 강함)\n- *Threaded Cane*: 지팡이 ↔ 채찍\n\n이는 *Halo*의 무기 2슬롯과 다른 사상 — **하나의 무기 안에 두 답**. [[시스템-KH001-오토와매뉴얼의공존]]과 호응.\n\n### 환경과 전투의 통합\n\n*Bloodborne*의 세계는 *Dark Souls*보다 **수직적 + 폐쇄적**:\n\n- 야르남(Yharnam)의 좁은 골목 = 짧은 거리 교전\n- 모든 NPC = 잠재적 적 (광기에 휩쓸린 시민)\n- 광기 게이지(Frenzy) — 일부 적 시야 안에 있으면 정신력 감소\n\n이 환경 디자인이 Rally를 강제한다 — 후퇴할 공간이 없으니 공격할 수밖에.\n\n### 코스믹 호러 + Rally의 시너지\n\nYharnam의 후반부:\n\n- 적이 거대 신화 존재로 변모 (Old Ones)\n- 광기 게이지 폭증\n- Rally가 통하는 공격 윈도우가 좁아짐\n\n이는 [[내러티브-MK002-모호한로어의힘]]과 결합 — 메카닉 자체가 점점 미친 세계의 압박을 표현.\n\n## 왜 효과적인가\n\n1. **사상의 일관성** — Rally + 무기 + 환경이 모두 \"공격해야 산다\"\n2. **새 학습 곡선** — *Dark Souls* 베테랑도 reset 강제 → 신선함\n3. **호러와의 통합** — 메카닉이 곧 분위기\n4. **첫 보스 = 첫 깨달음** — Cleric Beast/Father Gascoigne가 Rally 가르치는 자연스러운 튜토리얼 ([[시스템-SK004-자연스러운튜토리얼]])\n\n## 산업 영향\n\n- *Sekiro: Shadows Die Twice* (2019) — Rally 사상의 더 압축된 변형 (Posture 시스템)\n- *Elden Ring* (2022) — Rally는 사라졌지만 push forward 페이싱 유지\n- 모든 후속 소울라이크의 \"공격적 플레이\" 어휘의 기준점\n\n## 한계\n\n- 1.5초 윈도우의 빠르기에 따라 일부 플레이어가 진입 장벽 체감\n- *Dark Souls* 방패 빌드 팬에게는 \"역행\"으로 받아들여짐\n\n## 연결 게임 패턴\n\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 같은 스튜디오의 직계 사상 (월드 측면)\n- [[DOOM-푸시포워드콤뱃]] — 같은 push forward 사상의 FPS 적용\n- [[Halo-30초의재미루프]] — 다른 사상의 30초 호흡 (균형 vs 강제)\n- [[Skyrim-모듈러레벨디자인]] — 양극 (Bethesda 모듈러 vs From 손-제작)\n\n## 연결 원칙\n\n- [[전투-SK001-위험과보상]] — Rally의 본질\n- [[전투-SK003-조임과해방]] — 1.5초 윈도우의 호흡\n- [[내러티브-MK002-모호한로어의힘]] — 미야자키의 침묵\n- [[전투-KH001-오토와매뉴얼의공존]] — Trick Weapon의 양면\n\n## 출처 링크\n\n- GDC Vault — 2016 ([Bloodborne 포스트모템 패널 자료](https://gdcvault.com/browse/2016))\n- Game Developer / Eurogamer — *Bloodborne* 디자인 분석 다수\n- (외부 분석) — *From Software*의 메카닉 사상 변천: *Demon's Souls* → *Dark Souls* → *Bloodborne* → *Sekiro* → *Elden Ring*",
+    "wikilinks": [
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "전투-KH001-오토와매뉴얼의공존",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "GDC-2016-주요강연",
+        "display": null
+      },
+      {
+        "target": "Hidetaka Miyazaki",
+        "display": null
+      },
+      {
+        "target": "시스템-KH001-오토와매뉴얼의공존",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "시스템-SK004-자연스러운튜토리얼",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "DOOM-푸시포워드콤뱃",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "Skyrim-모듈러레벨디자인",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "전투-KH001-오토와매뉴얼의공존",
+        "display": null
+      }
+    ],
+    "bodyLength": 2861,
+    "topics": [
+      "combat",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:BotW-화학엔진과창발성",
+    "slug": "BotW-화학엔진과창발성",
+    "fileName": "BotW-화학엔진과창발성",
+    "filePath": "03_패턴/BotW-화학엔진과창발성.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "BotW-화학엔진과창발성",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "오픈월드",
+      "화학엔진",
+      "창발성",
+      "Zelda",
+      "다중해법"
+    ],
+    "designers": [
+      "후지바야시 히데마로",
+      "Satoru Takizawa",
+      "도타 타쿠히로",
+      "Eiji Aonuma"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2017-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Breath of the Wild — 화학 엔진과 창발성 (Multiplicative Gameplay)\n\n> 모든 오브젝트가 material 태그를 가지고, 그 태그가 물·불·전기·바람과 교차해 결과를 도출. *BotW*가 오픈 월드의 자유도를 시스템적으로 보장한 비결.\n\n> **참조**: 같은 게임의 다른 측면을 다룬 [[03_패턴/브레스오브더와일드-환경 내비게이션]]도 함께 참조.\n\n## 적용된 원칙\n\n- [[시스템-WW003-창발설계]] — Multiplicative Gameplay = Will Wright 사상\n- [[시스템-JB002-암묵학습]] — 화학 룰을 자연스레 발견\n- [[레벨-SK001-지도로부터의탈출]] — 미니맵·마커 의존 최소화\n- [[시스템-SK006-최소복잡도]] — 4가지 룬으로 만든 무한 깊이\n\n## 출처 강연\n\n- **GDC 2017**: Hidemaro Fujibayashi, Satoru Takizawa, Takuhiro Dohta — \"Change and Constant: Breaking Conventions with The Legend of Zelda: Breath of the Wild\" ([[GDC-2017-주요강연]])\n\n## 구현 방식\n\n### Physics + Chemistry 두 엔진의 쌍\n\n[[도타 타쿠히로]] (테크니컬 디렉터, GDC 2017):\n\n> \"We thought of the Chemistry Engine as a pair to the Physics Engine.\"\n\n#### Physics Engine — 움직임\n- 중력\n- 마찰\n- 충돌\n- 운동량\n\n#### Chemistry Engine — 상호작용\n- 모든 오브젝트는 **material 태그**를 가짐: Wood, Metal, Stone, Cloth, Plant, Water 등\n- **에너지 태그**: Fire, Electricity, Wind, Cold\n- 두 태그가 교차해 *공통 룰*에 따라 결과 도출\n\n### 핵심 룰 표 (예시)\n\n| 에너지 \\ 물질 | Wood | Metal | Plant | Water | Cloth |\n|---|---|---|---|---|---|\n| Fire | 연소 | (없음) | 연소 | 증발 | 연소 |\n| Electricity | (없음) | 전도 → 데미지 | (없음) | 전도 → 데미지 | (없음) |\n| Wind | 흔들림 | (없음) | 굽힘 | 파도 | 날아감 |\n| Cold | (없음) | 차가워짐 | 시들음 | 얼음 | (없음) |\n\n이 단순 표에서:\n\n- 폭풍에 metal 무기 들면 번개 맞음\n- 풀에 불 붙이면 연쇄 화재\n- 얼음 위 미끄럼\n- 추운 산에서 metal 들면 동상\n\n이는 글로벌 룰 **하나로** 수만 가지 결합 결과를 만든다.\n\n### \"Multiplicative Gameplay\"의 의미\n\n[[후지바야시 히데마로]] (디렉터):\n\n> \"We created what we called 'Multiplicative Gameplay,' allowing different ways for players to solve problems.\"\n\nA·B 두 메카닉의 결합이 A+B가 아닌 **A×B**의 결과. 예:\n\n- **던지기 + 폭탄 = 원거리 폭파**\n- **던지기 + 무기 = 원거리 공격 + 무기 손실**\n- **폭탄 + 풀 = 폭발 → 화재 → 상승기류 → 패러글라이더**\n- **얼음 화살 + 적 = 동결 → 던지기로 깨기 추가 데미지**\n\n매 결합이 새 결과 → 같은 문제에 100개의 답.\n\n### 4 룬 + 1 무기 슬롯의 최소화\n\n플레이어가 가진 핵심 도구:\n\n- **Cryonis** — 물 위 얼음 기둥\n- **Magnesis** — 금속 텔레키네시스\n- **Stasis** — 시간 정지 + 운동량 축적\n- **Bombs** — 폭발 (구형/사각)\n- **무기/활/방패**\n\n이 5요소가 환경의 chemistry와 곱셈으로 결합. [[시스템-SK006-최소복잡도]]의 정점.\n\n### Sheikah Slate 시스템 = 그리드 우선\n\nBethesda의 모듈러 vs Nintendo의 시스템적 접근의 양극:\n\n- *Skyrim* (Bethesda): 모듈러 키트 → 콘텐츠 양 + 환경 스토리텔링\n- *BotW* (Nintendo): 화학 엔진 → 시스템 가능성 공간 + 창발\n\n같은 \"오픈 월드 RPG의 자유도\" 목표를 정반대 사상으로 달성.\n\n## 왜 효과적인가\n\n1. **다중 해법 자동 보장** — 디자이너가 100개 답을 미리 만들 필요 없음\n2. **암묵 학습** — 한 번 룰을 배우면 모든 곳에 적용\n3. **유튜브 콘텐츠 가치** — 매번 다른 클립 → 바이럴 효과\n4. **언어·문화 초월** — 시스템이 룰을 보여주므로 텍스트 의존 낮음\n\n## 한계\n\n- **테스트 비용 폭증** — 시스템 결합이 무한해 QA 어려움\n- **디자이너 의도 유실** — 일부 퍼즐을 \"의도하지 않은 방법\"으로 풀어버려 의도가 사라짐 (이를 Nintendo는 \"그것도 정답\"이라고 수용)\n\n## 연결 게임 패턴\n\n- [[03_패턴/브레스오브더와일드-환경 내비게이션]] — 같은 게임의 가이딩 측면\n- [[Skyrim-모듈러레벨디자인]] — 양극 (모듈러 vs 시스템)\n- [[Spelunky-절차적생성과교훈]] — 인디판 시스템 사상\n- [[Hades-내러티브와로그라이크통합]] — 다른 사상의 자유도 (런 시드 vs 매번 동일 월드)\n\n## 연결 원칙\n\n- [[시스템-WW003-창발설계]] — Will Wright 직계\n- [[시스템-JB002-암묵학습]] — Jonathan Blow 사상\n- [[시스템-SK006-최소복잡도]] — 4 룬의 최소성\n\n## 출처 링크\n\n- GDC Vault — [Change and Constant: Breaking Conventions with The Legend of Zelda: Breath of the Wild](https://www.gdcvault.com/play/1024562/Change-and-Constant-Breaking-Conventions)\n- Internet Archive — [GDC 2017: Breaking Conventions with BotW](https://archive.org/details/gdc-2017-breaking-conventions-with-the-legend-of-zelda-breath-of-the-wild)\n- Game Developer — [Designing Zelda: Breath of the Wild's unconventional mechanics](https://www.gamedeveloper.com/design/video-designing-i-zelda-breath-of-the-wild-i-s-unconventional-mechanics)\n- Thumbsticks — [Breath of the Wild, science, and clever little lies](https://www.thumbsticks.com/gdc-17-breath-of-the-wild-science-lies/)",
+    "wikilinks": [
+      {
+        "target": "03_패턴/브레스오브더와일드-환경 내비게이션",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "시스템-JB002-암묵학습",
+        "display": null
+      },
+      {
+        "target": "레벨-SK001-지도로부터의탈출",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "GDC-2017-주요강연",
+        "display": null
+      },
+      {
+        "target": "도타 타쿠히로",
+        "display": null
+      },
+      {
+        "target": "후지바야시 히데마로",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "03_패턴/브레스오브더와일드-환경 내비게이션",
+        "display": null
+      },
+      {
+        "target": "Skyrim-모듈러레벨디자인",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "시스템-JB002-암묵학습",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      }
+    ],
+    "bodyLength": 3488,
+    "topics": [
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:Celeste-어시스트모드",
+    "slug": "Celeste-어시스트모드",
+    "fileName": "Celeste-어시스트모드",
+    "filePath": "03_패턴/Celeste-어시스트모드.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Celeste-어시스트모드",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "플랫포머",
+      "접근성",
+      "어시스트모드",
+      "정신건강",
+      "메카닉테마"
+    ],
+    "designers": [
+      "매디 톨슨",
+      "Noel Berry"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Celeste — 어시스트 모드\n\n> \"이 산은 누구의 것인가.\" 도전 게임이 접근성과 양립할 수 있다는 증명. 사쿠라이의 핸디캡 설계 + 도전 통합이 인디 플랫포머에서 만개.\n\n## 적용된 원칙\n\n- [[시스템-SK002-접근성우선]] — 청각·시각·운동 능력 다양성 포용\n- [[시스템-SK005-핸디캡설계]] — 핸디캡이 곧 *도전의 정의*를 사용자가 결정\n- [[시스템-SK001-적응형난이도]] — 게임이 강제하지 않고 *플레이어가 선택*\n- [[내러티브-JB001-메카닉이테마를말한다]] — 등산 메카닉이 곧 정신건강 테마\n- [[내러티브-LP001-메카닉이도덕이다]] — 어시스트 사용 자체가 게임의 도덕적 진술\n\n## 구현 방식\n\n### 어시스트 모드의 명시적 설계\n\nSettings → Assist Mode 항목들:\n- **Game Speed** — 50%~100% 자유 조정\n- **Infinite Stamina** — 대시 무한\n- **Air Dashes** — 1회/2회/무한\n- **Invincibility** — 죽지 않음\n\n각 옵션이 *별도 토글*. 플레이어가 자신의 도전 정의를 *재구성*. 어떤 옵션을 켜고 끌지가 곧 그 사람의 도전 영역.\n\n### 어시스트의 부정적 라벨링 거부\n\n대부분 게임의 \"Easy Mode\"는 *낮은 가치* 라벨:\n- 트로피·업적 비활성화\n- \"Coward Mode\" 같은 자조적 명명\n- 컷씬 검열\n\n*Celeste*는 정반대:\n> \"**Celeste is intended to be a challenging and rewarding experience. If the default game proves inaccessible to you, we hope that you can still find that experience with Assist Mode.**\"\n\n설정 화면 자체에 *명시적 환영문*. 어시스트가 *낮은 등급*이 아니라 *대안 경험*임을 선언.\n\n### 죽음을 페널티로 만들지 않음\n\n데스 카운터는 표시되지만 *재시작이 즉각*:\n- 죽음 → 같은 화면 재시작 (0.5초)\n- 체크포인트 = 화면 단위\n- 데스 자체가 학습 통화\n\n이는 [[시스템-EM002-빠른죽음빠른재시작]]의 정수. 어시스트 없는 플레이도 *처벌이 아닌 학습*.\n\n### 메카닉 = 테마\n\n게임의 핵심 메카닉:\n- **Climb** (등산) — 정신건강 회복 은유\n- **Stamina** (스태미너) — 한계와 회복\n- **Dash** (대시) — 한순간의 결단\n- **Madeline의 Part of Self** — 자신의 어두운 부분과의 협력\n\n각 메카닉이 *문자 그대로* 캐릭터 서사. Mt. Celeste 등반 = Madeline의 자기 수용 여정. 메카닉과 서사가 분리 불가능.\n\n### 어시스트의 메타 서사\n\n게임이 자기 자신을 메타적으로 인식:\n- \"이 산은 누구의 것인가\"라는 질문\n- 어시스트 사용 = 등산 방식의 다양성 인정\n- \"정상에 도착한 자\"가 누구인가의 재정의\n\n이는 [[내러티브-LP001-메카닉이도덕이다]]의 메타 적용 — 게임의 접근성 자체가 도덕적 진술.\n\n### 챕터 8 — Farewell\n\n게임의 진정한 클라이맥스가 *추가 콘텐츠로 무료 배포*. 가장 어려운 콘텐츠를 무료 제공 — 도전이 *판매 통화가 아닌 사랑의 표현*.\n\n## 왜 효과적인가\n\n1. **도전과 접근성의 병립** — 한 게임이 두 시장에 동시에 답할 수 있음을 증명\n2. **메카닉 = 테마의 무게** — 등산이 단순 난이도가 아니라 캐릭터 여정\n3. **자조 라벨링 부재** — 어시스트 사용자가 게임에서 *멸시받지 않음*\n4. **커뮤니티 분열 방지** — 어시스트 vs 풀 플레이어 간 *위계 부재*\n5. **인디의 정치적 진술** — 산업 어시스트 표준에 대한 영향력\n\n## 산업 영향\n\n- *Hades* (2020) — God Mode (피해 -20%)\n- *Spelunky 2* (2020) — 어시스트 옵션 도입\n- *Marvel's Spider-Man* — 광범위 접근성 옵션\n- *The Last of Us Part II* (2020) — Naughty Dog 어시스트 표준화의 영향\n- 산업 전반 — \"Celeste 모델\" 어시스트 라벨링이 표준이 됨\n\n## 연결 게임 패턴\n\n- [[Spelunky-절차적생성과교훈]] — 죽음 = 학습의 다른 사례\n- [[Hades-내러티브와로그라이크통합]] — 메카닉 = 서사의 다른 형태\n\n## 연결 원칙\n\n- [[시스템-SK002-접근성우선]] — Sakurai 접근성 원칙의 인디 적용\n- [[시스템-TC009-색맹접근성]] — 다양한 접근성 차원의 통합\n\n## 출처 링크\n\n- Maddy Thorson GDC 2018 — *Celeste*의 어시스트 모드 강연\n- Maddy Thorson 블로그 — \"On Celeste's Assist Mode\"\n- Game Maker's Toolkit — 접근성 vs 난이도 분석",
+    "wikilinks": [
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "시스템-SK005-핸디캡설계",
+        "display": null
+      },
+      {
+        "target": "시스템-SK001-적응형난이도",
+        "display": null
+      },
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "시스템-EM002-빠른죽음빠른재시작",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "시스템-TC009-색맹접근성",
+        "display": null
+      }
+    ],
+    "bodyLength": 2430,
+    "topics": [
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:DOOM-푸시포워드콤뱃",
+    "slug": "DOOM-푸시포워드콤뱃",
+    "fileName": "DOOM-푸시포워드콤뱃",
+    "filePath": "03_패턴/DOOM-푸시포워드콤뱃.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "DOOM-푸시포워드콤뱃",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "FPS",
+      "액션",
+      "푸시포워드",
+      "글로리킬",
+      "자원순환"
+    ],
+    "designers": [
+      "커트 라우디",
+      "Jake Campbell",
+      "휴고 마틴",
+      "Marty Stratton"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2018-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# DOOM — 푸시 포워드 콤뱃 (Push Forward Combat)\n\n> 엄폐·재생·후퇴를 모두 부정하고, 전진만이 생존인 FPS. *DOOM 2016*이 90년대 슈터 정신을 현대 디자인 어휘로 재구성한 방법.\n\n## 적용된 원칙\n\n- [[전투-SK001-위험과보상]] — 전진의 리스크와 자원 회복의 보상\n- [[전투-SK003-조임과해방]] — Glory Kill의 무적 모먼트 = 이완\n- [[시스템-SK006-최소복잡도]] — 무한 탄환의 chainsaw, 단일 룰의 명확성\n- [[시스템-WW003-창발설계]] — 적 + 환경 + 무기의 즉흥적 결합\n\n## 출처 강연\n\n- **GDC 2018**: Kurt Loudy & Jake Campbell — \"Embracing Push Forward Combat in DOOM\" ([[GDC-2018-주요강연]])\n- **GDC 2019, 2020 후속**: *DOOM Eternal* 진화 패널\n\n## 구현 방식\n\n### Push Forward Combat의 4 원리\n\n[[커트 라우디]] & [[Jake Campbell]] (GDC 2018):\n\n#### 1. 자원 회복 = 적 처치\n\n기존 FPS: Health regen (자동), 탄환 = 환경 픽업\n*DOOM*: Health 회복 = Glory Kill, 탄환 = chainsaw 처치, 갑옷 = flame belch\n\n> 즉, **공격이 곧 보급**. 후퇴해서 회복할 수 없다.\n\n#### 2. Glory Kill (영광스러운 처치)\n\n적이 stagger 상태가 되면 빛난다 → 근접하면 잔혹한 처치 모션 → 그 동안 무적 + 자원 드롭.\n\n이 메카닉은 다음을 동시 해결:\n\n- 회복 자원 분배 (자동 regen 대안)\n- 액션 호흡 (잔인한 슬로우 모션이 곧 휴식)\n- 시각적 만족감 (1초의 압도적 폭력)\n\n#### 3. 장전·엄폐의 부정\n\n기존 FPS: 장전이 전술적 결정 (*Halo*도 무기 슬롯에 한도)\n*DOOM*: 일부 무기는 장전 없음. 엄폐 시스템 자체가 부재. 적이 사방에서 무한 등장.\n\n#### 4. Aggression이 곧 생존\n\n> \"It's not the player thrown into a den of hordes. It's the enemies locked in a room with the player.\" — Kurt Loudy, GDC 2018\n\n이 한 문장이 *DOOM*의 모든 것이다. 플레이어 = 위협, 적 = 사냥감.\n\n### 적 디자인의 기능적 분담\n\n- **Imps** — 추적, 발사\n- **Pinkies** — 돌격, 정면 무적\n- **Mancubus** — 광역 + 위험 위치\n- **Baron of Hell** — 우선 표적\n- **Cyberdemon** — 보스급, 환경 활용\n\n각 적이 다른 답을 강제. 같은 방의 mob 조합이 30초마다 다른 결정.\n\n### *DOOM Eternal* (2020) 진화\n\n- **Chainsaw + Flame Belch + Crucible**의 3-자원 강제 순환\n- 빠른 무기 스왑 (단축키)\n- \"체스 슈터(Chess shooter)\"라는 개발자 표현 — 매 적이 정해진 답이 있다\n\n이는 [[시스템-SM001-흥미로운결정]] 원칙의 FPS 정점.\n\n## 왜 효과적인가\n\n1. **30초의 재미와 다른 답** — *Halo*가 \"수류탄 + 근접 + 사격\"의 균형이라면, *DOOM*은 \"전진 + 처치 + 자원\"의 강제\n2. **느려질 수 없는 게임** — 멈추는 순간 죽음 → 페이싱 자체가 디자인\n3. **시각적 명확성** — 빛나는 적 = Glory Kill 가능 = 회복 가능\n4. **음악과의 시너지** — Mick Gordon 메탈이 push forward와 정확히 호응\n\n## 산업 영향\n\nGDC 2018 강연 이후, *Doom Eternal* 외에도 *Bulletstorm*, *Returnal*, *Ultrakill* 등 다양한 게임이 push forward 어휘를 계승.\n\n## 한계\n\n- **반복 피로** — 30시간 후에는 같은 패턴\n- **스토리/페이싱 제약** — 멈출 수 없는 게임에서 내러티브를 어떻게? (*Eternal*이 이를 시도하다 일부 비판)\n\n## 연결 게임 패턴\n\n- [[Halo-30초의재미루프]] — 직계 사상의 양극 (균형 vs 강제)\n- [[Destiny-레이드설계와30초의재미확장]] — 같은 사상의 라이브 서비스 적용\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 대조 (느린 신중함 vs 빠른 폭력)\n\n## 연결 원칙\n\n- [[전투-SK001-위험과보상]] — 전진 리스크 / 회복 보상\n- [[전투-SK003-조임과해방]] — Glory Kill의 호흡\n- [[시스템-SM001-흥미로운결정]] — 무기 선택의 결정 가치\n\n## 출처 링크\n\n- GDC Vault — [Embracing Push Forward Combat in DOOM](https://www.gdcvault.com/play/1024940/Embracing-Push-Forward-Combat-in)\n- YouTube — [Embracing Push Forward Combat in DOOM (GDC 무료 공개)](https://www.youtube.com/watch?v=2KQNpQD8Ayo)\n- 80.lv — [GDC: The Combat Mechanics of DOOM](https://80.lv/articles/gdc-the-combat-mechanics-of-doom)\n- Game Developer — [Cyber Demons: The AI of DOOM 2016](https://www.gamedeveloper.com/design/cyber-demons-the-ai-of-doom-2016-)",
+    "wikilinks": [
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "GDC-2018-주요강연",
+        "display": null
+      },
+      {
+        "target": "커트 라우디",
+        "display": null
+      },
+      {
+        "target": "Jake Campbell",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      }
+    ],
+    "bodyLength": 2829,
+    "topics": [
+      "combat"
+    ]
+  },
+  {
+    "id": "pattern:DarkSouls-AnorLondo위니",
+    "slug": "DarkSouls-AnorLondo위니",
+    "fileName": "DarkSouls-AnorLondo위니",
+    "filePath": "03_패턴/DarkSouls-AnorLondo위니.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "DarkSouls-AnorLondo위니",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "액션RPG",
+      "위니",
+      "환경디자인",
+      "상호연결",
+      "광원"
+    ],
+    "designers": [
+      "Hidetaka Miyazaki"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Dark Souls — Anor Londo 위니\n\n> Lordran 어디에서도 *볼 수 있는* 거대 도시. Disney의 위니 원칙이 다크 판타지로 환생. [[ANTI-LVL-003-랜드마크없는미로]]의 정확한 반대.\n\n## 적용된 원칙\n\n- [[레벨-LD003-랜드마크와위니]] — Anor Londo가 전 영역의 *원거리 위니*\n- [[레벨-JR002-조명과그림자가이딩]] — 황금빛 햇살이 다른 영역의 어둠과 대비\n- [[레벨-WW002-규모변화설계]] — 거대 척도가 신화의 무게를 시각화\n- [[레벨-MK001-상호연결월드]] — Lordran 전체의 수직 연결망에서 정점\n- [[레벨-LD007-사이트라인설계]] — Sen's Fortress 정상에서 Anor Londo 등장\n\n## 구현 방식\n\n### Lordran의 수직 위계\n\nLordran은 단일 수직 축을 따라 구성:\n- 최하 — Tomb of the Giants, The Abyss (어둠의 심연)\n- Lower Undead Burg, Depths, Blighttown\n- Firelink Shrine (중심점)\n- Undead Burg, Sen's Fortress\n- 정상 — Anor Londo (신들의 도시)\n\n각 영역에서 다른 영역이 *시각적으로 보임*. 어디에 있는지가 *위계 안의 위치*를 표현.\n\n### Anor Londo의 등장 — Sen's Fortress 정상\n\nSen's Fortress 정상에 도달하면, 거대 까마귀(Hawk Demon... 아니 Crowfeather)가 플레이어를 들고 위로 날아간다. 이때 *Anor Londo가 처음 시야에 등장*:\n\n- 황금빛 햇살\n- 고딕 대성당의 거대 척도\n- 무한해 보이는 회랑\n\n그 직전까지의 어두운·축축한 영역(Blighttown, Depths)과 *광원·색온도·척도* 모두 대비. 이 *대비 자체*가 위니의 의미를 강화.\n\n### 거대 척도의 신화화\n\nAnor Londo의 모든 것이 *플레이어보다 압도적으로 크다*:\n- 천장이 보이지 않는 회랑\n- 거대한 검은 기사들\n- Gwyn(태양 영주)의 옥좌 — 비어 있어도 무게\n- Princess Gwynevere — 거대한 여신\n\n이 척도가 *신화 = 거인족 = 옛 시대*라는 서사를 메카닉 없이 전달.\n\n### 환영의 발견\n\nPrincess Gwynevere가 *환영*임을 발견하는 순간(Aldrich Faithful 또는 후속 정보로):\n- Anor Londo 자체가 환영의 환영\n- 황금빛이 거짓 햇살\n- 진짜 Anor Londo는 어둠 (DS3에서 확인)\n\n이 발견이 위니의 의미를 *반전* — 가장 빛나던 곳이 사실 가장 깊은 거짓.\n\n### Firelink Shrine과의 대비\n\nFirelink는 작고 친밀:\n- 화톳불 하나\n- 몇 NPC\n- 사방으로 갈래길\n\nAnor Londo는 광활하고 비어 있음. 두 공간의 대비가 *유대 vs 신화*의 대비.\n\n### 수직 연결의 비대칭\n\nAnor Londo에서 다른 영역으로의 *직접 통로*는 없음 (대부분). 올라가는 길은 길지만, *내려가는 길은 환상*. 이 비대칭이 신화의 도시가 *불가역적*임을 시각화.\n\n## 왜 효과적인가\n\n1. **모든 진행이 위치 인식** — 어디로 가도 자기 위치를 *수직 위계*로 알 수 있음\n2. **거대 척도의 즉각 의미** — 텍스트 없이 *공간 자체*가 신화 무게 전달\n3. **광원 대비의 구조** — 어둠 → 황금빛 → 어둠(정체 폭로)의 3단 구조\n4. **첫 등장의 카타르시스** — 까마귀 운반 + 음악 변화 + 시야 폭발\n5. **환영 폭로의 메타** — 위니가 거짓일 수 있다는 자기 부정\n\n## 안티패턴 대비\n\n[[ANTI-LVL-003-랜드마크없는미로]]는 시각 위계 부재. *Dark Souls*는 단일 위니(Anor Londo)를 *모든 영역에서 보이게* 배치 + 수직 위계로 위치 인식 보장.\n\n[[ANTI-LVL-002-빈오픈월드]]는 콘텐츠 밀도 부재. Lordran은 작은 맵에 60시간이 응축, 모든 시야선이 의미를 가짐.\n\n## 산업 영향\n\n- *Bloodborne* (2015) — Cathedral Ward의 동일 위니 원칙\n- *Elden Ring* (2022) — Erdtree가 Lands Between 전체의 위니\n- *Lies of P* (2023) — Krat 거리 풍경의 위니 학습\n- 메트로배니아 — 거의 모든 후속 작품이 위니 의식적 차용\n\n## 연결 게임 패턴\n\n- [[다크소울-미니맵 없는 월드 연결]] — 같은 게임의 미니맵 부재 측면\n- [[HollowKnight-메트로배니아응축]] — 2D 메트로배니아의 위니 전통\n- [[HalfLife2-환경가이딩]] — Citadel의 1인칭 위니 원형\n\n## 연결 원칙\n\n- [[레벨-LD003-랜드마크와위니]] — Disney → Half-Life 2 → Dark Souls 계보\n- [[레벨-MK001-상호연결월드]] — Miyazaki 정통 사례\n\n## 출처 링크\n\n- Hidetaka Miyazaki 인터뷰 — Lordran 디자인 철학 (Famitsu, IGN)\n- Mark Brown (GMTK) — \"What Dark Souls Does That No Other Game Does\"\n- Joseph Anderson — \"Dark Souls Critique\" (장편 비평)",
+    "wikilinks": [
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      },
+      {
+        "target": "레벨-JR002-조명과그림자가이딩",
+        "display": null
+      },
+      {
+        "target": "레벨-WW002-규모변화설계",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "레벨-LD007-사이트라인설계",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-002-빈오픈월드",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "HollowKnight-메트로배니아응축",
+        "display": null
+      },
+      {
+        "target": "HalfLife2-환경가이딩",
+        "display": null
+      },
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      }
+    ],
+    "bodyLength": 2617,
+    "topics": [
+      "combat",
+      "level"
+    ]
+  },
+  {
+    "id": "pattern:Destiny-레이드설계와30초의재미확장",
+    "slug": "Destiny-레이드설계와30초의재미확장",
+    "fileName": "Destiny-레이드설계와30초의재미확장",
+    "filePath": "03_패턴/Destiny-레이드설계와30초의재미확장.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Destiny-레이드설계와30초의재미확장",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "FPS",
+      "라이브서비스",
+      "레이드",
+      "30초의재미",
+      "협동"
+    ],
+    "designers": [
+      "루크 스미스",
+      "제이미 그리즈머",
+      "앨런 블레인",
+      "Joe Staten"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2011-주요강연",
+      "GDC-2015-주요강연",
+      "GDC-2022-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Destiny — 레이드 설계와 30초의 재미 확장\n\n> *Halo*의 \"30 seconds of fun\"을 1,000시간 라이브 서비스로 확장한 사례. 6인 협동 레이드와 7단계 난이도 카테고리가 어떻게 같은 코어 루프를 끝없이 변주하는가.\n\n## 적용된 원칙\n\n- [[전투-SK003-조임과해방]] — 30초 마이크로 루프 + 5분 교전 + 30분 레이드 페이즈\n- [[전투-SK001-위험과보상]] — Heroic/Nightfall/Grandmaster 등 단계별 보상 곡선\n- [[시스템-SK006-최소복잡도]] — Primary / Special / Heavy 3 슬롯의 표준화\n- [[시스템-JS001-시스템주도콘텐츠]] — 시스템 모디파이어로 콘텐츠 곱하기\n\n## 출처 강연\n\n- **GDC 2011**: David Aldridge — \"I Shot You First: Networking the Gameplay of HALO: REACH\" ([[GDC-2011-주요강연]])\n- **GDC 2015**: Luke Smith — *Destiny* Vault of Glass raid 디자인 패널 ([[GDC-2015-주요강연]])\n- **GDC 2022**: Alan Blaine — \"1000 Hours of Difficulty: How 'Destiny' Builds Systemic Challenge\" ([[GDC-2022-주요강연]])\n\n## 구현 방식\n\n### 30초 재미의 계보\n\nBungie의 디자인 DNA는 2002년 GDC Jaime Griesemer/Chris Butcher 발표에서 확립됐다. *Halo: CE* → *Halo 2/3/Reach* → *Destiny 1/2*로 이어지는 동일 사상:\n\n- **3-second AI loop** — 적 AI의 즉시 반응 (놀람·은폐·반격)\n- **30-second combat loop** — 적 그룹 발견 → 처치 → 다음 그룹\n- **3-minute encounter loop** — 한 방에서의 전투 → 이동 → 다음 방\n\n*Destiny*는 이 위에 두 층을 추가했다:\n\n- **20-minute strike loop** — 1회 협동 미션\n- **3-hour raid loop** — 6인 레이드 1회\n- **1,000-hour seasonal loop** — 시즌·이벤트·도전\n\n### Vault of Glass 레이드 (2014) — 첫 정의\n\nLuke Smith가 GDC 2015 패널에서 정의한 raid 5 원칙:\n\n1. **매치메이킹 없음** — 의도적 마찰. 음성 협력만이 가능한 사회 시스템\n2. **Encounter ≠ 보스만** — 5~7개 엔카운터 각각이 고유 메카닉\n3. **메카닉이 협력을 강제** — 한 명이 들어 나머지가 처치하는 구조\n4. **첫 클리어가 영광** — 매치메이킹이 없으니 World First 경쟁이 의미 있음\n5. **체크포인트 분산** — 한 번에 클리어 불가. 친구와 약속 잡고 며칠에 걸쳐\n\n### 7단계 난이도 — *Destiny 2* 진화 (Alan Blaine, GDC 2022)\n\n같은 콘텐츠를 7번 제공하는 systemic adjustment:\n\n| 단계 | 적 Power | Modifier | 매치메이킹 | 보상 |\n|---|---|---|---|---|\n| Story | -10 | 없음 | 자동 | Common |\n| Strike | 0 | 약함 | 자동 | Rare |\n| Nightfall | +20 | 1개 | 부분 | Legendary |\n| Raid | 보스별 | 메카닉 | 없음 | Exotic |\n| Trials | PvP | 카드 | 부분 | Adept |\n| Grandmaster | +40 | 다중 | 없음 | Adept Exotic |\n| Solo Flawless | +40 | 다중 | 없음 | 트로피 |\n\n> 각 단계는 같은 30초의 재미를 다른 압력으로 변주한다. 1,000시간 라이브 서비스의 본질.\n\n### 인지 부하 관리\n\n3-슬롯 무기 시스템(Primary/Special/Heavy)이 인지 부하를 고정한다. 무기 종류가 100개를 넘어가도 플레이어는 항상 3슬롯의 결정만 한다. 이는 [[시스템-SK006-최소복잡도]] 원칙의 라이브 서비스 적용.\n\n## 왜 효과적인가\n\n1. **양극단 플레이어 동시 흡수** — Story로 끝내는 캐주얼과 Solo Flawless 도전자가 같은 게임을 즐긴다\n2. **콘텐츠 양 곱하기** — 1개 미션 × 7 단계 × 시즌 모디파이어 = 사실상 무한\n3. **사회적 락인** — 레이드 친구를 찾으면 게임을 떠나기 어려움\n4. **Networking 신뢰성** — *Halo: Reach* 시절부터 다듬어진 lag compensation\n\n## 안티패턴 / 위험\n\n- **3-슬롯 마찰** — 시즌마다 메타가 바뀌어 신규 플레이어 진입 장벽\n- **Sandbox 정원 문제** — 무기 풀이 폭증하면 밸런싱 실패\n- *Destiny 1*의 Hard Light 사건 등 라이브 서비스 사고 다수\n\n## 연결 게임 패턴\n\n- [[Halo-30초의재미루프]] — 직계 조상\n- [[Apex Legends-핑시스템]] — 같은 Bungie 출신 디자이너 영향 (Apex의 Carlos Pineda는 Bungie 경력)\n- [[DOOM-푸시포워드콤뱃]] — 다른 사상의 FPS 코어 루프\n\n## 연결 원칙\n\n- [[전투-SK003-조임과해방]] — 핵심 호흡\n- [[시스템-SK006-최소복잡도]] — 3-슬롯의 인지 절약\n- [[시스템-JS001-시스템주도콘텐츠]] — 모디파이어로 콘텐츠 곱하기\n\n## 출처 링크\n\n- GDC Vault — [1000 Hours of Difficulty: How 'Destiny' Builds Systemic Challenge](https://gdcvault.com/play/1027550/1000-Hours-of-Difficulty-How)\n- GDC Vault — [I Shot You First: Networking the Gameplay of HALO: REACH](https://www.gdcvault.com/play/1014345/I-Shot-You-First-Networking)\n- Engadget — [Half-Minute Halo: An Interview with Jaime Griesemer](https://www.engadget.com/2011-07-14-half-minute-halo-an-interview-with-jaime-griesemer.html)\n- Bungie.net — Luke Smith raid 디자인 디스커션",
+    "wikilinks": [
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-JS001-시스템주도콘텐츠",
+        "display": null
+      },
+      {
+        "target": "GDC-2011-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2015-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2022-주요강연",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "DOOM-푸시포워드콤뱃",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-JS001-시스템주도콘텐츠",
+        "display": null
+      }
+    ],
+    "bodyLength": 3250,
+    "topics": [
+      "combat",
+      "system",
+      "balance",
+      "live_service"
+    ]
+  },
+  {
+    "id": "pattern:DiscoElysium-스킬체크시스템",
+    "slug": "DiscoElysium-스킬체크시스템",
+    "fileName": "DiscoElysium-스킬체크시스템",
+    "filePath": "03_패턴/DiscoElysium-스킬체크시스템.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "DiscoElysium-스킬체크시스템",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "RPG",
+      "스킬체크",
+      "대화중심",
+      "정치",
+      "스킬내면화"
+    ],
+    "designers": [
+      "로버트 쿠르비츠"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Disco Elysium — 스킬 체크 시스템\n\n> 스킬이 *능력치*가 아니라 *내면의 목소리*. 24개 스킬이 머릿속에서 떠들고, 어느 목소리를 키울지가 곧 캐릭터 빌드. [[ANTI-SYS-004-가짜선택]]에 대한 가장 강력한 답안.\n\n## 적용된 원칙\n\n- [[시스템-CA001-대화트리분기영속결과]] — 모든 대화가 영속 결과. 한 번 닫힌 옵션은 복구 불가\n- [[시스템-SM001-흥미로운결정]] — 스킬 분배가 곧 *말하는 방식* 결정\n- [[시스템-WS003-선택의대가]] — 한 스킬에 투자하면 다른 스킬의 시각이 닫힘\n- [[내러티브-JS003-회색도덕의설계기준]] — 정치 스펙트럼(공산/파시스트/모럴리스트/울트라리버럴)이 모두 정당화 가능\n- [[내러티브-LP001-메카닉이도덕이다]] — 스킬 투자가 곧 도덕 표명\n\n## 구현 방식\n\n### 24개 스킬 = 24개 인격\n\n스킬이 능력치가 아니라 *내면화된 인격*. 게임 내내 머리속에서 직접 말한다:\n\n- **Logic** — \"이 사실들로 보면…\" 추론\n- **Empathy** — \"그가 슬퍼하고 있어\" 감정 인식\n- **Inland Empire** — \"그 넥타이가 너에게 말을 걸고 있어\" 비합리적 직관\n- **Authority** — \"이 자식한테 압박을 넣어\" 권위 표현\n- **Suggestion** — \"내 말 잘 들어봐\" 회유\n- **Volition** — \"참아, 무너지지 마\" 자기 절제\n\n스킬 레벨이 높을수록 그 목소리가 *더 자주, 더 크게* 말한다. 빌드 = 어떤 인격을 키울지의 결정.\n\n### 화이트/레드 체크 — 운명의 비가역성\n\n- **화이트 체크** — 실패해도 다시 시도 가능 (스킬 레벨업 후 재시도)\n- **레드 체크** — *한 번뿐*. 실패는 영구\n\n레드 체크는 [[시스템-WS003-선택의대가]]의 결정판 — 실패가 *서사적 분기*가 됨. 실패를 의도적 선택지로 받아들이게 됨.\n\n### 사상 캐비닛(Thought Cabinet)\n\n캐릭터가 특정 생각을 *내재화*하는 시스템. 12~24시간 게임 시간 동안 그 생각을 굴리면 영구 패시브가 됨. 단, 일부 사상은 다른 사상의 가용성을 영구히 막음.\n\n이는 메카닉화된 신념 형성. 공산주의자 사상을 내재화하면 그 정치적 시각이 게임 텍스트의 색채를 바꾼다.\n\n### 정치 비전 퀘스트\n\n4개 정치 입장(Communist, Fascist, Moralist, Ultraliberal)이 별도 퀘스트 라인. 각각:\n- *정당화 가능한 트레이드오프* — 어느 입장도 명백히 우월하지 않음\n- *시스템적 결과* — NPC 반응, 스킬 체크 가용성, 엔딩 분기\n- *조롱 vs 진지함* — 게임은 모든 정치를 풍자하면서 동시에 진지하게 다룸\n\n## 왜 효과적인가\n\n1. **스킬이 곧 시각** — 어느 스킬이 보이는 정보가 다름 → 빌드가 *세계관*을 결정\n2. **실패의 서사화** — 실패가 콘텐츠. 성공만 한 플레이는 콘텐츠 일부를 못 봄\n3. **회색 도덕의 메카닉화** — 정치적 입장을 슬라이더가 아닌 *별도 시스템*으로 분리\n4. **읽기와 결정의 결합** — 100만+ 단어 텍스트가 게임플레이의 일부 (스킵하면 빌드 의미 상실)\n5. **재플레이 가치 보장** — 빌드별로 다른 시각의 텍스트가 등장\n\n## 안티패턴 대비\n\n[[ANTI-SYS-004-가짜선택]]은 결과 동일 분기, *Disco Elysium*은 모든 선택이 즉시 시각·NPC 반응·스킬 가용성·정치 진영의 변화로 표현됨.\n\n## 연결 게임 패턴\n\n- [[BioShock-환경스토리텔링]] — 메카닉=서사의 다른 형태\n- [[Hades-내러티브와로그라이크통합]] — 반복 플레이의 서사 진화\n\n## 연결 원칙\n\n- [[시스템-CA001-대화트리분기영속결과]] — Chris Avellone의 정통 사례\n- [[내러티브-JS003-회색도덕의설계기준]] — Josh Sawyer 원칙의 시각적 사례\n- [[시스템-JS001-시스템주도콘텐츠]] — 스킬이 콘텐츠를 *생성*\n\n## 출처 링크\n\n- Robert Kurvitz GDC 2020 — \"Disco Elysium\" 디자인 강연\n- Justin Keenan PCGamer — 스킬 체크 시스템 분석\n- ZA/UM 공식 인터뷰 (Eurogamer, RPS, 2019~2020)",
+    "wikilinks": [
+      {
+        "target": "ANTI-SYS-004-가짜선택",
+        "display": null
+      },
+      {
+        "target": "시스템-CA001-대화트리분기영속결과",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "내러티브-JS003-회색도덕의설계기준",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-004-가짜선택",
+        "display": null
+      },
+      {
+        "target": "BioShock-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "시스템-CA001-대화트리분기영속결과",
+        "display": null
+      },
+      {
+        "target": "내러티브-JS003-회색도덕의설계기준",
+        "display": null
+      },
+      {
+        "target": "시스템-JS001-시스템주도콘텐츠",
+        "display": null
+      }
+    ],
+    "bodyLength": 2109,
+    "topics": [
+      "combat",
+      "character",
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:Dishonored-카오스시스템",
+    "slug": "Dishonored-카오스시스템",
+    "fileName": "Dishonored-카오스시스템",
+    "filePath": "03_패턴/Dishonored-카오스시스템.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Dishonored-카오스시스템",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "이머시브심",
+      "잠입",
+      "도덕시스템",
+      "시스템주도서사"
+    ],
+    "designers": [
+      "하비 스미스",
+      "라파엘 콜란토니오"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Dishonored — 카오스 시스템\n\n> 살인 횟수가 *세계 상태*를 바꾼다. 도덕 슬라이더 UI 없이 시스템이 도덕을 표현. [[ANTI-NAR-003-루도내러티브부조화]]에 대한 정통 답안.\n\n## 적용된 원칙\n\n- [[내러티브-CH001-루도내러티브부조화]] — Hocking이 명명한 부조화의 직접 해결\n- [[내러티브-CH002-시스템이의미한다]] — 시스템이 도덕을 표현, 컷씬이 아니라\n- [[내러티브-LP001-메카닉이도덕이다]] — 살인 메카닉이 곧 도덕적 진술\n- [[시스템-CH001-시스템적자유]] — 같은 임무의 비폭력·폭력 경로 모두 가능\n- [[시스템-WS003-선택의대가]] — 비폭력 플레이가 더 어렵고, 폭력 플레이가 세계를 더 어둡게\n\n## 구현 방식\n\n### 카오스 두 단계, 세계 변화\n\n플레이어 행동이 *Low Chaos*와 *High Chaos*로 측정:\n- **살인 NPC 수** — 비치명적 처리 시 카오스 감소\n- **시체 발견 횟수** — 시체 처리하지 않으면 카오스 증가\n- **기타 폭력 행위** — 알람 발동, 무고한 자 살해 등\n\n카오스 단계에 따라:\n- **NPC 대화** 변화 — Emily의 어휘, Samuel의 태도\n- **세계 시각** 변화 — 더 많은 쥐, 더 많은 시체, 페스트 확산\n- **임무 동선** 변화 — High Chaos에서 적이 더 무장, 더 많이 배치\n- **엔딩** 분기 — 4가지 결말 (Low/High × 코르보/에밀리)\n\n### 비폭력의 메카닉 비용\n\n비폭력 플레이는 *어렵게* 설계:\n- 비치명 처리는 시간이 더 걸림 (잠입 필수)\n- 시체 처리도 폭력 플레이보다 추가 작업\n- 능력 트리도 폭력 능력이 더 즉각적 보상\n\n이는 *덜 효율적*이지만 *더 의미 있는* 경로 — [[시스템-WS003-선택의대가]]의 정수.\n\n### 도덕 UI의 부재\n\n게임은 *명시적 도덕 점수*를 보여주지 않음:\n- \"당신은 100/100 영웅입니다\" 같은 UI 없음\n- 카오스는 *세계 변화*로만 체감\n- 첫 플레이에서는 카오스가 *있다는 사실*도 발견 대상\n\n이 비명시성이 [[내러티브-LP001-메카닉이도덕이다]]를 강화 — 도덕은 점수가 아니라 *결과*.\n\n### Targets의 비치명 해결\n\n각 임무의 암살 대상에 *비치명적 해결책* 존재:\n- Lady Boyle → 비밀 추종자에게 넘김\n- High Overseer Campbell → 이단 표식으로 수치화\n- Pendleton 형제 → 광산 노예로\n\n비치명 해결이 *사실상 더 잔인할 수도* 있음. 도덕은 단순한 살인/비살인이 아니라 *결과의 무게*.\n\n### 능력의 이중 활용\n\n같은 능력이 폭력/비폭력 양쪽에 작동:\n- **Blink** — 도주에도 암살에도\n- **Possession** — 잠입에도 함정 유도에도\n- **Dark Vision** — 회피에도 표적화에도\n\n플레이어 *의도*가 능력의 도덕적 의미를 결정.\n\n## 왜 효과적인가\n\n1. **시스템이 도덕 진술** — 컷씬 도덕 강의가 없음, 세계가 보여줌\n2. **부조화 해결** — 살인이 *결과를 가짐* → 액션 카타르시스와 서사 무게 합치\n3. **재플레이 강제 차이** — 두 번째 플레이가 *다른 게임*이 됨\n4. **명시 없는 학습** — 첫 플레이에서 카오스를 *발견*하는 메타 서사\n5. **선택지 ≠ 슬라이더** — 4가지 결말이 양극 슬라이더가 아닌 두 축 결합\n\n## 안티패턴 대비\n\n[[ANTI-NAR-002-가짜회색도덕]]은 양극 슬라이더 + 동일 결과. *Dishonored*는 슬라이더 자체를 보이지 않게 하고 *세계 상태*로 결과 표현.\n\n[[ANTI-NAR-003-루도내러티브부조화]]가 *Uncharted*식 살인-매력 분열이라면, *Dishonored*는 살인이 *세계를 어둡게 한다*는 시스템 약속으로 부조화 해결.\n\n## 산업 영향\n\n- *Dishonored 2* (2016), *Death of the Outsider* (2017) — 동일 시스템 발전\n- *Deathloop* (2021, Arkane Lyon) — 시간 루프로 카오스 변환\n- *Prey* (2017, Arkane Austin) — 시스템 도덕성을 *Mimic* 메카닉에 이식\n- *Hitman* World of Assassination — 비치명 해결의 다른 형태\n\n## 연결 게임 패턴\n\n- [[BioShock-환경스토리텔링]] — Irrational/Arkane 이머시브심 계보\n- [[Apex Legends-핑시스템]] — 시스템이 사회성을 표현하는 다른 사례\n\n## 연결 원칙\n\n- [[시스템-CH001-시스템적자유]] — Clint Hocking 원칙의 직접 사례\n- [[내러티브-CH002-시스템이의미한다]] — Hocking 자신의 후속 정리\n\n## 출처 링크\n\n- Harvey Smith GDC 2014 — *Dishonored* postmortem\n- Raphael Colantonio 인터뷰 — 이머시브심 계보 (Arkane Studios History)\n- Clint Hocking GDC — \"Dynamics: The State of the Art\"",
+    "wikilinks": [
+      {
+        "target": "ANTI-NAR-003-루도내러티브부조화",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH001-루도내러티브부조화",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "시스템-CH001-시스템적자유",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-002-가짜회색도덕",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-003-루도내러티브부조화",
+        "display": null
+      },
+      {
+        "target": "BioShock-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "시스템-CH001-시스템적자유",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      }
+    ],
+    "bodyLength": 2515,
+    "topics": [
+      "ui",
+      "narrative",
+      "enemy_ai",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:FFXIV-라이브서비스회복",
+    "slug": "FFXIV-라이브서비스회복",
+    "fileName": "FFXIV-라이브서비스회복",
+    "filePath": "03_패턴/FFXIV-라이브서비스회복.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "FFXIV-라이브서비스회복",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "MMORPG",
+      "라이브서비스",
+      "위기관리",
+      "회복",
+      "정직한사과",
+      "ProducerLetter"
+    ],
+    "designers": [
+      "요시다 나오키"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2014/01_게임디자인/FFXIV_RealmReborn"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Final Fantasy XIV — A Realm Reborn (라이브 서비스 회복)\n\n> *FFXIV* 1.0 (2010) 출시 직후 \"재앙\" 평가 → 2년 9개월 만에 *A Realm Reborn* (2013)으로 부활. MMO 산업에서 *살아 있는 게임을 처음부터 다시 만든* 유일한 사례. **정직한 사과 + 정기 송출 + 시간**이 회복 공식임을 입증.\n\n## 적용된 원칙\n\n- [[프로덕션-SK001-속편의반감기]] — 속편 반감기를 *재출시*로 회피한 사쿠라이식 사상의 MMO 영역\n- [[프로덕션-TF002-팬커뮤니티와의관계]] — Producer Letter LIVE로 사용자와 직접 대화 = 토비 폭스식 팬 관계의 라이브 서비스 영역\n- [[프로덕션-SK005-분해분석재구축]] — 1.0을 분해하고 코어만 보존, 시스템은 처음부터 재구축\n\n## 출처 강연\n\n- **GDC 2014**: Naoki Yoshida (프로듀서·디렉터, Square Enix) — \"Behind the Realm Reborn\" ([[GDC_2014/01_게임디자인/FFXIV_RealmReborn]])\n\n## 구현 방식\n\n### 1.0 실패의 구조적 원인\n\nGDC 2014에서 Yoshida가 공개한 1.0의 결함:\n\n- **그래픽 매몰**: 풀 화분 한 개가 사용자 캐릭터만큼 데이터 처리 부담\n- **시스템 미숙**: 직업 시스템·길드 시스템의 디자인 부재\n- **콘텐츠 파이프라인 부재**: 출시 후 6개월간 신규 콘텐츠 없음\n- **UI 결함**: 메뉴 한 번 여는 데 3초\n\n이 진단이 회복의 시작점.\n\n### 회복의 5단계\n\n#### 1. 정직한 사과 (2011)\n\n> \"우리는 실패했다. 새로 만든다.\"\n\n호도하지 않는 직접 발언. 산업 관행에 정반대.\n\n#### 2. Producer Letter LIVE (2011~)\n\n정기 영상 송출. 매월 다음 패치 계획·결정 이유·향후 로드맵 공유. 라이브 서비스의 새 표준이 됨.\n\n#### 3. 1.0 종료 + 시스템 재구축 (2012)\n\n모든 시스템 처음부터. 단:\n\n- 캐릭터 데이터 보존\n- 세계관 보존\n- 일부 자산 재활용\n- *Calamity* 인-게임 이벤트로 1.0 → ARR 전환을 *서사적*으로 연출\n\n#### 4. *A Realm Reborn* 출시 (2013)\n\n완전 새 게임. 동시 *FFXIV* 1.0 구매자에게 무료 제공 — 약속을 지킴.\n\n#### 5. 확장팩 정기 사이클 (2015~)\n\n*Heavensward* (2015) → *Stormblood* (2017) → *Shadowbringers* (2019) → *Endwalker* (2021). 각 확장팩이 평가를 점진적으로 끌어올림. *Endwalker* 시점에 MMO 평가의 최정점 도달.\n\n→ 1.0 출시에서 정점 도달까지 **11년**.\n\n### 핵심 디자인 명제\n\n**\"MMORPG의 본질은 시스템과 콘텐츠 파이프라인\"** — 그래픽이 아님.\n\n1.0은 비주얼에 매몰되어 시스템·파이프라인을 희생. *A Realm Reborn*은 정반대 우선순위.\n\n## 왜 효과적인가\n\n1. **신뢰 회복** — 정직한 사과 + 약속 이행 = 떠난 사용자도 돌아옴\n2. **사용자와의 채널 유지** — Producer Letter가 *Apex*, *Destiny*, *FF14* 후속 모두에게 표준\n3. **재출시 옵션 입증** — 라이브 서비스가 한 번 실패해도 회복 가능함을 산업에 보여줌\n4. **시간이 답** — 단기 픽스가 아닌 11년 누적의 평판\n\n## 한계\n\n- **2년 9개월 + 무료 재제공의 기회비용** — Square Enix의 결단이 없었으면 불가능\n- **개발자(Yoshida) 의존** — 한 사람의 비전·소통 능력에 회복이 좌우됨\n- **타 라이브 서비스가 같은 길을 가지 못함** — *Anthem*은 침묵, *Marvel's Avengers*는 종료\n- **확장팩 사이클의 피로** — *Endwalker* 이후 *Dawntrail* (2024)에서 평가 일부 후퇴\n\n## 후속 영향\n\n- *No Man's Sky* (2016 → 2020+) — 비슷한 회복 길, 다른 산업\n- *Cyberpunk 2077* (2020 → 2023) — 라이브 회복 시도, 더 짧은 시간\n- *Final Fantasy XVI* (2023) — Yoshida가 디렉팅, *FFXIV* 운영 노하우의 단일 게임 적용\n- 산업 표준 Producer Letter 모델 정착\n\n## 연결 게임 패턴\n\n- (없음 — MMO·라이브 서비스 회복은 이 패턴이 최초)\n\n## 연결 원칙\n\n- [[프로덕션-SK001-속편의반감기]] — 속편 반감기 회피의 MMO 영역\n- [[프로덕션-TF002-팬커뮤니티와의관계]] — Producer Letter\n- [[프로덕션-SK005-분해분석재구축]] — 1.0 분해 후 재구축\n\n## 안티패턴 대비\n\n- [[ANTI-PRD-001-라이브서비스비전미달]] (Anthem) — 정반대 사례. 사과 없는 침묵 → 영구 손실\n- [[ANTI-PRD-003-약속과결과의괴리]] (Cyberpunk 2077) — *FFXIV*와 비슷한 회복 시도, 더 짧은 시간\n\n## 관련 키워드\n\n`Final Fantasy XIV`, `A Realm Reborn`, `Naoki Yoshida`, `Yoshi-P`, `Square Enix`, `1.0 실패`, `Producer Letter LIVE`, `Calamity`, `Heavensward`, `Stormblood`, `Shadowbringers`, `Endwalker`, `라이브 서비스 회복`, `정직한 사과`",
+    "wikilinks": [
+      {
+        "target": "프로덕션-SK001-속편의반감기",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TF002-팬커뮤니티와의관계",
+        "display": null
+      },
+      {
+        "target": "프로덕션-SK005-분해분석재구축",
+        "display": null
+      },
+      {
+        "target": "GDC_2014/01_게임디자인/FFXIV_RealmReborn",
+        "display": null
+      },
+      {
+        "target": "프로덕션-SK001-속편의반감기",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TF002-팬커뮤니티와의관계",
+        "display": null
+      },
+      {
+        "target": "프로덕션-SK005-분해분석재구축",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-001-라이브서비스비전미달",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-003-약속과결과의괴리",
+        "display": null
+      }
+    ],
+    "bodyLength": 2758,
+    "topics": [
+      "live_service",
+      "production"
+    ]
+  },
+  {
+    "id": "pattern:GodOfWar-원샷카메라",
+    "slug": "GodOfWar-원샷카메라",
+    "fileName": "GodOfWar-원샷카메라",
+    "filePath": "03_패턴/GodOfWar-원샷카메라.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "GodOfWar-원샷카메라",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "액션",
+      "영화적연출",
+      "카메라",
+      "컷씬없음",
+      "부자관계"
+    ],
+    "designers": [
+      "코리 발록",
+      "에릭 윌리엄스"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2019-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# God of War — 원샷 카메라 (One-Shot Camera)\n\n> *Birdman*의 영화 기법을 30시간 게임으로 확장. *God of War* (2018)이 친밀감과 영화성을 동시에 달성한 비결.\n\n## 적용된 원칙\n\n- [[내러티브-HK002-영화적연출과게임플레이]] — 코지마 계보의 영화적 연출\n- [[내러티브-SK002-인게임컷씬설계]] — 사쿠라이의 컷씬 원칙\n- [[내러티브-FU001-손잡기의감정]] — Ueda의 비언어적 감정 (Atreus와의 거리감)\n- [[프로덕션-TC011-마찰의균형]] — 기술적 도전 vs 디자인 비전 균형\n\n## 출처 강연\n\n- **GDC 2019**: Cory Barlog — \"Reinventing God of War\" 패널 ([[GDC-2019-주요강연]])\n- **Variety, 80.lv 인터뷰** — 원샷 카메라 의사결정 회고\n\n## 구현 방식\n\n### 핵심 결정: 컷 없는 단일 카메라\n\n[[코리 발록]]가 *God of War* (2018) 리부트를 기획할 때 다음 비전을 세웠다:\n\n> \"I want to use a single shot to tell a more intimate and character-driven story.\"\n\n영화적 reference: *Birdman* (2014, 알레한드로 곤잘레스 이냐리투), *1917* (2019, 샘 멘데스). 영화에서 가능한 long-take를 게임 전체로 확장.\n\n### 6~8개의 hidden cut\n\n진정한 \"단일 샷\"은 기술적으로 불가능. Barlog는 여섯-여덟 번의 hidden cut만 허용:\n\n- 카메라가 어두운 공간(터널·문 안)을 통과할 때\n- Atreus의 어깨너머에서 다른 캐릭터로 전환할 때\n- 대규모 스케일 전환(거인의 손에 올라타기 등)\n\n> \"The rest of the game was just an absurd amount of planning and technical tricks.\" — Cory Barlog\n\n### 어깨너머(Over-the-shoulder) 카메라의 의도\n\n이전 *God of War* 시리즈(2005–2013)의 고정 카메라(Fixed Camera)와 정반대. 이유:\n\n- Kratos와 Atreus의 **부자 관계**가 게임 코어 → 카메라가 Kratos에게 밀착해야\n- 광각으로 화려한 전투를 보여주는 게 아니라, **인물의 표정**과 **공간의 친밀감**을 우선\n- Atreus가 Kratos 옆에 있을 때 카메라 = 내가 Atreus의 시선에 있는 듯\n\n### 팀 설득의 어려움\n\nBarlog의 회고:\n\n> \"40 percent of the team came to Barlog after the game was done, and they finally said, 'oh I get it now'.\"\n\n개발 중 절반이 의문, 출시 후에야 이해. 디자인 비전을 끝까지 밀어붙인 케이스.\n\n### Ragnarök 진화\n\n*God of War: Ragnarök* (2022)은 같은 카메라를 유지하면서:\n\n- 거대한 스케일 전환을 더 빈번하게\n- Freya, Tyr 등 추가 컴패니언이 등장해도 카메라 친밀감 유지\n- 일부 비평가는 \"원샷 카메라가 더 이상 시그니처가 아니다\"라며 두 번째 작품의 한계를 지적\n\n## 왜 효과적인가\n\n1. **컷 없음 → 몰입** — 컷 한 번 = \"이게 게임이지\"의 immersion break\n2. **친밀감 우선** — Atreus가 항상 시야에 있어 부자 관계가 매 순간 작용\n3. **Cinematic ↔ Gameplay 경계 제거** — 컷씬 시작/끝의 어색함 없음\n4. **거대 스케일 강조** — 거인을 만나는 순간 카메라가 끝까지 팬 → 압도감\n\n## 한계\n\n- **기술적 비용** — Barlog의 \"6-7 tricks\" 외에는 모든 장면이 일반 컷씬보다 훨씬 비싸게 제작\n- **Pacing 제약** — 일부 미션이 길어지는 이유가 카메라 때문\n- **카메라가 못 따라가는 액션** — 일부 빠른 전투에서 카메라가 답답함을 유발\n\n## 연결 게임 패턴\n\n- [[The Last of Us-컴패니언 AI 설계]] — 같은 사상의 다른 측면 (캐릭터 친밀감)\n- [[Halo-30초의재미루프]] — 대조 (전투 우선의 광각 vs 인물 우선의 어깨)\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 카메라가 직접 가이딩 (대조)\n\n## 연결 원칙\n\n- [[내러티브-HK002-영화적연출과게임플레이]] — 코지마의 영화적 연출 사상\n- [[내러티브-SK002-인게임컷씬설계]] — 사쿠라이의 컷씬 사상\n- [[내러티브-FU001-손잡기의감정]] — Ueda의 비언어적 친밀감\n\n## 출처 링크\n\n- Game Developer — [Barlog: God of War's 'single shot' camera trick was a tough sell for devs](https://www.gamedeveloper.com/production/barlog-i-god-of-war-i-s-single-shot-camera-trick-was-a-tough-sell-for-devs)\n- Variety — [God of War's Single-Shot Approach Inspired By...](https://variety.com/2018/gaming/features/god-of-war-single-shot-camera-1202793441/)\n- GINX TV — [How God of War's One-Shot Camera Came To Life](https://www.ginx.tv/en/god-of-war/one-shot-camera)\n- 80.lv — [Cory Barlog: Pitching Reinvented God of War](https://80.lv/articles/cory-barlog-pitching-reinvented-god-of-war)",
+    "wikilinks": [
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "내러티브-SK002-인게임컷씬설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU001-손잡기의감정",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "GDC-2019-주요강연",
+        "display": null
+      },
+      {
+        "target": "코리 발록",
+        "display": null
+      },
+      {
+        "target": "The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "내러티브-SK002-인게임컷씬설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU001-손잡기의감정",
+        "display": null
+      }
+    ],
+    "bodyLength": 2906,
+    "topics": [
+      "narrative"
+    ]
+  },
+  {
+    "id": "pattern:Hades-내러티브와로그라이크통합",
+    "slug": "Hades-내러티브와로그라이크통합",
+    "fileName": "Hades-내러티브와로그라이크통합",
+    "filePath": "03_패턴/Hades-내러티브와로그라이크통합.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Hades-내러티브와로그라이크통합",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "로그라이크",
+      "액션",
+      "내러티브",
+      "그릭미스",
+      "인디"
+    ],
+    "designers": [
+      "그렉 카사빈",
+      "Amir Rao",
+      "Logan Cunningham",
+      "Darren Korb"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2020-주요강연",
+      "GDC-2021-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Hades — 내러티브와 로그라이크의 통합\n\n> \"죽음 = 진행\"이 메타포가 아니라 메카닉이다. 그리스 신화의 \"지하세계 탈출\"이 로그라이크의 \"매번 죽고 다시 시작\"과 정확히 호응하면서, 매 런이 다음 챕터가 된다.\n\n> **참조**: 단일 사상의 다른 측면을 다룬 [[03_패턴/Hades-죽음을 진행으로 전환]]도 함께 참조.\n\n## 적용된 원칙\n\n- [[전투-SK003-조임과해방]] — 한 런 ≈ 30분, 4 챔버 + 보스 호흡\n- [[시스템-SK007-보상설계]] — 5 층위 내러티브 보상\n- [[내러티브-SG001-스토리없이남는캐릭터]] — Zagreus·Hades·Achilles 등이 짧은 만남으로 인격 형성\n- [[시스템-WW003-창발설계]] — Boon 조합의 빌드 다양성\n\n## 출처 강연\n\n- **GDC 2020 (Late) / 2021**: Greg Kasavin — \"Roguelikes and Narrative Design\" 패널 ([[GDC-2020-주요강연]] / [[GDC-2021-주요강연]])\n- **GDC Podcast Ep. 16**: Greg Kasavin — Roguelikes and narrative design\n\n## 구현 방식\n\n### 5 층위 내러티브 보상\n\nGreg Kasavin이 GDC 2021 패널에서 공개한 *Hades*의 보상 구조:\n\n1. **NPC 짧은 대사 (수만 줄)** — 매 런마다 새 라인. Logan Cunningham 등 성우들이 7,000+ 줄 녹음\n2. **호의(Affinity) 게이지** — 반복 인터랙션으로 캐릭터당 누적\n3. **상호 선물(Nectar/Ambrosia)** — 자원 교환의 정서적 보상\n4. **이벤트 잠금 해제** — 특정 조건 달성 시 분기 이벤트\n5. **메인 스토리 진행** — 누적 점수 임계 도달 시 챕터 전환\n\n이 구조는 \"이번 런은 망쳤다\"는 감정을 \"이번 런은 새 대사를 들었다\"로 바꿈. 죽음의 비용을 정서적으로 0으로.\n\n### 죽음 = 진행 메카닉\n\n[[그렉 카사빈]]의 핵심 통찰:\n\n> \"Even in hardcore roguelikes where everything resets, players carry forward their knowledge of mechanics. So what kind of character would *also* remember events after dying?\"\n\n답: **불멸의 신**. Zagreus는 죽으면 Styx 강을 흘러 House of Hades로 돌아온다. 보스 Hades는 매번 같은 Zagreus를 기억한다. 죽음은 리셋이 아니라 **이야기의 단락**.\n\n이 메타-내러티브 설계는 [[03_패턴/Hades-죽음을 진행으로 전환]]에서 더 깊게 다룸.\n\n### Boon 시스템의 창발성\n\n올림푸스 신들이 매 런마다 다른 boon(축복) 제공:\n\n- Zeus(번개), Poseidon(밀치기), Athena(반사) 등\n- 같은 신의 다른 boon이 서로 결합 (예: Athena + Aphrodite → 매혹된 적이 반사 데미지 받음)\n- \"Duo Boon\" — 두 신의 콤보 — Daedalus Hammer까지 5중 결합\n\n이는 [[시스템-WW003-창발설계]]의 인디 사례. *Slay the Spire*와 함께 deck-building 로그라이크의 표준이 됨.\n\n### Early Access 2년의 커뮤니티 통합\n\nSupergiant는 2년간 Early Access를 운영하며:\n\n- 매 빌드마다 새 메카닉/캐릭터 추가\n- 커뮤니티 피드백으로 다음 빌드 우선순위 결정\n- \"Boon\" 시스템을 출시 직전까지 5번 리디자인\n\n이는 [[프로덕션-TC011-마찰의균형]] 등 실험적 프로덕션 원칙의 사례.\n\n## 왜 효과적인가\n\n1. **죽음의 비용 제거 (정서적)** — 매 런이 다음 챕터\n2. **장르 융합** — 로그라이크 + RPG + 비주얼 노벨이 한 작품에 통합\n3. **음악·성우의 정점** — Darren Korb의 OST와 Logan Cunningham의 narrator 보이스가 분위기 형성\n\n## 한계\n\n- 첫 5시간이 가장 매력적, 후반 50시간은 빌드 최적화로 변질\n- 내러티브 의존도가 높아, 다회차 플레이의 보상 곡선이 가파르게 떨어짐 (*Hades 2*가 이를 어떻게 해결할지가 관전 포인트)\n\n## 연결 게임 패턴\n\n- [[03_패턴/Hades-죽음을 진행으로 전환]] — 같은 사상의 다른 측면 (메카닉 중심)\n- [[Spelunky-절차적생성과교훈]] — 절차적 생성의 인디 표준 (대조)\n- [[03_패턴/포탈-테스트 챔버 튜토리얼]] — 챔버 = Boon room의 구조적 유사성\n\n## 연결 원칙\n\n- [[전투-SK003-조임과해방]] — 한 런의 호흡\n- [[내러티브-SG001-스토리없이남는캐릭터]] — 짧은 만남의 누적\n- [[시스템-WW003-창발설계]] — Boon 조합의 창발\n\n## 출처 링크\n\n- Game Developer — [Roguelikes and narrative design with Hades creative director Greg Kasavin](https://www.gamedeveloper.com/design/roguelikes-and-narrative-design-with-i-hades-i-creative-director-greg-kasavin)\n- GDC Conf — [Roguelikes and narrative design with Hades creative director Greg Kasavin GDC Podcast ep. 16](https://gdconf.com/article/roguelikes-and-narrative-design-with-hades-creative-director-greg-kasavin-gdc-podcast-ep-16/)\n- GameShub — [Hades' Greg Kasavin breaks down Supergiant's unique approach to narrative](https://www.gameshub.com/news/features/hades-greg-kasavin-breaks-down-supergiants-unique-approach-to-narrative-262459-2193/)\n- Game Developer — [How Supergiant weaves narrative rewards into Hades' cycle of perpetual death](https://www.gamedeveloper.com/design/how-supergiant-weaves-narrative-rewards-into-i-hades-i-cycle-of-perpetual-death)",
+    "wikilinks": [
+      {
+        "target": "03_패턴/Hades-죽음을 진행으로 전환",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SK007-보상설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-SG001-스토리없이남는캐릭터",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "GDC-2020-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2021-주요강연",
+        "display": null
+      },
+      {
+        "target": "그렉 카사빈",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-죽음을 진행으로 전환",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-죽음을 진행으로 전환",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "03_패턴/포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "내러티브-SG001-스토리없이남는캐릭터",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      }
+    ],
+    "bodyLength": 3299,
+    "topics": [
+      "narrative",
+      "system",
+      "balance"
+    ]
+  },
+  {
+    "id": "pattern:HalfLife2-환경가이딩",
+    "slug": "HalfLife2-환경가이딩",
+    "fileName": "HalfLife2-환경가이딩",
+    "filePath": "03_패턴/HalfLife2-환경가이딩.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "HalfLife2-환경가이딩",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "FPS",
+      "환경가이딩",
+      "광원디자인",
+      "레벨디자인",
+      "무의식튜토리얼"
+    ],
+    "designers": [
+      "마크 레이드로",
+      "로빈 워커"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Half-Life 2 — 환경 가이딩\n\n> UI 화살표·웨이포인트 없이 광원·NPC 동선·건축으로만 플레이어를 이끈다. [[ANTI-LVL-003-랜드마크없는미로]]에 대한 교과서적 답안.\n\n## 적용된 원칙\n\n- [[레벨-LD003-랜드마크와위니]] — Citadel이 모든 영역에서 시야선의 위니로 작동\n- [[레벨-JR002-조명과그림자가이딩]] — 가장 밝은 빛이 다음 진행 방향\n- [[레벨-LD007-사이트라인설계]] — 시야선이 정보 위계를 가짐\n- [[레벨-LD009-어포던스설계]] — 사다리·관·발판의 시각적 어포던스가 행동을 유도\n- [[레벨-SG001-무의식튜토리얼]] — 게임 내내 튜토리얼 UI가 한 번도 등장하지 않음\n\n## 구현 방식\n\n### 광원 위계 — Brightest Path Wins\n\n[[로빈 워커]] (Valve)와 후대 디자이너들의 정리:\n\n> \"플레이어는 *어두운 곳에서 밝은 곳으로* 자연스럽게 끌린다.\"\n\n*Half-Life 2*의 모든 실내 구간은 다음 진행 지점을 *광원*으로 표시:\n- 통로의 막다른 끝 → 어둡게\n- 진행 방향 출구 → 밝은 빛 한 줄기\n- 보스/이벤트 직전 → 광원 위계 의도적 변화\n\n### Citadel — 거대 위니\n\nCity 17의 어디에서나 보이는 거대 *Citadel* 타워. 플레이어는 명시적 지시 없이 \"저기로 가야 한다\"는 감각을 가짐. 거리가 가까워질수록 *현실 진행도*가 시각화.\n\n이 디자인은 Disney의 위니 원칙과 동일 — Walt Disney가 *Sleeping Beauty Castle*을 도원의 중심에 배치한 의도.\n\n### NPC 동선이 곧 화살표\n\nAlyx, Barney 등 동료 NPC가 자주 *앞서간다*. 플레이어는 NPC를 따라가는 것만으로 진행 방향을 알 수 있음. UI 마커 없이.\n\n또한 적 NPC의 출현 위치도 *진행을 알린다* — Combine이 어느 방향에서 등장하는지가 곧 다음 영역의 위치 정보.\n\n### 어포던스의 일관성\n\n게임 시작 첫 5분에 학습되는 시각 언어:\n- 빨간 색조 사다리 = 오를 수 있음\n- 노란 폭발 통 = 폭발물 인터랙션\n- Combine의 푸른 광원 = 적\n- Resistance의 따뜻한 톤 = 동료\n\n이후 게임 내내 같은 어포던스 언어가 일관되게 적용. 학습이 한 번에 끝남.\n\n### 무의식 튜토리얼의 정수\n\n전체 게임에 *튜토리얼 UI가 한 번도 등장하지 않는다*. Crowbar는 첫 방의 깨진 박스로, 점프는 첫 도주에서, Gravity Gun은 Black Mesa East에서 *놀이로* 학습 — 전투 도구가 아닌 *장난감*으로 먼저 등장.\n\n## 왜 효과적인가\n\n1. **몰입 보존** — UI가 가르치지 않으니 *세계*가 가르침\n2. **공간 학습 가능** — 미니맵 없이도 City 17이 외워짐 (방향 감각 회복 가능)\n3. **언어 비의존** — 어떤 언어로 번역해도 가이딩이 작동\n4. **재플레이 가치** — 두 번째 플레이에서도 광원·동선이 새로운 의미로 보임\n5. **속도 가변성** — 빠른 플레이/느린 플레이 모두 안내가 작동\n\n## 안티패턴 대비\n\n[[ANTI-LVL-003-랜드마크없는미로]]는 미니맵 의존을 가정한 게으른 공간 설계. *Half-Life 2*는 미니맵을 *제공하지 않음*으로써 공간 자체에 가이딩 책임을 부여.\n\n## 산업 영향\n\n*Half-Life 2*의 환경 가이딩은 이후 모든 단편적 1인칭 게임의 기준이 됨:\n- *BioShock* (2007) — Andrew Ryan 동상 위니\n- *Dishonored* (2012) — 광원 + 수직성\n- *Mirror's Edge* (2008) — 색상 코딩 어포던스 (\"Runner's Vision\")\n- *Portal* (2007) — 같은 Valve의 시각 언어 계승\n\n## 연결 게임 패턴\n\n- [[포탈-테스트 챔버 튜토리얼]] — 같은 Valve 디자인 철학의 다른 적용\n- [[다크소울-미니맵 없는 월드 연결]] — 환경 가이딩의 오픈월드 변종\n- [[BioShock-환경스토리텔링]] — 위니 + 환경 서사 결합\n\n## 연결 원칙\n\n- [[레벨-LD003-랜드마크와위니]] — Citadel 위니 원칙\n- [[레벨-SG001-무의식튜토리얼]] — Crowbar/Gravity Gun 학습\n\n## 출처 링크\n\n- Robin Walker GDC — Valve 디자인 철학 강연\n- Steve Lee GDC — \"Invisible Intuition: Visual Design Tricks\"\n- *Half-Life 2: Raising the Bar* (2004) — 공식 디자인 문서",
+    "wikilinks": [
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      },
+      {
+        "target": "레벨-JR002-조명과그림자가이딩",
+        "display": null
+      },
+      {
+        "target": "레벨-LD007-사이트라인설계",
+        "display": null
+      },
+      {
+        "target": "레벨-LD009-어포던스설계",
+        "display": null
+      },
+      {
+        "target": "레벨-SG001-무의식튜토리얼",
+        "display": null
+      },
+      {
+        "target": "로빈 워커",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "BioShock-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      },
+      {
+        "target": "레벨-SG001-무의식튜토리얼",
+        "display": null
+      }
+    ],
+    "bodyLength": 2265,
+    "topics": [
+      "ui",
+      "character",
+      "level"
+    ]
+  },
+  {
+    "id": "pattern:Halo-30초의재미루프",
+    "slug": "Halo-30초의재미루프",
+    "fileName": "Halo-30초의재미루프",
+    "filePath": "03_패턴/Halo-30초의재미루프.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Halo-30초의재미루프",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "FPS",
+      "30초의재미",
+      "AI",
+      "코어루프",
+      "콘솔FPS"
+    ],
+    "designers": [
+      "제이미 그리즈머",
+      "Chris Butcher",
+      "Joseph Staten",
+      "Marty O'Donnell"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2011-주요강연",
+      "GDC-2015-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Halo — 30초의 재미 루프\n\n> *Halo*가 콘솔 FPS 표준을 만든 비밀. AI · 무기 · 환경 3축이 곱해져 30초 단위의 새 상황이 끝없이 생성되는 코어 루프 디자인.\n\n## 적용된 원칙\n\n- [[전투-SK003-조임과해방]] — 30초마다 긴장 ↔ 이완 반복\n- [[전투-SK001-위험과보상]] — 수류탄 / 근접 / 사격의 리스크 위계\n- [[시스템-SK006-최소복잡도]] — 무기 2개 한도, 수류탄, 근접의 3 채널\n- [[시스템-SK009-AI플레이어설계]] — Covenant AI의 \"흥미로운 적\" 설계\n\n## 출처 강연\n\n- **GDC 2002**: Jaime Griesemer & Chris Butcher — \"The Illusion of Intelligence: The Integration of AI and Level Design in Halo\" (원본 강연 — 30초의 재미 개념의 발원지)\n- **GDC 2011**: David Aldridge — \"I Shot You First: Networking the Gameplay of HALO: REACH\" ([[GDC-2011-주요강연]])\n- **2011 Engadget Interview**: Griesemer — \"Half-Minute Halo\"\n\n## 구현 방식\n\n### 30초 루프의 정의\n\n> \"In Halo 1, there was maybe 30 seconds of fun that happened over and over and over again. Encountering a bunch of guys, melee attacking one of them before they were aware, throwing a grenade into a group of other guys, and then cleaning up the stragglers before they could surround you.\" — Jaime Griesemer\n\n이 30초는 다음 4단계로 분해된다:\n\n1. **0–5s 인지** — 적 그룹 발견, 위치 파악\n2. **5–15s 개시** — 수류탄 던지기 + 근접 처치 (선제권 확보)\n3. **15–25s 교전** — 무기 사격, 엄폐 활용\n4. **25–30s 정리** — 잔당 처리, 다음 30초 준비\n\n### 3개의 nested loop\n\n- **3-second AI loop** — 단일 AI의 행동(놀람 → 엄폐 → 반격)\n- **30-second combat loop** — 위 4단계\n- **3-minute mission loop** — 환경·적 종류·무기 변화\n\n핵심: 같은 30초가 절대 반복되지 않게 하는 것. 환경이 바뀌고, 적 종류가 바뀌고, 차량이 등장하면 같은 사상의 30초가 완전히 새 경험이 된다.\n\n### Sandi Strike — 무기 슬롯 2개의 결정\n\nHalo는 무기를 2개만 들 수 있다(*CE*). 이는:\n\n- 매 전투에서 \"이 무기를 버릴지\" 결정 강제\n- Power weapon(로켓·스나이퍼)을 발견하면 일시적 우위\n- 적이 흘린 무기로 자원 순환\n\n이 결정의 비용이 [[시스템-SM001-흥미로운결정]] 원칙의 FPS 적용 사례.\n\n### Covenant AI — \"흥미로운 적\"\n\n각 적 종류가 명확히 다른 행동:\n\n- **Grunts** — 약함, 군집, 리더 죽으면 도망\n- **Jackals** — 방패, 근거리는 약함\n- **Elites** — 실드 + 지능, 1:1 위협\n- **Hunters** — 거대 + 후방 약점\n\n이 4종이 조합되면(예: Elite + Grunts 군집)이 곧 새 30초.\n\n### Halo: Reach 네트워킹 (GDC 2011)\n\nDavid Aldridge가 강연한 P2P 환경의 \"내가 맞췄으면 맞았다\" lag compensation. 30초 재미가 멀티플레이에서도 유지되도록 하는 인프라.\n\n## 왜 효과적인가\n\n1. **콘솔 게임패드와 짝궁** — 두 무기 + 수류탄 + 근접의 4 입력이 패드와 호응\n2. **싱글-멀티 통일** — 캠페인의 30초가 PvP에서도 작동\n3. **장기 영향력** — *Destiny*, *Apex Legends*, *Titanfall* 등 후속이 직접 계승\n\n## 한계\n\n- 30초 의식이 너무 강하면 boss·시네마 등 다른 호흡이 어색해짐\n- *Halo 4* 이후 343i가 다른 톤을 시도했지만 코어 루프가 흐려졌다는 평가\n\n## 연결 게임 패턴\n\n- [[Destiny-레이드설계와30초의재미확장]] — 직계 후손\n- [[DOOM-푸시포워드콤뱃]] — 같은 사상의 다른 표현 (헬스 회수 = Halo의 실드 회복)\n- [[Apex Legends-핑시스템]] — Bungie/Halo 출신 디자이너의 다음 진화\n\n## 연결 원칙\n\n- [[전투-SK003-조임과해방]] — 30초 호흡의 본질\n- [[시스템-SK006-최소복잡도]] — 2 무기 룰\n- [[시스템-SM001-흥미로운결정]] — 무기 교체의 결정 가치\n\n## 출처 링크\n\n- Engadget — [Half-Minute Halo: An Interview with Jaime Griesemer](https://www.engadget.com/2011-07-14-half-minute-halo-an-interview-with-jaime-griesemer.html)\n- GDC Vault — [I Shot You First: Networking the Gameplay of HALO: REACH](https://www.gdcvault.com/play/1014345/I-Shot-You-First-Networking)\n- NeoGAF — [Halo's famous 'combat loop / 30 seconds of fun' explanation](https://www.neogaf.com/threads/can-someone-explain-halos-famous-combat-loop-30-seconds-of-fun.493488/)",
+    "wikilinks": [
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-SK009-AI플레이어설계",
+        "display": null
+      },
+      {
+        "target": "GDC-2011-주요강연",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "DOOM-푸시포워드콤뱃",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      }
+    ],
+    "bodyLength": 2936,
+    "topics": [
+      "combat",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:HaloReach-네트워킹",
+    "slug": "HaloReach-네트워킹",
+    "fileName": "HaloReach-네트워킹",
+    "filePath": "03_패턴/HaloReach-네트워킹.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "HaloReach-네트워킹",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "네트워킹",
+      "lag_compensation",
+      "FPS",
+      "멀티플레이",
+      "30초의재미"
+    ],
+    "designers": [
+      "데이비드 올드리지"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2011/01_게임디자인/Halo_Reach_Networking"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Halo: Reach — Networking (\"I Shot You First\")\n\n> \"내 화면에서 맞췄으면 맞은 것으로 처리한다.\" 100ms 핑 차이가 나는 두 플레이어의 동시 사격 판정을 클라이언트 시점 + 서버 검증으로 해결하는 lag compensation. 네트워크 코드를 *기술 결정*이 아닌 *디자인 결정*으로 정립한 발표.\n\n## 적용된 원칙\n\n- [[전투-SK003-조임과해방]] — 30초의 재미 호흡이 멀티에서도 깨지지 않도록 네트워크 결정이 디자인 결정에 종속\n- [[시스템-SK001-적응형난이도]] — ping 차이가 곧 난이도 차이가 되지 않도록 보정\n\n## 출처 강연\n\n- **GDC 2011**: David Aldridge (네트워크 프로그래머, Bungie) — \"I Shot You First: Networking the Gameplay of HALO: REACH\" ([[GDC_2011/01_게임디자인/Halo_Reach_Networking]])\n\n## 구현 방식\n\n### 발사 시점 vs 결과 판정의 분리\n\n전통적 네트워크 모델:\n- 모든 액션을 서버에 전송 → 서버가 판정 → 클라이언트에 결과 전송\n- 결과: ping이 높으면 \"내 화면엔 맞았는데 안 맞은 걸로\" 판정\n\n*Halo: Reach* 모델 — **lag compensation**:\n- 클라이언트가 \"당시 화면에서 본 것\"을 기준으로 발사\n- 서버가 \"당시 적이 거기 있었나\"를 시간 거꾸로 검증\n- 검증 통과 → 맞은 것으로 처리\n\n→ \"I shot you first\" — 같은 순간을 두 플레이어가 다르게 봤을 때, 발사한 플레이어의 시점을 우선.\n\n### 디자인 결정으로서의 네트워크\n\nDavid Aldridge의 핵심 명제: 네트워크 코드는 기술 결정이 아니라 *디자인 결정*.\n\n- 너무 강한 lag compensation = \"뒤에서 죽는 느낌\" (이미 코너 돌았는데 죽음)\n- 너무 약한 lag compensation = ping 높은 사람이 무력\n- 균형점은 **30초의 재미** 사상 ([[Halo-30초의재미루프]])에 맞춤\n\n설계 의도(코어 30초 루프의 즉시성)가 네트워크 알고리즘의 파라미터를 결정.\n\n### P2P 호스트 모델의 한계\n\n*Halo: Reach* 시점 Bungie의 결정:\n\n- P2P 호스트 모델 — 한 플레이어가 호스트 역할\n- 호스트 desync 시 매치 종료 후 재배치\n- 콘솔 인프라 한계로 데디 서버 미사용\n\n이 결정은 *Halo: Reach*의 한계였고, *Destiny*에서 P2P + 클라우드 하이브리드로 진화 ([[Destiny-레이드설계와30초의재미확장]]).\n\n## 왜 효과적인가\n\n1. **싱글 코어가 멀티에서도 작동** — 30초 루프의 즉시성이 네트워크 환경에서 보존됨\n2. **체감 공정성** — \"내 화면에서 보인 것\"을 우선해서 사격 만족감 유지\n3. **콘솔 FPS의 표준 정착** — *CoD*, *Battlefield* 비교 기준선\n4. **lag compensation 산업 표준화** — *Apex Legends*까지 이어지는 사상\n\n## 한계\n\n- **\"뒤에서 죽음\" 문제** — lag compensation을 강하게 받으면 이미 도망쳤다고 생각한 플레이어가 사후 판정으로 죽음\n- **P2P 호스트 의존** — 호스트 인터넷이 매치 전체를 좌우\n- **콘솔 데디 서버 부재** — 당시 인프라 한계, *Destiny* 이후 해결\n\n## 후속 영향\n\n- *Destiny* (2014) — P2P + 클라우드 하이브리드로 진화\n- *Apex Legends* (2019) — lag compensation + 핑 시스템 ([[Apex Legends-핑시스템]])\n- *Call of Duty* 시리즈 — *Halo: Reach* 모델 채택\n- *Valorant* (2020) — Riot이 lag compensation 한계 지점 재정의\n\n## 연결 게임 패턴\n\n- [[Halo-30초의재미루프]] — 같은 시리즈의 코어 디자인, 네트워크가 보존해야 할 대상\n- [[Destiny-레이드설계와30초의재미확장]] — Bungie 후속, 네트워크 인프라 진화\n- [[Apex Legends-핑시스템]] — lag compensation 위에 비음성 협력 추가\n\n## 연결 원칙\n\n- [[전투-SK003-조임과해방]] — 30초 호흡 보존\n- [[시스템-SK001-적응형난이도]] — ping 차이 보정\n\n## 관련 키워드\n\n`Halo: Reach`, `Bungie`, `David Aldridge`, `lag compensation`, `클라이언트 사이드 예측`, `P2P 호스트`, `30초의 재미`, `네트워크=디자인`, `I Shot You First`",
+    "wikilinks": [
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SK001-적응형난이도",
+        "display": null
+      },
+      {
+        "target": "GDC_2011/01_게임디자인/Halo_Reach_Networking",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SK001-적응형난이도",
+        "display": null
+      }
+    ],
+    "bodyLength": 2321,
+    "topics": []
+  },
+  {
+    "id": "pattern:Hearthstone-디지털TCG",
+    "slug": "Hearthstone-디지털TCG",
+    "fileName": "Hearthstone-디지털TCG",
+    "filePath": "03_패턴/Hearthstone-디지털TCG.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Hearthstone-디지털TCG",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "TCG",
+      "F2P",
+      "모바일",
+      "디지털카드",
+      "MTG단순화"
+    ],
+    "designers": [
+      "벤 브로드"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2015/01_게임디자인/Hearthstone_카드게임설계_벤브로드"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Hearthstone — 디지털 TCG (MTG 단순화 + 모바일 친화)\n\n> *Magic: the Gathering*의 깊이를 디지털 + 모바일 환경에 맞춰 *의도적으로* 단순화한 TCG. 60장 → 30장, 5색 → 9 클래스, Land → 자동 Mana, Stack → 단순 turn-based. 모든 단순화가 디자인 결정. 디지털만 가능한 메카닉(Discover, Random, Transform)으로 새 정체성 확보.\n\n## 적용된 원칙\n\n- [[시스템-SK006-최소복잡도]] — MTG의 깊이를 인정하면서도 디지털·모바일에는 단순한 것이 좋다는 사쿠라이식 결정\n- [[시스템-SG002-단순함의깊이]] — 30장 + 9 클래스의 작은 규칙 공간이 깊은 메타를 만든다는 미야모토식 사상\n- [[시스템-SK002-접근성우선]] — 무료 진입 + iPad 최적화 + 7~10분 매치\n- [[프로덕션-SK002-플레이어시간존중]] — 통근·휴식 게임으로서 매치 시간 설계\n- [[전투-SK008-차별화밸런싱]] — 9 클래스 각자 명확한 정체성\n\n## 출처 강연\n\n- **GDC 2015**: Ben Brode (Game Director, Blizzard) — Hearthstone 디자인 회고 ([[GDC_2015/01_게임디자인/Hearthstone_카드게임설계_벤브로드]])\n\n## 구현 방식\n\n### MTG 단순화 — 의도된 결정\n\n| | MTG | Hearthstone |\n|---|---|---|\n| 덱 크기 | 60장 | 30장 |\n| 색/계열 | 5색 | 9 클래스 |\n| 자원 | Land 카드 | 자동 1씩 증가 Mana |\n| 인터랙션 | Stack (복잡) | 단순 turn-based |\n\n핵심: Brode는 MTG의 깊이를 *알면서* 단순화. 디지털·모바일 환경에 맞는 결정.\n\n### 9 클래스 — 차별화 밸런싱\n\n각 클래스가 명확한 정체성:\n\n- **Warrior**: 무기 + 갑옷\n- **Mage**: 마법 직접 데미지\n- **Rogue**: 손에 있는 카드 변경\n- **Priest**: 회복\n- **Hunter**: 직접 데미지 + 미니언\n- **Warlock**: 자기 영웅 데미지로 카드 드로우\n- **Druid**: 변신\n- **Shaman**: 토템\n- **Paladin**: 미니언 강화\n\n각 클래스가 다른 게임플레이 → 9개 다른 게임. 사쿠라이의 [[전투-SK008-차별화밸런싱]] 사상의 TCG 영역.\n\n### 디지털만 가능한 메카닉\n\n종이 카드로 불가능한 메카닉이 *Hearthstone*의 정체성:\n\n- **Discover**: 카드 사용 시 3 옵션 중 1 선택\n- **Random Effects**: 무작위 데미지·효과\n- **Transform**: 카드를 다른 카드로 변환\n- **Hidden Cards**: 적이 비밀로 둔 카드 (조건 만족 시 발동)\n\n이 메카닉이 디지털 TCG와 종이 TCG를 가른다.\n\n### 모바일 first 매치 길이\n\n- iPad 최적화 — 터치 인터페이스\n- 7~10분 매치 — 통근·휴식 친화\n- 5분 + 한 매치의 게임 = 산업 표준\n\n### F2P 모델\n\n- 게임 무료\n- 무료 카드로 시작\n- 일일 퀘스트로 골드\n- 골드 또는 현금으로 카드 팩\n- 컬렉션 점진적 빌딩\n\nF2P TCG의 정전 — 이후 모든 디지털 TCG가 이 모델 차용.\n\n## 왜 효과적인가\n\n1. **진입 장벽 0** — 무료 + iPad + 7분 매치 = 누구나 시작\n2. **마스터 깊이 보존** — 단순한 규칙 공간이 깊은 메타를 만듦\n3. **디지털 정체성** — 종이로 불가능한 메카닉이 차별화\n4. **운영 11년** — Brode 시기 + 후속 팀이 라이브 운영\n\n## 한계\n\n- **메타 정체** — 새 카드 팩이 메타를 변화시키지 못하면 정체\n- **무작위 의존** — Random Effects가 경쟁 신뢰성을 흔드는 경우\n- **카드 팩 가격** — F2P지만 컴플리션은 비쌈\n- **클래스 밸런싱의 시소** — 9 클래스 동시 균형은 영구 과제\n\n## 후속 영향\n\n- *Marvel Snap* (2022, Brode 후속 Second Dinner) — *Hearthstone* 사상의 모바일 first 진화\n- *Legends of Runeterra* (2020, Riot) — 디지털 TCG의 새 시도\n- *Magic: the Gathering Arena* (2019) — MTG가 *Hearthstone* 모델을 부분 차용\n- 모든 모바일 TCG의 표준\n\n## 연결 게임 패턴\n\n- [[Apex Legends-핑시스템]] — 모바일·접근성 우선의 다른 장르 적용\n- (대조) 깊이 우선 게임 — *MTG Arena*, *Eternal*\n\n## 연결 원칙\n\n- [[시스템-SK006-최소복잡도]] — MTG 단순화\n- [[시스템-SG002-단순함의깊이]] — 30장+9클래스의 깊이\n- [[시스템-SK002-접근성우선]] — 모바일 + 무료\n- [[전투-SK008-차별화밸런싱]] — 9 클래스 차별화\n\n## 관련 키워드\n\n`Hearthstone`, `Heroes of Warcraft`, `Ben Brode`, `Blizzard Entertainment`, `MTG 단순화`, `30장 덱`, `9 클래스`, `Discover`, `Random Effects`, `Transform`, `iPad TCG`, `F2P TCG`, `7~10분 매치`",
+    "wikilinks": [
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-SG002-단순함의깊이",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "프로덕션-SK002-플레이어시간존중",
+        "display": null
+      },
+      {
+        "target": "전투-SK008-차별화밸런싱",
+        "display": null
+      },
+      {
+        "target": "GDC_2015/01_게임디자인/Hearthstone_카드게임설계_벤브로드",
+        "display": null
+      },
+      {
+        "target": "전투-SK008-차별화밸런싱",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-SG002-단순함의깊이",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "전투-SK008-차별화밸런싱",
+        "display": null
+      }
+    ],
+    "bodyLength": 2657,
+    "topics": [
+      "system",
+      "live_service"
+    ]
+  },
+  {
+    "id": "pattern:HollowKnight-메트로배니아응축",
+    "slug": "HollowKnight-메트로배니아응축",
+    "fileName": "HollowKnight-메트로배니아응축",
+    "filePath": "03_패턴/HollowKnight-메트로배니아응축.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "HollowKnight-메트로배니아응축",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "메트로배니아",
+      "2D",
+      "레벨디자인",
+      "백트래킹",
+      "상호연결"
+    ],
+    "designers": [
+      "윌리엄 펠런",
+      "아리 깁슨"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Hollow Knight — 메트로배니아 응축\n\n> 광활하지 않다. *깊다*. 200×100 그리드 안에 30시간이 응축. 메트로배니아 장르의 모든 원칙이 한 게임에서 작동.\n\n## 적용된 원칙\n\n- [[레벨-IK001-메트로배니아맵응축세계]] — 단일 응축 세계 Hallownest\n- [[레벨-IK002-능력게이팅막힌길의약속]] — Mantis Claw, Crystal Heart, Monarch Wings 게이팅\n- [[레벨-IK003-백트래킹의보상]] — 능력 획득 후 모든 영역에 새 비밀 등장\n- [[레벨-MK001-상호연결월드]] — *Dark Souls*급 수직·수평 상호연결\n- [[레벨-MK002-지름길설계]] — 영역마다 영구 지름길 잠금해제\n\n## 구현 방식\n\n### 단일 응축 세계 Hallownest\n\n11개 주요 영역(Forgotten Crossroads, Greenpath, Fungal Wastes, City of Tears, Crystal Peak, Royal Waterways, Deepnest, Resting Grounds, Howling Cliffs, Kingdom's Edge, Ancient Basin)이 *하나의 연결된 지하 세계*.\n\n영역 간 이동 시 로딩 없는 연속성 (룸 단위 페이드만). 이는 *공간이 곧 세계관*인 메트로배니아의 정수.\n\n### 능력 게이팅의 시각 어휘\n\n각 능력이 *시각적 약속*으로 미리 등장:\n- 벽 점프 가능 지점 → Mantis Claw 획득 전에 *보임*\n- 막힌 천장 → Monarch Wings 약속\n- 격자 결정 → Crystal Heart 대시 약속\n- 검은 조각 → Shade Cloak 통과 약속\n\n플레이어는 *언젠가 돌아올 것*을 미리 학습. 이 약속의 누적이 백트래킹 동기.\n\n### 영역마다 색·음악·생물군\n\n11개 영역이 시각적으로 즉각 구분:\n- Greenpath — 녹색, 평화로운 음악, 식물 생물\n- City of Tears — 푸른 비, 멜랑콜리 피아노, 정장 곤충\n- Deepnest — 검붉은 어둠, 불협화음, 거미\n- Crystal Peak — 분홍 결정, 톱니 산업음, 광부\n\n[[ANTI-LVL-003-랜드마크없는미로]] 반대 사례 — 시각 위계가 강함.\n\n### 지름길 설계 — 영구 잠금해제\n\n각 영역에 *영구 지름길*이 숨겨져 있음:\n- Crossroads → Greenpath의 일방향 통로 → 양방향\n- Resting Grounds 엘리베이터 잠금해제\n- City of Tears Stagway 부활\n\n지름길은 *고생 후의 보상* — 막힌 길을 뚫었을 때의 카타르시스가 보상 통화.\n\n### Stag Stations — 패스트 트래블의 디스카운트\n\nStag 길은 *유료 패스트 트래블* (Geo로 결제). 모든 Stag Station을 *직접 발견하고 잠금해제*해야 함. 이는 패스트 트래블 가치를 보존하면서도 후반 편의성 제공.\n\n### Hidden Map과 Cornifer\n\n지도는 *자동 생성되지 않음*:\n- Cornifer를 영역에서 발견 → 부분 지도 구매\n- 휴식 지점(벤치)에서만 *그려짐*\n- 양초(Compass) 장착 시에만 자기 위치 표시\n\n이 지도 시스템 자체가 [[레벨-SK001-지도로부터의탈출]]의 정수 — 지도에 의존시키지 않음.\n\n## 왜 효과적인가\n\n1. **응축의 깊이** — 작은 맵에서 30시간이 가능, 모든 화면이 의도된 디자인\n2. **약속의 누적** — 1시간차에 본 막힌 길을 10시간차에 열 때의 만족\n3. **능력의 다중 의미** — Mantis Claw가 단지 벽 점프가 아니라 *세계의 새 시각*\n4. **시각 정체성** — 각 영역이 외워짐, 미니맵 의존도 낮음\n5. **백트래킹의 자발성** — 강제가 아니라 *호기심* 기반\n\n## 산업 영향\n\n- *Ori* 시리즈 — 비주얼 톤의 Hollow Knight 영향\n- *Blasphemous* (2019) — 다크 메트로배니아의 재해석\n- *Death's Door* (2021) — 메트로배니아 + 등각투상\n- *Animal Well* (2024) — 메트로배니아 응축의 미니멀 극단\n\n## 연결 게임 패턴\n\n- [[다크소울-미니맵 없는 월드 연결]] — 같은 상호연결 철학의 3D 사례\n- [[Spelunky-절차적생성과교훈]] — 다른 응축 방식 (수직)\n\n## 연결 원칙\n\n- [[레벨-IK001-메트로배니아맵응축세계]] — Igarashi Koji 정통 사례\n- [[레벨-MK001-상호연결월드]] — Miyazaki와 다른 답: 2D 메트로배니아의 상호연결\n\n## 출처 링크\n\n- William Pellen GDC 2018 — *Hollow Knight* 후 Team Cherry 강연\n- Mark Brown (GMTK) — \"Boss Keys: Hollow Knight\" 분석\n- Team Cherry 공식 인터뷰 — Kickstarter 백서",
+    "wikilinks": [
+      {
+        "target": "레벨-IK001-메트로배니아맵응축세계",
+        "display": null
+      },
+      {
+        "target": "레벨-IK002-능력게이팅막힌길의약속",
+        "display": null
+      },
+      {
+        "target": "레벨-IK003-백트래킹의보상",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "레벨-MK002-지름길설계",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "레벨-SK001-지도로부터의탈출",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "레벨-IK001-메트로배니아맵응축세계",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      }
+    ],
+    "bodyLength": 2398,
+    "topics": [
+      "level"
+    ]
+  },
+  {
+    "id": "pattern:Journey-감정곡선설계",
+    "slug": "Journey-감정곡선설계",
+    "fileName": "Journey-감정곡선설계",
+    "filePath": "03_패턴/Journey-감정곡선설계.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Journey-감정곡선설계",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "감정디자인",
+      "비언어",
+      "음악우선",
+      "비동기멀티",
+      "영웅의여정"
+    ],
+    "designers": [
+      "제노바 첸",
+      "로빈 후니키",
+      "Austin Wintory"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2013-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Journey — 감정 곡선 설계\n\n> Joseph Campbell의 *영웅의 여정* 모노미스를 게임 감정 곡선의 청사진으로 사용. 음악으로 감정을 먼저 설계하고, 게임플레이를 거기에 맞춘 사례.\n\n## 적용된 원칙\n\n- [[내러티브-FU001-손잡기의감정]] — 비언어적 감정 전달의 표준\n- [[내러티브-FU002-언어의최소화]] — 텍스트·음성 없이 감정만\n- [[시스템-MK001-비동기멀티플레이]] — *Demon's Souls* 영혼 시스템 다음 단계\n- [[시스템-WW004-목표없는동기]] — Will Wright의 \"장난감 우선\" 사상\n\n## 출처 강연\n\n- **GDC 2013**: Jenova Chen — \"Designing Journey\" ([[GDC-2013-주요강연]])\n- **GDC Podcast Ep. 10**: Making evocative games with thatgamecompany's Jenova Chen\n\n## 구현 방식\n\n### 감정을 먼저, 게임을 나중에\n\n[[제노바 첸]]이 GDC 2013에서 강조한 워크플로:\n\n> \"Music is the most effective and powerful medium that can create emotion.\"\n\n순서:\n\n1. **음악 prototype** — Austin Wintory가 감정 곡선을 음악으로 작곡 (~6 분기점)\n2. **감정 매핑** — 각 분기점에 매칭되는 정서 (놀람·외로움·연결·환희·죽음·재탄생)\n3. **레벨 디자인** — 각 정서에 맞는 환경·메카닉 설계\n4. **게임플레이 조정** — 정서가 게임플레이로 깨지지 않게 반복 iteration\n\n### Joseph Campbell의 모노미스 적용\n\n[[조셉 캠벨]]의 *The Hero's Journey* 17단계를 6개 챕터로 압축:\n\n| 챕터 | 환경 | 감정 |\n|---|---|---|\n| 1. The Apparition | 사막의 시작 | 호기심·고독 |\n| 2. The Bridge | 광활한 사막 | 자유·여정 |\n| 3. The Tower | 지하 미궁 | 호기심·연결 |\n| 4. The Underworld | 어둠·눈 | 두려움·생존 |\n| 5. The Mountain | 눈 폭풍 | 절망·죽음 |\n| 6. Apotheosis | 정상 | 환희·재탄생 |\n\n매 챕터의 음악 선율, 색온도, 가시 거리, 적 종류, 동료 등장 빈도가 모두 이 감정 곡선에 맞춤.\n\n### 비언어적 멀티플레이\n\n세계 어디 플레이어와도 매칭. 단:\n\n- **이름 없음** — PSN ID 표시 없음\n- **음성 채팅 없음**\n- **텍스트 채팅 없음**\n- **신호: \"찡(chirp)\" 한 종류만** — 음높이·길이로 감정 표현\n\n이 결정으로 발생하는 효과:\n\n- **첫 만남의 무게** — 익명의 동료가 적인지 친구인지 모름 → \"왜 도와줬을까?\"의 정서\n- **언어 장벽 없음** — 일본·미국·인도 플레이어가 감정으로 소통\n- **진짜로 외로워지는 순간** — 매칭 실패 시 게임이 1인 플레이로 자연스럽게 전환\n\n이는 *Demon's Souls* (2009)의 영혼·메시지 사상의 다음 진화이며, [[시스템-MK001-비동기멀티플레이]] 원칙의 원형.\n\n### \"성취·권력감과 무관\"\n\nChen의 의도적 설계 결정:\n\n- 죽음 없음\n- 레벨업 없음 (스카프 길이만이 발전 지표, 시각적)\n- 보스 없음\n- 명시적 목표 없음 (산을 본다는 시각적 가이딩만)\n\n이는 [[시스템-WW004-목표없는동기]]의 가장 순수한 적용.\n\n## 왜 효과적인가\n\n1. **감정 곡선 = 디자인 우선** — 게임플레이는 감정 도구\n2. **언어·문화 초월** — 모든 플레이어가 같은 감정에 도달\n3. **2시간의 압축** — 짧은 게임이 평생 기억되게 만드는 페이싱\n4. **음악의 매개 역할** — Wintory의 OST는 게임 자체가 됨\n\n## 산업 영향\n\n- *Sky: Children of the Light* (2019) — thatgamecompany 후속작이 같은 사상 모바일 적용\n- *Florence*, *Gris*, *Spiritfarer* — \"감정 우선\" 인디 게임 흐름의 출발점\n- 모든 \"비언어적 감정 게임\"의 reference\n\n## 한계\n\n- **재플레이 가치 낮음** — 감정 곡선은 첫 경험이 정점\n- **장르 확장 어려움** — *Sky*는 비슷한 정서를 라이브 서비스로 시도하다 운영 마찰\n\n## 연결 게임 패턴\n\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 같은 비동기 멀티의 다른 정서 (위험 vs 위안)\n- [[03_패턴/포탈-테스트 챔버 튜토리얼]] — 비언어적 가이딩의 대조 사례\n- [[The Last of Us-컴패니언 AI 설계]] — 친밀감 디자인의 다른 길\n\n## 연결 원칙\n\n- [[내러티브-FU001-손잡기의감정]] — Ueda 사상과 같은 줄기\n- [[내러티브-FU002-언어의최소화]] — 언어 부재의 정서\n- [[시스템-MK001-비동기멀티플레이]] — *Souls* 계보\n\n## 출처 링크\n\n- GDC Vault — [Designing Journey](https://gdcvault.com/play/1017700/Designing)\n- Internet Archive — [GDC 2013: Jenova Chen — Designing Journey](https://archive.org/details/GDC2013Chen)\n- Game Developer — [A Personal Journey: Jenova Chen's Goals for Games](https://www.gamedeveloper.com/design/a-personal-journey-jenova-chen-s-goals-for-games)\n- GDC Conf — [Making evocative games with thatgamecompany's Jenova Chen GDC Podcast Ep. 10](https://gdconf.com/news/making-evocative-games-thatgamecompanys-jenova-chen-gdc-podcast-ep-10)",
+    "wikilinks": [
+      {
+        "target": "내러티브-FU001-손잡기의감정",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU002-언어의최소화",
+        "display": null
+      },
+      {
+        "target": "시스템-MK001-비동기멀티플레이",
+        "display": null
+      },
+      {
+        "target": "시스템-WW004-목표없는동기",
+        "display": null
+      },
+      {
+        "target": "GDC-2013-주요강연",
+        "display": null
+      },
+      {
+        "target": "제노바 첸",
+        "display": null
+      },
+      {
+        "target": "조셉 캠벨",
+        "display": null
+      },
+      {
+        "target": "시스템-MK001-비동기멀티플레이",
+        "display": null
+      },
+      {
+        "target": "시스템-WW004-목표없는동기",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "03_패턴/포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU001-손잡기의감정",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU002-언어의최소화",
+        "display": null
+      },
+      {
+        "target": "시스템-MK001-비동기멀티플레이",
+        "display": null
+      }
+    ],
+    "bodyLength": 3009,
+    "topics": [
+      "narrative"
+    ]
+  },
+  {
+    "id": "pattern:L4D-AI디렉터",
+    "slug": "L4D-AI디렉터",
+    "fileName": "L4D-AI디렉터",
+    "filePath": "03_패턴/L4D-AI디렉터.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "L4D-AI디렉터",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "AI",
+      "동적난이도",
+      "DDA",
+      "페이싱",
+      "협동슈터",
+      "절차적spawn"
+    ],
+    "designers": [
+      "마이크 부스"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2009/01_게임디자인/L4D_AIDirector"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Left 4 Dead — AI Director (동적 페이싱)\n\n> 4인 협동 좀비 슈터의 코어 시스템. 플레이어 상태(HP·탄약·페이스·위치)를 실시간 관찰해 좀비 spawn·환경·음악·아이템 분포를 동적으로 결정. 같은 맵을 매번 다르게 만들고, \"조임과 해방\"의 호흡을 디자이너가 선곡하지 않고 시스템이 즉석에서 만든다.\n\n## 적용된 원칙\n\n- [[시스템-SK001-적응형난이도]] — 플레이어 상태 기반 동적 조절의 1인 캠페인 정점\n- [[전투-SK003-조임과해방]] — 사쿠라이의 조임과 해방을 디자이너가 곡선으로 미리 깔지 않고 AI가 실시간으로 깔게 한 응용\n- [[시스템-WW003-창발설계]] — 같은 맵·같은 spawn 풀에서 매 플레이가 다른 곡선을 만드는 윌 라이트식 창발\n\n## 출처 강연\n\n- **GDC 2009**: Mike Booth (리드 디자이너, Turtle Rock → Valve) — \"The AI Director of Left 4 Dead\" ([[GDC_2009/01_게임디자인/L4D_AIDirector]])\n\n## 구현 방식\n\n### AI Director의 4 역할\n\n#### 1. Pacing (페이싱 조절)\n\n- 플레이어가 너무 편안하면 → Boomer/Hunter/Smoker/Tank spawn\n- 너무 압박받으면 → 빈 구역 제공, 한 호흡\n\n→ 사쿠라이의 [[전투-SK003-조임과해방]] 원칙의 *동적* 적용 (디자이너가 곡선을 미리 깔던 것을 AI가 실시간으로).\n\n#### 2. Spawn 위치 (절차적 배치)\n\n- 플레이어 시야 밖에서 spawn\n- 진행 방향 앞에 미리 깔기\n- 약한 플레이어 측면에서 압박\n\n→ 손-제작 spawn point에서 *L4D* 절차적 spawn으로의 전환점.\n\n#### 3. 자원 분포 (동적 보상)\n\n- HP 낮으면 회복 키트를 다음 안전구역에 추가\n- 탄약 떨어지면 탄약 더 자주\n- 단, **명백히 봐주는 것처럼은 X** (rubber-banding 회피)\n\n#### 4. 음악·환경 (분위기 조절)\n\n- 위험 순간 = 긴장된 스트링\n- 안전 순간 = 침묵\n- Tank 등장 = 메탈 테마\n\n→ 음악이 \"위험\" 정보를 플레이어에게 broadcast하는 역할.\n\n### 보이지 않는 디렉터의 윤리\n\nMike Booth가 강조한 디자인 룰:\n\n- 플레이어가 \"내가 잘했다\"고 느끼게\n- \"AI가 봐줬다\"는 인식 회피\n- 단, **사실은 일부 봐주고 있음** (HP 낮은 플레이어에게 회복 키트가 더 자주 나타남)\n\n이는 시드 마이어의 \"Unholy Alliance\" 사상과 호응 — 디자이너는 플레이어의 비밀스러운 동맹.\n\n## 왜 효과적인가\n\n1. **반복 가치** — 같은 맵이 매번 다른 페이싱\n2. **인지 부담 분산** — 디자이너가 N개의 곡선을 미리 만들지 않아도 됨\n3. **공정성과 도전의 균형** — 너무 쉽지도 어렵지도 않음을 시스템이 보장\n4. **협동 강화** — 약한 동료가 자동 보호되므로 팀이 함께 살아남음\n\n## 한계\n\n- **시스템 가시화의 위험** — 패턴을 읽힌 플레이어는 봐주는 것을 인식 (\"HP가 낮으니 곧 키트가 나오겠지\")\n- **테스트 비용** — 모든 조합을 QA할 수 없어 극단 케이스에서 깨질 수 있음\n- **싱글 캠페인의 천장** — 매 플레이가 다르지만 결국 같은 맵·같은 적 풀, 50시간 후 신선도 감소\n\n## 후속 영향\n\n- *Left 4 Dead 2* (2009) — 더 정교한 페이싱·새 Special Infected (Charger, Spitter, Jockey)\n- *Borderlands* (2009) — 절차적 무기/적\n- *Vermintide* (2015, Fatshark) — 4인 협동 + AI Director\n- *Back 4 Blood* (2021, Turtle Rock) — *L4D* 직계 후속, AI Director 진화\n- *Helldivers 2* (2024) — 광역 미션 절차적 디렉팅\n\n## 연결 게임 패턴\n\n- [[Halo-30초의재미루프]] — 디자이너가 미리 깐 30초 루프 vs *L4D*의 동적 페이싱 — 같은 목표, 정반대 사상\n- [[BotW-화학엔진과창발성]] — 같은 \"시스템이 내용을 만든다\" 사상의 환경 영역\n- [[ShadowOfMordor-네메시스시스템]] — 같은 절차적 시스템 사상의 적 캐릭터 영역\n\n## 연결 원칙\n\n- [[시스템-SK001-적응형난이도]] — 사쿠라이의 적응형 난이도와 직계\n- [[전투-SK003-조임과해방]] — 호흡의 동적 적용\n- [[시스템-WW003-창발설계]] — 룰만 두고 결과는 창발\n\n## 관련 키워드\n\n`AI Director`, `Mike Booth`, `Turtle Rock Studios`, `Valve`, `Special Infected`, `Boomer`, `Hunter`, `Smoker`, `Tank`, `절차적 spawn`, `동적 난이도`, `DDA`, `페이싱`, `Unholy Alliance`",
+    "wikilinks": [
+      {
+        "target": "시스템-SK001-적응형난이도",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "GDC_2009/01_게임디자인/L4D_AIDirector",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "ShadowOfMordor-네메시스시스템",
+        "display": null
+      },
+      {
+        "target": "시스템-SK001-적응형난이도",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      }
+    ],
+    "bodyLength": 2450,
+    "topics": [
+      "system",
+      "balance"
+    ]
+  },
+  {
+    "id": "pattern:MonumentValley-아트가메카닉",
+    "slug": "MonumentValley-아트가메카닉",
+    "fileName": "MonumentValley-아트가메카닉",
+    "filePath": "03_패턴/MonumentValley-아트가메카닉.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "MonumentValley-아트가메카닉",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "모바일퍼즐",
+      "Escher",
+      "아트=메카닉",
+      "F2P거부",
+      "짧은게임"
+    ],
+    "designers": [
+      "켄 웡"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2015/02_아트_비주얼/Monument Valley_일러스트퍼즐_웡"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Monument Valley — 아트가 곧 메카닉\n\n> M.C. Escher의 불가능한 기하학을 모바일 퍼즐로 변환. 카메라 각도 회전이 두 길의 연결을 바꾼다 — *시각이 곧 메카닉*. 4달러 유료 + 인앱 구매 거부 + 2시간 게임으로 F2P 모바일의 반대 모범. 짧은 게임이 깊을 수 있음을 입증.\n\n## 적용된 원칙\n\n- [[시스템-SG002-단순함의깊이]] — 회전 + 슬라이드 두 동작이 Escher 기하학으로 깊이 확보\n- [[시스템-SK006-최소복잡도]] — 미야모토·사쿠라이의 최소 복잡도의 아트 영역\n- [[프로덕션-SK002-플레이어시간존중]] — 1~3분 레벨, 총 2시간 게임\n- [[시스템-FU001-덜어내기의설계]] — 텍스트 거의 없음, 침묵의 캐릭터, 인앱 구매 X\n- [[시스템-SK010-UI명확성과스타일]] — 일러스트 자체가 UI\n\n## 출처 강연\n\n- **GDC 2015**: Ken Wong (Art Director, ustwo games) — Monument Valley 디자인 회고 ([[GDC_2015/02_아트_비주얼/Monument Valley_일러스트퍼즐_웡]])\n\n## 구현 방식\n\n### Escher 기하학 = 메카닉\n\n게임의 핵심 메카닉:\n\n- 위에서 보면 두 길이 한 점에서 만남\n- 측면에서 보면 다른 평면\n- 카메라 각도 회전 → 길이 다르게 연결됨\n\n플레이어 동작:\n\n- 건축물 회전 (드래그)\n- 부분 슬라이드 (드래그)\n- 캐릭터 이동 (탭)\n\n→ **시각이 곧 메카닉**. 보이는 모양이 게임 룰. 텍스트 설명 없이 작동.\n\n### Princess Ida — 침묵의 톤\n\n캐릭터 디자인:\n\n- 침묵 (말 없음)\n- 평온한 자세\n- 우아한 의상\n- 정서적 무게\n\n→ *Journey* (2012)와 같은 침묵 정전. 캐릭터가 톤을 운반.\n\n### 짧은 게임의 정점\n\n총 플레이 시간 2시간. 그러나:\n\n- 시각적으로 정점\n- 매 레벨이 완벽\n- 정서적으로 무거움\n\n**길이 X 깊이**. 짧은 게임이 깊을 수 있다는 증명.\n\n→ 모바일 친화: 통근·휴식의 5분 + 한 레벨 게임.\n\n### F2P 거부 + 4달러\n\nustwo의 결정:\n\n- 인앱 구매 X\n- 광고 X\n- 4달러 유료\n\n결과:\n\n- 첫 1년 1,000만 다운로드\n- AAA 정점에 가까운 호평\n- F2P 모바일의 반대 모범\n\n→ 프리미엄 모바일이 가능함을 입증 (이후 같은 모델로 성공한 게임은 드물지만).\n\n### Forgotten Shores DLC\n\n본편 후 8 추가 레벨:\n\n- 본편보다 어려움\n- 동일 가격 (4달러)\n- 팬 만족\n\nDLC가 본편을 늘리는 것이 아니라, 같은 디자인 언어로 *다른 챕터* 제시.\n\n## 왜 효과적인가\n\n1. **언어 의존 0** — 텍스트 거의 없음, 시각만으로 작동 → 글로벌 확장 자동\n2. **튜토리얼 0** — 매 레벨이 자기 튜토리얼, 회전·슬라이드만 알면 끝\n3. **유튜브·인스타 가치** — 매 화면이 캡처할 가치, 마케팅 자동\n4. **프리미엄 모바일 모범** — F2P 압력에 흔들리지 않는 아트 게임 모델\n\n## 한계\n\n- **2시간으로 끝** — 가성비 논쟁 ($4 / 2hr)\n- **확장 어려움** — 같은 메카닉의 변주는 한계, *Monument Valley 2* (2017)가 큰 도약 못함\n- **F2P 거부 모델의 후속 부재** — Wong 본인도 발표에서 \"프리미엄 모바일이 지속 가능한지\" 의문 제기\n- **메카닉 깊이의 천장** — Escher 트릭이 곧 새로움을 잃음\n\n## 후속 영향\n\n- *Monument Valley 2* (2017) — 직접 후속, 같은 디자인 언어\n- *Gorogoa* (2017) — 일러스트 = 메카닉 사상의 다른 적용\n- *Florence* (2018, Mountains) — Wong 후속 스튜디오, 짧은 모바일 게임의 진화\n- *Alto's Adventure/Odyssey* (2015~) — 같은 프리미엄 모바일 모범\n\n## 연결 게임 패턴\n\n- [[Journey-감정곡선설계]] — 침묵의 캐릭터·정서 우선의 모바일 영역\n- [[포탈-테스트 챔버 튜토리얼]] — 챔버 = 자기 튜토리얼의 모바일 영역\n- (대조) [[Hearthstone-디지털TCG]] — F2P 모바일 정전 vs 4달러 프리미엄 모바일\n\n## 연결 원칙\n\n- [[시스템-SG002-단순함의깊이]] — Escher 메카닉의 깊이\n- [[시스템-SK006-최소복잡도]] — 회전 + 슬라이드만\n- [[시스템-FU001-덜어내기의설계]] — 침묵·미니멀\n- [[시스템-SK010-UI명확성과스타일]] — 아트 = UI\n\n## 관련 키워드\n\n`Monument Valley`, `ustwo games`, `Ken Wong`, `M.C. Escher`, `불가능한 기하학`, `Princess Ida`, `모바일 퍼즐`, `2시간 게임`, `F2P 거부`, `4달러 프리미엄`, `Forgotten Shores DLC`, `1,000만 다운로드`",
+    "wikilinks": [
+      {
+        "target": "시스템-SG002-단순함의깊이",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "프로덕션-SK002-플레이어시간존중",
+        "display": null
+      },
+      {
+        "target": "시스템-FU001-덜어내기의설계",
+        "display": null
+      },
+      {
+        "target": "시스템-SK010-UI명확성과스타일",
+        "display": null
+      },
+      {
+        "target": "GDC_2015/02_아트_비주얼/Monument Valley_일러스트퍼즐_웡",
+        "display": null
+      },
+      {
+        "target": "Journey-감정곡선설계",
+        "display": null
+      },
+      {
+        "target": "포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "Hearthstone-디지털TCG",
+        "display": null
+      },
+      {
+        "target": "시스템-SG002-단순함의깊이",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "시스템-FU001-덜어내기의설계",
+        "display": null
+      },
+      {
+        "target": "시스템-SK010-UI명확성과스타일",
+        "display": null
+      }
+    ],
+    "bodyLength": 2441,
+    "topics": [
+      "system",
+      "live_service"
+    ]
+  },
+  {
+    "id": "pattern:OuterWilds-지식진행",
+    "slug": "OuterWilds-지식진행",
+    "fileName": "OuterWilds-지식진행",
+    "filePath": "03_패턴/OuterWilds-지식진행.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "OuterWilds-지식진행",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "탐험",
+      "비선형",
+      "지식진행",
+      "시간루프",
+      "미스터리"
+    ],
+    "designers": [
+      "알렉스 비첨",
+      "Loan Verneau"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Outer Wilds — 지식 진행\n\n> 진행되는 것은 캐릭터 능력이 아니라 *플레이어의 지식*. 게임 시작 1분과 30시간 후의 캐릭터는 동일하지만, *플레이어*는 다른 사람이 된다.\n\n## 적용된 원칙\n\n- [[시스템-CH001-시스템적자유]] — 22분 시간 루프 안에서 어디든 갈 수 있음\n- [[시스템-WW003-창발설계]] — 행성 시뮬레이션이 무수한 발견을 자연 발생\n- [[시스템-JB003-에피파니설계]] — 깨달음이 곧 진행 통화\n- [[시스템-JB004-플레이어지능존중]] — 가이드·체크리스트·UI 진행 표시 거의 없음\n- [[내러티브-MK002-모호한로어의힘]] — Nomai 문명 잔재의 단편적 단서\n\n## 구현 방식\n\n### 22분 시간 루프\n\n태양계 전체가 22분마다 초신성으로 종료, 플레이어가 깨어나면서 처음부터. 단:\n- 캐릭터 능력은 *변화 없음* (진행 시스템 부재)\n- 인벤토리도 리셋\n- 그러나 *플레이어 지식*은 누적\n- 이전 루프의 메모는 Ship의 컴퓨터에 남음\n\n이는 진행 통화의 *완전한 외부화* — 게임 안이 아닌 *플레이어 머릿속*이 진행 표시.\n\n### 모든 곳이 처음부터 접근 가능\n\n게임 시작 직후 모든 행성에 갈 수 있음:\n- Hourglass Twins (모래시계)\n- Timber Hearth (출발 행성)\n- Brittle Hollow (붕괴 행성)\n- Giant's Deep (해양 가스 거인)\n- Dark Bramble (덩굴 미궁)\n- Quantum Moon (관측 의존 위성)\n\n물리적 게이팅 없음. 게이팅은 *지식*. \"어떻게 갈지를 모르는 한 갈 수 없다.\"\n\n### 행성 자체가 시뮬레이션\n\n각 행성이 시간에 따라 *변화*:\n- Hourglass Twins — 모래가 한쪽에서 다른쪽으로 흐름\n- Brittle Hollow — 점진적 붕괴\n- Giant's Deep — 토네이도가 섬을 우주로 띄움\n- Sun Station — 22분 후 별 진입\n\n특정 사건은 *특정 시점에만* 발생. 이는 시간 루프 + 시뮬레이션의 결합으로 [[시스템-WW003-창발설계]]의 정수.\n\n### Ship's Log — 지식 그래프\n\nShip의 컴퓨터에 자동 기록되는 *지식 노드 그래프*:\n- 행성·구조물·인물 단위 노드\n- 노드 간 연결로 단서 흐름 표시\n- \"More to explore here\" 표시로 미해결 단서 가시화\n\n플레이어 진행은 이 그래프의 *완성도*. 단, 그래프가 *해답을 주지 않음* — 어디에 무엇이 있는지만 표시.\n\n### Nomai 문명의 단편적 단서\n\n게임의 모든 텍스트가 Nomai 문명의 잔재:\n- 직접적 설명 없음\n- 단서가 행성에 분산\n- 한 단서가 다른 단서의 *전제*가 됨\n- 모든 단서를 종합해야 진실 도달\n\n이는 [[내러티브-MK002-모호한로어의힘]]의 모범 — 직접 설명 없이 플레이어가 *재구성*.\n\n### 진행이 *추리* 형태\n\n게임 종료에는 마지막 행동이 필요한데, 그 행동을 *수행하는 방법*을 게임은 알려주지 않음. 모든 단서를 종합해 *추리하고 실행*해야 함.\n\n이 마지막 추리가 가능한 시점이 곧 게임의 진정한 클리어 조건. 플레이어 능력이 아닌 *이해*가 게이팅.\n\n## 왜 효과적인가\n\n1. **진행의 외부화** — 게임 안 카운터가 아니라 머릿속 이해가 진행\n2. **재플레이 불가능성** — 한 번 알고 나면 그 발견의 신비가 사라짐 (디자이너 의도)\n3. **가이드 거부 강제** — 가이드를 보는 순간 게임의 *전부*를 잃음\n4. **시뮬레이션 + 시간의 결합** — 정해진 사건이 정해진 시점에만, 발견 가능\n5. **이해 = 도착** — 마지막 행동은 *능력*이 아닌 *깨달음*으로 가능\n\n## 안티패턴 대비\n\n[[ANTI-NAR-004-오디오로그폭탄]]은 텍스트로 모든 정보를 떠넘긴다. *Outer Wilds*는 단편적 단서를 *공간에 배치*하고 *플레이어가 종합*하게 함 — 정보의 위치 자체가 의미.\n\n## 산업 영향\n\n- *Tunic* (2022) — 같은 지식 진행 + 매뉴얼 단서\n- *Animal Well* (2024) — 비밀 기반 지식 진행\n- *Lorelei and the Laser Eyes* (2024) — 추리 기반 진행\n- *Return of the Obra Dinn* (2018) — 같은 *추리 진행* 철학의 다른 사례\n\n## 연결 게임 패턴\n\n- [[BotW-화학엔진과창발성]] — 시뮬레이션 + 자유의 다른 사례\n- [[BioShock-환경스토리텔링]] — 환경이 곧 단서\n\n## 연결 원칙\n\n- [[시스템-CH001-시스템적자유]] — Hocking의 \"Dynamics\" 정통 사례\n- [[시스템-JB003-에피파니설계]] — Jonathan Blow의 깨달음 설계\n\n## 출처 링크\n\n- Alex Beachum GDC 2015~2019 — *Outer Wilds* 개발 강연\n- Mobius Digital 인터뷰 — 시간 루프 설계 의도\n- Mark Brown (GMTK) — \"What Outer Wilds and Tunic Don't Tell You\"",
+    "wikilinks": [
+      {
+        "target": "시스템-CH001-시스템적자유",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "시스템-JB003-에피파니설계",
+        "display": null
+      },
+      {
+        "target": "시스템-JB004-플레이어지능존중",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-004-오디오로그폭탄",
+        "display": null
+      },
+      {
+        "target": "BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "BioShock-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "시스템-CH001-시스템적자유",
+        "display": null
+      },
+      {
+        "target": "시스템-JB003-에피파니설계",
+        "display": null
+      }
+    ],
+    "bodyLength": 2482,
+    "topics": [
+      "character",
+      "level",
+      "system",
+      "balance"
+    ]
+  },
+  {
+    "id": "pattern:PapersPlease-메카닉이테마",
+    "slug": "PapersPlease-메카닉이테마",
+    "fileName": "PapersPlease-메카닉이테마",
+    "filePath": "03_패턴/PapersPlease-메카닉이테마.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "PapersPlease-메카닉이테마",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "인디",
+      "시뮬레이션",
+      "도덕",
+      "권위주의",
+      "메카닉테마"
+    ],
+    "designers": [
+      "Lucas Pope"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Papers, Please — 메카닉이 테마\n\n> \"Glory to Arstotzka.\" 도장을 찍는 행위 자체가 *권위주의 공모*의 진술. 단일 메카닉(서류 검사)이 한 게임의 모든 의미를 운반.\n\n## 적용된 원칙\n\n- [[내러티브-JB001-메카닉이테마를말한다]] — 도장 찍기 = 권위주의 시스템 가담\n- [[내러티브-LP001-메카닉이도덕이다]] — 매 도장이 도덕적 결정\n- [[내러티브-CH002-시스템이의미한다]] — 가족 부양 시스템이 윤리적 압박을 표현\n- [[내러티브-FU002-언어의최소화]] — 텍스트가 적고, 메카닉이 말함\n- [[시스템-LP001-단일매커닉의깊이]] — 서류 검사 한 메카닉의 깊이가 게임 전체\n\n## 구현 방식\n\n### 핵심 메카닉 — 서류 일치 검사\n\n이민자의 서류를 받아:\n- 여권·비자·체류허가 정보 *상호 일치 확인*\n- 수배 사진 대조\n- 무게·지문 등 추가 검사\n- 일치 → APPROVED 도장\n- 불일치 → DENIED 도장\n- 의심 시 → 인터뷰\n\n도장 한 번에 한 사람의 *입국 여부*가 결정. 게임 메카닉이 그 사람의 운명.\n\n### 가족 부양의 경제\n\n매일 결과:\n- 처리 인원 × 단가 = 일일 수입\n- 수입에서 집세·식비·약값·의료비·난방비 차감\n- 부족 → 가족 구성원 질병·사망\n\n이 경제 시스템이 *도덕적 결정의 가격*을 시각화:\n- 의심 가는 서류를 통과시키지 않으면 시간 손실 → 수입 감소\n- 동정으로 가족을 통과시키면 벌금 → 다음날 식비 감소\n- 매일 *생존을 위해 사람들에 대한 결정*\n\n### 일과의 점진적 복잡화\n\n날이 갈수록 검사 항목 증가:\n- 1일 — 여권만\n- 3일 — 입국 도장 추가\n- 5일 — 비자 추가\n- 8일 — 무게 검사\n- 14일 — 지문\n- 20일 — X-ray\n\n학습 곡선이 *직무 경력*과 일치. 플레이어는 *능숙해지면서* 권위주의 직무에 *적응*하는 자기 자신을 발견.\n\n### 인터뷰 — 시간 vs 동정\n\n각 이민자가 문장 한 줄을 말한다:\n- \"남편이 먼저 갔어요. 만나야 해요.\"\n- \"어머니가 병원에 있어요.\"\n- \"도와주세요. 박해받고 있어요.\"\n\n이 말들이 *서류와 무관한 정보*. 서류만 보면 거부, 인터뷰를 들으면 동정. 시간은 정해져 있고, *시간이 곧 가족의 식비*.\n\n### EZIC와 분기 결말\n\n저항 조직 EZIC의 메시지가 점진적으로 등장. 플레이어 결정에 따라 20+ 엔딩:\n- 권위주의 협력 → 정부 보상\n- 저항 가담 → 망명 또는 처형\n- 가족 구하기 → 도주\n- 무관 → 기본 엔딩\n\n엔딩이 *명시적 보상*이 아니라 *결과의 무게*. [[내러티브-CH002-시스템이의미한다]]의 정수.\n\n### 비주얼·음악의 미니멀\n\n- 픽셀 아트 — 표정조차 거의 없음\n- 음악 — Soviet 행진곡 모티프, 가사 없음\n- 텍스트 — 장황한 설명 없음\n\n*표현의 절제*가 *메카닉의 무게*를 강화. [[내러티브-FU002-언어의최소화]]의 모범.\n\n## 왜 효과적인가\n\n1. **메카닉의 도덕적 무게** — 도장 한 번이 게임플레이이자 도덕 진술\n2. **시스템적 압박** — 가족 부양이 *순수한 도덕*을 사치로 만듦\n3. **학습의 자기 비판** — 능숙해지는 자신이 곧 권위주의에 *적응*\n4. **언어 비의존** — 픽셀 아트 + 메카닉만으로 압도적 의미 전달\n5. **재플레이의 메타 — 다른 도덕 경로**가 다른 직무 경험\n\n## 안티패턴 대비\n\n[[ANTI-NAR-003-루도내러티브부조화]]는 시스템과 서사가 분리. *Papers, Please*는 시스템과 서사가 *완전 일치* — 그래서 메카닉의 무게가 그대로 도덕적 무게.\n\n## 산업 영향\n\n- *Beholder* (2016, Warm Lamp Games) — 권위주의 메카닉 차용\n- *Not Tonight* (2018, PanicBarn) — Brexit 시대 *Papers, Please* 변종\n- *Death and Taxes* (2020, Placeholder Gameworks) — 도덕적 결정의 단순 메카닉\n- *Return of the Obra Dinn* (2018, Lucas Pope 후속작) — 같은 디자이너의 추리 진화\n\n## 연결 게임 패턴\n\n- [[Dishonored-카오스시스템]] — 메카닉 = 도덕의 다른 사례\n- [[BioShock-환경스토리텔링]] — Hocking이 명명한 부조화의 정반대 사례\n\n## 연결 원칙\n\n- [[내러티브-JB001-메카닉이테마를말한다]] — Jonathan Blow 원칙의 정통 사례\n- [[내러티브-LP001-메카닉이도덕이다]] — Lucas Pope 자신의 원칙\n\n## 출처 링크\n\n- Lucas Pope GDC 2014 — *Papers, Please* postmortem\n- Lucas Pope 인터뷰 (Eurogamer, RPS) — 디자인 의도\n- Mark Brown — \"How Papers, Please Inspired a New Genre\"",
+    "wikilinks": [
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU002-언어의최소화",
+        "display": null
+      },
+      {
+        "target": "시스템-LP001-단일매커닉의깊이",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU002-언어의최소화",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-003-루도내러티브부조화",
+        "display": null
+      },
+      {
+        "target": "Dishonored-카오스시스템",
+        "display": null
+      },
+      {
+        "target": "BioShock-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      }
+    ],
+    "bodyLength": 2424,
+    "topics": [
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:README",
+    "slug": "README",
+    "fileName": "README",
+    "filePath": "03_패턴/README.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "README",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": null,
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 03_패턴\n\n> \"게임 X는 이 원칙을 이렇게 적용했다\" — 구체적인 성공 사례를 모아두는 폴더.\n\n## 작성 규칙\n\n```yaml\n---\ntype: pattern\ngame: Hades\nstudio: Supergiant Games\nprinciples:\n  - \"[[전투-히트스톱의 원칙]]\"\n  - \"[[시스템-창발적 게임플레이]]\"\ndesigners:\n  - \"[[그렉 카사빈]]\"\ntags:\n  - 로그라이크\n  - 액션\nsources:\n  - \"[[출처 문서명]]\"\ncreated: 2025-01-01\nupdated: 2025-01-01\n---\n```\n\n- 하나의 패턴 문서는 **하나의 게임에서 하나의 원칙이 적용된 구체 사례**를 다룬다.\n- 본문 구조: 어떤 원칙인가 → 게임에서 어떻게 구현했는가 → 왜 효과적인가.\n- 스크린샷 대신 **텍스트로 설명**하고, 필요시 출처 링크를 제공한다.\n\n## 파일명 규칙\n\n- `{게임명}-{패턴 요약}.md` (예: `Hades-죽음을 진행으로 전환.md`, `BotW-화학 엔진 창발성.md`)\n\n## 다른 폴더와의 연결\n\n- **`02_원칙/`** — 이 사례가 검증하는 원칙 문서와 양방향 wikilink.\n- **`01_디자이너/`** — 해당 게임의 핵심 디자이너 참조.\n- **`04_안티패턴/`** — 같은 게임의 실패 사례가 있다면 상호 참조.\n- **`99_출처/`** — 사례의 근거가 되는 출처 문서 참조 (GDC 연도별 인덱스 [[유튜브-게임개발자회의]]).\n\n## 현재 등록 패턴 (2026-05-02 기준, 31개)\n\n### 액션·FPS·전투 (Bungie/id/From 계보)\n\n- [[Halo-30초의재미루프]] — Bungie / 2001+ / 전투 코어 루프\n- [[HaloReach-네트워킹]] — Bungie / 2010 / lag compensation·네트워크=디자인\n- [[Destiny-레이드설계와30초의재미확장]] — Bungie / 2014+ / 라이브 서비스\n- [[Apex Legends-핑시스템]] — Respawn / 2019 / 비음성 협력\n- [[DOOM-푸시포워드콤뱃]] — id Software / 2016+ / 전진 강제\n- [[Bloodborne-Rally시스템]] — FromSoftware / 2015 / 공격이 곧 회복\n- [[Sekiro-자세게이지]] — FromSoftware / 2019 / 자세 = 두 번째 통화\n- [[다크소울-미니맵 없는 월드 연결]] — FromSoftware / 2011 / 환경 내비\n- [[DarkSouls-AnorLondo위니]] — FromSoftware / 2011 / 위니 + 수직 위계\n- [[L4D-AI디렉터]] — Valve / 2008 / 동적 페이싱·DDA\n\n### 오픈 월드·RPG·메트로배니아\n\n- [[Skyrim-모듈러레벨디자인]] — Bethesda / 2011+ / 모듈러 콘텐츠\n- [[BotW-화학엔진과창발성]] — Nintendo / 2017 / Multiplicative Gameplay\n- [[브레스오브더와일드-환경 내비게이션]] — Nintendo / 2017 / 시야 가이딩\n- [[ShadowOfMordor-네메시스시스템]] — Monolith / 2014 / 절차적 NPC 기억\n- [[HollowKnight-메트로배니아응축]] — Team Cherry / 2017 / 메트로배니아 정수\n- [[OuterWilds-지식진행]] — Mobius / 2019 / 캐릭터 능력 외부의 진행\n\n### 이머시브심·RPG (Arkane/ZA/UM 계보)\n\n- [[Dishonored-카오스시스템]] — Arkane / 2012 / 살인 = 세계 어두움\n- [[DiscoElysium-스킬체크시스템]] — ZA/UM / 2019 / 스킬 = 인격\n\n### 인디·내러티브·감정\n\n- [[Hades-내러티브와로그라이크통합]] — Supergiant / 2020 / 죽음 = 진행\n- [[Hades-죽음을 진행으로 전환]] — Supergiant / 2020 / (메카닉 측면)\n- [[Spelunky-절차적생성과교훈]] — Mossmouth / 2008+ / 절차적 공정성\n- [[SlayTheSpire-카드결정명료성]] — Mega Crit / 2019 / 카드 = 작동 방식\n- [[Journey-감정곡선설계]] — thatgamecompany / 2012 / 감정 우선\n- [[Celeste-어시스트모드]] — Maddy Makes Games / 2018 / 접근성 = 도전 재정의\n- [[포탈-테스트 챔버 튜토리얼]] — Valve / 2007 / 챔버 = 튜토리얼\n- [[HalfLife2-환경가이딩]] — Valve / 2004 / 광원·NPC·위니\n- [[BioShock-환경스토리텔링]] — Irrational / 2007 / 메카닉 = 서사\n- [[PapersPlease-메카닉이테마]] — 3909 / 2013 / 도장 = 도덕\n- [[MonumentValley-아트가메카닉]] — ustwo / 2014 / 아트=메카닉·프리미엄 모바일\n\n### 시네마틱·컴패니언\n\n- [[The Last of Us-컴패니언 AI 설계]] — Naughty Dog / 2013+ / Buddy AI\n- [[GodOfWar-원샷카메라]] — Sony Santa Monica / 2018+ / 원샷 카메라\n\n### 라이브 서비스·F2P·TCG\n\n- [[FFXIV-라이브서비스회복]] — Square Enix / 2013 / MMO 회복·정직한 사과\n- [[Hearthstone-디지털TCG]] — Blizzard / 2014 / MTG 단순화·F2P 모바일\n\n## 그래프 뷰에서 보이는 연결 구조\n\n각 패턴 문서는 다음 4축으로 연결된다:\n\n1. **02_원칙** (principles 필드) — 검증하는 원칙들\n2. **01_디자이너** (designers 필드) — 핵심 디자이너\n3. **99_출처** (sources 필드) — GDC 강연 또는 인터뷰 출처\n4. **다른 03_패턴** (본문 wikilink) — 같거나 대조되는 게임 사례\n\n이로 인해 그래프 뷰에서 패턴 노드들이 **별 모양 hub**로 그려지고, 디자이너·원칙·출처가 패턴들을 매개로 서로 간접 연결된다.",
+    "wikilinks": [
+      {
+        "target": "전투-히트스톱의 원칙",
+        "display": null
+      },
+      {
+        "target": "시스템-창발적 게임플레이",
+        "display": null
+      },
+      {
+        "target": "그렉 카사빈",
+        "display": null
+      },
+      {
+        "target": "출처 문서명",
+        "display": null
+      },
+      {
+        "target": "유튜브-게임개발자회의",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "HaloReach-네트워킹",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "DOOM-푸시포워드콤뱃",
+        "display": null
+      },
+      {
+        "target": "Bloodborne-Rally시스템",
+        "display": null
+      },
+      {
+        "target": "Sekiro-자세게이지",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "DarkSouls-AnorLondo위니",
+        "display": null
+      },
+      {
+        "target": "L4D-AI디렉터",
+        "display": null
+      },
+      {
+        "target": "Skyrim-모듈러레벨디자인",
+        "display": null
+      },
+      {
+        "target": "BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "브레스오브더와일드-환경 내비게이션",
+        "display": null
+      },
+      {
+        "target": "ShadowOfMordor-네메시스시스템",
+        "display": null
+      },
+      {
+        "target": "HollowKnight-메트로배니아응축",
+        "display": null
+      },
+      {
+        "target": "OuterWilds-지식진행",
+        "display": null
+      },
+      {
+        "target": "Dishonored-카오스시스템",
+        "display": null
+      },
+      {
+        "target": "DiscoElysium-스킬체크시스템",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "Hades-죽음을 진행으로 전환",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "SlayTheSpire-카드결정명료성",
+        "display": null
+      },
+      {
+        "target": "Journey-감정곡선설계",
+        "display": null
+      },
+      {
+        "target": "Celeste-어시스트모드",
+        "display": null
+      },
+      {
+        "target": "포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "HalfLife2-환경가이딩",
+        "display": null
+      },
+      {
+        "target": "BioShock-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "PapersPlease-메카닉이테마",
+        "display": null
+      },
+      {
+        "target": "MonumentValley-아트가메카닉",
+        "display": null
+      },
+      {
+        "target": "The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "GodOfWar-원샷카메라",
+        "display": null
+      },
+      {
+        "target": "FFXIV-라이브서비스회복",
+        "display": null
+      },
+      {
+        "target": "Hearthstone-디지털TCG",
+        "display": null
+      }
+    ],
+    "bodyLength": 3061,
+    "topics": [
+      "combat",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:Sekiro-자세게이지",
+    "slug": "Sekiro-자세게이지",
+    "fileName": "Sekiro-자세게이지",
+    "filePath": "03_패턴/Sekiro-자세게이지.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Sekiro-자세게이지",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "액션",
+      "패리",
+      "자세게이지",
+      "보스전",
+      "단일매커닉"
+    ],
+    "designers": [
+      "Hidetaka Miyazaki"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Sekiro — 자세 게이지\n\n> 체력을 깎는 게임이 아니라 *자세를 무너뜨리는* 게임. 보스의 시간이 길어지는 게 아니라 플레이어 스킬이 시간을 *단축한다*. [[ANTI-CMB-003-보스체력스폰지]]에 대한 직접 답안.\n\n## 적용된 원칙\n\n- [[전투-SK001-위험과보상]] — 패리는 위험(타이밍 실패=피격), 성공 시 보상(자세 데미지)\n- [[전투-SK002-히트스톱]] — 칼-칼 충돌의 짧은 정지가 패리 성공을 신체로 인지시킴\n- [[전투-SK010-대립요소]] — 자세 게이지는 체력과 *다른 통화*로 작동 → 전투 결정의 차원이 늘어남\n- [[전투-MK002-보스전안무]] — 자세는 페이즈별 안무를 강제, 단순 회피로는 종료 불가\n- [[시스템-LP001-단일매커닉의깊이]] — 패리/방어 단일 메카닉의 깊이로 게임 전체를 지탱\n\n## 구현 방식\n\n### 두 개의 통화: 체력과 자세\n\n- **체력(Vitality)** — 전통적 HP, 회복 가능\n- **자세(Posture)** — 받는 공격을 막을 때마다 차오름, 공격하지 않으면 회복\n\n자세가 가득 차면 *처형 가능 상태(데스블로우)* 진입. 보스는 체력을 깎는 것보다 자세를 무너뜨리는 게 빠르다.\n\n### 패리 중심 설계\n\n기본 동작이 *공격*이 아니라 *적시 가드*. 적의 공격 직전 가드를 누르면 패리 — 적의 자세에 데미지가 들어가고 자신의 자세는 회복.\n\n이 단일 입력이 모든 보스전을 *리듬 게임*으로 변환한다. 회피로 도망갈수록 자세 회복이 안 되어 도망친 측이 먼저 무너진다 — 회피 페널티가 시스템 안에 내장.\n\n### 위험천만 메카닉(Mikiri Counter, Jump Counter)\n\n색상 코딩된 위험 표시(빨간 한자):\n- 突(찌르기) → Mikiri Counter (밟기 반격)\n- 払(쓸기) → 점프\n- 掴(잡기) → 회피 또는 점프\n\n위험 자체가 *기회*로 변환. [[전투-SK001-위험과보상]]의 정수: 위험을 인지하는 것이 곧 보상의 조건.\n\n### 페이즈 기반 자세 한계\n\n보스마다 자세 회복 속도와 한계가 다름. Genichiro 1페이즈 → 2페이즈 → Way of Tomoe로 넘어가면서 자세 메카닉 자체가 학습 커브.\n\n## 왜 효과적인가\n\n1. **시간 압축 vs 인플레** — 완벽 패리 시 보스가 30초 안에 종료, 미숙 시 5분 — 스킬이 시간을 결정\n2. **빌드 의존 약화** — 무기 종류·수치 빌드 영향 최소, 실시간 입력의 비중 높음\n3. **학습 가능성** — 같은 보스를 10번 반복하면 시간이 *짧아짐*, 길어지지 않음\n4. **신체 학습** — 패리 타이밍은 머리가 아닌 손가락이 학습 → 스킬 성장 가시화\n5. **단일 메카닉의 깊이** — 한 가지 입력의 변주가 게임 전체\n\n## 안티패턴 대비\n\n[[ANTI-CMB-003-보스체력스폰지]]가 시간 인플레로 난이도를 표현한다면, *Sekiro*는 *밀도*로 표현한다. 분당 의사결정 수가 일반 액션 게임의 수 배.\n\n## 산업 영향\n\n- *Wo Long: Fallen Dynasty* (2023, Team Ninja) — 사기(士気) 게이지로 자세 메카닉 차용\n- *Lies of P* (2023, Round8) — 가드 + 패리 + 자세 시스템\n- *Stellar Blade* (2024) — 패리 중심 액션의 한국 사례\n- *Black Myth: Wukong* (2024) — 부분적 차용\n\n## 연결 게임 패턴\n\n- [[Bloodborne-Rally시스템]] — 같은 FromSoftware의 다른 답: *공격이 곧 회복*\n- [[DOOM-푸시포워드콤뱃]] — *전진 강제*의 다른 형태 (id Software)\n\n## 연결 원칙\n\n- [[전투-SK001-위험과보상]] — 사쿠라이 원칙의 정수가 메카닉으로 구현된 사례\n- [[전투-MK002-보스전안무]] — 보스가 안무 그 자체\n\n## 출처 링크\n\n- FromSoftware 인터뷰 — Hidetaka Miyazaki, IGN/Famitsu (2019)\n- Mark Brown (GMTK) — \"Sekiro vs Dark Souls\" 분석\n- 다수 GDC 강연 — 패리 시스템의 신체 학습 분석",
+    "wikilinks": [
+      {
+        "target": "ANTI-CMB-003-보스체력스폰지",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-SK002-히트스톱",
+        "display": null
+      },
+      {
+        "target": "전투-SK010-대립요소",
+        "display": null
+      },
+      {
+        "target": "전투-MK002-보스전안무",
+        "display": null
+      },
+      {
+        "target": "시스템-LP001-단일매커닉의깊이",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-003-보스체력스폰지",
+        "display": null
+      },
+      {
+        "target": "Bloodborne-Rally시스템",
+        "display": null
+      },
+      {
+        "target": "DOOM-푸시포워드콤뱃",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-MK002-보스전안무",
+        "display": null
+      }
+    ],
+    "bodyLength": 2048,
+    "topics": [
+      "combat",
+      "enemy_ai"
+    ]
+  },
+  {
+    "id": "pattern:ShadowOfMordor-네메시스시스템",
+    "slug": "ShadowOfMordor-네메시스시스템",
+    "fileName": "ShadowOfMordor-네메시스시스템",
+    "filePath": "03_패턴/ShadowOfMordor-네메시스시스템.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "ShadowOfMordor-네메시스시스템",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "절차적NPC",
+      "적AI",
+      "라이벌리",
+      "플레이어주도서사",
+      "오픈월드",
+      "LordOfTheRings"
+    ],
+    "designers": [
+      "마이클 드 플라테르"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC_2015/01_게임디자인/Shadow of Mordor_네메시스시스템"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Shadow of Mordor — Nemesis System (절차적 NPC 기억)\n\n> 적 Uruk-hai 군대장이 플레이어와의 만남을 기억하고, 죽거나 살아남으며 승급·강화·자랑을 자기 이력으로 누적. 절차적 외모·성격·약점이 핸드 작성된 약 7,000 라인의 대사와 결합해 \"한 명의 플레이어 = 한 명의 라이벌\"이라는 개인 서사를 자동 생성.\n\n## 적용된 원칙\n\n- [[시스템-TC001-반응성의본질]] — 적이 만남을 기억하고 다음에 반응하는 팀 케인식 반응성의 AAA 정전\n- [[시스템-TC012-절차적수제결합]] — 외모·성격·능력은 절차, 대사·메인 퀘스트는 핸드 — 두 축의 균형\n- [[내러티브-WS001-플레이어주도서사]] — 메인 시나리오 외부에서 플레이어가 자기 라이벌을 만들어내는 워런 스펙터식 서사\n- [[내러티브-TC005-NPC작성법]] — 2,000 Uruk-hai 각자가 이름·성격·자랑을 가진 캐릭터화\n- [[시스템-WW003-창발설계]] — 룰만 정해두고 만남이 라이벌을 만드는 윌 라이트식 창발\n\n## 출처 강연\n\n- **GDC 2015**: Michael de Plater (Director of Design, Monolith) — Nemesis System 디자인 발표 ([[GDC_2015/01_게임디자인/Shadow of Mordor_네메시스시스템]])\n- **WB Games 특허**: 시스템 자체가 특허로 등록됨 — 이후 산업에서 동일 시스템 구현 어려움 (논쟁의 여지가 있는 결정)\n\n## 구현 방식\n\n### Uruk-hai 1명의 데이터 구조\n\n각 군대장은 다음 슬롯의 절차적 조합:\n\n- **외모**: 얼굴 부품, 무기, 갑옷, 흉터\n- **성격**: 잔혹·미친·두려움·자랑 등 성격 토큰\n- **약점**: 불·활·은신·동물 위협 등 (플레이어가 조사로 발견)\n- **자랑**: 이전 승리들 (플레이어를 죽인 적이 있다면 \"너를 죽인 그 자\"로 자기소개)\n\n### 만남의 룰\n\n- 플레이어가 죽이면 → 그 자리에 다른 Uruk-hai가 승급해서 채움\n- 플레이어가 죽으면 → 그 적이 자랑·승급·강화. 다음 만남에서 이전 만남을 코멘트.\n- 같은 적과의 반복 만남 → \"라이벌\"이 됨. 점점 강해지고 비웃음.\n\n→ 두 명의 다른 플레이어가 다른 라이벌을 갖는 **개인 서사**.\n\n### 절차 + 핸드의 균형\n\nMonolith의 결정:\n\n- 외모·성격·능력 = 절차 생성\n- 코어 NPC + 메인 퀘스트 = 핸드 작성\n- Uruk-hai 대사 라인 = 약 7,000 라인 핸드 작성, 성격 토큰에 따라 동적 선택\n\n대사가 절차 데이터를 포장하므로 \"절차적 캐릭터\"가 *생기 있어 보인다*.\n\n### Captain → Warchief 위계\n\n군대장은 위계가 있음:\n\n- Captain — 일반 군대장\n- Warchief — 더 높은 권력\n- 자주 살아남는 적은 자기 위계를 올림 (혹은 다른 적이 그를 따름)\n\n플레이어가 자주 죽는 적이 점점 게임의 \"보스\"가 되는 자동 빌드업.\n\n## 왜 효과적인가\n\n1. **개인 서사 자동 생성** — 디자이너가 미리 쓰지 않아도 라이벌이 생김\n2. **반복 가치** — 매 플레이가 다른 라이벌, 다른 만남\n3. **대사 인플레이션 회피** — 7,000 라인이 절차적으로 조합되어 노출 분산\n4. **유튜브 콘텐츠 가치** — \"내가 100번 죽인 적\" 같은 클립이 자연 발생\n\n## 한계\n\n- **WB 특허로 산업 발전 차단** — Nemesis System의 정확한 카피는 특허 침해 → 후속 게임이 우회 디자인을 강제받음\n- **메인 스토리는 약함** — 시스템이 너무 강력해서 메인 시나리오가 묻힘\n- **핸드 대사 비용** — 7,000 라인은 대규모 라이팅 + 보이스 비용\n- ***Shadow of War* (2017)에서 과확장** — 후속작이 시스템을 너무 키워서 페이싱이 무너짐\n\n## 연결 게임 패턴\n\n- [[The Last of Us-컴패니언 AI 설계]] — 같은 시기의 AI 정전, 다른 방향 (적 vs 동료)\n- [[Skyrim-모듈러레벨디자인]] — 같은 오픈 월드 RPG, 절차 vs 모듈러 양극\n- [[BotW-화학엔진과창발성]] — 시스템적 창발의 환경 영역 (Nemesis는 캐릭터 영역)\n\n## 연결 원칙\n\n- [[시스템-TC001-반응성의본질]] — 팀 케인 반응성의 AAA 정전\n- [[시스템-TC012-절차적수제결합]] — 절차+핸드 결합\n- [[내러티브-WS001-플레이어주도서사]] — 플레이어가 자기 서사 생성\n- [[시스템-WW003-창발설계]] — 룰만 두고 결과는 창발\n\n## 관련 키워드\n\n`Nemesis System`, `Uruk-hai`, `Captain`, `Warchief`, `Monolith Productions`, `Michael de Plater`, `절차적 NPC`, `라이벌리`, `플레이어 주도 서사`, `WB 특허`",
+    "wikilinks": [
+      {
+        "target": "시스템-TC001-반응성의본질",
+        "display": null
+      },
+      {
+        "target": "시스템-TC012-절차적수제결합",
+        "display": null
+      },
+      {
+        "target": "내러티브-WS001-플레이어주도서사",
+        "display": null
+      },
+      {
+        "target": "내러티브-TC005-NPC작성법",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "GDC_2015/01_게임디자인/Shadow of Mordor_네메시스시스템",
+        "display": null
+      },
+      {
+        "target": "The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "Skyrim-모듈러레벨디자인",
+        "display": null
+      },
+      {
+        "target": "BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "시스템-TC001-반응성의본질",
+        "display": null
+      },
+      {
+        "target": "시스템-TC012-절차적수제결합",
+        "display": null
+      },
+      {
+        "target": "내러티브-WS001-플레이어주도서사",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      }
+    ],
+    "bodyLength": 2405,
+    "topics": [
+      "character",
+      "enemy_ai",
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:Skyrim-모듈러레벨디자인",
+    "slug": "Skyrim-모듈러레벨디자인",
+    "fileName": "Skyrim-모듈러레벨디자인",
+    "filePath": "03_패턴/Skyrim-모듈러레벨디자인.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Skyrim-모듈러레벨디자인",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "레벨디자인",
+      "오픈월드",
+      "모듈러",
+      "RPG",
+      "던전"
+    ],
+    "designers": [
+      "조엘 버지스",
+      "Nate Purkeypile",
+      "토드 하워드",
+      "윌 셴",
+      "Daryl Brigner"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2013-주요강연",
+      "GDC-2024-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Skyrim — 모듈러 레벨 디자인\n\n> 100명짜리 팀이 150개 던전과 5,000+ 인테리어를 만들 수 있게 한 모듈러 키트 시스템. *Skyrim*이 오픈 월드 RPG의 콘텐츠 양 표준을 재정의한 이유.\n\n## 적용된 원칙\n\n- [[레벨-LD001-블록아웃우선]] — 그리드 단위로 먼저 공간 구조부터 잡기\n- [[레벨-LD002-메트릭스우선]] — 1×1, 2×2, 4×4 단위의 통일성\n- [[레벨-LD008-공간구조타입]] — Hub-and-Spoke, Linear, Loop의 의도적 혼용\n- [[시스템-SK004-자연스러운튜토리얼]] — 던전 첫 방이 던전 자체를 가르침\n\n## 출처 강연\n\n- **GDC 2013**: Joel Burgess & Nate Purkeypile — \"Skyrim's Modular Approach to Level Design\"\n  ([[GDC-2013-주요강연]] 참조)\n- **GDC 2024**: Will Shen & Daryl Brigner — \"Level and Quest Design Collaboration from 'Skyrim' to 'Starfield'\"\n  ([[GDC-2024-주요강연]] 참조)\n\n## 구현 방식\n\n### 모듈러 키트의 구조\n\nBethesda는 *Oblivion* 후반부터 모듈러 시스템을 진화시켰다. *Skyrim*에서 정착한 구조:\n\n1. **단일 그리드 단위(unit)** — 모든 모듈은 정수 배수 그리드에 스냅\n2. **카테고리별 키트** — Nordic Ruin, Dwemer, Bandit Camp, Falmer 등 ~10개\n3. **각 키트 내 표준 모듈** — Wall, Corner, T-junction, X-junction, Door Frame, Stair, Floor, Ceiling\n\n이로 인해 단일 디자이너가 하루에 수십 개 방을 조립 가능. 아트 의존도가 극단적으로 낮음.\n\n### 공간 구조 타입의 의도적 혼용\n\nJoel Burgess는 던전을 다음 4 타입으로 분류해 의도적으로 섞었다:\n\n- **Linear** — 단방향 진행, 튜토리얼·초반 던전\n- **Loop** — 보스 처치 후 입구로 돌아오는 지름길\n- **Hub-and-Spoke** — 중앙 방에서 여러 분기\n- **Crossroads** — 후반 복잡 미궁\n\n매 던전이 시작 후 5분 안에 어떤 타입인지 시각적으로 인지 가능. 이것이 *Skyrim*에서 \"막혀서 다시 진행 못하는\" 경험이 거의 없는 이유.\n\n### 환경 스토리텔링과의 결합\n\n모듈은 자체로 텅 비어 있다. 그 위에 \"환경 스토리\" 레이어를 얹는다:\n\n- 시신 옆 일기장 → 던전 배경 단서\n- 마법책 위 책장 → 마법사가 살았던 흔적\n- 부서진 가구 → 약탈 사건\n\n같은 모듈이 컨텍스트 변경만으로 다른 이야기가 된다. 이는 [[내러티브-KL001-환경스토리텔링]] 원칙의 대규모 적용 사례.\n\n### Starfield까지의 진화 — GDC 2024\n\nWill Shen이 GDC 2024에서 공개한 13년의 진화:\n\n- **팀 100→500명**: 모듈러 시스템이 사일로 효과를 일으키지 않게 해주는 것이 핵심\n- **다중 스튜디오 협업**: 메릴랜드·텍사스·몬트리올이 같은 키트를 공유\n- **Starfield 우주선 모듈**: 던전 모듈 사상이 우주선 빌더로 확장\n\n> **GDC 2024 부록**: *Starfield* 최종 퀘스트 위치가 부재하다는 사실을 출시 직전 발견. Steve Cornett의 \"dimension hopping\" 제안으로, 기존 위치를 재방문하게 해 시간을 절약. 모듈러 시스템 덕분에 가능.\n\n## 왜 효과적인가\n\n1. **콘텐츠 양 폭증** — 100명 팀이 AAA 오픈 월드 콘텐츠 양을 만들 수 있다\n2. **MOD 친화성** — 같은 키트를 모더가 사용 가능 → 10년 넘는 longevity\n3. **신규 입사자 학습 곡선 단축** — \"Wall 끼우고 Door 끼우면 방 완성\"\n4. **iteration 비용 0에 수렴** — 던전 한 곳을 5분 만에 완전히 재구성 가능\n\n## 한계\n\n- 시각적 반복감 — 같은 모듈이 100번 등장하면 플레이어가 \"이미 본 곳\"으로 체감\n- *FromSoftware*의 *Elden Ring* 손맥기 vs Bethesda 모듈러 = 산업 양극\n\n## 연결 게임 패턴\n\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 대조: 손-제작(hand-crafted) vs 모듈러\n- [[Halo-30초의재미루프]] — 같은 사상의 전투 측면 적용\n- [[BotW-화학엔진과창발성]] — 시스템 vs 콘텐츠 접근의 양극\n\n## 연결 원칙\n\n- [[레벨-LD001-블록아웃우선]] — 모듈러의 토대\n- [[내러티브-KL001-환경스토리텔링]] — 빈 공간 위의 스토리 레이어\n- [[프로덕션-TC011-마찰의균형]] (참조 후보) — 자동화와 수공의 균형\n\n## 출처 링크\n\n- Joel Burgess Blog — [Skyrim's Modular Level Design GDC 2013 Transcript](http://blog.joelburgess.com/2013/04/skyrims-modular-level-design-gdc-2013.html)\n- GDC Vault — [Level Design Summit: Skyrim → Starfield Collaboration](https://gdcvault.com/play/1034611/Level-Design-Summit-Level-and)\n- Game Developer — [Skyrim's Modular Approach to Level Design](https://www.gamedeveloper.com/design/skyrim-s-modular-approach-to-level-design)\n- The Level Design Book — [Modular kit design](https://book.leveldesignbook.com/process/blockout/metrics/modular)",
+    "wikilinks": [
+      {
+        "target": "레벨-LD001-블록아웃우선",
+        "display": null
+      },
+      {
+        "target": "레벨-LD002-메트릭스우선",
+        "display": null
+      },
+      {
+        "target": "레벨-LD008-공간구조타입",
+        "display": null
+      },
+      {
+        "target": "시스템-SK004-자연스러운튜토리얼",
+        "display": null
+      },
+      {
+        "target": "GDC-2013-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2024-주요강연",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "레벨-LD001-블록아웃우선",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      }
+    ],
+    "bodyLength": 2954,
+    "topics": [
+      "level",
+      "system",
+      "production"
+    ]
+  },
+  {
+    "id": "pattern:SlayTheSpire-카드결정명료성",
+    "slug": "SlayTheSpire-카드결정명료성",
+    "fileName": "SlayTheSpire-카드결정명료성",
+    "filePath": "03_패턴/SlayTheSpire-카드결정명료성.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "SlayTheSpire-카드결정명료성",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "로그라이크",
+      "덱빌딩",
+      "카드게임",
+      "의사결정",
+      "시너지"
+    ],
+    "designers": [
+      "앤서니 지오바네티",
+      "케이시 야노"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Slay the Spire — 카드 결정 명료성\n\n> 모든 카드가 *작동 방식을 바꾼다*. +5% 데미지 카드는 한 장도 없다. [[ANTI-SYS-005-통계폭격RPG]]에 대한 정확한 답안.\n\n## 적용된 원칙\n\n- [[시스템-SM001-흥미로운결정]] — 매 카드 선택이 *덱 정체성* 변경\n- [[시스템-DC003-FADT어휘]] — 카드 텍스트가 Feedback/Affordance/Decision/Telegraph 모두 포함\n- [[시스템-JB004-플레이어지능존중]] — 플레이어가 시너지를 *직접* 발견하도록 설계\n- [[시스템-EM001-시너지매트릭스]] — 카드 간 곱셈적 상호작용\n- [[시스템-EM002-빠른죽음빠른재시작]] — 30분 런으로 결정 학습 누적\n\n## 구현 방식\n\n### 카드 = 작동 방식\n\n*Slay the Spire*의 카드는 작은 수치 변경자가 아니라 *동사*:\n\n- **Strike** (5 데미지) — 기본 동작\n- **Pommel Strike** — 데미지 + 카드 1장 드로\n- **Body Slam** — 현재 방어력만큼 데미지 (정의 자체가 바뀜)\n- **Limit Break** — 다음 턴 모든 데미지 *2배* (덱 회전 변경)\n- **Apotheosis** — 손에 든 모든 카드를 *Upgrade* (영구 강화)\n\n같은 5 데미지 카드라도 *작동 방식의 카테고리*가 다름. \"+1 데미지\" 같은 평탄한 변경자는 거의 없다.\n\n### 한 카드의 정의 — Decision 단위\n\n좋은 카드 정의의 4요소:\n1. **단일 효과** — 한 카드 = 한 동사\n2. **즉시 텔레그래프** — 텍스트가 모든 정보 노출\n3. **다른 카드와의 곱셈** — 시너지 가능성 명시\n4. **빌드 변경 잠재력** — 빌드 카테고리 자체를 바꿀 수 있음\n\n### 시너지 매트릭스의 명시화\n\n카드 간 시너지가 *명시적 키워드*로 표현:\n- **Strength**, **Dexterity**, **Block**, **Vulnerable**, **Weak**, **Frail**…\n- 약 30개 키워드만으로 1000+ 카드 상호작용 표현\n- 새 키워드를 만들지 않고 *기존 키워드의 결합*으로 깊이 확장\n\n이는 [[시스템-DC003-FADT어휘]]의 정수 — 어휘가 적을수록 깊이가 가능.\n\n### Map의 결정 압축\n\n매 층마다 분기 경로 선택:\n- 전투(?) vs 엘리트(▲) vs 휴식(♨) vs 상점($) vs 이벤트(?)\n- 각 노드가 *자원 트레이드오프*를 강제\n- \"이번 층은 카드 강화 vs 다음 보스를 위한 체력 보존\" 같은 결정\n\n[[시스템-WS003-선택의대가]]의 메크로 적용.\n\n### 30분 런 = 결정 학습 사이클\n\n한 런이 30~60분으로 짧음. 죽으면 즉시 다음 런 가능. 의사결정의 결과가 30분 안에 검증되므로 *학습 누적이 빠르다*.\n\n이는 [[시스템-EM002-빠른죽음빠른재시작]]의 모범 — 죽음이 학습 통화.\n\n## 왜 효과적인가\n\n1. **숫자 노이즈 제거** — +5% 같은 평탄 변경자가 없어 비교 비용이 낮음\n2. **빌드 카테고리화** — Watcher의 Stance Dance, Defect의 Orbs, Silent의 Poison/Shiv… 카테고리가 명확\n3. **이벤트의 변동성** — 무작위 이벤트가 빌드 정체성을 *흔드는* 결정 강제\n4. **단일 카드의 영향력** — 한 카드 추가가 빌드 카테고리를 바꿀 수 있음 (Demon Form 1장 = 빌드 변경)\n5. **재플레이 깊이** — 4 캐릭터 × 빌드 카테고리 5개 × 변동 사건 = 사실상 무한\n\n## 안티패턴 대비\n\n[[ANTI-SYS-005-통계폭격RPG]]는 +N% 누적으로 깊이를 *위장*한다. *Slay the Spire*는 *어휘 수를 줄이고* 어휘 간 결합으로 깊이를 만든다.\n\n## 산업 영향\n\n*Slay the Spire* 이후 덱빌딩 로그라이크 장르 폭발:\n- *Monster Train* (2020), *Inscryption* (2021), *Across the Obelisk* (2022)\n- *Hades* (2020) — 부어(Boon) 시스템이 카드 결정 명료성을 액션 RPG로 이식\n- *Balatro* (2024) — 같은 디자인 철학의 포커 변종\n\n## 연결 게임 패턴\n\n- [[Hades-내러티브와로그라이크통합]] — 부어 시스템의 카드 결정 명료성 차용\n- [[Spelunky-절차적생성과교훈]] — 짧은 런 + 학습 누적의 다른 형태\n\n## 연결 원칙\n\n- [[시스템-EM001-시너지매트릭스]] — Edmund McMillen의 *Isaac* 사례와 비교\n- [[시스템-LP001-단일매커닉의깊이]] — 카드 단일 동사의 깊이\n\n## 출처 링크\n\n- Anthony Giovannetti GDC 2019 — *Slay the Spire* 게임 개발 강연\n- Mega Crit 블로그 — Early Access 디자인 일지\n- Mark Brown — \"How Slay the Spire Designs Decisions\"",
+    "wikilinks": [
+      {
+        "target": "ANTI-SYS-005-통계폭격RPG",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "시스템-DC003-FADT어휘",
+        "display": null
+      },
+      {
+        "target": "시스템-JB004-플레이어지능존중",
+        "display": null
+      },
+      {
+        "target": "시스템-EM001-시너지매트릭스",
+        "display": null
+      },
+      {
+        "target": "시스템-EM002-빠른죽음빠른재시작",
+        "display": null
+      },
+      {
+        "target": "시스템-DC003-FADT어휘",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "시스템-EM002-빠른죽음빠른재시작",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-005-통계폭격RPG",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "시스템-EM001-시너지매트릭스",
+        "display": null
+      },
+      {
+        "target": "시스템-LP001-단일매커닉의깊이",
+        "display": null
+      }
+    ],
+    "bodyLength": 2468,
+    "topics": [
+      "system",
+      "balance"
+    ]
+  },
+  {
+    "id": "pattern:Spelunky-절차적생성과교훈",
+    "slug": "Spelunky-절차적생성과교훈",
+    "fileName": "Spelunky-절차적생성과교훈",
+    "filePath": "03_패턴/Spelunky-절차적생성과교훈.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Spelunky-절차적생성과교훈",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "로그라이크",
+      "절차적생성",
+      "인디",
+      "2D플랫포머",
+      "데스"
+    ],
+    "designers": [
+      "Derek Yu",
+      "Andy Hull"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2011-주요강연",
+      "GDC-2014-주요강연",
+      "GDC-2020-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Spelunky — 절차적 생성과 교훈\n\n> 절차적 생성이 \"재미없는 결과\"를 낳지 않게 만드는 모든 디자인 결정. *Spelunky*가 인디 로그라이크의 표준 어휘가 된 이유.\n\n## 적용된 원칙\n\n- [[시스템-WW003-창발설계]] — 단순 룰의 창발적 결합\n- [[시스템-JB002-암묵학습]] — 죽음을 통한 룰 내재화\n- [[전투-SK001-위험과보상]] — 매 룸의 리스크/리워드\n- 시스템-DY 라인 (예정) — Derek Yu의 절차적 공정성 원칙\n\n## 출처 강연\n\n- **GDC 2011**: Derek Yu, Andy Hull — *Spelunky* XBLA Move/Multiplayer 토크 ([[GDC-2011-주요강연]])\n- **GDC 2020**: \"One More Run: The Making of 'Spelunky 2'\" (Independent Games Summit, [[GDC-2020-주요강연]])\n- **GDC Podcast Ep. 22**: Spelunky, indie life, and finding success with Derek Yu\n\n## 구현 방식\n\n### 절차적 \"공정성\"\n\n[[Derek Yu]]가 강조한 핵심 원칙: 절차 생성이 무작위로 보여서는 안 된다. 룰이 명시적으로 보여야 다회차 학습이 가능.\n\n#### 4×4 격자 + 보장 경로\n\n각 레벨은 4×4 격자. 절차적 알고리즘이 다음을 보장:\n\n1. **항상 입구에서 출구로 가는 보장 경로** — 막다른 길 없음\n2. **방 종류는 7가지** — 일반, 출구, 보물방, 함정, 상점 등\n3. **장애물은 *룰 기반*으로만 배치** — 무작위가 아니라 \"이 방에는 화살 함정이 있을 수 있음\"의 표\n\n이 룰을 알면 50시간 후 플레이어는 첫 5초만 보고도 위험을 예측. [[시스템-JB002-암묵학습]]의 사례.\n\n### 데스 = 학습의 정당화\n\n*Spelunky*의 죽음은 절차적 공정성 위에서만 정당하다:\n\n- **죽음의 원인이 명확** — 함정, 적, 자기 실수. \"랜덤하게 죽었다\"가 없음\n- **다음 시도가 빠름** — 5초 안에 재시작\n- **새로운 정보 획득** — 매 죽음마다 한 가지 패턴 학습\n\n이는 *Hades*의 \"죽음 = 진행\"과 다른 길. *Spelunky*는 \"죽음 = 학습\", *Hades*는 \"죽음 = 이야기\".\n\n### 환경 + 적 + 아이템의 곱셈\n\n*BotW*의 \"Multiplicative Gameplay\"와 동일 사상:\n\n- **점프 + 채찍** — 적 처치\n- **점프 + 폭탄** — 벽 부수기\n- **점프 + 줄** — 수직 이동\n- **폭탄 + 줄** — 안전한 폭파\n- **시체 + 함정** — 함정 발동시키기\n\n이는 [[시스템-WW003-창발설계]]의 인디 사례.\n\n### 절대 부서지지 않는 시스템 — Derek Yu의 강박\n\nGDC Podcast에서 Yu는 자주 강조: 절차적 생성에서 \"한 번만 부서지면\" 신뢰를 잃는다. 그래서:\n\n- 모든 레벨이 자동 검증 (입구→출구 reachability 자동 확인)\n- 일부 룰은 의도적 비대칭 (보스 방은 절차 생성 없이 hand-craft)\n- 100만 회 자동 플레이 시뮬레이션으로 데드락 검출\n\n이 방법론은 *Hades*, *Dead Cells*, *Returnal* 등 후속 로그라이크에 직접 영향.\n\n### *Spelunky 2* 진화 — GDC 2020\n\n- 다층 분기 (정글 → 광산 / 화산 등 갈래)\n- 절차적 NPC 행동 (펫, 트레이더의 자체 AI)\n- \"Pseudo-procedural\" — 일부 방은 prefab 조각 활용\n\n## 왜 효과적인가\n\n1. **다회차의 정당화** — 매 시도가 새 정보를 줌\n2. **공정함 인식** — \"랜덤하게 망했다\"는 좌절 없음\n3. **사회적 회자** — Twitch에서 매번 다른 런이 콘텐츠로 가치\n4. **인디 표준** — 90+ 점대 메타크리틱 인디의 사상적 토대\n\n## 한계\n\n- **첫 시간 진입 장벽** — 룰을 모르면 그저 잔인한 게임\n- **사회적 컨텍스트 의존** — 시청자/친구 영향 없이는 학습 곡선이 외로움\n\n## 연결 게임 패턴\n\n- [[Hades-내러티브와로그라이크통합]] — 다른 사상의 로그라이크 (학습 vs 이야기)\n- [[BotW-화학엔진과창발성]] — Multiplicative Gameplay의 다른 적용\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 학습 = 진행의 다른 형식\n\n## 연결 원칙\n\n- [[시스템-WW003-창발설계]] — 룰 곱셈의 창발성\n- [[시스템-JB002-암묵학습]] — 학습으로서의 게임플레이\n- [[전투-SK001-위험과보상]] — 매 결정의 리스크/리워드\n\n## 출처 링크\n\n- Game Developer — [How Spelunky got its procedural 'hook' & actually got finished](https://www.gamedeveloper.com/design/how-i-spelunky-i-got-its-procedural-hook-actually-got-finished)\n- GDC Vault — [Independent Games Summit: One More Run: The Making of 'Spelunky 2'](https://www.gdcvault.com/play/1027187/Independent-Games-Summit-One-More)\n- GDC Conf — [Spelunky, indie life, and finding success with Derek Yu - GDC Podcast ep. 22](https://gdconf.com/article/spelunky-indie-life-and-finding-success-with-derek-yu-gdc-podcast-ep-22/)\n- Wikipedia — [Spelunky](https://en.wikipedia.org/wiki/Spelunky)",
+    "wikilinks": [
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "시스템-JB002-암묵학습",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "GDC-2011-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2020-주요강연",
+        "display": null
+      },
+      {
+        "target": "Derek Yu",
+        "display": null
+      },
+      {
+        "target": "시스템-JB002-암묵학습",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "시스템-JB002-암묵학습",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      }
+    ],
+    "bodyLength": 2913,
+    "topics": [
+      "combat",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:The Last of Us-컴패니언 AI 설계",
+    "slug": "The Last of Us-컴패니언 AI 설계",
+    "fileName": "The Last of Us-컴패니언 AI 설계",
+    "filePath": "03_패턴/The Last of Us-컴패니언 AI 설계.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "The Last of Us-컴패니언 AI 설계",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "내러티브",
+      "AI",
+      "컴패니언",
+      "영화적연출",
+      "포스트아포칼립스"
+    ],
+    "designers": [
+      "맥스 다이크호프",
+      "Robert Krekel",
+      "브루스 스트랠리",
+      "닐 드럭만"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2014-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# The Last of Us — 컴패니언 AI 설계\n\n> Ellie를 12시간짜리 escort 미션으로 만들지 않기 위한 모든 결정. *The Last of Us*가 영화적 내러티브 게임의 표준이 된 핵심 메카닉.\n\n## 적용된 원칙\n\n- [[내러티브-TC003-컴패니언설계]] — 팀 케인의 컴패니언 디자인 원칙\n- [[시스템-FU002-불완전한AI동료]] — 대조 사례 (Ueda는 의도적 불완전, ND는 의도적 완전)\n- [[시스템-SK009-AI플레이어설계]] — 사쿠라이의 \"AI도 플레이어처럼 보여야\"\n- [[내러티브-HK002-영화적연출과게임플레이]] — 코지마의 영화적 연출 계보\n\n## 출처 강연\n\n- **GDC 2014**: Max Dyckhoff — \"Ellie: Buddy AI in The Last of Us\" ([[GDC-2014-주요강연]])\n- **GDC 2014**: Robert Krekel — \"The Last of Us: Human Enemy AI\" ([[GDC-2014-주요강연]])\n- **GDC 2014**: Naughty Dog — \"A Context-Aware Character Dialog System\"\n\n## 구현 방식\n\n### \"Ellie를 짐으로 만들지 않는다\" 원칙\n\nMax Dyckhoff(GDC 2014)가 정의한 첫 결정:\n\n> \"There was a very real concern that Ellie must not succumb to the same pitfalls of other companion AI, turning The Last of Us into a 12-hour exercise in frustrating and awkward escort missions.\"\n\n이를 위해 Naughty Dog는 다음 4 결정을 내렸다:\n\n1. **적이 Ellie를 거의 표적하지 않는다** — 사실성 일부 포기. Joel이 발각되어도 Ellie는 자유롭게 이동\n2. **Ellie의 스텔스가 디제틱하지 않다** — 적 시야 콘 안에 있어도 발각되지 않음\n3. **Ellie가 도와줄 때 강제 cinematic** — 칼·벽돌 던지기는 컨텍스트 트리거\n4. **Ellie의 위치가 항상 Joel에서 ~5m 이내** — teleport 가능, 자연스러운 추적\n\n### 컨텍스트별 행동 우선순위\n\nEllie의 행동 결정 트리:\n\n```\n0. 위급 (Joel HP 낮음)     → 회복 아이템 던지기\n1. 적 발각                  → 숨기 + 침묵\n2. 전투                     → 도와주기 (벽돌·칼 던지기)\n3. Joel 정지                → 멈추기\n4. Joel 이동                → 따라가기\n5. 안전                     → 환경 인터랙션 (책 들기, 농담)\n```\n\n### Context-Aware Dialog System\n\n같은 GDC 2014에 발표된 시스템. 2,000개+ 대사가 다음을 인지:\n\n- 이 NPC가 알고 있는 정보\n- 그룹이 공유한 정보\n- 글로벌 게임 상태 (챕터, 이벤트)\n- 주변 환경 (실내/실외, 적 잔존 수)\n\n대사 예: 적이 한 명만 남으면 \"어디 갔지?\", 둘이 흩어지면 \"분산해!\", Ellie가 다쳤음을 들은 인간 적이 \"그 어린 것이 맞은 모양이군\". 이 시스템 덕분에 NPC가 \"살아있는 듯\" 느껴짐.\n\n### 인간 적 AI — Robert Krekel\n\n*Killzone* 패턴(시야 콘 단순)이 아니라 4단계 인지:\n\n1. **Calm** — 순찰\n2. **Cautious** — 의심 (소리)\n3. **Searching** — 적극 수색\n4. **Combat** — 교전\n\n상태 전환에 0.5–3초의 자연스러운 지연. 플레이어가 \"들킨 것 같은데?\"의 긴장을 만듦. *Hitman* 시리즈와 함께 스텔스 AI의 표준.\n\n### *Part II* 진화 — Dog AI와 적 NPC 이름\n\n*Part II*에서:\n\n- **개 AI** — 냄새 추적 + 시야로 dual perception\n- **적 NPC 이름 호명** — 동료가 죽으면 \"John! NO!\" — 플레이어가 \"내가 죽인 게 사람\"이라는 죄책감\n- **Ellie와 Abby의 양면** — 같은 컴패니언 사상이 두 캐릭터에서 거울처럼\n\n## 왜 효과적인가\n\n1. **Player-AI immersion 깨짐 0** — 12시간 경로에서 \"AI 짜증 모먼트\"가 거의 없음\n2. **영화적 페이싱 가능** — AI가 컷씬 전환을 방해하지 않음\n3. **사회적 결속** — 플레이어가 Ellie를 진짜 보호하고 싶게 됨\n4. **Dialog 시스템이 lore 누설 없이도 캐릭터 형성**\n\n## 산업 영향\n\n이 GDC 2014 강연은 이후 *God of War* (2018) Atreus, *BotW* Sidon companion 사상 등 모든 컴패니언 AI 디자인의 reference가 됐다.\n\n## 한계\n\n- \"사실성 포기\"의 비용 — Ellie가 적 앞에서 보이지 않는 게 일부 플레이어에게 눈에 띔\n- 영화적 강제 — 일부 액션이 cinematic 트리거에 갇혀 자유도 감소\n\n## 연결 게임 패턴\n\n- [[Halo-30초의재미루프]] — 적 AI의 \"흥미로운 상태\" 사상의 다른 적용\n- [[03_패턴/포탈-테스트 챔버 튜토리얼]] — GLaDOS도 컴패니언/적의 양가성\n\n## 연결 원칙\n\n- [[내러티브-TC003-컴패니언설계]] — 팀 케인의 컴패니언 원칙\n- [[시스템-FU002-불완전한AI동료]] — 대조 사례 (*Last Guardian*의 Trico)\n- [[시스템-SK009-AI플레이어설계]] — 사쿠라이 AI 설계\n\n## 출처 링크\n\n- GDC Vault — [Ellie: Buddy AI in The Last of Us](https://www.gdcvault.com/play/1020364/Ellie-Buddy-AI-in-The)\n- GDC Vault — [The Last of Us: Human Enemy AI](https://gdcvault.com/play/1020338/The-Last-of-Us-Human)\n- GDC Vault — [A Context-Aware Character Dialog System](https://www.gdcvault.com/play/1020386/A-Context-Aware-Character-Dialog)\n- Game Developer — [Endure and Survive: the AI of The Last of Us](https://www.gamedeveloper.com/design/endure-and-survive-the-ai-of-the-last-of-us)",
+    "wikilinks": [
+      {
+        "target": "내러티브-TC003-컴패니언설계",
+        "display": null
+      },
+      {
+        "target": "시스템-FU002-불완전한AI동료",
+        "display": null
+      },
+      {
+        "target": "시스템-SK009-AI플레이어설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "GDC-2014-주요강연",
+        "display": null
+      },
+      {
+        "target": "GDC-2014-주요강연",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "03_패턴/포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "내러티브-TC003-컴패니언설계",
+        "display": null
+      },
+      {
+        "target": "시스템-FU002-불완전한AI동료",
+        "display": null
+      },
+      {
+        "target": "시스템-SK009-AI플레이어설계",
+        "display": null
+      }
+    ],
+    "bodyLength": 3291,
+    "topics": [
+      "character",
+      "narrative",
+      "system",
+      "production"
+    ]
+  },
+  {
+    "id": "pattern:다크소울-미니맵 없는 월드 연결",
+    "slug": "다크소울-미니맵 없는 월드 연결",
+    "fileName": "다크소울-미니맵 없는 월드 연결",
+    "filePath": "03_패턴/다크소울-미니맵 없는 월드 연결.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "다크소울-미니맵 없는 월드 연결",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "레벨디자인",
+      "소울라이크",
+      "환경내비게이션",
+      "연결맵"
+    ],
+    "designers": [
+      "Hidetaka Miyazaki"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "노클립-게임별 맵 인덱스"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sun Apr 12 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sun Apr 12 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Dark Souls — 미니맵 없는 월드 연결\n\n> 미니맵·나침반 없이 상호 연결된 3D 월드를 탐험하게 만든 레벨 디자인 패턴.\n\n## 적용된 원칙\n\n- [[레벨-SK001-지도로부터의탈출]] — 환경 자체가 내비게이션 정보를 제공\n- [[전투-SK003-조임과해방]] — 던전(긴장) → 지름길 발견(이완)의 반복\n- [[전투-SK001-위험과보상]] — 미지 경로 탐험의 리스크와 지름길 발견의 보상\n\n## 구현 방식\n\n### 허브 앤 스포크(Hub & Spoke) 구조\nFirelink Shrine이 월드의 중심 허브 역할을 한다. 모든 주요 경로(Undead Burg, Catacombs, New Londo Ruins)가 여기서 출발하고, 지름길을 열면 다시 여기로 돌아온다. 플레이어는 반복된 귀환 경험을 통해 공간 지도를 머릿속에 구축한다.\n\n### 수직적 연결\nnoclip.website에서 확인하면, Dark Souls의 월드는 수평적 확장보다 **수직적 연결**이 핵심이다:\n- Undead Burg(지상) → The Depths(지하) → Blighttown(최하층) — 지속적 하강\n- Firelink Shrine → Sen's Fortress → Anor Londo — 지속적 상승\n- 엘리베이터, 사다리, 낙하 지름길이 수직 연결의 물리적 장치\n\n이 수직성이 \"위로 갈수록 신성하고 아래로 갈수록 어둡다\"는 환경 스토리텔링(Environmental Storytelling)과 결합하여 방향 감각을 제공한다.\n\n### 지름길(Shortcut)의 설계 패턴\n던전을 진행하다가 잠긴 문, 작동하지 않는 엘리베이터, 올라갈 수 없는 사다리를 발견한다. 이것들은 \"되돌아올 때 열리는 문\"이라는 약속이다. 한참 뒤에 반대편에서 이 장치를 열면:\n1. \"아, 여기였구나!\" — 공간 이해의 쾌감\n2. 다시 돌아갈 필요 없음 — 실용적 보상\n3. 월드가 하나로 연결되어 있다는 인지 — 몰입감 증가\n\n## noclip 관찰 포인트\n\nnoclip.website에서 Dark Souls 맵을 자유 카메라로 관찰할 때 확인할 항목:\n- Firelink Shrine에서 보이는 다른 지역의 건물들 (시각적 랜드마크)\n- Undead Burg → The Depths → Blighttown의 수직 낙차\n- Anor Londo의 거대한 스케일이 \"높은 곳 = 중요한 곳\"을 전달하는 방식\n- Sen's Fortress가 \"관문(Gate)\" 역할을 하는 배치\n\n## 연결\n\n- [[레벨-SK001-지도로부터의탈출]] — 이 패턴이 검증하는 핵심 원칙\n- [[전투-SK010-대립요소]] — 좁은 통로(위험)와 넓은 허브(안전)의 대비",
+    "wikilinks": [
+      {
+        "target": "레벨-SK001-지도로부터의탈출",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "레벨-SK001-지도로부터의탈출",
+        "display": null
+      },
+      {
+        "target": "전투-SK010-대립요소",
+        "display": null
+      }
+    ],
+    "bodyLength": 1308,
+    "topics": [
+      "combat",
+      "level"
+    ]
+  },
+  {
+    "id": "pattern:브레스오브더와일드-환경 내비게이션",
+    "slug": "브레스오브더와일드-환경 내비게이션",
+    "fileName": "브레스오브더와일드-환경 내비게이션",
+    "filePath": "03_패턴/브레스오브더와일드-환경 내비게이션.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "브레스오브더와일드-환경 내비게이션",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "레벨디자인",
+      "오픈월드",
+      "환경내비게이션",
+      "시선유도"
+    ],
+    "designers": [
+      "후지바야시 히데마로"
+    ],
+    "gamesReferenced": [],
+    "sources": [
+      "노클립-게임별 맵 인덱스"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sun Apr 12 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sun Apr 12 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# BotW — 환경 내비게이션\n\n> 거대한 오픈월드에서 미니맵 의존을 줄이고 환경 자체로 탐험을 유도한 패턴.\n\n## 적용된 원칙\n\n- [[레벨-SK001-지도로부터의탈출]] — 쉬커 타워와 지형이 미니맵을 대체하는 내비게이션 장치\n- [[전투-SK010-대립요소]] — 높은 곳(시야 확보)과 낮은 곳(탐험 미지)의 대비\n- [[시스템-SK004-자연스러운튜토리얼]] — 시작의 대지가 자연스러운 튜토리얼이자 게임 본편\n\n## 구현 방식\n\n### 삼각형의 법칙 (Triangle Rule)\nBotW의 월드는 \"삼각형의 법칙\"으로 설계되었다. 플레이어의 시선 방향에 반드시 삼각형 모양의 지형(산, 언덕, 탑)이 존재하여, 직선 이동을 자연스럽게 우회시킨다. 우회하는 과정에서 예상치 못한 발견(사당, 코록, NPC)을 만든다.\n\n### 랜드마크 체계\n쉬커 타워(15개)가 원거리 랜드마크로 작동한다. 어디에 있든 최소 2~3개의 타워가 시야에 들어와서, 플레이어가 대략적 위치와 방향을 파악할 수 있다. 추가로 하이랄 성이 월드 중심의 궁극적 랜드마크이며, 데스마운틴의 연기, 하테노 마을의 조명 등 환경 단서가 방향을 제시한다.\n\n### 고저차의 활용\n높은 곳에 오르면 넓은 시야를 확보하고 패러세일로 빠르게 이동할 수 있다(보상). 낮은 곳으로 내려가면 시야가 좁아지고 탐험이 느려진다(긴장). 이 수직적 순환(오르기 → 조망 → 활강 → 탐험 → 다시 오르기)이 게임 전체의 리듬을 형성한다.\n\n### 시작의 대지 (Great Plateau)\n첫 4~5시간의 플레이 공간이자 전체 게임의 축소판이다. 사당 4개로 핵심 능력을 자유 순서로 학습하고, 높은 곳에서 본편 월드를 조망한 뒤 패러세일로 출발한다. 강제 진행이 아닌 호기심이 학습을 이끈다.\n\n## noclip 관찰 포인트\n\nnoclip.website에서 Wind Waker 맵으로 유사한 원칙을 관찰할 수 있다:\n- 49개 해역에서 어떤 위치든 주변 섬이 보이도록 배치된 시각적 밀도\n- Dragon Roost Island, Forsaken Fortress 등 높은 건물이 원거리 랜드마크 역할\n- 대해원(The Great Sea)이 평평한 \"바닥\"이라 수직적 랜드마크가 극적으로 돋보이는 구조\n\n## 연결\n\n- [[다크소울-미니맵 없는 월드 연결]] — 선형 구조에서의 환경 내비게이션 사례와 비교\n- [[전투-SK003-조임과해방]] — 고저차를 활용한 탐험의 긴장-이완 리듬",
+    "wikilinks": [
+      {
+        "target": "레벨-SK001-지도로부터의탈출",
+        "display": null
+      },
+      {
+        "target": "전투-SK010-대립요소",
+        "display": null
+      },
+      {
+        "target": "시스템-SK004-자연스러운튜토리얼",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      }
+    ],
+    "bodyLength": 1202,
+    "topics": [
+      "combat",
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "pattern:포탈-테스트 챔버 튜토리얼",
+    "slug": "포탈-테스트 챔버 튜토리얼",
+    "fileName": "포탈-테스트 챔버 튜토리얼",
+    "filePath": "03_패턴/포탈-테스트 챔버 튜토리얼.md",
+    "type": "pattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "포탈-테스트 챔버 튜토리얼",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "레벨디자인",
+      "퍼즐",
+      "튜토리얼",
+      "페이싱"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "노클립-게임별 맵 인덱스"
+    ],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sun Apr 12 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sun Apr 12 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# Portal — 테스트 챔버 튜토리얼\n\n> 게임 전체가 점진적 튜토리얼이면서 동시에 완성된 게임플레이인 패턴.\n\n## 적용된 원칙\n\n- [[시스템-SK004-자연스러운튜토리얼]] — 19개 테스트 챔버 전체가 자연스러운 튜토리얼\n- [[전투-SK003-조임과해방]] — 챔버의 난이도 곡선이 긴장-이완을 반복\n- [[전투-SK010-대립요소]] — 포탈의 자유로움과 밀폐된 챔버의 대비\n\n## 구현 방식\n\n### 단일 메카닉 도입 → 결합 → 마스터리\nPortal의 챔버 진행은 세 단계를 반복한다:\n1. **도입**: 새 메카닉 1개를 격리된 상황에서 소개 (챔버 00~05)\n2. **결합**: 기존 메카닉과 새 메카닉을 조합하여 풀어야 하는 퍼즐 (챔버 06~14)\n3. **마스터리**: 모든 메카닉을 통합한 복합 퍼즐 (챔버 15~19 + Escape)\n\n각 단계에서 텍스트 설명은 최소화된다. 챔버의 물리적 구조가 \"여기에 포탈을 쏘라\"는 것을 시각적으로 안내한다. 흰 벽(포탈 가능) vs 검은 벽(포탈 불가)의 색상 코딩이 핵심.\n\n### Portal 2의 젤(Gel) 도입 패턴\nPortal 2의 싱글 플레이(9챕터, ~50맵)는 같은 원칙을 더 정교하게 적용한다:\n- Ch.1~2: 기본 포탈 복습\n- Ch.3: 레이저 + 브릿지 (새 요소 하나씩 도입)\n- Ch.5~6: 젤(반발/추진/변환) 각각을 단독 챕터로 도입\n- Ch.7~8: 모든 요소 결합\n- Ch.9: 최종 보스전에서 전체 메카닉 통합 활용\n\n### 환경이 가르치는 구조\n챔버 입구에서 출구가 보인다(목표 명확). 중간에 장애물이 있다(문제 정의). 주변에 사용 가능한 도구가 보인다(해결 단서). 이 삼박자가 매 챔버에서 반복되면서 플레이어는 의식하지 못한 채 문제 해결 패턴을 학습한다.\n\n## noclip 관찰 포인트\n\nnoclip.website에서 Portal/Portal 2 맵을 확인할 때:\n- 챔버 내부의 흰 벽(포탈 가능) 배치가 시선을 어떻게 유도하는지\n- 출구 위치가 항상 시야에 들어오도록 설계된 구조\n- Escape 구간(챔버 밖)에서의 공간 대비 — 깔끔한 챔버 vs 기계실의 혼돈\n\n## 연결\n\n- [[레벨-SK001-지도로부터의탈출]] — Portal의 흰 벽 색상 코딩이 환경 내비게이션의 일종\n- [[시스템-SK002-접근성우선]] — 챔버 구조가 점진적 학습을 통해 접근성을 확보",
+    "wikilinks": [
+      {
+        "target": "시스템-SK004-자연스러운튜토리얼",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "전투-SK010-대립요소",
+        "display": null
+      },
+      {
+        "target": "레벨-SK001-지도로부터의탈출",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      }
+    ],
+    "bodyLength": 1175,
+    "topics": [
+      "combat",
+      "ui",
+      "level",
+      "system",
+      "balance"
+    ]
+  }
+]

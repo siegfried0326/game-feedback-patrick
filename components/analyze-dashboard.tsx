@@ -36,6 +36,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, extractKeywords } from "@/app/actions/analyze"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
+import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
 import { extractTextFromOffice, isOfficeFile } from "@/lib/office-extract"
 import { compressPdf } from "@/lib/pdf-compress"
@@ -1519,8 +1520,8 @@ export function AnalyzeDashboard() {
               </div>
             )}
 
-            {/* 크레딧 유저 안내 (잔여 1크레딧 이하) */}
-            {allowanceInfo?.plan !== "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 1 && (allowanceInfo?.remaining ?? 0) > 0 && (
+            {/* 크레딧 유저 안내 (잔여 1크레딧 이하) — 결제 중단 시 숨김 */}
+            {PAYMENTS_ENABLED && allowanceInfo?.plan !== "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 1 && (allowanceInfo?.remaining ?? 0) > 0 && (
               <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <p className="text-xs text-amber-400">
                   <Zap className="w-3.5 h-3.5 inline mr-1" />

@@ -9,7 +9,7 @@
 "use client"
 
 import Link from "next/link"
-import { FileText, LogOut, User, Shield, FolderOpen, Mic } from "lucide-react"
+import { FileText, LogOut, User, Shield, FolderOpen, Mic, Library } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PricingModal } from "@/components/pricing-modal"
 import { signOut } from "@/app/actions/auth"
@@ -33,10 +33,19 @@ export function Header({ user }: HeaderProps) {
           <span className="font-semibold text-white">Archive187</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-7">
           <Link href="/analyze" className="text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors font-medium">
             분석하기
           </Link>
+          {user?.isAdmin && (
+            <Link
+              href="/library"
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors font-medium"
+            >
+              <Library className="w-3.5 h-3.5" />
+              라이브러리
+            </Link>
+          )}
           <a href="#service" className="text-sm text-slate-400 hover:text-white transition-colors">
             서비스 소개
           </a>

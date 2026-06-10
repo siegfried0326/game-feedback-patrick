@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import { createClient } from "@/lib/supabase/server"
 import { issueBillingKey, approveBillingPayment } from "@/lib/nice-api"
+import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE } from "@/lib/payments-config"
 
 const PLAN_CONFIG = {
   monthly:     { amount: 13800, name: "아카이브 187 월 무제한",  months: 1 },
@@ -30,6 +31,11 @@ function encryptCardData(plainText: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // 결제 일시 중단 가드 — 모든 검증보다 먼저 차단
+    if (!PAYMENTS_ENABLED) {
+      return NextResponse.json({ error: PAYMENTS_DISABLED_MESSAGE, paymentsDisabled: true }, { status: 503 })
+    }
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {

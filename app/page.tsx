@@ -7,6 +7,7 @@
  */
 import { AuthHeader } from "@/components/auth-header"
 import { HeroSection } from "@/components/hero-section"
+import { TripleFeatureSection } from "@/components/triple-feature-section"
 import { WhyChooseUs } from "@/components/why-choose-us"
 import { AIComparison } from "@/components/ai-comparison"
 import { ServiceIntro } from "@/components/service-intro"
@@ -22,6 +23,8 @@ export default function FeedbackLandingPage() {
     <main className="min-h-screen bg-background">
       <AuthHeader />
       <HeroSection />
+
+      <TripleFeatureSection />
 
       <MarketingBreak
         headline="187개의 합격. 그 안에 답이 있습니다."

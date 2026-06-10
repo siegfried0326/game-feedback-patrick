@@ -11,6 +11,7 @@
 import Link from "next/link"
 import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 import {
   Dialog,
   DialogContent,
@@ -154,24 +155,38 @@ export function PricingModal() {
                 ))}
               </ul>
 
-              <Button
-                asChild
-                size="sm"
-                className={`w-full mt-auto ${
-                  plan.highlighted
-                    ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
-                    : plan.amber
-                    ? "bg-amber-500 hover:bg-amber-600 text-white"
-                    : "bg-secondary hover:bg-secondary/80 text-foreground"
-                }`}
-              >
-                <Link href={plan.href}>
-                  {plan.cta}
-                </Link>
-              </Button>
+              {!PAYMENTS_ENABLED ? (
+                <Button disabled size="sm" className="w-full mt-auto bg-secondary text-muted-foreground opacity-60 cursor-not-allowed">
+                  결제 준비 중
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  size="sm"
+                  className={`w-full mt-auto ${
+                    plan.highlighted
+                      ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+                      : plan.amber
+                      ? "bg-amber-500 hover:bg-amber-600 text-white"
+                      : "bg-secondary hover:bg-secondary/80 text-foreground"
+                  }`}
+                >
+                  <Link href={plan.href}>
+                    {plan.cta}
+                  </Link>
+                </Button>
+              )}
             </div>
           ))}
         </div>
+
+        {!PAYMENTS_ENABLED && (
+          <div className="mt-5 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">
+            <p className="text-sm text-amber-400">
+              현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.
+            </p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

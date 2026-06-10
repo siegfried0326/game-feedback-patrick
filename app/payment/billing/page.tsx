@@ -17,6 +17,7 @@ import { ArrowLeft, CheckCircle, CreditCard, Eye, EyeOff, Loader2, Lock } from "
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { getSubscription } from "@/app/actions/subscription"
+import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE } from "@/lib/payments-config"
 
 const PLANS = {
   monthly:     { name: "월 무제한",    price: "13,800", amount: 13800, period: "월",    description: "무제한 분석 + 버전 비교 + Claude AI" },
@@ -149,6 +150,27 @@ function BillingContent() {
       setError("네트워크 오류가 발생했습니다. 다시 시도해주세요.")
       setLoading(false)
     }
+  }
+
+  // 결제 일시 중단 — 결제 폼 진입 자체를 차단
+  if (!PAYMENTS_ENABLED) {
+    return (
+      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 text-center">
+          <Lock className="w-16 h-16 text-slate-500 mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-white mb-3">결제 서비스 준비 중</h1>
+          <p className="text-slate-400 mb-8 leading-relaxed">{PAYMENTS_DISABLED_MESSAGE}</p>
+          <div className="flex gap-3 justify-center">
+            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
+              <Link href="/">홈으로</Link>
+            </Button>
+            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+              <Link href="/analyze">분석하러 가기</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   if (success) {

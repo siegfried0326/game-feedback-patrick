@@ -1,0 +1,994 @@
+[
+  {
+    "id": "lineage:Arkane계보",
+    "slug": "Arkane계보",
+    "fileName": "Arkane계보",
+    "filePath": "00_색인/lineage/Arkane계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Arkane 계보 (이머시브심의 후계자)",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "하비 스미스",
+      "라파엘 콜란토니오"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🗝️ Arkane 계보 (이머시브심의 후계자)\n\n> Arkane Studios의 *Dishonored*·*Prey* 시리즈를 통해 *Looking Glass / Ion Storm* 사상을 21세기로 잇는 이머시브심 계보.\n\n## 계보 흐름\n\n```\nLooking Glass / Ion Storm (1990s)\n   ↓ 처치·스펙터의 이머시브심 사상\n   │\n   ├─→ [[하비 스미스]] (1995~, Deus Ex 리드 디자이너)\n   │     ↓ Ion Storm → Arkane Studios → 시스템적 자유의 후계\n   │     ↓ Dishonored 시리즈 (2012~) 디자이너\n   │\n   └─→ [[라파엘 콜란토니오]] (1999~, Arkane 창립자)\n         ↓ Arx Fatalis → Dishonored → Prey\n         ↓ 이머시브심 사상의 회사 단위 헌신\n```\n\n## 공통 사상\n\n- **시스템적 자유**: 한 문제에 여러 답 (스텔스·전투·우회)\n- **카오스 시스템**: 플레이어 행동이 게임 세계 톤을 변동\n- **환경 정치성**: 레벨 자체가 정치적 메시지\n- **시스템적 마법**: Dishonored의 능력 = 시스템 조작 도구\n\n## 차이의 축\n\n| 디자이너 | 강조 | 출신·라인 |\n|---|---|---|\n| 하비 스미스 | 디자인·시스템 | Origin → Ion Storm → Arkane |\n| 라파엘 콜란토니오 | 회사 운영·비전 | Arkane 창립 (Lyon, France) |\n\n## 작품의 흐름\n\n- **Arx Fatalis** (2002): Arkane 창립작. *Ultima Underworld*의 정신적 후계\n- **Dark Messiah of Might and Magic** (2006): 1인칭 액션 + 환경 사용 (발차기·체인 함정)\n- **Dishonored** (2012, 스미스 리드): 이머시브심 부활의 정전\n- **Dishonored 2** (2016): 능력·레벨 디자인 깊이 확장\n- **Prey** (2017, 콜란토니오 리드): *System Shock* 직계 사상\n- **Deathloop** (2021): 시간 루프 + 이머시브심 융합\n\n## 핵심 사상의 통찰\n\n- **카오스 시스템**: 플레이어가 죽이는 NPC 수에 따라 게임 톤·엔딩 변동 — 스펙터의 \"선택의 결과\"의 구체화\n- **능력 = 시스템 조작 도구**: Blink (순간이동)·Possession (빙의)·Time Stop이 시스템적 자유의 도구\n- **환경 = 메시지**: Dunwall·Karnaca의 폐허·계급 격차가 게임의 정치적 메시지\n\n## 영향 흐름의 구체적 사례\n\n- **Looking Glass → Ion Storm → Arkane**: 처치·스펙터의 사상이 단일 회사로 이어짐\n- **Deus Ex → Dishonored**: 스미스가 두 시리즈의 사상적 다리\n- **Prey → Mooncrash → Deathloop**: 이머시브심 + 로그라이크 융합 시도\n\n## 다른 계보와의 관계\n\n- **시뮬레이션·이머시브심 계보**: Arkane은 그 계보의 직계 후계자\n- **CRPG 계보**와 대비: 1인칭 시스템 자유 vs 3인칭 텍스트 자유\n- **인디 사상**과 호응: 단일 비전·시스템 깊이 추구\n\n## 관련 학습 경로\n\n- [[이머시브심]] — 라이트·스펙터·처치·호킹 사상의 깊이\n- [[CRPG]] — 텍스트 중심 RPG와의 비교\n\n## 보강 후보 (현재 미작성)\n\n- 카오스 시스템 디자인 (Dishonored)\n- 시간 루프 + 시뮬레이션 (Deathloop·*Outer Wilds*)\n- 1인칭 환경 스토리텔링 (Karnaca·Talos I)",
+    "wikilinks": [
+      {
+        "target": "하비 스미스",
+        "display": null
+      },
+      {
+        "target": "라파엘 콜란토니오",
+        "display": null
+      },
+      {
+        "target": "이머시브심",
+        "display": null
+      },
+      {
+        "target": "CRPG",
+        "display": null
+      }
+    ],
+    "bodyLength": 1830,
+    "topics": []
+  },
+  {
+    "id": "lineage:CRPG계보",
+    "slug": "CRPG계보",
+    "fileName": "CRPG계보",
+    "filePath": "00_색인/lineage/CRPG계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "CRPG 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "크리스 아벨론",
+      "팀 케인",
+      "조시 소여"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 📖 CRPG 계보 (Black Isle → Obsidian → Larian)\n\n> Black Isle Studios → Obsidian Entertainment → Larian Studios로 이어지는 **반응성**과 **회색 도덕**의 CRPG 계보.\n\n## 계보 흐름\n\n```\n[[크리스 아벨론]] (1996~) — Planescape: Torment의 철학적 RPG 정전\n   ↓ 동반자 = 거울, 회색지대 거부 이분법\n   │\n   [[팀 케인]] (1988~) — Fallout·Arcanum의 반응성 정전\n   ↓ 비선형의 진짜 의미, NPC 작성법\n   │\n   [[조시 소여]] (2003~) — New Vegas·Pillars of Eternity의 시스템 도덕\n     ↓ 회색 도덕의 설계 기준, 팩션 평판 복합성\n```\n\n## 공통 사상\n\n- **반응성(Reactivity)**: 플레이어 선택이 게임 세계에 영향을 미쳐야 한다\n- **비선형성**: 한 답이 아니라 여러 답이 가능한 퀘스트·서사\n- **회색 도덕**: 선·악 이분법 거부, 모든 선택에 대가\n- **컴패니언 = 거울**: 동료가 주인공의 가치관을 비추는 도구\n\n## 차이의 축\n\n| 디자이너 | 핵심 강조 | 대표 원칙 |\n|---|---|---|\n| 크리스 아벨론 | 철학·작가성 | [[내러티브-CA001-동반자가거울]] · [[내러티브-CA003-철학적질문메인플롯]] |\n| 팀 케인 | 시스템적 반응성 | [[시스템-TC001-반응성의본질]] · [[내러티브-TC001-비선형의진짜의미]] |\n| 조시 소여 | 시스템 도덕·역사학 | [[내러티브-JS003-회색도덕의설계기준]] · [[내러티브-JS001-팩션평판복합성]] |\n\n## 작품의 흐름\n\n- **Fallout 1** (1997, 케인 디렉터): 반응성·회색 도덕의 산업 정전\n- **Planescape: Torment** (1999, 아벨론 리드 디자이너): 철학적 RPG의 산업 정점\n- **Fallout 2** (1998): 케인 + 아벨론 협업\n- **Arcanum** (2001, 케인): 시스템적 자유 + 반응성의 깊이\n- **Knights of the Old Republic 2** (2004, 아벨론): 시퀄로 *Star Wars* 도덕 전복\n- **Fallout: New Vegas** (2010, 소여 디렉터): 팩션 평판 시스템 정전\n- **Pillars of Eternity** (2015, 소여): Infinity Engine 사상의 부활\n- **Outer Worlds** (2019, 케인 + 보야르스키): 케인 사상의 세대 직계\n- **Pentiment** (2022, 소여): 역사학자형 RPG의 새 형태\n\n## 사상의 핵심 통찰\n\n- **아벨론**: 메인 플롯이 철학적 질문이어야 한다 — *Planescape*의 \"What can change the nature of a man?\"\n- **케인**: 비선형은 단순히 여러 길이 아니라, *각 길이 다른 시스템 결과*를 만드는 것\n- **소여**: 회색 도덕은 디자이너가 \"정답이 없음을 의도적으로 설계\"해야 한다 — 우연한 모호함이 아님\n\n## 다른 계보와의 관계\n\n- **이머시브심 계보**와 협업: 시스템적 자유의 RPG 영역 적용 (스펙터·처치 사상 흡수)\n- **인디 사상**: 블로우·유의 작가성과 호응 (단일 디자이너의 강한 비전)\n- **일본 액션**과 대비: 체감 중심 vs 시스템 결과 중심\n\n## 관련 학습 경로\n\n- [[CRPG]] — 3명 26편 깊이 학습\n- [[이머시브심]] — 시스템적 자유의 보완 학습\n- [[입문10편]] — 케인의 반응성 진입",
+    "wikilinks": [
+      {
+        "target": "크리스 아벨론",
+        "display": null
+      },
+      {
+        "target": "팀 케인",
+        "display": null
+      },
+      {
+        "target": "조시 소여",
+        "display": null
+      },
+      {
+        "target": "내러티브-CA001-동반자가거울",
+        "display": null
+      },
+      {
+        "target": "내러티브-CA003-철학적질문메인플롯",
+        "display": null
+      },
+      {
+        "target": "시스템-TC001-반응성의본질",
+        "display": null
+      },
+      {
+        "target": "내러티브-TC001-비선형의진짜의미",
+        "display": null
+      },
+      {
+        "target": "내러티브-JS003-회색도덕의설계기준",
+        "display": null
+      },
+      {
+        "target": "내러티브-JS001-팩션평판복합성",
+        "display": null
+      },
+      {
+        "target": "CRPG",
+        "display": null
+      },
+      {
+        "target": "이머시브심",
+        "display": null
+      },
+      {
+        "target": "입문10편",
+        "display": null
+      }
+    ],
+    "bodyLength": 1801,
+    "topics": [
+      "narrative"
+    ]
+  },
+  {
+    "id": "lineage:MMO사회학계보",
+    "slug": "MMO사회학계보",
+    "fileName": "MMO사회학계보",
+    "filePath": "00_색인/lineage/MMO사회학계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "MMO 사회학 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "라프 코스터",
+      "데이미언 슈버트",
+      "그렉 스트리트"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🌐 MMO 사회학 계보\n\n> Origin Systems → Wolfpack → Riot Games로 이어지는 **MMO를 사회로 보는** 사상의 계보. 게임이 곧 사회 시뮬레이션임을 학술화·실전화.\n\n## 계보 흐름\n\n```\n[[라프 코스터]] (1990s~) — Ultima Online·SWG로 MMO 사회학 정전\n   ↓ \"MMO는 사회다\", 디자이너의 사회적 책임\n   │\n   [[데이미언 슈버트]] (1996~) — Meridian 59·UO·Shadowbane·SWTOR로 MMO 인프라 정립\n   ↓ 길드·경제·PvP의 시스템 디자인\n   │\n   [[그렉 스트리트]] (2008~) — WoW·LoL의 라이브 밸런싱·정치 운영\n     ↓ 데이터 + 직관, 너프 커뮤니케이션\n```\n\n## 공통 사상\n\n- **MMO는 사회 시뮬레이션**: 단순 게임이 아니라 인간 집단의 행동 실험장\n- **모든 디자인 결정이 정치적**: 시스템 변경이 곧 권력·경제·관계 변동\n- **측정 → 반복**: 라이브 운영의 핵심 루프\n- **디자이너의 사회적 책임**: 공동체 건강·중독·차별 등의 의식\n\n## 차이의 축\n\n| 디자이너 | 핵심 영역 | 대표 원칙 |\n|---|---|---|\n| 라프 코스터 | MMO 학술·게임의 문법 | [[시스템-RK003-MMO는사회다]] · [[시스템-RK004-게임의문법]] · [[프로덕션-RK002-디자이너의사회적책임]] |\n| 데이미언 슈버트 | 운영 주기·경제·PvP | [[프로덕션-DS001-라이브서비스운영주기]] · [[시스템-DS001-MMO경제수도꼭지싱크]] · [[시스템-DS002-PvPPvE룰분리]] |\n| 그렉 스트리트 | 라이브 밸런싱·디자이너 정치 | [[시스템-GS003-라이브밸런싱데이터직관]] · [[프로덕션-GS001-너프커뮤니케이션]] · [[프로덕션-GS002-디자이너의공개성]] |\n\n## 작품·운영의 흐름\n\n- **Ultima Online** (1997, 코스터·슈버트): MMO 산업 정전. 사회 시뮬레이션의 의식적 시도\n- **Star Wars Galaxies** (2003, 코스터): MMO의 직업·사회 시스템 극단화\n- **Meridian 59** (1996, 슈버트): 슈버트의 첫 MMO. 라이브 운영 사상의 발원\n- **Shadowbane** (2003, 슈버트): 길드 전쟁 PvP MMO 정전\n- **SWTOR** (2011, 슈버트): F2P 전환 후 라이브 운영의 회복 사례\n- **World of Warcraft** (2008~, 스트리트): 클래스 디자인·밸런싱 리드. \"Ghostcrawler\" 별명\n- **League of Legends** (2013~, 스트리트): MOBA 라이브 운영의 산업 정전\n\n## 핵심 사상의 진화\n\n- **코스터**: MMO를 학술·이론으로 확립 (*A Theory of Fun*) → 사상의 기반\n- **슈버트**: 코스터 사상의 시스템·인프라 구체화 → 라이브 운영의 실전 어휘\n- **스트리트**: 슈버트 사상의 데이터·정치 운영 진화 → 라이브 게임 디자이너의 공개성·책임\n\n## 영향 흐름의 구체적 사례\n\n- **사회로서의 MMO**: 코스터 *UO* → 슈버트 *Shadowbane* (PvP 사회) → 스트리트 *WoW* (PvE 길드 사회)\n- **경제 균형**: 코스터 → 슈버트 [[시스템-DS001-MMO경제수도꼭지싱크]] → 스트리트의 LoL 화폐 운영\n- **PvP 분리**: 슈버트 [[시스템-DS002-PvPPvE룰분리]] → 스트리트 [[시스템-GS004-PvP와PvE분리튜닝]] (LoL의 ARAM 분리)\n- **디자이너 공개성**: 코스터의 학술 → 스트리트의 너프 커뮤니케이션 (\"Ghostcrawler\" 블로그)\n\n## 다른 계보와의 관계\n\n- **CRPG 계보**와 대비: 단일 플레이어 반응성 vs 다중 플레이어 사회\n- **이머시브심**: 시스템적 자유 vs 사회적 시스템 — 같은 사상의 다른 적용\n\n## 관련 학습 경로\n\n- [[라이브서비스]] — 3명 16편 깊이 학습\n- [[모바일]] — 모바일 라이브 서비스의 적용",
+    "wikilinks": [
+      {
+        "target": "라프 코스터",
+        "display": null
+      },
+      {
+        "target": "데이미언 슈버트",
+        "display": null
+      },
+      {
+        "target": "그렉 스트리트",
+        "display": null
+      },
+      {
+        "target": "시스템-RK003-MMO는사회다",
+        "display": null
+      },
+      {
+        "target": "시스템-RK004-게임의문법",
+        "display": null
+      },
+      {
+        "target": "프로덕션-RK002-디자이너의사회적책임",
+        "display": null
+      },
+      {
+        "target": "프로덕션-DS001-라이브서비스운영주기",
+        "display": null
+      },
+      {
+        "target": "시스템-DS001-MMO경제수도꼭지싱크",
+        "display": null
+      },
+      {
+        "target": "시스템-DS002-PvPPvE룰분리",
+        "display": null
+      },
+      {
+        "target": "시스템-GS003-라이브밸런싱데이터직관",
+        "display": null
+      },
+      {
+        "target": "프로덕션-GS001-너프커뮤니케이션",
+        "display": null
+      },
+      {
+        "target": "프로덕션-GS002-디자이너의공개성",
+        "display": null
+      },
+      {
+        "target": "시스템-DS001-MMO경제수도꼭지싱크",
+        "display": null
+      },
+      {
+        "target": "시스템-DS002-PvPPvE룰분리",
+        "display": null
+      },
+      {
+        "target": "시스템-GS004-PvP와PvE분리튜닝",
+        "display": null
+      },
+      {
+        "target": "라이브서비스",
+        "display": null
+      },
+      {
+        "target": "모바일",
+        "display": null
+      }
+    ],
+    "bodyLength": 2022,
+    "topics": [
+      "live_service"
+    ]
+  },
+  {
+    "id": "lineage:README",
+    "slug": "README",
+    "fileName": "README",
+    "filePath": "00_색인/lineage/README.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "README",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🧬 사상 계보 (Designer Lineage)\n\n> 디자이너 간 사상적 영향 관계를 명시화한 9개 계보. 그래프 뷰의 클러스터에 의미를 부여.\n\n## 9개 계보\n\n### 사상 중심 (6)\n\n| 계보 | 디자이너 | 핵심 사상 |\n|---|---|---|\n| 🇯🇵 [[일본액션계보]] | 미야모토·사쿠라이·카미야·미야자키 | 게임필의 기술화, 캐릭터 다양성 |\n| 🌌 [[시뮬레이션계보]] | 윌 라이트·스펙터·처치·호킹 | 가능성의 공간, 시스템적 자유 |\n| 📖 [[CRPG계보]] | 아벨론·케인·소여 | 반응성, 회색 도덕 |\n| 🏚️ [[환경스토리텔링계보]] | 처치·레빈·미야자키·코지마 | 공간이 이야기한다 |\n| 🌐 [[MMO사회학계보]] | 코스터·슈버트·스트리트 | MMO는 사회다 |\n| 🎨 [[인디사상계보]] | 블로우·맥밀런·유·포프·바론·폭스 | 단일 메카닉의 깊이, 작가성 |\n\n### 회사·스튜디오 중심 (3)\n\n| 계보 | 디자이너 | 핵심 사상 |\n|---|---|---|\n| 🎬 [[노티독계보]] | 르마샹·스트랠리·드럭만 | 시네마틱 페이싱·8시간 캠페인 |\n| 🗝️ [[Arkane계보]] | 스미스·콜란토니오 | 이머시브심의 21세기 후계 |\n| 🏔️ [[베데스다오픈월드계보]] | 하워드·버지스·셴 | 모듈러 LD·자유 탐험 |\n\n## 활용\n\n- **강의·멘토링**: 디자이너 한 명을 다룰 때 계보 맥락 함께 제시\n- **연구**: 사상의 시간적 전개·영향 관계 추적\n- **그래프 뷰**: 계보별 색상 지정 시 라이브러리 구조 가시화\n\n## 계보 간 교차\n\n- **시뮬레이션 ↔ CRPG**: 케인의 *Arcanum*·*Outer Worlds*가 시뮬레이션 사상 흡수\n- **시뮬레이션 ↔ 환경 스토리텔링**: 처치가 양 계보의 발원\n- **인디 ↔ 시뮬레이션**: 블로우·유의 시스템 깊이가 시뮬레이션 사상 흡수\n- **CRPG ↔ 환경 스토리텔링**: 케인·아벨론의 환경 + 텍스트 결합\n- **일본 액션 ↔ 환경 스토리텔링**: 미야자키가 양 계보 교차점\n\n## 다른 색인\n\n- [[learning_paths/README|학습 경로 8종]]\n- [[by_designer]] — 디자이너별 전체 원칙\n- [[by_domain]] — 도메인별 전체 원칙",
+    "wikilinks": [
+      {
+        "target": "일본액션계보",
+        "display": null
+      },
+      {
+        "target": "시뮬레이션계보",
+        "display": null
+      },
+      {
+        "target": "CRPG계보",
+        "display": null
+      },
+      {
+        "target": "환경스토리텔링계보",
+        "display": null
+      },
+      {
+        "target": "MMO사회학계보",
+        "display": null
+      },
+      {
+        "target": "인디사상계보",
+        "display": null
+      },
+      {
+        "target": "노티독계보",
+        "display": null
+      },
+      {
+        "target": "Arkane계보",
+        "display": null
+      },
+      {
+        "target": "베데스다오픈월드계보",
+        "display": null
+      },
+      {
+        "target": "learning_paths/README",
+        "display": "학습 경로 8종"
+      },
+      {
+        "target": "by_designer",
+        "display": null
+      },
+      {
+        "target": "by_domain",
+        "display": null
+      }
+    ],
+    "bodyLength": 1132,
+    "topics": [
+      "character"
+    ]
+  },
+  {
+    "id": "lineage:노티독계보",
+    "slug": "노티독계보",
+    "fileName": "노티독계보",
+    "filePath": "00_색인/lineage/노티독계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "Naughty Dog 계보 (시네마틱 액션 어드벤처)",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "리처드 르마샹",
+      "브루스 스트랠리",
+      "닐 드럭만"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🎬 Naughty Dog 계보 (시네마틱 액션 어드벤처)\n\n> *Crash Bandicoot* → *Jak* → *Uncharted* → *The Last of Us*로 이어지는 Naughty Dog의 시네마틱 액션·페이싱 사상.\n\n## 계보 흐름\n\n```\n[[리처드 르마샹]] (Naughty Dog 2004~) — Uncharted 1·2·3 리드 디자이너\n   ↓ 페이싱·시네마틱·주의력 설계\n   │\n   [[브루스 스트랠리]] (1999~, Uncharted 2 리드 + TLoU 공동 디렉터) \n   ↓ 동료 AI·환경 페이싱\n   │\n   [[닐 드럭만]] (2004~, TLoU·TLoU2 디렉터)\n     ↓ 영화적 서사 + 폭력의 윤리\n```\n\n## 공통 사상\n\n- **시네마틱 페이싱**: 영화적 페이싱을 게임플레이와 통합\n- **주의력 설계**: 플레이어 시선·인지 부하의 정밀 관리\n- **8시간 캠페인**: 영화 5~6편 길이의 강한 서사 체험\n- **두 비전 선언**: 디자이너가 게임의 본질을 두 문장으로 정의\n\n## 차이의 축\n\n| 디자이너 | 핵심 강조 | 대표 원칙 |\n|---|---|---|\n| 리처드 르마샹 | 페이싱·주의력·비전 선언 | [[레벨-RL001-주의력의설계]] · [[레벨-RL002-시네마틱페이싱]] · [[레벨-RL003-두개의비전선언문]] |\n| 브루스 스트랠리 | 동료 AI·환경 | (원칙 미작성, [[03_패턴/The Last of Us-컴패니언 AI 설계|TLoU 컴패니언 AI 패턴]]) |\n| 닐 드럭만 | 영화적 서사·폭력 | (원칙 미작성, GDC 강연 풍부) |\n\n## 작품의 흐름\n\n- **Crash Bandicoot** (1996~): 캐릭터 액션의 산업 정전\n- **Jak and Daxter** (2001~): 오픈월드 액션·에어리얼 카메라 정립\n- **Uncharted** (2007~): 시네마틱 액션 어드벤처의 산업 정전 (르마샹)\n- **Uncharted 2: Among Thieves** (2009): 게임 페이싱의 새 기준 (르마샹·스트랠리)\n- **The Last of Us** (2013): 시네마틱 + 동료 AI + 폭력의 윤리 (드럭만·스트랠리)\n- **The Last of Us Part II** (2020): 시네마틱 서사의 한계까지 (드럭만)\n\n## 핵심 사상의 통찰\n\n- **르마샹의 두 비전 선언**: \"게임의 본질을 두 문장으로 정의 못하면 디자인이 흐려진다\"\n- **스트랠리의 동료 AI**: AI가 *플레이어를 방해하지 않으면서 살아있는 듯이* 행동해야\n- **드럭만의 폭력 윤리**: 게임의 폭력이 *단순 메카닉이 아니라 도덕적 무게*를 가져야\n\n## 영향 흐름의 구체적 사례\n\n- **시네마틱 페이싱**: Naughty Dog → 산업 전체의 AAA 캠페인 표준\n- **동료 AI**: Ellie (TLoU) → Atreus (God of War) → 후속 동료 AI의 표준\n- **두 비전 선언**: 르마샹의 *Uncharted 2* 비전 → 산업 디자이너의 자기 점검 도구\n\n## 다른 계보와의 관계\n\n- **일본 액션 계보**와 대비: 정밀 게임필 vs 시네마틱 페이싱 — 양극의 액션 사상\n- **환경 스토리텔링**: 드럭만의 *TLoU* 환경 서사 (Boston·Pittsburgh의 폐허)\n- **이머시브심**과 대비: 시스템적 자유 vs 시네마틱 통제\n\n## 관련 학습 경로\n\n- [[액션전투]] — 액션 게임 디자인 깊이\n- [[CRPG]] — 시네마틱 RPG (BG3 등)와 비교\n\n## 보강 후보 (현재 미작성 원칙)\n\n- 스트랠리: 동료 AI 설계, 환경 페이싱\n- 드럭만: 폭력의 윤리, 영화적 서사 설계, *TLoU* 페이스 변동\n- *Uncharted* 시리즈의 점프·등반·물리 디자인 (LD 강연 다수)",
+    "wikilinks": [
+      {
+        "target": "리처드 르마샹",
+        "display": null
+      },
+      {
+        "target": "브루스 스트랠리",
+        "display": null
+      },
+      {
+        "target": "닐 드럭만",
+        "display": null
+      },
+      {
+        "target": "레벨-RL001-주의력의설계",
+        "display": null
+      },
+      {
+        "target": "레벨-RL002-시네마틱페이싱",
+        "display": null
+      },
+      {
+        "target": "레벨-RL003-두개의비전선언문",
+        "display": null
+      },
+      {
+        "target": "03_패턴/The Last of Us-컴패니언 AI 설계",
+        "display": "TLoU 컴패니언 AI 패턴"
+      },
+      {
+        "target": "액션전투",
+        "display": null
+      },
+      {
+        "target": "CRPG",
+        "display": null
+      }
+    ],
+    "bodyLength": 1877,
+    "topics": []
+  },
+  {
+    "id": "lineage:베데스다오픈월드계보",
+    "slug": "베데스다오픈월드계보",
+    "fileName": "베데스다오픈월드계보",
+    "filePath": "00_색인/lineage/베데스다오픈월드계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "베데스다 오픈월드 RPG 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "토드 하워드",
+      "조엘 버지스",
+      "윌 셴",
+      "에밀 파글리아룰로"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🏔️ 베데스다 오픈월드 RPG 계보\n\n> *Morrowind* → *Oblivion* → *Skyrim* → *Fallout 3·4* → *Starfield*로 이어지는 베데스다의 오픈월드 RPG 사상. **모듈러 레벨 디자인** + **그리드 기반 절차 환경** + **스토리 풍부한 사이드 콘텐츠**.\n\n## 계보 흐름\n\n```\n[[토드 하워드]] (1994~ Bethesda) — Morrowind·Oblivion·Skyrim·Fallout·Starfield 디렉터\n   ↓ 게임의 비전 + 마케팅의 얼굴\n   │\n   ├─→ [[조엘 버지스]] (Bethesda 리드 LD) — Skyrim·Fallout 4 레벨 디자인\n   │     ↓ 그리드 기반 모듈러 레벨 디자인 정전\n   │     ↓ \"Building Fallout 4\" GDC 발표 (2016)\n   │\n   └─→ [[윌 셴]] (Bethesda 시니어 디자이너) — Skyrim·Fallout 4 퀘스트\n         ↓ 사이드 퀘스트의 깊이·세계 통합 사상\n```\n\n## 공통 사상\n\n- **모듈러 레벨 디자인**: 그리드 단위 + 재사용 가능 모듈 = 거대 월드 효율\n- **퀘스트 풍부도**: 메인 외에 수백 개 사이드 콘텐츠\n- **자유로운 탐험**: 오픈월드 = 가고 싶은 곳에 갈 수 있다\n- **모드 친화**: 베데스다 게임 = 모드 커뮤니티가 게임의 일부\n\n## 차이의 축\n\n| 디자이너 | 강조 | 대표 원칙·패턴 |\n|---|---|---|\n| 토드 하워드 | 비전·마케팅·\"It just works\" | (원칙 stub, GDC·인터뷰 풍부) |\n| 조엘 버지스 | 모듈러 LD·그리드 | [[레벨-JBu001-그리드모듈러]] |\n| 윌 셴 | 퀘스트 디자인 | (원칙 stub) |\n\n## 작품의 흐름\n\n- **Morrowind** (2002): 텍스트 중심 + 자유 탐험의 정전\n- **Oblivion** (2006): Radiant AI 시도 + 그래픽 도약\n- **Fallout 3** (2008): Black Isle Fallout의 베데스다식 부활\n- **Skyrim** (2011): 모듈러 LD + 모드 친화의 산업 정전. 11년+ 운영\n- **Fallout 4** (2015): 빌딩·정착지 시스템 추가\n- **Starfield** (2023): 절차 행성 + 핸드 거점의 결합 시도\n\n## 핵심 사상의 통찰\n\n- **버지스의 그리드 모듈러**: \"Skyrim의 더운전(dungeon) 100개를 어떻게 만들었나\" — 표준 그리드 + 재사용 모듈\n- **셴의 퀘스트 풍부도**: 사이드 퀘스트가 *세계 통합*과 *플레이어 자유*의 균형\n- **하워드의 비전**: \"It just works\" — 시스템 결합으로 예상 못한 결과 발생\n\n## 영향 흐름의 구체적 사례\n\n- **모듈러 LD**: 베데스다 → 산업 표준 (대부분 RPG가 모듈 사용)\n- **모드 친화**: Skyrim 모드 커뮤니티 → *Stardew Valley*·*Witcher 3* 등에 영향\n- **그리드 기반**: 버지스 발표 → 인디·AAA 모두 채택\n\n## 다른 계보와의 관계\n\n- **CRPG 계보**와 대비: 텍스트·반응성 중심 vs 자유 탐험·시각 중심\n- **이머시브심 계보**: Arkane의 정밀한 시스템 vs 베데스다의 광활한 모듈\n- **인디 사상**: 모드 커뮤니티가 인디 사상의 발원\n\n## 관련 학습 경로\n\n- [[메트로배니아]] — 비교: 응축 vs 광활 월드 디자인\n- [[이머시브심]] — 시스템 자유의 다른 접근\n\n## 보강 후보 (현재 미작성)\n\n- 토드 하워드: 비전 통합·\"It just works\" 사상\n- 윌 셴: 사이드 퀘스트 디자인·세계 통합\n- 베데스다 RPG의 *Radiant AI*·*Radiant Story* 시스템\n- 모드 커뮤니티와 게임의 관계",
+    "wikilinks": [
+      {
+        "target": "토드 하워드",
+        "display": null
+      },
+      {
+        "target": "조엘 버지스",
+        "display": null
+      },
+      {
+        "target": "윌 셴",
+        "display": null
+      },
+      {
+        "target": "레벨-JBu001-그리드모듈러",
+        "display": null
+      },
+      {
+        "target": "메트로배니아",
+        "display": null
+      },
+      {
+        "target": "이머시브심",
+        "display": null
+      }
+    ],
+    "bodyLength": 1897,
+    "topics": [
+      "narrative",
+      "level"
+    ]
+  },
+  {
+    "id": "lineage:시뮬레이션계보",
+    "slug": "시뮬레이션계보",
+    "fileName": "시뮬레이션계보",
+    "filePath": "00_색인/lineage/시뮬레이션계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "시뮬레이션·이머시브심 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "윌 라이트",
+      "워런 스펙터",
+      "더그 처치",
+      "클린트 호킹"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🌌 시뮬레이션·이머시브심 계보\n\n> Maxis · Looking Glass · Ion Storm · Ubisoft Montreal로 이어지는 **시스템적 자유**와 **플레이어 주도 서사**의 계보.\n\n## 계보 흐름\n\n```\n[[윌 라이트]] (1985~) — SimCity·Sims로 \"가능성의 공간\" 정전\n   ↓ 시스템이 곧 게임, 목표 없는 정서\n   ├─→ [[워런 스펙터]] (1989~) — Ultima Underworld·Deus Ex로 이머시브심 정전\n   │     ↓ \"0개의 해법\" — 플레이어가 선택\n   │\n   ├─→ [[더그 처치]] (1991~) — Ultima Underworld·Thief로 FADT 어휘\n   │     ↓ Formal Abstract Design Tools — 디자인의 공통 언어\n   │\n   └─→ [[클린트 호킹]] (2000~) — Splinter Cell·Far Cry 2로 시스템 의미\n         ↓ \"옵션 그라데이션\" — 시스템적 자유의 진화\n```\n\n## 공통 사상\n\n- **가능성의 공간(Possibility Space)**: 게임은 정해진 경로가 아니라 시스템의 조합 공간\n- **0개의 해법**: 디자이너가 답을 미리 정하지 않고, 시스템 룰만 깔고 플레이어가 답을 만든다\n- **시스템이 곧 의미**: 메카닉의 작동 자체가 게임의 메시지 (루도내러티브)\n- **목표 없는 동기**: 외부 목표 없이도 시스템과의 상호작용 자체가 동기가 된다\n\n## 차이의 축\n\n| 디자이너 | 핵심 비전 | 대표 원칙 |\n|---|---|---|\n| 윌 라이트 | 가능성의 공간·장난감 | [[시스템-WW001-가능성의공간]] · [[시스템-WW002-장난감으로서의게임]] |\n| 워런 스펙터 | 이머시브심·플레이어 주도 | [[시스템-WS001-이머시브심의핵심]] · [[시스템-WS002-0개의해법]] |\n| 더그 처치 | FADT 디자인 어휘 | [[시스템-DC001-플레이어의도]] · [[시스템-DC003-FADT어휘]] |\n| 클린트 호킹 | 시스템적 자유·옵션 그라데이션 | [[시스템-CH001-시스템적자유]] · [[내러티브-CH002-시스템이의미한다]] |\n\n## 핵심 사상의 진화\n\n- **윌 라이트의 \"가능성의 공간\"** — 추상적 시스템 사상\n- **스펙터의 \"이머시브심\"** — 시스템 사상을 1인칭 게임 장르로 구체화\n- **처치의 \"FADT\"** — 시스템 사상의 디자인 어휘 정립\n- **호킹의 \"시스템적 자유\"** — 사상의 메타 비평·진화 방향 제시\n\n## 영향 흐름의 구체적 사례\n\n- **Ultima Underworld** (1992): 처치+스펙터 공동 작업. 1인칭 시뮬레이션 RPG의 시조\n- **Thief** (1998): 처치의 어휘가 잠입 액션에 적용\n- **Deus Ex** (2000): 스펙터의 이머시브심 정전\n- **Far Cry 2** (2008): 호킹의 환경 정치성·시스템 자유의 진화\n- **Dishonored 시리즈**: 스펙터·처치·호킹 사상의 종합 (Arkane Studios)\n\n## 다른 계보와의 관계\n\n- **CRPG 계보**와 협업: 케인의 *Arcanum*·*Outer Worlds*가 시뮬레이션 사상 흡수\n- **일본 액션**과 대비: 정밀 조율 vs 시스템 자유라는 정반대 방향\n- **인디 사상**의 발원: 블로우·유의 시스템 깊이 사상이 시뮬레이션 계보에서 영향\n\n## 관련 학습 경로\n\n- [[이머시브심]] — 4명 22편 깊이 학습\n- [[CRPG]] — 시스템적 자유의 RPG 영역",
+    "wikilinks": [
+      {
+        "target": "윌 라이트",
+        "display": null
+      },
+      {
+        "target": "워런 스펙터",
+        "display": null
+      },
+      {
+        "target": "더그 처치",
+        "display": null
+      },
+      {
+        "target": "클린트 호킹",
+        "display": null
+      },
+      {
+        "target": "시스템-WW001-가능성의공간",
+        "display": null
+      },
+      {
+        "target": "시스템-WW002-장난감으로서의게임",
+        "display": null
+      },
+      {
+        "target": "시스템-WS001-이머시브심의핵심",
+        "display": null
+      },
+      {
+        "target": "시스템-WS002-0개의해법",
+        "display": null
+      },
+      {
+        "target": "시스템-DC001-플레이어의도",
+        "display": null
+      },
+      {
+        "target": "시스템-DC003-FADT어휘",
+        "display": null
+      },
+      {
+        "target": "시스템-CH001-시스템적자유",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      },
+      {
+        "target": "이머시브심",
+        "display": null
+      },
+      {
+        "target": "CRPG",
+        "display": null
+      }
+    ],
+    "bodyLength": 1758,
+    "topics": [
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "lineage:인디사상계보",
+    "slug": "인디사상계보",
+    "fileName": "인디사상계보",
+    "filePath": "00_색인/lineage/인디사상계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "인디 사상 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "조나단 블로우",
+      "데렉 유",
+      "에드먼드 맥밀런",
+      "루카스 포프",
+      "에릭 바론",
+      "토비 폭스"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🎨 인디 사상 계보\n\n> 2000년대 후반부터 형성된 인디 게임 사상의 6대 거장. **단일 메카닉의 깊이** + **작가성** + **솔로/소규모 팀의 자율성**.\n\n## 계보 구조\n\n병렬 계보 (단일 직선이 아닌 동시대 다중 흐름):\n\n```\n2000년대 중반~: 인디 르네상스의 시작\n   │\n   ├─ [[조나단 블로우]] — Braid (2008)·The Witness (2016): 철학적 인디\n   ├─ [[에드먼드 맥밀런]] — Super Meat Boy (2010)·Isaac (2011): 다작 인디\n   ├─ [[데렉 유]] — Spelunky (2008/2012): 절차 + 수제 결합\n   │\n2010년대: 솔로 개발의 정착\n   │\n   ├─ [[루카스 포프]] — Papers, Please (2013)·Obra Dinn (2018): 단일 메카닉의 깊이\n   ├─ [[에릭 바론]] — Stardew Valley (2016): 5년 1인 개발의 신화\n   │\n2010년대 중반~: 솔로 개발의 새 세대\n   │\n   └─ [[토비 폭스]] — Undertale (2015)·Deltarune (2018~): 메타 서사 인디\n```\n\n## 공통 사상\n\n- **단일 메카닉의 깊이**: 새 메카닉을 자꾸 추가하기보다 한 메카닉의 변주를 깊이 탐험\n- **작가성**: AAA 위원회 디자인의 반대 — 단일 디자이너의 강한 비전\n- **메카닉이 테마**: 시스템 자체가 게임의 메시지를 전달\n- **솔로 또는 2~5인 팀**: 거대 조직 없이 완성도 추구\n\n## 차이의 축\n\n| 디자이너 | 핵심 사상 | 대표 원칙 | 대표작 |\n|---|---|---|---|\n| 조나단 블로우 | 철학적 깊이·암묵 학습 | [[시스템-JB001-한개념여러표현]] · [[시스템-JB003-에피파니설계]] · [[내러티브-JB001-메카닉이테마를말한다]] | Braid·The Witness |\n| 에드먼드 맥밀런 | 시너지 매트릭스·다작 | [[시스템-EM001-시너지매트릭스]] · [[프로덕션-EM001-2인인디모델]] | Isaac·Super Meat Boy |\n| 데렉 유 | 만든 손길의 절차 생성 | [[시스템-DY001-시스템상호작용매트릭스]] · [[시스템-DY002-만든손길이보이는절차생성]] · [[프로덕션-DY001-게임을끝내는법]] | Spelunky |\n| 루카스 포프 | 단일 메카닉의 깊이 | [[시스템-LP001-단일매커닉의깊이]] · [[내러티브-LP001-메카닉이도덕이다]] · [[내러티브-LP002-절차적추리]] | Papers, Please·Obra Dinn |\n| 에릭 바론 | 1인 5년 장기 헌신 | [[프로덕션-EB001-한사람이다만든다]] · [[내러티브-EB001-약점있는마을사람들]] · [[프로덕션-EB002-출시후무료업데이트]] | Stardew Valley |\n| 토비 폭스 | 메타 서사·플레이어 기억 | [[내러티브-TF001-게임이플레이어를기억]] · [[시스템-TF001-비폭력해법의설계]] · [[내러티브-TF003-유머로접근하는진지함]] | Undertale·Deltarune |\n\n## 사상의 핵심 통찰\n\n- **블로우**: 게임이 \"메카닉을 통해 철학을 말할 수 있다\"는 사상의 정전\n- **맥밀런**: 다작·시너지 매트릭스로 인디의 실용 모델 제시\n- **유**: 절차 생성에 인간의 의도를 담는 디자인 사상의 학자\n- **포프**: 단일 메카닉이 한 게임을 만든다는 미니멀리즘의 정전\n- **바론**: 1인 5년 헌신의 가능성을 산업에 입증\n- **폭스**: 메타 서사·플레이어와의 관계를 인디만이 가능한 영역으로 정립\n\n## 작품의 흐름\n\n- **Braid** (2008): 인디 사상의 산업 진입 — *시간 되돌리기 = 후회*라는 메카닉 = 테마 정전\n- **Super Meat Boy** (2010): 다작 인디 모델 + 빠른 죽음·재시도\n- **Spelunky** (2008/2012): 절차 + 수제의 산업 정전, 로그라이크 부흥의 출발\n- **Papers, Please** (2013): 단일 메카닉(서류 검토) = 도덕 시스템 정전\n- **Undertale** (2015): 메타 서사 인디의 폭발 (1인 개발 + 강한 작가성)\n- **Stardew Valley** (2016): 1인 5년 개발의 신화 + 출시 후 영구 무료 업데이트\n- **Obra Dinn** (2018): 단일 메카닉의 깊이 + 절차적 추리\n\n## 다른 계보와의 관계\n\n- **CRPG 계보**와 협업: 메카닉=테마 사상이 *Disco Elysium*·*Pentiment*에 영향\n- **이머시브심 계보**의 직접 영향: 시스템적 자유의 인디 영역 적용\n- **일본 액션**과 대비: 게임필 정밀 조율 vs 메카닉 = 의미\n\n## 관련 학습 경로\n\n- [[인디솔로]] — 6명 22편 깊이 학습\n- [[메트로배니아]] — 인디 메트로배니아 (Ori·Hollow Knight 등)\n- [[모바일]] — 인디 모바일 (켄 웡 등)",
+    "wikilinks": [
+      {
+        "target": "조나단 블로우",
+        "display": null
+      },
+      {
+        "target": "에드먼드 맥밀런",
+        "display": null
+      },
+      {
+        "target": "데렉 유",
+        "display": null
+      },
+      {
+        "target": "루카스 포프",
+        "display": null
+      },
+      {
+        "target": "에릭 바론",
+        "display": null
+      },
+      {
+        "target": "토비 폭스",
+        "display": null
+      },
+      {
+        "target": "시스템-JB001-한개념여러표현",
+        "display": null
+      },
+      {
+        "target": "시스템-JB003-에피파니설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "시스템-EM001-시너지매트릭스",
+        "display": null
+      },
+      {
+        "target": "프로덕션-EM001-2인인디모델",
+        "display": null
+      },
+      {
+        "target": "시스템-DY001-시스템상호작용매트릭스",
+        "display": null
+      },
+      {
+        "target": "시스템-DY002-만든손길이보이는절차생성",
+        "display": null
+      },
+      {
+        "target": "프로덕션-DY001-게임을끝내는법",
+        "display": null
+      },
+      {
+        "target": "시스템-LP001-단일매커닉의깊이",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP002-절차적추리",
+        "display": null
+      },
+      {
+        "target": "프로덕션-EB001-한사람이다만든다",
+        "display": null
+      },
+      {
+        "target": "내러티브-EB001-약점있는마을사람들",
+        "display": null
+      },
+      {
+        "target": "프로덕션-EB002-출시후무료업데이트",
+        "display": null
+      },
+      {
+        "target": "내러티브-TF001-게임이플레이어를기억",
+        "display": null
+      },
+      {
+        "target": "시스템-TF001-비폭력해법의설계",
+        "display": null
+      },
+      {
+        "target": "내러티브-TF003-유머로접근하는진지함",
+        "display": null
+      },
+      {
+        "target": "인디솔로",
+        "display": null
+      },
+      {
+        "target": "메트로배니아",
+        "display": null
+      },
+      {
+        "target": "모바일",
+        "display": null
+      }
+    ],
+    "bodyLength": 2463,
+    "topics": [
+      "system",
+      "production"
+    ]
+  },
+  {
+    "id": "lineage:일본액션계보",
+    "slug": "일본액션계보",
+    "fileName": "일본액션계보",
+    "filePath": "00_색인/lineage/일본액션계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "일본 액션 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "시게루 미야모토",
+      "사쿠라이 마사히로",
+      "카미야 히데키",
+      "미야자키 하지메"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🇯🇵 일본 액션 계보\n\n> 닌텐도·플래티넘·프롬소프트로 이어지는 일본 액션 게임 디자인의 4세대 계보. **게임필의 기술화**라는 일관 사상.\n\n## 계보 흐름\n\n```\n[[시게루 미야모토]] (1981~)\n   ↓ 게임필·점프 감촉·암묵 학습의 원형\n   ├─→ [[사쿠라이 마사히로]] (1992~) — Kirby·Smash로 \"한 방의 쾌감\"의 기술화\n   │     ↓ 캐릭터 다양성·시스템적 접근성\n   │\n   ├─→ [[카미야 히데키]] (2001~) — DMC·Bayonetta로 스타일리시 액션 정전\n   │     ↓ 콤보 캔슬·완벽 회피·랭크 시스템\n   │\n   └─→ [[미야자키 하지메]] (2009~) — Demon's·Dark Souls로 역경 미학\n         ↓ 상호연결 월드·보스 안무·환경 서사\n```\n\n## 공통 사상\n\n- **게임필이 곧 디자인의 본질**: 시각·청각·물리 피드백의 정밀 조율\n- **캐릭터의 정체성은 파라미터에서**: 외형이 아니라 수치 분포가 캐릭터를 만든다\n- **암묵적 학습**: 텍스트 튜토리얼 거부, 게임플레이 안에서 가르치기\n- **반복 가치**: 같은 룰 공간에서 매 플레이의 다른 경험\n\n## 차이의 축\n\n| 디자이너 | 핵심 정서 | 대표 원칙 |\n|---|---|---|\n| 미야모토 | 발견·놀라움·접근성 | [[시스템-SG002-단순함의깊이]] · [[전투-SG001-게임필점프의감촉]] |\n| 사쿠라이 | 한 방의 쾌감·캐릭터 다양성 | [[전투-SK002-히트스톱]] · [[전투-SK008-차별화밸런싱]] |\n| 카미야 | 스타일·리듬·숙련의 보상 | [[전투-KH001-스타일랭크시스템]] · [[전투-KH004-스타일리시액션의리듬]] |\n| 미야자키 | 역경·죽음의 의미·환경 서사 | [[전투-MK001-역경을통한성취감]] · [[레벨-MK001-상호연결월드]] |\n\n## 영향 흐름의 구체적 사례\n\n- **점프 감촉**: 미야모토 → 사쿠라이 → 카미야 모두 \"공중 컨트롤·낙하 가속\"의 정밀 조율\n- **히트스톱**: 사쿠라이 정전 → 카미야 *Bayonetta*에서 \"Witch Time\" 변주 → 미야자키 *Sekiro* \"튕기기\"에서 또 다른 변주\n- **차별화 밸런싱**: 사쿠라이 *Smash* → 카미야 *Marvel vs Capcom* (협력)·*Bayonetta* (단일 캐릭터의 다양성)\n- **암묵 학습**: 미야모토 → 사쿠라이 [[시스템-SK004-자연스러운튜토리얼]] → 미야자키 *Dark Souls* (튜토리얼 텍스트 0)\n\n## 다른 계보와의 관계\n\n- **시뮬레이션 사상**과 대비: 윌 라이트의 \"가능성의 공간\"이 *오픈 시뮬레이션* 방향이라면, 일본 액션은 *정밀 조율* 방향\n- **CRPG 계보**와 대비: 케인·아벨론이 *반응성*에 집중한다면, 일본 액션은 *체감*에 집중\n\n## 관련 학습 경로\n\n- [[액션전투]] — 사쿠라이·카미야 18편 깊이 학습\n- [[메트로배니아]] — 미야자키 보스·환경 사상의 메트로배니아 영역\n- [[입문10편]] — 미야모토·사쿠라이의 핵심 진입 원칙",
+    "wikilinks": [
+      {
+        "target": "시게루 미야모토",
+        "display": null
+      },
+      {
+        "target": "사쿠라이 마사히로",
+        "display": null
+      },
+      {
+        "target": "카미야 히데키",
+        "display": null
+      },
+      {
+        "target": "미야자키 하지메",
+        "display": null
+      },
+      {
+        "target": "시스템-SG002-단순함의깊이",
+        "display": null
+      },
+      {
+        "target": "전투-SG001-게임필점프의감촉",
+        "display": null
+      },
+      {
+        "target": "전투-SK002-히트스톱",
+        "display": null
+      },
+      {
+        "target": "전투-SK008-차별화밸런싱",
+        "display": null
+      },
+      {
+        "target": "전투-KH001-스타일랭크시스템",
+        "display": null
+      },
+      {
+        "target": "전투-KH004-스타일리시액션의리듬",
+        "display": null
+      },
+      {
+        "target": "전투-MK001-역경을통한성취감",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "시스템-SK004-자연스러운튜토리얼",
+        "display": null
+      },
+      {
+        "target": "액션전투",
+        "display": null
+      },
+      {
+        "target": "메트로배니아",
+        "display": null
+      },
+      {
+        "target": "입문10편",
+        "display": null
+      }
+    ],
+    "bodyLength": 1528,
+    "topics": []
+  },
+  {
+    "id": "lineage:환경스토리텔링계보",
+    "slug": "환경스토리텔링계보",
+    "fileName": "환경스토리텔링계보",
+    "filePath": "00_색인/lineage/환경스토리텔링계보.md",
+    "type": "lineage",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "환경 스토리텔링 계보",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [
+      "켄 레빈",
+      "코지마 히데오",
+      "더그 처치",
+      "미야자키 하지메"
+    ],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🏚️ 환경 스토리텔링 계보\n\n> Looking Glass → Irrational → Kojima Productions → FromSoftware로 이어지는 **공간·오브젝트·연출이 곧 서사**라는 사상.\n\n## 계보 흐름\n\n```\n[[더그 처치]] (1992~) — Ultima Underworld·System Shock으로 환경 서사 어휘 정립\n   ↓ 환경에 정보를 심는 디자인\n   │\n   ├─→ [[켄 레빈]] (1999~) — System Shock 2·BioShock의 환경 디스토피아 정전\n   │     ↓ 오디오로그·낙서·사물 배치\n   │     ↓ Atlas의 \"Would you kindly?\" — 환경 서사의 메타 반전\n   │\n   ├─→ [[미야자키 하지메]] (2009~) — Demon's·Dark Souls의 모호한 환경 로어\n   │     ↓ 아이템 설명 + 보스 위치 = 서사\n   │\n   └─→ [[코지마 히데오]] (1987~, 환경 사상 1998 MGS~) — Metal Gear·Death Stranding\n         ↓ 영화적 연출 + 환경 + 메타 서사의 종합\n```\n\n## 공통 사상\n\n- **공간이 이야기한다**: 캐릭터 대사가 아니라 환경의 흔적이 서사를 전달\n- **모호함의 의미**: 명시적 설명 거부 → 플레이어 해석 공간 확보\n- **메타 반전**: 환경 서사가 게임 자체에 대한 질문을 던진다\n- **오디오로그·문서**: 비전선언적 서사 도구 (캐릭터 없이 음성·문자로 사건 기록)\n\n## 차이의 축\n\n| 디자이너 | 핵심 어휘 | 대표 원칙 |\n|---|---|---|\n| 더그 처치 | 환경 = AI·플레이어 인지 | [[내러티브-DC001-환경서사의기원]] · [[레벨-DC001-이멀시브환경]] |\n| 켄 레빈 | 디스토피아·메타 반전 | [[내러티브-KL001-환경스토리텔링]] · [[내러티브-KL002-복종의메타반전]] · [[내러티브-KL003-오디오로그의서사적역할]] |\n| 미야자키 하지메 | 모호한 로어·역경 환경 | [[내러티브-MK001-환경스토리텔링]] · [[내러티브-MK002-모호한로어의힘]] |\n| 코지마 히데오 | 영화적·메타·물성 | [[내러티브-HK001-제4의벽붕괴]] · [[내러티브-HK002-영화적연출과게임플레이]] · [[내러티브-HK003-배우페르소나의물성]] |\n\n## 핵심 작품의 환경 서사\n\n- **System Shock 2** (1999, 레빈): 오디오로그가 SHODAN·승무원의 사건을 재구성\n- **BioShock** (2007, 레빈): Rapture의 낙서·연구 일지·녹음·신문이 도시의 몰락사를 전한다. \"Would you kindly?\"의 메타 반전\n- **Dark Souls** (2011, 미야자키): 아이템 설명·보스 위치·NPC 단편 대사로 만 년의 신화 재구성\n- **Metal Gear Solid 2** (2001, 코지마): 환경 + 무선 통신 + 메타 반전의 종합\n- **Death Stranding** (2019, 코지마): 환경 자체(BT·시간비)가 서사의 주체\n\n## 영향 흐름의 구체적 사례\n\n- **오디오로그**: 처치 *System Shock* (1994) → 레빈 *System Shock 2* → 모든 후속 게임의 표준 도구\n- **모호한 로어**: 미야자키 *Dark Souls*가 정전 → *Hollow Knight*·*Outer Wilds*·*Tunic* 영향\n- **메타 환경**: 레빈 *BioShock*의 \"Would you kindly?\" → 코지마 *MGS2*의 Raiden 정체성 → *Stanley Parable*·*Inscryption*\n\n## 다른 계보와의 관계\n\n- **이머시브심 계보**: 처치·스펙터의 환경 사상이 환경 서사의 발원\n- **CRPG 계보**: 텍스트 중심 서사 vs 환경 중심 서사의 대비\n\n## 관련 학습 경로\n\n- [[메트로배니아]] — 미야자키의 환경 서사 깊이\n- [[이머시브심]] — 처치·레빈의 환경 어휘\n- [[CRPG]] — 케인의 환경 + 텍스트 결합",
+    "wikilinks": [
+      {
+        "target": "더그 처치",
+        "display": null
+      },
+      {
+        "target": "켄 레빈",
+        "display": null
+      },
+      {
+        "target": "미야자키 하지메",
+        "display": null
+      },
+      {
+        "target": "코지마 히데오",
+        "display": null
+      },
+      {
+        "target": "내러티브-DC001-환경서사의기원",
+        "display": null
+      },
+      {
+        "target": "레벨-DC001-이멀시브환경",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL002-복종의메타반전",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL003-오디오로그의서사적역할",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK001-제4의벽붕괴",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK003-배우페르소나의물성",
+        "display": null
+      },
+      {
+        "target": "메트로배니아",
+        "display": null
+      },
+      {
+        "target": "이머시브심",
+        "display": null
+      },
+      {
+        "target": "CRPG",
+        "display": null
+      }
+    ],
+    "bodyLength": 2006,
+    "topics": [
+      "narrative",
+      "level"
+    ]
+  }
+]

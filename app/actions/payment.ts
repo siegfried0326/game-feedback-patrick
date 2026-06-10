@@ -22,6 +22,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { approvePayment, cancelPayment } from "@/lib/nice-api"
+import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE } from "@/lib/payments-config"
 
 // 서버 가격표 (클라이언트 조작 방지)
 const CREDIT_PRICES: Record<string, { credits: number; amount: number }> = {
@@ -75,6 +76,9 @@ export async function processSubscriptionPayment(
   plan: "monthly" | "three_month",
   discountCode?: string,
 ) {
+  // 결제 일시 중단 가드
+  if (!PAYMENTS_ENABLED) return { error: PAYMENTS_DISABLED_MESSAGE }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -152,6 +156,9 @@ export async function processSubscriptionPayment(
  * 크레딧 주문 생성 (결제 전)
  */
 export async function createCreditOrder(packageType: string) {
+  // 결제 일시 중단 가드
+  if (!PAYMENTS_ENABLED) return { error: PAYMENTS_DISABLED_MESSAGE }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -189,6 +196,9 @@ export async function confirmCreditPayment(
   orderId: string,
   amount: number,
 ) {
+  // 결제 일시 중단 가드
+  if (!PAYMENTS_ENABLED) return { error: PAYMENTS_DISABLED_MESSAGE }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

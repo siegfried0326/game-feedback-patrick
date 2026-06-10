@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 
 export function PricingSection() {
   return (
@@ -67,9 +68,15 @@ export function PricingSection() {
               ))}
             </ul>
 
-            <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
-              <Link href="/payment/credits">크레딧 구매</Link>
-            </Button>
+            {!PAYMENTS_ENABLED ? (
+              <Button disabled className="w-full bg-[#162a4a] text-slate-500 opacity-60 cursor-not-allowed">
+                결제 준비 중
+              </Button>
+            ) : (
+              <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
+                <Link href="/payment/credits">크레딧 구매</Link>
+              </Button>
+            )}
           </div>
 
           {/* 월 무제한 */}
@@ -102,9 +109,15 @@ export function PricingSection() {
               ))}
             </ul>
 
-            <Button asChild className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-              <Link href="/payment/billing?plan=monthly">구독 시작하기</Link>
-            </Button>
+            {!PAYMENTS_ENABLED ? (
+              <Button disabled className="w-full bg-[#5B8DEF]/40 text-white/60 cursor-not-allowed">
+                결제 준비 중
+              </Button>
+            ) : (
+              <Button asChild className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                <Link href="/payment/billing?plan=monthly">구독 시작하기</Link>
+              </Button>
+            )}
           </div>
 
           {/* 3개월 무제한 */}
@@ -144,15 +157,29 @@ export function PricingSection() {
               </li>
             </ul>
 
-            <Button asChild className="w-full bg-amber-500 hover:bg-amber-600 text-white active:scale-95">
-              <Link href="/payment/billing?plan=three_month">3개월 구매</Link>
-            </Button>
+            {!PAYMENTS_ENABLED ? (
+              <Button disabled className="w-full bg-amber-500/40 text-white/60 cursor-not-allowed">
+                결제 준비 중
+              </Button>
+            ) : (
+              <Button asChild className="w-full bg-amber-500 hover:bg-amber-600 text-white active:scale-95">
+                <Link href="/payment/billing?plan=three_month">3개월 구매</Link>
+              </Button>
+            )}
           </div>
         </div>
 
-        <p className="text-center text-sm text-slate-400 mt-8">
-          모든 요금제는 언제든지 해지 가능합니다. 숨겨진 비용이 없습니다.
-        </p>
+        {!PAYMENTS_ENABLED ? (
+          <div className="max-w-xl mx-auto mt-8 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
+            <p className="text-sm text-amber-400">
+              현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.
+            </p>
+          </div>
+        ) : (
+          <p className="text-center text-sm text-slate-400 mt-8">
+            모든 요금제는 언제든지 해지 가능합니다. 숨겨진 비용이 없습니다.
+          </p>
+        )}
       </div>
     </section>
   )

@@ -1,0 +1,922 @@
+[
+  {
+    "id": "genre_guide:장르-CRPG",
+    "slug": "장르-CRPG",
+    "fileName": "장르-CRPG",
+    "filePath": "06_핵심규칙/장르-CRPG.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-CRPG",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 📖 CRPG 장르 가이드\n\n> 반응성·비선형성·회색 도덕이 핵심인 컴퓨터 RPG의 디자인 원칙·안티패턴·패턴.\n\n## 장르 정의\n\n- **반응성**: 플레이어 선택이 게임 세계에 영향\n- **비선형 퀘스트**: 한 답이 아닌 여러 답\n- **풍부한 대화 트리**: 캐릭터·팩션과의 관계 시스템\n- **회색 도덕**: 선·악 이분법 거부\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[시스템-TC001-반응성의본질]] | 모든 시스템이 플레이어 행동에 반응 |\n| [[내러티브-TC001-비선형의진짜의미]] | 단순 분기가 아닌 시스템 결과의 다양성 |\n| [[내러티브-TC004-회색도덕중립파벌]] | 도덕적 회색은 의도된 설계여야 |\n| [[시스템-CA001-대화트리분기영속결과]] | 대화 선택이 영속적 결과를 가져야 |\n| [[내러티브-JS001-팩션평판복합성]] | 팩션 관계는 한 축이 아니라 다축 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-NAR-002-가짜회색도덕]] | \"회색\"이라 했지만 실제는 표면 위장 |\n| [[ANTI-SYS-004-가짜선택]] | 선택지가 같은 결과로 수렴 |\n| [[ANTI-NAR-001-사이드미션과주인공아크단절]] | 사이드 콘텐츠가 메인 서사와 무관 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[DiscoElysium-스킬체크시스템]] | 스킬 체크 = 캐릭터 = 시스템 결합 |\n| (계속 추가 예정) | |\n\n## 실전 체크리스트\n\n- [ ] 메인 퀘스트가 *최소 2가지 진행 방법*을 제공하는가?\n- [ ] 동료 캐릭터가 *플레이어 선택에 반응*하는가?\n- [ ] 회색 도덕 선택이 *명확한 트레이드오프*를 만드는가?\n- [ ] 대화 선택이 *24시간 후에도 결과*를 만드는가?\n- [ ] 팩션 평판이 *최소 3개 축*에서 측정되는가?\n- [ ] 엔딩 슬라이드가 *플레이어 선택의 결과*를 보여주는가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/CRPG]] — TC·CA·JS 26편\n- [[../00_색인/lineage/CRPG계보]] — Black Isle → Obsidian → Larian",
+    "wikilinks": [
+      {
+        "target": "시스템-TC001-반응성의본질",
+        "display": null
+      },
+      {
+        "target": "내러티브-TC001-비선형의진짜의미",
+        "display": null
+      },
+      {
+        "target": "내러티브-TC004-회색도덕중립파벌",
+        "display": null
+      },
+      {
+        "target": "시스템-CA001-대화트리분기영속결과",
+        "display": null
+      },
+      {
+        "target": "내러티브-JS001-팩션평판복합성",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-002-가짜회색도덕",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-004-가짜선택",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-001-사이드미션과주인공아크단절",
+        "display": null
+      },
+      {
+        "target": "DiscoElysium-스킬체크시스템",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/CRPG",
+        "display": null
+      },
+      {
+        "target": "../00_색인/lineage/CRPG계보",
+        "display": null
+      }
+    ],
+    "bodyLength": 1117,
+    "topics": [
+      "character",
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-README",
+    "slug": "장르-README",
+    "fileName": "장르-README",
+    "filePath": "06_핵심규칙/장르-README.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-README",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🎮 장르별 가이드 인덱스\n\n> 장르 단위로 핵심 원칙·안티패턴·패턴·실전 체크리스트를 묶은 워크북. 기존 도메인 가이드(전투·시스템·내러티브 등)와 별개의 *적용 가이드*.\n\n## 9개 장르 가이드\n\n| 장르 | 파일 | 대표작 | 핵심 사상 |\n|---|---|---|---|\n| 🎲 [[장르-로그라이크]] | 로그라이크.md | Spelunky·Hades·Isaac | 시너지 매트릭스 + 영구 사망 |\n| 🏰 [[장르-메트로배니아]] | 메트로배니아.md | Hollow Knight·Ori·Castlevania | 응축 월드 + 능력 게이팅 |\n| ⚔️ [[장르-소울라이크]] | 소울라이크.md | Dark Souls·Sekiro·Lies of P | 역경 미학 + 환경 서사 |\n| 📖 [[장르-CRPG]] | CRPG.md | Fallout·Disco Elysium·BG3 | 반응성 + 회색 도덕 |\n| 🃏 [[장르-카드TCG]] | 카드TCG.md | Hearthstone·Marvel Snap | 단순화 + 디지털 메카닉 |\n| 📡 [[장르-라이브서비스]] | 라이브서비스.md | WoW·LoL·SWTOR·Destiny | 4단계 운영 주기 |\n| 🎯 [[장르-슈터]] | 슈터.md | Half-Life 2·Halo·Apex | 30초 루프 + 사이트라인 |\n| 🏙️ [[장르-시뮬레이션빌더]] | 시뮬레이션빌더.md | SimCity·Cities·RimWorld | 가능성의 공간 + 창발 |\n| 👻 [[장르-호러]] | 호러.md | RE·Silent Hill·Alien Isolation | 무력감 + 환경 페이싱 |\n\n## 가이드 구조\n\n각 가이드는 동일한 5섹션:\n\n1. **장르 정의** — 4가지 핵심 특징\n2. **핵심 원칙** — 라이브러리에서 5편 (wikilink)\n3. **흔한 안티패턴** — 3편 (wikilink)\n4. **참고 패턴** — 실제 게임 사례 wikilink\n5. **실전 체크리스트** — 6~7개 검증 항목\n\n## 활용 방법\n\n### 🎨 기획 단계\n\"우리 게임이 X 장르라면 이 5원칙을 적용했는가?\" 자기 점검\n\n### 👥 멘토링\n멘티의 작품을 장르 가이드의 체크리스트로 진단\n\n### 🎓 강의\n장르별 사례 분석 시 가이드 내 wikilink로 원칙·패턴 즉시 참조\n\n## 미작성 장르 (후보)\n\n원칙 풀이 부족하거나 우선순위 낮음:\n- 슈터 (FPS·TPS)\n- 격투\n- 리듬\n- 시뮬레이션 / 빌더\n- 호러\n- 스포츠\n- 레이싱\n- 모바일 캐주얼\n\n## 다른 가이드와의 관계\n\n- **도메인 가이드** (전투.md·시스템.md 등): 도메인별 일반 원칙\n- **장르 가이드** (이 인덱스): 장르별 적용 원칙\n- 두 가이드는 보완적 — 같은 원칙이 도메인 가이드에서는 분류, 장르 가이드에서는 적용\n\n## 관련 색인\n\n- [[../00_색인/learning_paths/README|학습 경로 8종]]\n- [[../00_색인/lineage/README|사상 계보 6종]]",
+    "wikilinks": [
+      {
+        "target": "장르-로그라이크",
+        "display": null
+      },
+      {
+        "target": "장르-메트로배니아",
+        "display": null
+      },
+      {
+        "target": "장르-소울라이크",
+        "display": null
+      },
+      {
+        "target": "장르-CRPG",
+        "display": null
+      },
+      {
+        "target": "장르-카드TCG",
+        "display": null
+      },
+      {
+        "target": "장르-라이브서비스",
+        "display": null
+      },
+      {
+        "target": "장르-슈터",
+        "display": null
+      },
+      {
+        "target": "장르-시뮬레이션빌더",
+        "display": null
+      },
+      {
+        "target": "장르-호러",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/README",
+        "display": "학습 경로 8종"
+      },
+      {
+        "target": "../00_색인/lineage/README",
+        "display": "사상 계보 6종"
+      }
+    ],
+    "bodyLength": 1493,
+    "topics": [
+      "combat",
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-라이브서비스",
+    "slug": "장르-라이브서비스",
+    "fileName": "장르-라이브서비스",
+    "filePath": "06_핵심규칙/장르-라이브서비스.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-라이브서비스",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 📡 라이브 서비스 장르 가이드\n\n> MMO·서비스형 게임의 운영·경제·정치 원칙. **출시는 시작**이라는 사상.\n\n## 장르 정의\n\n- **영속 운영**: 출시 후 N년 지속 (5~20년)\n- **빌드-패치-측정-반복** 4단계 주기\n- **F2P 또는 구독 모델**\n- **사회 시뮬레이션**: 길드·경제·메타 게임\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[프로덕션-DS001-라이브서비스운영주기]] | 4단계 주기가 운영의 본질 |\n| [[시스템-DS001-MMO경제수도꼭지싱크]] | Faucet/Sink 균형 = 인플레이션 통제 |\n| [[시스템-DS002-PvPPvE룰분리]] | 통합 밸런스 거부 — 분리 룰셋 |\n| [[시스템-RK003-MMO는사회다]] | 사회로서의 게임 의식 |\n| [[시스템-GS003-라이브밸런싱데이터직관]] | 데이터 + 직관의 균형 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-PRD-001-라이브서비스비전미달]] | 비전 부재로 콘텐츠 갱신 정체 |\n| [[ANTI-PRD-002-시장부재신규IP라이브서비스]] | 신규 IP를 라이브 서비스로 출시 |\n| [[ANTI-PRD-004-IP라이브서비스강제]] | 단일 플레이어 IP를 라이브 서비스로 강제 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[Destiny-레이드설계와30초의재미확장]] | 라이브 레이드 설계 정전 |\n\n## 실전 체크리스트\n\n- [ ] 출시 시점부터 *최소 6개월 콘텐츠 로드맵*이 있는가?\n- [ ] 패치 주기가 *2~6주*로 안정적인가?\n- [ ] 텔레메트리 수집 시스템이 *출시 시점부터* 운영되는가?\n- [ ] Faucet/Sink 균형이 *시간이 지날수록 강해지는* 방향인가?\n- [ ] PvP·PvE 룰셋이 *명시적으로 분리*되어 있는가?\n- [ ] 디자이너 블로그·포럼으로 *공개적 소통*이 있는가?\n- [ ] 시간 예산(일일+주간+시즌)이 *플레이어 부담을 폭발*시키지 않는가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/라이브서비스]] — DS·GS·RK 16편\n- [[../00_색인/lineage/MMO사회학계보]] — 코스터·슈버트·스트리트\n- [[../00_색인/learning_paths/모바일]] — 모바일 라이브 서비스",
+    "wikilinks": [
+      {
+        "target": "프로덕션-DS001-라이브서비스운영주기",
+        "display": null
+      },
+      {
+        "target": "시스템-DS001-MMO경제수도꼭지싱크",
+        "display": null
+      },
+      {
+        "target": "시스템-DS002-PvPPvE룰분리",
+        "display": null
+      },
+      {
+        "target": "시스템-RK003-MMO는사회다",
+        "display": null
+      },
+      {
+        "target": "시스템-GS003-라이브밸런싱데이터직관",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-001-라이브서비스비전미달",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-002-시장부재신규IP라이브서비스",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-004-IP라이브서비스강제",
+        "display": null
+      },
+      {
+        "target": "Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/라이브서비스",
+        "display": null
+      },
+      {
+        "target": "../00_색인/lineage/MMO사회학계보",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/모바일",
+        "display": null
+      }
+    ],
+    "bodyLength": 1184,
+    "topics": [
+      "balance",
+      "live_service",
+      "production"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-로그라이크",
+    "slug": "장르-로그라이크",
+    "fileName": "장르-로그라이크",
+    "filePath": "06_핵심규칙/장르-로그라이크.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-로그라이크",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🎲 로그라이크 장르 가이드\n\n> 절차 생성·영구 사망·메타 진행이 핵심인 장르의 디자인 원칙·안티패턴·패턴 모음.\n\n## 장르 정의\n\n- **절차 생성**: 매 런마다 다른 레벨·아이템·적\n- **영구 사망**: 죽으면 처음부터 (런 단위)\n- **메타 진행**: 캐릭터·언락이 런 사이에 누적\n- **빠른 시작·짧은 사이클**: 죽음 후 즉시 재시작 가능\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[시스템-DY001-시스템상호작용매트릭스]] | 적·환경·아이템이 서로 곱셈으로 작용해야 매 런이 다름 |\n| [[시스템-DY002-만든손길이보이는절차생성]] | 순수 무작위 거부 — 디자이너 의도가 보이는 절차 생성 |\n| [[시스템-DY003-영구사망과진행의의미]] | 영구 사망의 정서적 무게 = 메타 진행이 보존하는 가치 |\n| [[시스템-EM001-시너지매트릭스]] | 아이템 조합의 폭발이 런의 정체성을 만든다 |\n| [[시스템-EM002-빠른죽음빠른재시작]] | 죽음 → 재시작까지의 시간이 런의 호흡을 결정 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-SYS-002-NFT게임Play2Earn]] | 메타 진행이 실패의 의미를 없앰 |\n| [[ANTI-SYS-004-가짜선택]] | 아이템 선택지가 표면적 차이만 |\n| [[ANTI-LVL-001-의미없는수집요소]] | 절차 생성된 콘텐츠가 의미 없는 수집물로 전락 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[Spelunky-절차적생성과교훈]] | 만든 손길의 절차 생성 정전 |\n| [[Hades-내러티브와로그라이크통합]] | 영구 사망 + 메타 서사 결합 |\n| [[SlayTheSpire-카드결정명료성]] | 결정의 명료성으로 깊이 만들기 |\n\n## 실전 체크리스트\n\n- [ ] 매 런이 충분히 다른가? (시너지 매트릭스 폭이 충분한가)\n- [ ] 영구 사망이 정서적 무게를 가지는가? (잃는 것이 명확한가)\n- [ ] 메타 진행이 *과거 실패의 의미*를 보존하는가?\n- [ ] 죽음 → 재시작까지 30초 안에 가능한가?\n- [ ] 아이템 조합이 *예상 못한 시너지*를 만드는가?\n- [ ] 신규 플레이어가 첫 런에서 의미 있는 진행을 하는가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/인디솔로]] — 인디 로그라이크 디자이너 (DY·EM)\n- [[../00_색인/lineage/인디사상계보]] — 데렉 유·맥밀런 사상",
+    "wikilinks": [
+      {
+        "target": "시스템-DY001-시스템상호작용매트릭스",
+        "display": null
+      },
+      {
+        "target": "시스템-DY002-만든손길이보이는절차생성",
+        "display": null
+      },
+      {
+        "target": "시스템-DY003-영구사망과진행의의미",
+        "display": null
+      },
+      {
+        "target": "시스템-EM001-시너지매트릭스",
+        "display": null
+      },
+      {
+        "target": "시스템-EM002-빠른죽음빠른재시작",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-002-NFT게임Play2Earn",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-004-가짜선택",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-001-의미없는수집요소",
+        "display": null
+      },
+      {
+        "target": "Spelunky-절차적생성과교훈",
+        "display": null
+      },
+      {
+        "target": "Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "SlayTheSpire-카드결정명료성",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/인디솔로",
+        "display": null
+      },
+      {
+        "target": "../00_색인/lineage/인디사상계보",
+        "display": null
+      }
+    ],
+    "bodyLength": 1253,
+    "topics": [
+      "character",
+      "balance"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-메트로배니아",
+    "slug": "장르-메트로배니아",
+    "fileName": "장르-메트로배니아",
+    "filePath": "06_핵심규칙/장르-메트로배니아.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-메트로배니아",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🏰 메트로배니아 장르 가이드\n\n> 응축된 월드 + 능력 게이팅 + 백트래킹의 3대 축. 2D 탐험 액션 디자인 원칙 모음.\n\n## 장르 정의\n\n- **응축된 단일 월드**: 분리된 레벨이 아닌 연결된 단일 맵\n- **능력 게이팅**: 특정 능력이 있어야 통과 가능한 영역\n- **백트래킹**: 새 능력 획득 후 기존 영역 재방문\n- **랜드마크 + 미니맵**: 공간 기억의 보조 도구\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[레벨-IK001-메트로배니아맵응축세계]] | 월드를 *작지만 깊게* — 빈 공간 거부 |\n| [[레벨-IK002-능력게이팅막힌길의약속]] | 막힌 길은 항상 \"나중에 열릴 것\"의 약속 |\n| [[레벨-IK003-백트래킹의보상]] | 백트래킹이 단순 반복이 아니라 새 발견이어야 |\n| [[레벨-MK001-상호연결월드]] | 미야자키식 다층 연결로 깊이 +공간 기억 강화 |\n| [[레벨-LD003-랜드마크와위니]] | 강한 랜드마크가 미니맵 의존을 줄임 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-LVL-002-빈오픈월드]] | 큰 월드 + 빈 공간 = 메트로배니아의 정반대 |\n| [[ANTI-LVL-003-랜드마크없는미로]] | 미니맵 의존 강제 → 공간 기억 없음 |\n| [[ANTI-LVL-001-의미없는수집요소]] | 백트래킹 보상이 무의미한 수집물 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[HollowKnight-메트로배니아응축]] | 인디 메트로배니아의 정전 |\n| [[다크소울-미니맵 없는 월드 연결]] | 미야자키 월드 연결의 극단 |\n| [[브레스오브더와일드-환경 내비게이션]] | 랜드마크 우선 설계의 오픈월드 영역 |\n\n## 실전 체크리스트\n\n- [ ] 첫 1시간 안에 \"이 월드의 형태\"가 머릿속에 그려지는가?\n- [ ] 막힌 길마다 *왜 막혔는지*가 시각적으로 명확한가?\n- [ ] 새 능력 획득 시 *어디로 돌아가야 할지* 즉시 떠오르는가?\n- [ ] 백트래킹 시 *지난번에 못 본 것*을 발견할 가능성이 있는가?\n- [ ] 미니맵 없이도 핵심 위치 (세이브·상점)로 복귀할 수 있는가?\n- [ ] 보스전이 *그 영역의 능력 시험*인가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/메트로배니아]] — IK·MK·LD 18편\n- [[../00_색인/learning_paths/액션전투]] — 메트로배니아 전투 디자인",
+    "wikilinks": [
+      {
+        "target": "레벨-IK001-메트로배니아맵응축세계",
+        "display": null
+      },
+      {
+        "target": "레벨-IK002-능력게이팅막힌길의약속",
+        "display": null
+      },
+      {
+        "target": "레벨-IK003-백트래킹의보상",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-002-빈오픈월드",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-001-의미없는수집요소",
+        "display": null
+      },
+      {
+        "target": "HollowKnight-메트로배니아응축",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "브레스오브더와일드-환경 내비게이션",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/메트로배니아",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/액션전투",
+        "display": null
+      }
+    ],
+    "bodyLength": 1243,
+    "topics": [
+      "level"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-소울라이크",
+    "slug": "장르-소울라이크",
+    "fileName": "장르-소울라이크",
+    "filePath": "06_핵심규칙/장르-소울라이크.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-소울라이크",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# ⚔️ 소울라이크 장르 가이드\n\n> 역경 + 죽음의 의미 + 환경 서사의 미야자키 정전. 액션 RPG의 한 정점.\n\n## 장르 정의\n\n- **역경 미학**: 죽음이 처벌이자 학습 도구\n- **체크포인트 = 손실 위험**: 화톳불·세이브 사이의 경험치 손실\n- **상호연결 월드**: 미니맵 없는 다층 공간\n- **모호한 환경 서사**: 아이템 설명 + 보스 위치 = 신화\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[전투-MK001-역경을통한성취감]] | 역경이 정복되었을 때의 성취감의 강도 |\n| [[전투-MK002-보스전안무]] | 보스를 안무로 설계 — 패턴 학습이 곧 게임 |\n| [[시스템-MK002-체크포인트와상실스트레스]] | 죽음 시 잃을 것 + 회수의 긴장 |\n| [[레벨-MK001-상호연결월드]] | 다층 연결의 공간 기억 깊이 |\n| [[내러티브-MK002-모호한로어의힘]] | 명시 거부 = 플레이어 해석의 공간 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-CMB-003-보스체력스폰지]] | 패턴 없는 큰 체력 = 역경이 아니라 노가다 |\n| [[ANTI-CMB-001-정체성흐림슈터]] | 무기 정체성 약함 → 빌드 다양성 사라짐 |\n| [[ANTI-LVL-003-랜드마크없는미로]] | 모호함과 미로의 차이 — 미로는 학습 불가 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[Sekiro-자세게이지]] | 자세 시스템으로 액션 RPG 재정의 |\n| [[다크소울-미니맵 없는 월드 연결]] | 미야자키 월드 디자인의 정전 |\n| [[Bloodborne-Rally시스템]] | 회복 메카닉이 공격적 플레이 유도 |\n\n## 실전 체크리스트\n\n- [ ] 모든 보스가 *학습 가능한 패턴*을 가지는가? (랜덤이 아닌)\n- [ ] 죽음 시 *잃는 것*이 정서적으로 의미 있는가?\n- [ ] 회수 메커니즘이 *공포 → 안도*의 정서 곡선을 만드는가?\n- [ ] 첫 1시간 안에 *최소 한 번의 의미 있는 죽음*을 경험하는가?\n- [ ] 환경의 흔적이 *과거 사건*을 암시하는가?\n- [ ] 무기·빌드별 정체성이 명확한가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/메트로배니아]] — 미야자키 8편 깊이\n- [[../00_색인/lineage/일본액션계보]] — 미야자키 사상 위치\n- [[../00_색인/lineage/환경스토리텔링계보]] — 미야자키의 모호한 로어",
+    "wikilinks": [
+      {
+        "target": "전투-MK001-역경을통한성취감",
+        "display": null
+      },
+      {
+        "target": "전투-MK002-보스전안무",
+        "display": null
+      },
+      {
+        "target": "시스템-MK002-체크포인트와상실스트레스",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-003-보스체력스폰지",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-001-정체성흐림슈터",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "Sekiro-자세게이지",
+        "display": null
+      },
+      {
+        "target": "다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "Bloodborne-Rally시스템",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/메트로배니아",
+        "display": null
+      },
+      {
+        "target": "../00_색인/lineage/일본액션계보",
+        "display": null
+      },
+      {
+        "target": "../00_색인/lineage/환경스토리텔링계보",
+        "display": null
+      }
+    ],
+    "bodyLength": 1245,
+    "topics": [
+      "enemy_ai",
+      "level"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-슈터",
+    "slug": "장르-슈터",
+    "fileName": "장르-슈터",
+    "filePath": "06_핵심규칙/장르-슈터.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-슈터",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🎯 슈터(FPS·TPS) 장르 가이드\n\n> 30초 재미 루프 + 사이트라인 설계 + PvP 균형이 핵심인 슈터 디자인 원칙·안티패턴·패턴.\n\n## 장르 정의\n\n- **30초 재미 루프**: Halo의 정전 — 30초 단위로 재미가 반복\n- **사이트라인 + 인코운터**: 레벨이 시각적 정보 통제\n- **무기 정체성**: 각 무기가 고유 역할\n- **PvP/PvE 분리** (라이브 슈터)\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[전투-SK006-입력반응성]] | 60fps + 최소 입력 지연 = 슈터의 토대 |\n| [[전투-SK009-전략적자유]] | 정해진 공략 거부 — 플레이어 전략 존중 |\n| [[레벨-LD005-인코운터3단구조]] | 도입·전투·복귀의 3단 구조 |\n| [[레벨-LD007-사이트라인설계]] | 시각적 정보 = 결정의 도구 |\n| [[시스템-DS002-PvPPvE룰분리]] | 라이브 슈터의 분리 룰셋 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-CMB-001-정체성흐림슈터]] | 무기들이 비슷 — 선택의 의미 없음 |\n| [[ANTI-LVL-002-빈오픈월드]] | 큰 맵 + 빈 공간 = 슈터의 페이싱 파괴 |\n| [[ANTI-CMB-003-보스체력스폰지]] | 큰 보스 = 패턴 없는 노가다 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[Halo-30초의재미루프]] | 슈터 페이싱의 산업 정전 |\n| [[DOOM-푸시포워드콤뱃]] | 적극적 전투 유도의 시스템 |\n| [[Apex Legends-핑시스템]] | 비언어 협력 소통 |\n| [[HalfLife2-환경가이딩]] | 환경이 가르치는 슈터 LD |\n\n## 실전 체크리스트\n\n- [ ] 30초 안에 *재미 사이클*이 한 번 완결되는가?\n- [ ] 무기 5종이 각자 *명확히 다른 역할*을 가지는가?\n- [ ] 인코운터가 *진입·전투·복귀* 3단을 가지는가?\n- [ ] 사이트라인이 *플레이어 결정*에 충분한 정보를 주는가?\n- [ ] PvP 모드와 PvE 모드의 *밸런스가 분리*되어 있는가?\n- [ ] 첫 5분 안에 *조작 + 무기 교체 + 환경 사용*을 모두 학습하는가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/슈터]] — 슈터 디자이너 11편\n- [[../00_색인/learning_paths/액션전투]] — 액션 게임 깊이\n- [[../00_색인/learning_paths/라이브서비스]] — 라이브 슈터 운영",
+    "wikilinks": [
+      {
+        "target": "전투-SK006-입력반응성",
+        "display": null
+      },
+      {
+        "target": "전투-SK009-전략적자유",
+        "display": null
+      },
+      {
+        "target": "레벨-LD005-인코운터3단구조",
+        "display": null
+      },
+      {
+        "target": "레벨-LD007-사이트라인설계",
+        "display": null
+      },
+      {
+        "target": "시스템-DS002-PvPPvE룰분리",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-001-정체성흐림슈터",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-002-빈오픈월드",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-003-보스체력스폰지",
+        "display": null
+      },
+      {
+        "target": "Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "DOOM-푸시포워드콤뱃",
+        "display": null
+      },
+      {
+        "target": "Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "HalfLife2-환경가이딩",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/슈터",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/액션전투",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/라이브서비스",
+        "display": null
+      }
+    ],
+    "bodyLength": 1266,
+    "topics": [
+      "level",
+      "system",
+      "live_service"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-시뮬레이션빌더",
+    "slug": "장르-시뮬레이션빌더",
+    "fileName": "장르-시뮬레이션빌더",
+    "filePath": "06_핵심규칙/장르-시뮬레이션빌더.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-시뮬레이션빌더",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🏙️ 시뮬레이션·빌더 장르 가이드\n\n> 윌 라이트의 가능성의 공간 사상이 정점. **장난감으로서의 게임** + **창발 + 플레이어 생성 스토리**.\n\n## 장르 정의\n\n- **목표 없는 동기**: 외부 목표 없이도 시스템과 노는 자체가 재미\n- **가능성의 공간**: 게임은 정해진 경로 아닌 시스템 조합 공간\n- **창발**: 디자이너가 못 본 결과의 발생\n- **플레이어 생성 스토리**: 시뮬레이션이 만든 사건 = 서사\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[시스템-WW001-가능성의공간]] | 시뮬의 본질 — 가능성의 공간 자체가 게임 |\n| [[시스템-WW002-장난감으로서의게임]] | 목표 없이도 재미 있는 시스템 |\n| [[시스템-WW003-창발설계]] | 룰만 깔고 결과는 플레이어가 발견 |\n| [[시스템-WW004-목표없는동기]] | 외부 목표 거부 — 자율적 동기 |\n| [[내러티브-WW001-플레이어생성스토리]] | 시뮬이 만든 사건 = 서사 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-PRD-002-시장부재신규IP라이브서비스]] | 시뮬을 라이브 서비스로 강제 |\n| [[ANTI-LVL-001-의미없는수집요소]] | 시뮬 안에 무의미 수집물 |\n| [[ANTI-SYS-004-가짜선택]] | 빌더 결정이 표면적 — 시스템 결과 같음 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| (BotW 화학엔진과창발성) | 창발 설계의 액션 영역 |\n\n## 실전 체크리스트\n\n- [ ] 외부 목표 없이도 *2시간 플레이* 가능한가?\n- [ ] 같은 시드라도 *다른 결과*가 가능한가?\n- [ ] 플레이어가 발견한 *예상 못한 시너지*가 있는가?\n- [ ] 시뮬이 만든 사건이 *공유할 만한 이야기*가 되는가?\n- [ ] UI가 *시스템 상태*를 명확히 시각화하는가?\n- [ ] 신규 플레이어가 첫 30분에 *자기 결정*을 만드는가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/시뮬레이션빌더]] — 14편\n- [[../00_색인/learning_paths/이머시브심]] — 이머시브심과의 관계\n- [[../00_색인/lineage/시뮬레이션계보]] — 윌 라이트 계보",
+    "wikilinks": [
+      {
+        "target": "시스템-WW001-가능성의공간",
+        "display": null
+      },
+      {
+        "target": "시스템-WW002-장난감으로서의게임",
+        "display": null
+      },
+      {
+        "target": "시스템-WW003-창발설계",
+        "display": null
+      },
+      {
+        "target": "시스템-WW004-목표없는동기",
+        "display": null
+      },
+      {
+        "target": "내러티브-WW001-플레이어생성스토리",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-002-시장부재신규IP라이브서비스",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-001-의미없는수집요소",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-004-가짜선택",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/시뮬레이션빌더",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/이머시브심",
+        "display": null
+      },
+      {
+        "target": "../00_색인/lineage/시뮬레이션계보",
+        "display": null
+      }
+    ],
+    "bodyLength": 1138,
+    "topics": [
+      "narrative",
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-카드TCG",
+    "slug": "장르-카드TCG",
+    "fileName": "장르-카드TCG",
+    "filePath": "06_핵심규칙/장르-카드TCG.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-카드TCG",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 🃏 디지털 카드 TCG 장르 가이드\n\n> Hearthstone 정전 + Marvel Snap 진화 — 디지털·모바일 TCG의 디자인 원칙.\n\n## 장르 정의\n\n- **짧은 매치**: 7~10분 (모바일·라이브 친화)\n- **클래스·계열 정체성**: 9개 다른 게임의 느낌\n- **디지털 전용 메카닉**: Discover·Random·Transform·Hidden\n- **F2P 모델**: 무료 진입 + 카드 팩 수집\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[시스템-BB001-MTG단순화디지털TCG]] | MTG 깊이를 알면서 의도적 단순화 |\n| [[시스템-BB002-디지털만의카드메카닉]] | 종이로 못 만드는 메카닉이 정체성 |\n| [[시스템-BB003-9클래스차별화정체성]] | 클래스 = 다른 게임 |\n| [[프로덕션-BB001-모바일first매치길이]] | 7~10분 매치가 시스템 결정의 출발점 |\n| [[시스템-SG002-단순함의깊이]] | 적은 룰이 깊은 메타를 만든다 (미야모토) |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-SYS-001-페이투윈진행]] | 카드 팩 가격이 경쟁의 진입 장벽 |\n| [[ANTI-SYS-002-NFT게임Play2Earn]] | 게임이 아니라 투자 상품 |\n| [[ANTI-CMB-001-정체성흐림슈터]] | 클래스 차별화 약함 — 모두 비슷 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| [[Hearthstone-디지털TCG]] | 디지털 TCG의 산업 정전 |\n| [[SlayTheSpire-카드결정명료성]] | 카드 결정 명료성의 인디 영역 |\n\n## 실전 체크리스트\n\n- [ ] 매치가 7~10분 안에 끝나는가?\n- [ ] 9개 (또는 N개) 클래스가 *다른 사고 방식*을 요구하는가?\n- [ ] 디지털 전용 메카닉이 최소 1개 클래스의 정체성인가?\n- [ ] 무료 사용자가 *합리적 시간 안에* 경쟁 덱을 구축할 수 있는가?\n- [ ] 카드 효과의 *시각적 즉시성*이 명확한가?\n- [ ] 라이브 운영 패치 주기가 메타를 *살아있게* 유지하는가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/모바일]] — KW·BB 모바일 디자인\n- [[../00_색인/learning_paths/라이브서비스]] — 라이브 운영 사상",
+    "wikilinks": [
+      {
+        "target": "시스템-BB001-MTG단순화디지털TCG",
+        "display": null
+      },
+      {
+        "target": "시스템-BB002-디지털만의카드메카닉",
+        "display": null
+      },
+      {
+        "target": "시스템-BB003-9클래스차별화정체성",
+        "display": null
+      },
+      {
+        "target": "프로덕션-BB001-모바일first매치길이",
+        "display": null
+      },
+      {
+        "target": "시스템-SG002-단순함의깊이",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-001-페이투윈진행",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-002-NFT게임Play2Earn",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-001-정체성흐림슈터",
+        "display": null
+      },
+      {
+        "target": "Hearthstone-디지털TCG",
+        "display": null
+      },
+      {
+        "target": "SlayTheSpire-카드결정명료성",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/모바일",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/라이브서비스",
+        "display": null
+      }
+    ],
+    "bodyLength": 1186,
+    "topics": [
+      "system"
+    ]
+  },
+  {
+    "id": "genre_guide:장르-호러",
+    "slug": "장르-호러",
+    "fileName": "장르-호러",
+    "filePath": "06_핵심규칙/장르-호러.md",
+    "type": "genre_guide",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "장르-호러",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": "Tue May 05 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 👻 호러 장르 가이드\n\n> 공포 + 무력감 + 환경 페이싱이 핵심인 호러 게임 디자인 원칙·안티패턴·패턴.\n\n## 장르 정의\n\n- **무력감**: 강한 적 + 부족한 자원 = 도주·은닉\n- **환경 페이싱**: 안전 → 위험 → 안전의 정서 곡선\n- **사운드 디자인**: 불확실성의 청각 단서\n- **모호한 로어**: 미야자키식 환경 서사가 호러에 자연스러움\n\n## 핵심 원칙 (5)\n\n| 원칙 | 적용 |\n|---|---|\n| [[내러티브-TC010-호러비호러]] | 호러는 호러 메카닉이 아니라 *맥락*이 만든다 |\n| [[내러티브-MK002-모호한로어의힘]] | 명시 거부 = 두려움의 깊이 |\n| [[전투-SK002-히트스톱]] | 공격 적중의 무게감 — 무력함과 대비 |\n| [[시스템-MK002-체크포인트와상실스트레스]] | 죽음 시 잃는 것 = 공포의 본질 |\n| [[내러티브-MK001-환경스토리텔링]] | 환경의 흔적 = 사건의 단서 |\n\n## 흔한 안티패턴 (3)\n\n| 안티패턴 | 증상 |\n|---|---|\n| [[ANTI-NAR-004-오디오로그폭탄]] | 오디오로그 남용 — 분위기 파괴 |\n| [[ANTI-CMB-003-보스체력스폰지]] | 보스가 큰 체력 = 무력감이 아니라 노가다 |\n| [[ANTI-SYS-003-과한QTE의존]] | QTE로 공포를 만들려 함 — 정서 단절 |\n\n## 참고 패턴\n\n| 패턴 | 학습 포인트 |\n|---|---|\n| (Silent Hill·RE 패턴 미작성) | (보강 후보) |\n\n## 실전 체크리스트\n\n- [ ] 첫 5분에 *적에게 죽을 수 있다*는 인지가 만들어지는가?\n- [ ] 공격 메카닉보다 *도주·은닉* 메카닉이 더 강조되는가?\n- [ ] 사운드가 *시각적 위협 없이도* 공포를 만드는가?\n- [ ] 환경의 흔적이 *과거 사건*을 모호하게 암시하는가?\n- [ ] 죽음 시 *잃는 것*이 명확하고 정서적인가?\n- [ ] 안전 구역과 위험 구역의 *대비*가 명확한가?\n\n## 관련 학습 경로\n\n- [[../00_색인/learning_paths/메트로배니아]] — 미야자키 환경 서사\n- [[../00_색인/learning_paths/CRPG]] — Cain의 호러비호러 사상\n\n## 보강 후보 (현재 미작성)\n\n- *Resident Evil 4*의 액션 호러 전환\n- *Silent Hill*의 심리 호러 사상\n- *Alien: Isolation*의 단일 적 AI 호러\n- 사운드 디자인 (호러 전용 오디오 원칙)",
+    "wikilinks": [
+      {
+        "target": "내러티브-TC010-호러비호러",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK002-모호한로어의힘",
+        "display": null
+      },
+      {
+        "target": "전투-SK002-히트스톱",
+        "display": null
+      },
+      {
+        "target": "시스템-MK002-체크포인트와상실스트레스",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-004-오디오로그폭탄",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-003-보스체력스폰지",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-003-과한QTE의존",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/메트로배니아",
+        "display": null
+      },
+      {
+        "target": "../00_색인/learning_paths/CRPG",
+        "display": null
+      }
+    ],
+    "bodyLength": 1227,
+    "topics": [
+      "narrative"
+    ]
+  }
+]

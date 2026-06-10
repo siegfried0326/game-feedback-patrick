@@ -34,6 +34,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import { checkAnalysisAllowance, saveAnalysisHistory, deductCredit } from "./subscription"
 import { searchSimilarContent, formatChunksForPrompt } from "@/lib/vector-search"
+import { searchSimilarLibraryContent, formatLibraryChunksForPrompt } from "@/lib/library/vector"
 import { validateMimeMatchesSignature } from "@/lib/file-validation"
 // document-categories 삭제됨 — 키워드 기반 매칭으로 전환
 import fs from "fs"
@@ -703,6 +704,7 @@ ${topExamples}
     // [벡터 서치] 사용자 문서와 유사한 합격 포트폴리오 내용 검색
     // pageContent가 있을 때만 실행 (URL/텍스트 추출 완료 후)
     let vectorSearchSection = ""
+    let librarySection = ""
     if (pageContent && pageContent.length >= 100) {
       try {
         const searchResult = await searchSimilarContent(pageContent, 15, 0.4)
@@ -716,6 +718,22 @@ ${topExamples}
         // 벡터 서치 실패해도 기존 분석은 정상 진행
         console.error("[벡터 서치] 검색 실패 (무시):", err)
       }
+      // [게임 디자인 라이브러리] 관련 원칙·패턴 청크 매칭
+      try {
+        const libResult = await searchSimilarLibraryContent(pageContent, {
+          matchCount: 5,
+          matchThreshold: 0.35,
+          types: ["principle", "pattern", "antipattern", "core_rule", "genre_guide"],
+        })
+        if (libResult.chunks.length > 0) {
+          librarySection = formatLibraryChunksForPrompt(libResult.chunks)
+          console.log(`[라이브러리] ${libResult.chunks.length}개 원칙·패턴 매칭`)
+        } else {
+          console.log("[라이브러리] 매칭 없음")
+        }
+      } catch (err) {
+        console.error("[라이브러리] 검색 실패 (무시):", err)
+      }
     }
 
     // [벤치마크] 회사별 합격 포트폴리오 벤치마크 데이터 주입 (URL 분석: design만)
@@ -727,6 +745,8 @@ ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했�
 ${referenceStats}
 
 ${vectorSearchSection}
+
+${librarySection}
 
 ${benchmarkSection}
 
@@ -1321,7 +1341,11 @@ ${topExamples}
 
     // [벡터 서치] 문서 내용 기반 유사 검색 (키워드 추가로 정확도 향상)
     let vectorSearchSection = ""
+    let librarySection = ""
     const searchPrefix = (input.keywords && input.keywords.length > 0) ? `${input.keywords.slice(0, 3).join(" ")} ` : ""
+    const libraryQuery = (input.extractedText && input.extractedText.length >= 100)
+      ? searchPrefix + input.extractedText
+      : ""
     if (input.extractedText && input.extractedText.length >= 100) {
       // 추출된 텍스트가 있으면 실제 문서 내용으로 벡터 서치 (정확도 높음)
       try {
@@ -1349,6 +1373,23 @@ ${topExamples}
       }
     }
 
+    // [게임 디자인 라이브러리] 관련 원칙·패턴 청크 매칭 (extractedText 있을 때만)
+    if (libraryQuery) {
+      try {
+        const libResult = await searchSimilarLibraryContent(libraryQuery, {
+          matchCount: 6,
+          matchThreshold: 0.35,
+          types: ["principle", "pattern", "antipattern", "core_rule", "genre_guide"],
+        })
+        if (libResult.chunks.length > 0) {
+          librarySection = formatLibraryChunksForPrompt(libResult.chunks)
+          console.log(`[라이브러리-문서] ${libResult.chunks.length}개 원칙·패턴 매칭`)
+        }
+      } catch (err) {
+        console.error("[라이브러리-문서] 검색 실패 (무시):", err)
+      }
+    }
+
     // [벤치마크] 회사별 합격 포트폴리오 벤치마크 데이터 주입 (문서 분석: design + readability 모두)
     const benchmarkSection = formatBenchmarkForPrompt(true)
 
@@ -1371,6 +1412,8 @@ ${portfolios?.length || 0}개의 **실제 합격 포트폴리오**를 학습했�
 ${referenceStats}
 
 ${vectorSearchSection}
+
+${librarySection}
 
 ${benchmarkSection}
 

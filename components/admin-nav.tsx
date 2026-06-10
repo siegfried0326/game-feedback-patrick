@@ -10,7 +10,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Upload, Brain, Database, ArrowLeft } from "lucide-react"
+import { Upload, Brain, Database, ArrowLeft, Mic } from "lucide-react"
 
 // 관리자 페이지 목록 (탭으로 표시)
 const adminTabs = [
@@ -28,6 +28,12 @@ const adminTabs = [
     // /admin/training 또는 /admin/data일 때 활성화
     isActive: (pathname: string) =>
       pathname.startsWith("/admin/training") || pathname.startsWith("/admin/data"),
+  },
+  {
+    label: "면접 질문",
+    href: "/admin/interview-questions",
+    icon: Mic,
+    isActive: (pathname: string) => pathname.startsWith("/admin/interview-questions"),
   },
 ]
 

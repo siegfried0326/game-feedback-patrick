@@ -1,0 +1,1720 @@
+[
+  {
+    "id": "antipattern:ANTI-CMB-001-정체성흐림슈터",
+    "slug": "ANTI-CMB-001-정체성흐림슈터",
+    "fileName": "ANTI-CMB-001-정체성흐림슈터",
+    "filePath": "04_안티패턴/ANTI-CMB-001-정체성흐림슈터.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "정체성 흐림 슈터 — Battlefield 2042 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "FPS",
+      "정체성",
+      "장르혼합"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-SK006-최소복잡도",
+      "전투-SK003-조임과해방",
+      "시스템-SM001-흥미로운결정"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 정체성 흐림 슈터 — Battlefield 2042 안티패턴\n\n> *Battlefield* 시리즈의 분대 기반 군사 슈터 정체성을 hero shooter 어휘에 끼워맞춘 결과, 양쪽 팬덤 모두를 잃었다.\n\n## 어떤 안티패턴인가\n\n기존 IP의 **코어 정체성을 다른 장르에 맞춰 변형**하면, 기존 팬덤은 떠나고 새 장르 팬덤은 (이미 지배적 IP를 갖고 있어) 오지 않는다.\n\n## 위반된 원칙\n\n- [[시스템-SK006-최소복잡도]] — Specialist 시스템이 *Battlefield*의 클래스 명확성을 흐림\n- [[전투-SK003-조임과해방]] — *Battlefield*의 분대 호흡과 hero shooter의 1인 영광이 충돌\n- [[시스템-SM001-흥미로운결정]] — Specialist 선택이 클래스 결정을 대체하면서 결정의 의미 약화\n\n## 왜 발생하는가\n\n1. **시장 트렌드 추격** — *Apex Legends* / *Overwatch* 성공 후 hero shooter 모델 이식\n2. **기존 팬덤 가정** — \"Battlefield 팬은 Specialist도 받아들일 것\"\n3. **출시 압박** — COVID 영향으로 미완성 build 출시\n4. **클래스 vs Specialist의 디자인 충돌** — 의무병/엔지니어/돌격 클래스의 명확성이 Specialist 캐릭터 개성에 흐려짐\n5. **128인 매치 + Specialist** — 사회적 결속 약화 (3인 분대보다 산만)\n\n## 어떤 결과를 낳는가\n\n- 출시 첫 주 Steam 평가 22% 긍정\n- *Battlefield 2042*가 Specialist 시스템을 출시 후 1년에 클래스 시스템으로 부분 롤백\n- *Battlefield 1*과 *Battlefield V* 동시 접속이 *2042*보다 높음\n- 2024년 *Battlefield* 시리즈 정체성 재정립 위해 차기작 개발 우선\n\n## 같은 안티패턴 — Suicide Squad\n\n*Suicide Squad: Kill the Justice League* (2024, Rocksteady)도 동일 안티패턴:\n\n- *Batman: Arkham* 시리즈의 1인 어드벤처 → 4인 라이브 서비스 슈터\n- 기존 Rocksteady 팬덤 = 어드벤처 팬, 새 장르는 *Destiny*가 점유\n- 출시 후 동시 접속 폭락, Warner Bros 9억+ 손실\n\n## 어떻게 피하는가\n\n[[03_패턴/Apex Legends-핑시스템]]·[[03_패턴/Halo-30초의재미루프]] 사례:\n\n1. **장르 전환은 새 IP로** — Apex는 *Titanfall*과 다른 장르지만 *별개 IP*\n2. **기존 IP 팬덤의 코어 가치 보존** — 시리즈 정체성을 양보하지 말 것\n3. **트렌드는 따라가되 코어는 바꾸지 말 것** — *Halo Infinite*가 라이브 서비스로 가면서도 30초 루프 보존\n4. **시장 timing 검증** — hero shooter 시장이 이미 포화인지\n\n## 대비되는 성공 사례\n\n- [[03_패턴/Apex Legends-핑시스템]] — Respawn이 *Titanfall* 코어를 유지하면서 새 장르 새 IP\n- *Helldivers 2* (2024) — 분대 기반 협동 슈터의 정체성 명확성으로 성공\n- *Marvel Rivals* (2024) — Concord와 비슷한 시기, 마블 IP 코어를 hero shooter 어휘에 맞게 사용\n\n## 출처 링크\n\n- Polygon, IGN, PC Gamer 등 *Battlefield 2042* 출시 보도\n- Game Developer — Suicide Squad postmortem 분석",
+    "wikilinks": [
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "전투-SK003-조임과해방",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Halo-30초의재미루프",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Apex Legends-핑시스템",
+        "display": null
+      }
+    ],
+    "bodyLength": 1794,
+    "topics": [
+      "system"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-CMB-002-튜토리얼과강제대화",
+    "slug": "ANTI-CMB-002-튜토리얼과강제대화",
+    "fileName": "ANTI-CMB-002-튜토리얼과강제대화",
+    "filePath": "04_안티패턴/ANTI-CMB-002-튜토리얼과강제대화.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "과도한 튜토리얼과 강제 대화 — 인지 부하 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "튜토리얼",
+      "UX",
+      "인지부하"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-SK004-자연스러운튜토리얼",
+      "시스템-JB002-암묵학습",
+      "시스템-SK006-최소복잡도"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 과도한 튜토리얼과 강제 대화 — 인지 부하 안티패턴\n\n> 첫 30분 동안 NPC 대화·텍스트 박스·UI 강조 화살표만 보다가 이탈. 모바일 F2P에서 흔하지만 AAA에도 침투했던 안티패턴.\n\n## 어떤 안티패턴인가\n\n게임을 시작했는데 **30분간 게임플레이가 거의 없고, 설명·대화·UI 강조만 반복되는 구조**. \"복잡한 시스템을 이해시키기 위해\" 만든 도구가 오히려 진입 장벽이 됨.\n\n## 위반된 원칙\n\n- [[시스템-SK004-자연스러운튜토리얼]] — 사쿠라이의 \"환경이 가르친다\" 원칙 정반대\n- [[시스템-JB002-암묵학습]] — Jonathan Blow의 \"텍스트 없이 룰을 발견\" 정반대\n- [[시스템-SK006-최소복잡도]] — 첫 30분에 모든 시스템을 보여주려는 욕심\n\n## 왜 발생하는가\n\n1. **F2P 모바일의 \"5분 안에 결제 유도\" 압박** — 모든 시스템을 빨리 보여주고 싶음\n2. **QA 데이터의 오해석** — \"플레이어가 시스템을 모른다\"는 데이터를 \"더 가르쳐야\"로 해석\n3. **AAA의 \"feature 자랑\"** — 마케팅에서 약속한 모든 시스템을 첫 시간에 노출\n4. **로컬라이제이션 비용 절약** — 텍스트로 모든 걸 설명하면 비주얼 디자인 비용 절감\n5. **신호와 노이즈 구분 실패** — 화살표·하이라이트가 너무 많으면 모두 무시됨\n\n## 어떤 결과를 낳는가\n\n- 첫 30분 이탈률 50%+\n- \"이 게임은 첫 1시간이 지나야 재미있다\"는 평가가 일반화\n- 메타크리틱 첫인상 점수 하락\n- 입소문 효과 약화 (스트리머도 첫 30분에 이탈)\n\n## 어떻게 피하는가\n\n[[03_패턴/포탈-테스트 챔버 튜토리얼]] / [[03_패턴/BotW-화학엔진과창발성]] 사례:\n\n1. **공간이 가르친다** — *Portal*의 흰 벽(포탈 가능) 색상 코딩\n2. **첫 5분 = 게임플레이** — *BotW*의 첫 절벽 등반은 직접 해보면 자연스레 학습\n3. **시스템은 필요한 시점에 도입** — *Hades*의 Boon은 한 번에 하나씩\n4. **플레이어 지능 존중** — [[시스템-JB004-플레이어지능존중]]\n5. **\"기능 자랑\"보다 \"코어 루프 즉시\"** — 첫 5분이 게임 전체의 압축\n\n## 대비되는 성공 사례\n\n- [[03_패턴/포탈-테스트 챔버 튜토리얼]] — 19개 챔버 = 게임 전체 = 튜토리얼\n- [[03_패턴/BotW-화학엔진과창발성]] — 첫 절벽이 자연스레 시스템 가르침\n- [[03_패턴/Halo-30초의재미루프]] — Pillar of Autumn 첫 5분이 게임플레이 시작\n\n## 출처 링크\n\n- GDC 다수 강연 (Mark Brown Game Maker's Toolkit 분석)\n- *Portal* 디자인 인터뷰",
+    "wikilinks": [
+      {
+        "target": "시스템-SK004-자연스러운튜토리얼",
+        "display": null
+      },
+      {
+        "target": "시스템-JB002-암묵학습",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "03_패턴/포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "03_패턴/BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "시스템-JB004-플레이어지능존중",
+        "display": null
+      },
+      {
+        "target": "03_패턴/포탈-테스트 챔버 튜토리얼",
+        "display": null
+      },
+      {
+        "target": "03_패턴/BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Halo-30초의재미루프",
+        "display": null
+      }
+    ],
+    "bodyLength": 1341,
+    "topics": [
+      "ui",
+      "character",
+      "narrative",
+      "system",
+      "live_service"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-CMB-003-보스체력스폰지",
+    "slug": "ANTI-CMB-003-보스체력스폰지",
+    "fileName": "ANTI-CMB-003-보스체력스폰지",
+    "filePath": "04_안티패턴/ANTI-CMB-003-보스체력스폰지.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "보스 체력 스폰지 — 스킬을 무력화하는 단순 체력 인플레",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "전투",
+      "보스설계",
+      "난이도설계"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-사쿠라이 마사히로의 게임 제작론"
+    ],
+    "relatedPrinciples": [
+      "전투-SK001-위험과보상",
+      "전투-SK010-대립요소",
+      "전투-MK002-보스전안무",
+      "시스템-DC002-인지가능한결과"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 보스 체력 스폰지 — 스킬을 무력화하는 단순 체력 인플레\n\n> 보스가 더 어려워진 것이 아니라 *더 길어졌다*면, 디자이너는 안무를 짜지 않고 시계를 돌린 것이다.\n\n## 어떤 안티패턴인가\n\n보스의 체력·방어·저항을 곱셈으로 늘려 처치 시간을 길게 만들지만, 패턴·페이즈·메카닉은 추가하지 않는 난이도 설계. 결과적으로 플레이어 스킬이 결과에 미치는 영향이 줄고, 시간 자체가 적이 된다.\n\n## 위반된 원칙\n\n- [[전투-SK001-위험과보상]] — 위험은 그대로인데 보상까지의 시간만 길어짐 → 단위 시간당 보상 가치 하락\n- [[전투-SK010-대립요소]] — 대립이 새 메카닉이 아닌 *지속 시간*으로만 표현됨\n- [[전투-MK002-보스전안무]] — 안무가 부재 또는 동일 안무의 반복 연장\n- [[시스템-DC002-인지가능한결과]] — 5분과 7분의 보스전은 동일하게 인지됨, 차이는 피로\n\n## 왜 발생하는가\n\n1. **난이도 = 시간 이라는 오해** — 어려움의 변수 중 *압박*과 *복잡성*보다 *길이*가 가장 싸다\n2. **콘텐츠 부족 위장** — 패턴 추가는 디자이너·아티스트·테스터 모두의 비용, 체력 인플레는 변수 한 개\n3. **그라인드 통화 회수** — MMO/루트 슈터의 시간 투자 정당화\n4. **밸런스 패치 도구** — 너프 대신 보스 체력만 올리는 정치적으로 안전한 패치\n5. **하드 모드 설계 게으름** — 매 난이도 단계가 동일 패턴 + 더 높은 체력의 복붙\n\n## 어떤 결과를 낳는가\n\n- 안전 플레이 강제 — 7분 보스에서 50% 시점 사망의 손실이 커서 모험 회피\n- 빌드 다양성 붕괴 — DPS 최대화 빌드만 합리적\n- 멀티플레이의 사회적 비용 — 한 명 실수로 30분 손실\n- 회피 가능 패턴이 회피 강제 패턴보다 체감상 적게 나타남 (시간 대비 빈도)\n- 플레이어가 보스를 *해결할 퍼즐*이 아닌 *견뎌낼 시간*으로 인식\n\n## 좋은 보스의 시간 함수\n\n좋은 보스 시간(*Sekiro*, *Furi*)은 짧지 않고 *밀도 있다* — 분당 의사결정 수가 많고 페이즈 전환이 명확. 체력 스폰지는 분당 의사결정 수를 그대로 두고 분만 늘림.\n\n## 어떻게 피하는가\n\n1. **체력 인상이 아닌 페이즈 추가** — 30%·60% 임계에서 새 패턴 등장\n2. **회피 가능 vs 회피 불가능 메카닉의 균형** — 체력 인상 없이 압박 증가\n3. **시간 압박 도입** — 엔레이지 타이머 대신 환경 변화로 자연스러운 마감\n4. **스킬 천장 설계** — 완벽 플레이 시 처치 시간이 *짧아질 수* 있는 패리/위크포인트\n5. **스킬 영향력 비율** — 빌드 의존 50% / 실시간 스킬 50%가 한 기준\n\n## 대비되는 성공 사례\n\n- *Sekiro: Shadows Die Twice* (2019) — 체력보다 자세 게이지, 스킬이 시간을 단축\n- *Furi* (2016) — 보스 페이즈가 명확히 분리, 각 페이즈가 새 안무\n- *Hollow Knight* — Radiance·Absolute Radiance 모두 체력보다 패턴 밀도로 난이도\n- *Monster Hunter* 시리즈 — 부위 파괴·환경 활용으로 시간 단축 가능\n- [[전투-MK002-보스전안무]] 정통 사례군\n\n## 출처 링크\n\n- Masahiro Sakurai YouTube — \"Boss Battles\" 시리즈\n- FromSoftware 인터뷰 — *Sekiro* 자세 게이지 설계 의도\n- Bungie *Destiny* 1년차 회고 — 레이드 보스 밸런스 학습",
+    "wikilinks": [
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "전투-SK010-대립요소",
+        "display": null
+      },
+      {
+        "target": "전투-MK002-보스전안무",
+        "display": null
+      },
+      {
+        "target": "시스템-DC002-인지가능한결과",
+        "display": null
+      },
+      {
+        "target": "전투-MK002-보스전안무",
+        "display": null
+      }
+    ],
+    "bodyLength": 1726,
+    "topics": [
+      "combat",
+      "enemy_ai",
+      "system",
+      "balance"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-LVL-001-의미없는수집요소",
+    "slug": "ANTI-LVL-001-의미없는수집요소",
+    "fileName": "ANTI-LVL-001-의미없는수집요소",
+    "filePath": "04_안티패턴/ANTI-LVL-001-의미없는수집요소.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "의미 없는 수집 요소 — Ubisoft 패턴 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "오픈월드",
+      "수집",
+      "체크리스트"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-SK007-보상설계",
+      "레벨-MK001-상호연결월드",
+      "시스템-WW004-목표없는동기"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 의미 없는 수집 요소 — Ubisoft 패턴 안티패턴\n\n> 지도에 100+ 아이콘. 각각이 \"이걸 모으세요\"의 체크리스트. 아이콘 사이의 의미 차이는 약하고, 모두 모으는 보상은 트로피뿐. 오픈 월드 = 체크리스트의 동의어가 됐다.\n\n## 어떤 안티패턴인가\n\n오픈 월드를 **의미 있는 발견의 공간**이 아닌 **체크리스트 작업 공간**으로 만드는 디자인. 매 위치가 \"고유한 경험\"이 아니라 \"동일 메카닉의 반복\".\n\n## 위반된 원칙\n\n- [[시스템-SK007-보상설계]] — 보상이 작업의 동기가 아닌 작업 자체가 됨\n- [[레벨-MK001-상호연결월드]] — 미야자키의 \"위치가 서로를 강화\" 사상 정반대\n- [[시스템-WW004-목표없는동기]] — Will Wright의 \"외적 목표 없이도 즐거운 활동\"의 정반대\n\n## 왜 발생하는가\n\n1. **메트릭 우선 사고** — \"100시간 콘텐츠\"라는 마케팅 약속\n2. **재사용 가능한 메카닉으로 콘텐츠 양 곱하기** — 같은 보물 상자, 다른 위치\n3. **Achievements / 트로피 시스템 의존** — 외적 보상에 의존\n4. **사이드 컨텐츠 경시** — 메인 캠페인에 자원 집중, 사이드는 양산\n5. **플레이어 시간 = 콘텐츠 가치 가정** — 시간을 채우면 가치가 있다는 오해\n\n## 어떤 결과를 낳는가\n\n- \"Ubisoft 게임 = 체크리스트\"라는 산업 농담 정착\n- *Assassin's Creed: Odyssey* 100+ 시간 후 피로감 보고 다수\n- 사이드 컨텐츠 무시 → 메인만 빨리 진행 → 콘텐츠 양 가치 무력화\n- *Skyrim*, *Witcher 3*, *BotW*의 \"의미 있는 사이드\" 모델에 비해 평가 격차\n\n## 어떻게 피하는가\n\n[[03_패턴/BotW-화학엔진과창발성]] / [[03_패턴/다크소울-미니맵 없는 월드 연결]] 사례:\n\n1. **수집 = 발견의 부산물** — *Witcher 3*의 사이드 퀘스트는 단편 소설 수준 서사\n2. **위치마다 고유한 메카닉** — *BotW*의 사당 120개가 각각 다른 퍼즐\n3. **체크리스트 UI 거부** — *Elden Ring*의 마커 부재가 오히려 자유 발견 유도\n4. **\"보지 못해도 좋은\" 사이드 컨텐츠** — 강제하지 않을 때 가치 발생\n5. **환경 스토리텔링 결합** — 위치 자체에 이야기\n\n## 대비되는 성공 사례\n\n- [[03_패턴/BotW-화학엔진과창발성]] — 사당이 의미 있는 퍼즐\n- [[03_패턴/다크소울-미니맵 없는 월드 연결]] — 마커 없는 발견의 가치\n- *The Witcher 3: Wild Hunt* — 사이드 퀘스트가 메인 못지 않은 서사\n\n## 출처 링크\n\n- Mark Brown Game Maker's Toolkit — Ubisoft pattern critique\n- Polygon — *Assassin's Creed Odyssey* 100시간 분석\n- Eurogamer — Open world fatigue 다수 기사",
+    "wikilinks": [
+      {
+        "target": "시스템-SK007-보상설계",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "시스템-WW004-목표없는동기",
+        "display": null
+      },
+      {
+        "target": "03_패턴/BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      },
+      {
+        "target": "03_패턴/BotW-화학엔진과창발성",
+        "display": null
+      },
+      {
+        "target": "03_패턴/다크소울-미니맵 없는 월드 연결",
+        "display": null
+      }
+    ],
+    "bodyLength": 1464,
+    "topics": [
+      "level"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-LVL-002-빈오픈월드",
+    "slug": "ANTI-LVL-002-빈오픈월드",
+    "fileName": "ANTI-LVL-002-빈오픈월드",
+    "filePath": "04_안티패턴/ANTI-LVL-002-빈오픈월드.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "빈 오픈월드 — 이동 시간만 긴 콘텐츠 부재 맵",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "레벨",
+      "오픈월드",
+      "콘텐츠밀도"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "레벨-MK001-상호연결월드",
+      "레벨-LD004-크리티컬패스와발견",
+      "레벨-JR003-비밀과보상의배치",
+      "레벨-WW002-규모변화설계"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 빈 오픈월드 — 이동 시간만 긴 콘텐츠 부재 맵\n\n> 맵의 크기는 마케팅 카피에 들어가지만, 플레이어가 기억하는 것은 두 지점 사이의 사건이다. 사건이 없으면 크기는 처벌이다.\n\n## 어떤 안티패턴인가\n\n지리적 규모(km², 영역 수)를 콘텐츠 가치와 동일시한 결과, 두 흥미 지점 사이에 *예상 가능한 보상이 없는 이동 시간*이 누적되는 상태. 맵 자체는 아름답고 거대하지만 단위 면적당 유의미한 결정·발견·서사 사건의 수가 임계 이하.\n\n## 위반된 원칙\n\n- [[레벨-MK001-상호연결월드]] — *Dark Souls* 식 상호연결성이 부재, 단순 외삽 격자\n- [[레벨-LD004-크리티컬패스와발견]] — 메인 동선과 발견의 결합이 끊어짐\n- [[레벨-JR003-비밀과보상의배치]] — 보상 배치가 스폰 알고리즘에 위임됨\n- [[레벨-WW002-규모변화설계]] — 규모 변화 없는 단일 톤의 광활함\n\n## 왜 발생하는가\n\n1. **마케팅 메트릭** — \"전작보다 N배 크다\"가 트레일러 카피로 작동\n2. **콘텐츠 비용 vs 맵 비용** — 절차 생성 지형은 싸고, 핸드 크래프트 사건은 비쌈\n3. **Ubisoft 공식의 수입** — 타워·아웃포스트·수집 아이콘으로 맵을 *숫자*로 채우는 템플릿\n4. **이동 시간 부풀리기** — 이동 자체가 플레이타임 카운터에 잡혀 매트릭이 좋아 보임\n5. **체크리스트 디자인** — 디자이너가 *지점*을 채우지만 *지점 사이*는 비워둠\n\n## 어떤 결과를 낳는가\n\n- 빠른 이동(fast travel)에 대한 의존 폭증 — 맵 자체가 우회 대상이 됨\n- 플레이어 피로 → 메인 퀘스트만 직진 후 이탈\n- 리뷰의 \"거대하지만 공허하다\" 평가 패턴화\n- 시리즈 후속작에서 \"더 작은 더 밀도 있는\" 방향으로 강제 선회 (*Far Cry 6* 이후, *Forza Horizon 5* 학습)\n\n## 콘텐츠 밀도의 기준\n\n좋은 오픈월드는 *시야 거리 안에 다음 흥미 지점이 항상 보인다*는 일관성을 갖는다(*Witcher 3*, *RDR2*, *Elden Ring*). 빈 오픈월드는 이 시야-기반 약속을 깨뜨린다.\n\n## 어떻게 피하는가\n\n1. **시야선 밀도** — 한 시야 안에 최소 1개 발견 가능 후보 배치\n2. **이동 자체를 게임화** — *Death Stranding*의 짐 균형, *Spider-Man*의 스윙\n3. **사건 기반 인카운트** — *RDR2* 무작위 인카운트, *Witcher 3* 마을 단위 의뢰\n4. **수직성과 단축로** — *Elden Ring*의 다층 지형, *Hollow Knight*의 단축로\n5. **맵 축소를 두려워하지 말 것** — *RDR2*는 *RDR1*보다 작지만 밀도는 높음\n\n## 대비되는 성공 사례\n\n- *The Witcher 3: Wild Hunt* (2015) — 의뢰 기반 사이드 콘텐츠가 메인 톤과 일관\n- *Elden Ring* (2022) — 시야선마다 다음 발견 후보, 수직 상호연결성\n- *Red Dead Redemption 2* (2018) — 무작위 인카운트가 핸드 크래프트 사건 밀도를 보장\n- [[레벨-MK001-상호연결월드]]의 *Dark Souls* 사례\n\n## 출처 링크\n\n- Mark Brown (Game Maker's Toolkit) — \"What Makes a Good Open World?\"\n- Patrick Klepek 비평 — Mad Max 리뷰 (Kotaku, 2015)\n- Naoki Yoshida 인터뷰 — *FFXIV* 영역 디자인 철학",
+    "wikilinks": [
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      },
+      {
+        "target": "레벨-LD004-크리티컬패스와발견",
+        "display": null
+      },
+      {
+        "target": "레벨-JR003-비밀과보상의배치",
+        "display": null
+      },
+      {
+        "target": "레벨-WW002-규모변화설계",
+        "display": null
+      },
+      {
+        "target": "레벨-MK001-상호연결월드",
+        "display": null
+      }
+    ],
+    "bodyLength": 1729,
+    "topics": [
+      "level",
+      "system"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-LVL-003-랜드마크없는미로",
+    "slug": "ANTI-LVL-003-랜드마크없는미로",
+    "fileName": "ANTI-LVL-003-랜드마크없는미로",
+    "filePath": "04_안티패턴/ANTI-LVL-003-랜드마크없는미로.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "랜드마크 없는 미로 — 길찾기 신호 부재 레벨",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "레벨",
+      "길찾기",
+      "랜드마크"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "레벨-LD003-랜드마크와위니",
+      "레벨-JR002-조명과그림자가이딩",
+      "레벨-LD007-사이트라인설계",
+      "레벨-LD009-어포던스설계"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 랜드마크 없는 미로 — 길찾기 신호 부재 레벨\n\n> 플레이어가 미니맵에 의존하기 시작하면, 레벨 디자이너는 공간 자체로 가르치는 일을 포기한 것이다.\n\n## 어떤 안티패턴인가\n\n플레이어가 *공간 안에서* 자신의 위치·방향·다음 목표를 판단할 수 없게 된 상태. 동일 텍스처 반복, 시야선 폐쇄, 시각적 위계 부재로 인해 길찾기가 미니맵·웨이포인트 화살표에 전적으로 의존. 랜드마크(weenie)와 광원 계층이 부재하면 어떤 맵 크기에서도 발생.\n\n## 위반된 원칙\n\n- [[레벨-LD003-랜드마크와위니]] — Disney 어트랙션의 위니 원칙(원거리 시각 지표)이 부재\n- [[레벨-JR002-조명과그림자가이딩]] — 광원이 진행 방향을 가리키지 않음\n- [[레벨-LD007-사이트라인설계]] — 시야선이 단축되거나 모두 동일 정보를 줌\n- [[레벨-LD009-어포던스설계]] — 가능한 행동의 시각적 어포던스가 결여\n\n## 왜 발생하는가\n\n1. **에셋 재사용 압박** — 같은 모듈을 회전/플립으로 반복 배치 (저비용·시각 노이즈 가산)\n2. **미니맵 의존 가정** — \"어차피 미니맵 보겠지\"라는 디자인 핑계\n3. **장르 관성** — 어두운 동굴/우주선/하수도 톤이 광원·색상 변화를 억제\n4. **수직성 부재** — 평면적 그리드는 원거리 위니를 배치할 면적이 없음\n5. **체크포인트 위주 검증** — 플레이테스트가 \"도달 여부\"만 확인, \"어떻게 도달했는가\"를 놓침\n\n## 어떤 결과를 낳는가\n\n- 미니맵 화살표만 보고 진행 — 공간이 시각적 배경에 머무름\n- 발견·탐색의 즐거움 소실 — 분기로가 위협이 아닌 잡음\n- 플레이어 멀미·방향 감각 상실 보고 (특히 1인칭)\n- 레벨이 외워지지 않음 → 백트래킹의 보상 메커니즘 작동 불가 ([[레벨-IK003-백트래킹의보상]] 위반)\n\n## 어떻게 피하는가\n\n1. **3대 위니 체계** — 원거리(목적지), 중거리(현재 영역), 근거리(다음 행동) 각 1개 이상\n2. **광원 위계** — 가장 밝은 빛이 다음 목표를 가리킴 (*Half-Life 2* 전통)\n3. **색상 코딩** — 영역마다 지배 색상 변경 (*Dishonored* 구역별)\n4. **수직 비대칭** — 한쪽이 높거나 트인 구조로 자기 위치 회복 가능\n5. **미니맵 의존 테스트** — 미니맵 끄고 도달 가능한지 플레이테스트\n\n## 대비되는 성공 사례\n\n- *Half-Life 2* — 광원과 NPC 동선이 항상 다음 방향을 명시\n- *Dishonored* (2012) — Dunwall 영역마다 색상·건축 양식이 다름\n- *Hollow Knight* (2017) — 영역마다 음악·팔레트·생물군이 즉각 식별 가능\n- *Dark Souls* Anor Londo — 거대 성당이 모든 위치에서 보이는 위니\n- [[레벨-LD003-랜드마크와위니]] 정통 사례군\n\n## 출처 링크\n\n- Steve Lee GDC — \"Invisible Intuition: Visual Design Tricks\"\n- Mark Brown — \"How Level Design Can Tell a Story\"\n- Disney Imagineering — Walt's \"weenie\" 원칙 (산업계 인용)",
+    "wikilinks": [
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      },
+      {
+        "target": "레벨-JR002-조명과그림자가이딩",
+        "display": null
+      },
+      {
+        "target": "레벨-LD007-사이트라인설계",
+        "display": null
+      },
+      {
+        "target": "레벨-LD009-어포던스설계",
+        "display": null
+      },
+      {
+        "target": "레벨-IK003-백트래킹의보상",
+        "display": null
+      },
+      {
+        "target": "레벨-LD003-랜드마크와위니",
+        "display": null
+      }
+    ],
+    "bodyLength": 1574,
+    "topics": [
+      "level"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-NAR-001-사이드미션과주인공아크단절",
+    "slug": "ANTI-NAR-001-사이드미션과주인공아크단절",
+    "fileName": "ANTI-NAR-001-사이드미션과주인공아크단절",
+    "filePath": "04_안티패턴/ANTI-NAR-001-사이드미션과주인공아크단절.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "사이드 미션과 주인공 아크 단절 — 톤 충돌 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "내러티브",
+      "톤",
+      "사이드퀘스트"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "내러티브-JB001-메카닉이테마를말한다",
+      "내러티브-HK002-영화적연출과게임플레이",
+      "내러티브-FU002-언어의최소화"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "minor",
+    "body": "# 사이드 미션과 주인공 아크 단절 — 톤 충돌 안티패턴\n\n> 메인 캠페인은 침울한 비극인데 사이드 미션은 코미디 슬랩스틱. 한 게임 안에서 톤이 분열되어 캐릭터의 정서적 무게가 약화.\n\n## 어떤 안티패턴인가\n\n**메인 스토리의 정서적 톤과 사이드 미션의 톤이 충돌**해 캐릭터 아크가 약화. *Red Dead Redemption 2*의 Arthur Morgan이 죽어가는 비극 한가운데서 외계인 사냥 사이드 미션을 한다.\n\n## 위반된 원칙\n\n- [[내러티브-JB001-메카닉이테마를말한다]] — Jonathan Blow의 \"메카닉 = 테마\" 사상 정반대\n- [[내러티브-HK002-영화적연출과게임플레이]] — 코지마의 영화적 일관성\n- [[내러티브-FU002-언어의최소화]] — Ueda의 톤 통일\n\n## 왜 발생하는가\n\n1. **분리된 팀 작업** — 메인 작가팀과 사이드 작가팀의 비전 단절\n2. **콘텐츠 양 압박** — 사이드 미션으로 시간을 채우려 함\n3. **\"플레이어가 원하는 다양성\" 가정** — 톤 다양성을 콘텐츠 다양성으로 오해\n4. **코미디 vs 비극의 검증 어려움** — 톤 일관성이 메트릭으로 측정 어려움\n5. **유저 가이드 부재** — 어떤 사이드 미션이 톤을 깨는지 사전 검증 부재\n\n## 어떤 결과를 낳는가\n\n- 캐릭터 아크의 정서적 무게 약화\n- 비평가들이 \"스토리 vs 게임플레이 분열\" 비판\n- 비평적 평가 < 상업적 성공의 격차 (예: *Witcher 3*는 둘 다 잘 통합)\n\n## 어떻게 피하는가\n\n[[03_패턴/The Last of Us-컴패니언 AI 설계]] 사례:\n\n1. **사이드 미션도 메인 톤 안에서** — *TLoU II*의 사이드 활동 (기타·만화책)이 캐릭터 친밀감 강화\n2. **사이드 미션이 메인 아크 강화** — *Witcher 3*의 사이드가 Geralt의 가치관 보완\n3. **톤 가이드 문서** — 작가팀이 sketch 단계에서 톤 일관성 검증\n4. **선택적 톤 변화 허용** — 단, 의식적 톤 시프트로\n\n## 대비되는 성공 사례\n\n- [[03_패턴/The Last of Us-컴패니언 AI 설계]] — Joel·Ellie의 만화책 / 기타 사이드가 친밀감 강화\n- *The Witcher 3: Wild Hunt* — Bloody Baron 사이드 퀘스트가 메인 못지 않은 비극\n- [[03_패턴/Hades-내러티브와로그라이크통합]] — 사이드 인터랙션 = 메인 아크의 일부\n\n## 출처 링크\n\n- Mark Brown Game Maker's Toolkit — Ludonarrative dissonance 분석\n- Game Developer — *RDR2* 사이드 미션 분석",
+    "wikilinks": [
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "내러티브-FU002-언어의최소화",
+        "display": null
+      },
+      {
+        "target": "03_패턴/The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "03_패턴/The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      }
+    ],
+    "bodyLength": 1316,
+    "topics": [
+      "character",
+      "narrative"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-NAR-002-가짜회색도덕",
+    "slug": "ANTI-NAR-002-가짜회색도덕",
+    "fileName": "ANTI-NAR-002-가짜회색도덕",
+    "filePath": "04_안티패턴/ANTI-NAR-002-가짜회색도덕.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "가짜 회색 도덕 — 결과 없는 도덕 선택 시스템",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "내러티브",
+      "도덕시스템",
+      "선택과결과"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-팀 케인의 게임 디자인",
+      "유튜브-조시 소여의 게임 디자인"
+    ],
+    "relatedPrinciples": [
+      "내러티브-JS003-회색도덕의설계기준",
+      "내러티브-TC004-회색도덕중립파벌",
+      "시스템-SM001-흥미로운결정",
+      "시스템-WS003-선택의대가"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 가짜 회색 도덕 — 결과 없는 도덕 선택 시스템\n\n> 게임 내내 선악 슬라이더를 채우게 한 뒤, 모든 경로의 결말이 사실상 같다면 — 그 선택은 처음부터 존재하지 않았던 것과 같다.\n\n## 어떤 안티패턴인가\n\n도덕 선택 시스템(Paragon/Renegade, Good/Evil, Lawful/Chaotic 등)을 게임플레이의 중심으로 광고하지만, 실제 결말·세계 상태·NPC 반응이 양쪽에서 거의 동일하게 수렴하는 구조. 플레이어는 선택 비용을 지불했다고 느끼지만 세계는 그 비용을 인정하지 않는다.\n\n## 위반된 원칙\n\n- [[내러티브-JS003-회색도덕의설계기준]] — 회색 도덕은 \"양쪽 모두 정당화 가능한 트레이드오프\"여야 하는데, 결과가 같으면 트레이드오프 자체가 없음\n- [[내러티브-TC004-회색도덕중립파벌]] — 중립/회색은 *대안 결과*를 가질 때만 유효\n- [[시스템-SM001-흥미로운결정]] — 결과가 없는 선택은 결정이 아닌 의식(ritual)\n- [[시스템-WS003-선택의대가]] — 대가 없는 선택은 게임플레이 통화로 작동하지 않음\n\n## 왜 발생하는가\n\n1. **분기 콘텐츠 비용** — 진짜로 다른 결말을 만들면 자산·녹음·QA 비용이 2~5배\n2. **마케팅 압력** — \"당신의 선택이 우주를 바꾼다\"는 카피라이팅이 실제 분기 깊이보다 우선\n3. **밸런스 강박** — 어느 쪽 선택도 \"패배 경로\"가 되지 않게 만들려는 안전 운전\n4. **양극 슬라이더의 환원주의** — 선/악 1차원 축은 양쪽이 같은 메트릭을 추구하게 만들어 차이를 흡수\n5. **엔딩 리셋** — 시리즈 후속작을 위해 분기를 다시 모으려다 결말 차이가 표면적 컷씬으로만 남음\n\n## 어떤 결과를 낳는가\n\n- *Mass Effect 3* 엔딩 색상 변경 논쟁 — 100시간 분기가 빨강/파랑/초록 광선 색으로 환원\n- 플레이어 신뢰 손상 — 후속작 발매 시 \"선택이 의미 있냐\"가 첫 질문이 됨\n- 두 번째 플레이 동기 상실 — 다른 길을 가도 같은 곳에 도착한다는 학습\n- 도덕 선택 자체에 대한 시장 피로 — 2010년대 후반 \"선택지 게임\" 장르 침체\n\n## 왜 피하는가 — 흥미로운 결정의 정의\n\n흥미로운 결정은 결과가 다를 뿐 아니라 *플레이어가 결과를 예측할 수 있어야* 한다(Sid Meier). 가짜 회색 도덕은 두 조건 모두 위반한다 — 결과는 같고, 같다는 사실은 엔딩 후에야 드러난다.\n\n## 어떻게 피하는가\n\n1. **세계 상태 분기** — 엔딩 컷씬이 아니라 중반 미션의 가용 자원·동맹·맵 접근성을 바꿈\n2. **NPC 영구 손실** — 컴패니언이 실제로 죽고 후속 콘텐츠에서 부재가 느껴짐 (BG2, FNV)\n3. **양극 슬라이더 폐기** — 팩션 평판·관계 그래프 등 다차원 모델 (FNV, Pillars)\n4. **선택의 회피 불가능성** — \"양쪽 다 만족\" 옵션 제거 (KOTOR 2, Disco Elysium)\n5. **결과 가시화** — 선택 즉시 결과 일부를 노출해 비용을 체감시킴\n\n## 대비되는 성공 사례\n\n- *Fallout: New Vegas* (2010) — 4대 팩션 엔딩이 NPC 생사·지역 통제까지 별개\n- *Disco Elysium* (2019) — 정치적 입장이 스킬 체크·NPC 반응에 즉각 반영\n- *Tyranny* (2016) — 1막 결정이 2막의 맵 접근성을 닫아버림\n- [[내러티브-PM001-Fable윤리분기]] — 외형 변화로 도덕을 시각화 (가짜는 아니지만 표면적이라는 비판도 존재)\n\n## 출처 링크\n\n- Josh Sawyer GDC 2017 — \"Reactivity in RPG Design\"\n- Tim Cain YouTube — \"Why Moral Choices Often Fall Flat\"\n- Mass Effect 3 엔딩 논쟁 보도 (Kotaku, Polygon, 2012)",
+    "wikilinks": [
+      {
+        "target": "내러티브-JS003-회색도덕의설계기준",
+        "display": null
+      },
+      {
+        "target": "내러티브-TC004-회색도덕중립파벌",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "내러티브-PM001-Fable윤리분기",
+        "display": null
+      }
+    ],
+    "bodyLength": 1888,
+    "topics": [
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-NAR-003-루도내러티브부조화",
+    "slug": "ANTI-NAR-003-루도내러티브부조화",
+    "fileName": "ANTI-NAR-003-루도내러티브부조화",
+    "filePath": "04_안티패턴/ANTI-NAR-003-루도내러티브부조화.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "루도내러티브 부조화 — 시스템과 서사의 분열",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "내러티브",
+      "시스템과서사",
+      "캐릭터일관성"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "내러티브-CH001-루도내러티브부조화",
+      "내러티브-CH002-시스템이의미한다",
+      "내러티브-JB001-메카닉이테마를말한다",
+      "내러티브-LP001-메카닉이도덕이다"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 루도내러티브 부조화 — 시스템과 서사의 분열\n\n> 컷씬에서는 동료의 죽음에 오열하는 주인공이, 5분 뒤 게임플레이에서는 수백 명을 학살하며 농담을 던진다. 두 캐릭터는 같은 캐릭터가 아니다.\n\n## 어떤 안티패턴인가\n\n게임의 *서사가 말하는 캐릭터*와 *게임플레이가 보여주는 캐릭터*가 양립 불가능한 가치를 갖고 있는 상태. 서사는 양심·연민·트라우마를 말하지만 시스템은 효율적 살인의 도파민 루프로 보상한다. Clint Hocking이 *BioShock*에 대해 명명한 \"ludonarrative dissonance\"의 일반화된 형태.\n\n## 위반된 원칙\n\n- [[내러티브-CH001-루도내러티브부조화]] — Hocking이 직접 정의한 부조화 그 자체\n- [[내러티브-CH002-시스템이의미한다]] — 시스템이 가르치는 가치가 서사의 가치와 충돌\n- [[내러티브-JB001-메카닉이테마를말한다]] — 테마와 메카닉 분리\n- [[내러티브-LP001-메카닉이도덕이다]] — 메카닉으로 표현되지 않은 도덕은 도덕 코스튬\n\n## 왜 발생하는가\n\n1. **장르 관성** — 액션 어드벤처는 \"전투 30분당 컷씬 5분\" 리듬을 요구\n2. **분업 사일로** — 시나리오 작가와 시스템 디자이너가 다른 시점에 다른 컨텍스트로 작업\n3. **마케팅 두 마리 토끼** — 깊이 있는 서사 + 카타르시스 액션을 동시에 약속\n4. **러닝타임 압박** — 시스템 다양성이 부족할 때 같은 전투를 반복시키기 위해 백 명을 더 배치\n5. **캐릭터 vs 플레이어 분리 실패** — 플레이어 능력의 영광을 캐릭터에 그대로 귀속\n\n## 어떤 결과를 낳는가\n\n- 캐릭터의 도덕적 무게가 휘발 — 아무리 잘 쓴 컷씬도 다음 학살 구간에서 무효화\n- 평론가/플레이어의 \"이 게임은 자기가 무슨 게임인지 모른다\"는 평가\n- 시리즈 정체성 흔들림 — 후속작이 액션 강화/서사 강화 중 어느 쪽으로도 만족 못 함\n- 메타 코멘터리의 흡수력 — *Spec Ops: The Line*이 이 안티패턴을 *재료로* 써서 일반 게임을 비판\n\n## 어떻게 피하는가\n\n1. **메카닉이 테마를 말하게** — *Papers, Please*의 도장 찍기, *This War of Mine*의 약탈 결정\n2. **전투 빈도 축소** — 적은 전투에 무게 부여 (*The Last of Us*, *Hellblade*)\n3. **시스템에 도덕 비용** — 살인 시 능력 약화·NPC 반응 변화 (*Dishonored* 카오스)\n4. **캐릭터 능력 ≠ 플레이어 능력** — 컷씬 캐릭터가 못 하는 일은 시스템에서도 못 하게\n5. **장르 정직성** — 액션 게임이면 액션의 즐거움을 부정하지 말고 서사 톤을 맞출 것\n\n## 대비되는 성공 사례\n\n- *Spec Ops: The Line* (2012) — 부조화를 의도적 무기로 사용, 백린탄 장면이 시스템·서사를 합치\n- *Papers, Please* (2013) — 메카닉(서류 검사)이 곧 테마(권위주의 공모)\n- *Dishonored* 시리즈 — 살인 횟수가 세계 상태와 엔딩에 직접 반영\n- *Hellblade: Senua's Sacrifice* (2017) — 전투 빈도 축소로 각 전투에 정신증 서사 무게 부여\n- [[내러티브-CH002-시스템이의미한다]]의 사례군\n\n## 출처 링크\n\n- Clint Hocking, \"Ludonarrative Dissonance in BioShock\" (2007 블로그)\n- Tom Bissell, *Extra Lives* (2010) — *Uncharted 2* 분석\n- Yager Development GDC — *Spec Ops: The Line* 포스트모템",
+    "wikilinks": [
+      {
+        "target": "내러티브-CH001-루도내러티브부조화",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-JB001-메카닉이테마를말한다",
+        "display": null
+      },
+      {
+        "target": "내러티브-LP001-메카닉이도덕이다",
+        "display": null
+      },
+      {
+        "target": "내러티브-CH002-시스템이의미한다",
+        "display": null
+      }
+    ],
+    "bodyLength": 1794,
+    "topics": [
+      "character",
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-NAR-004-오디오로그폭탄",
+    "slug": "ANTI-NAR-004-오디오로그폭탄",
+    "fileName": "ANTI-NAR-004-오디오로그폭탄",
+    "filePath": "04_안티패턴/ANTI-NAR-004-오디오로그폭탄.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "오디오로그 폭탄 — 환경 대신 텍스트로 모든 서사를 떠넘기는 설계",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "내러티브",
+      "환경스토리텔링",
+      "정보전달"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "내러티브-KL001-환경스토리텔링",
+      "내러티브-KL003-오디오로그의서사적역할",
+      "내러티브-MK001-환경스토리텔링",
+      "내러티브-DC001-환경서사의기원"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "minor",
+    "body": "# 오디오로그 폭탄 — 환경 대신 텍스트로 모든 서사를 떠넘기는 설계\n\n> 시체 옆 녹음기를 줍는 것이 곧 서사가 된다면, 그 게임의 공간은 서사를 말할 책임을 회피한 것이다.\n\n## 어떤 안티패턴인가\n\n환경 스토리텔링이 가능한 자리에 오디오로그·문서·텍스트 로그를 무차별로 배치해 *공간이 보여줄 수 있는 정보*까지 *읽거나 들어야 알 수 있는 정보*로 변환한 상태. 첫 등장(*System Shock*) 때는 혁신이었으나 양산되며 게으른 정보 덤프 도구가 됨.\n\n## 위반된 원칙\n\n- [[내러티브-KL001-환경스토리텔링]] — 공간 자체가 말해야 할 정보를 텍스트가 가로챔\n- [[내러티브-KL003-오디오로그의서사적역할]] — 오디오로그는 환경이 *말할 수 없는* 영역만 채워야 함\n- [[내러티브-MK001-환경스토리텔링]] — 동일 원칙의 다른 디자이너 표현\n- [[내러티브-DC001-환경서사의기원]] — Looking Glass 전통의 본래 의도 위반\n\n## 왜 발생하는가\n\n1. **저비용 콘텐츠** — 오디오로그 1개 = 작가 1시간 + 성우 30분, 환경 셋피스는 아티스트 1주\n2. **로어 분량 압력** — 마케팅이 \"수십 시간의 백스토리\"를 약속한 뒤 채울 수단으로 활용\n3. **공간 디자인 권한 부족** — 작가가 레벨 디자이너에게 공간 배치를 요청할 정치적 비용이 높음\n4. **검증 가능성** — 오디오로그는 트리거 한 줄로 배치 검증 가능, 환경 스토리텔링은 플레이테스트 비용 큼\n5. **누적 관성** — 시리즈 1편의 좋은 사례를 후속작이 수량으로 반복\n\n## 어떤 결과를 낳는가\n\n- 플레이어가 청취 자체를 포기 — 줍기만 하고 듣지 않는 \"백로그\"가 됨\n- 공간이 비주얼적으로만 매력적이고 서사적으로 비어 있음 — 갤러리화\n- 가장 중요한 캐릭터가 오디오로그에서만 등장 — 인게임 만남이 약해짐\n- 청취 강제를 위한 UI 정지·자막 잠금 등 게임플레이 마찰 발생\n\n## 본래 사용법 — 보충재로서의 오디오로그\n\n오디오로그는 *공간이 보여줄 수 없는 두 가지*에 한정되어야 한다.\n1. 시간차 — 사건이 일어난 *이전*의 기록 (공간은 현재 상태만 보여줌)\n2. 내면 — 인물의 *생각*과 *목소리* (공간은 행동의 결과만 보여줌)\n\n이 두 가지가 아니면 환경·NPC·시스템이 표현하는 것이 더 강하다.\n\n## 어떻게 피하는가\n\n1. **시체·낙서·아이템 배치** — *Half-Life 2* Ravenholm의 톱과 부비트랩이 캐릭터 한 명을 설명\n2. **NPC 동선** — *Hitman* World of Assassination 시리즈의 동선이 곧 서사\n3. **건축 자체의 서사** — *Dark Souls* Anor Londo의 거대 척도가 신화의 무게\n4. **수량 상한** — 한 챕터당 오디오로그 3개 이내 등 의도적 절제\n5. **크리티컬 서사는 게임 내 사건으로** — 오디오로그는 사이드 컨텍스트만\n\n## 대비되는 성공 사례\n\n- *Half-Life 2* (2004) — 거의 오디오로그 없이 환경·NPC 동선·세트피스로 서사 전달\n- *Gone Home* (2013) — 텍스트가 있지만 *공간 배치*가 동등한 무게로 서사를 운반\n- *What Remains of Edith Finch* (2017) — 각 방이 오디오 내레이션 + 공간 + 메카닉으로 동시 표현\n- [[내러티브-KL001-환경스토리텔링]] 정통 사례군\n\n## 출처 링크\n\n- Ken Levine GDC — *BioShock* postmortem\n- Harvey Smith & Matthias Worch GDC 2010 — \"What Happened Here? Environmental Storytelling\"\n- Doug Church 인터뷰 — *System Shock*에서 오디오로그 도입 의도",
+    "wikilinks": [
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL003-오디오로그의서사적역할",
+        "display": null
+      },
+      {
+        "target": "내러티브-MK001-환경스토리텔링",
+        "display": null
+      },
+      {
+        "target": "내러티브-DC001-환경서사의기원",
+        "display": null
+      },
+      {
+        "target": "내러티브-KL001-환경스토리텔링",
+        "display": null
+      }
+    ],
+    "bodyLength": 1863,
+    "topics": [
+      "combat",
+      "narrative",
+      "level"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-PRD-001-라이브서비스비전미달",
+    "slug": "ANTI-PRD-001-라이브서비스비전미달",
+    "fileName": "ANTI-PRD-001-라이브서비스비전미달",
+    "filePath": "04_안티패턴/ANTI-PRD-001-라이브서비스비전미달.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "라이브 서비스 비전 미달 — Anthem 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "라이브서비스",
+      "프로덕션",
+      "비전부재"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2019-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-JS001-시스템주도콘텐츠",
+      "프로덕션-TC011-마찰의균형",
+      "시스템-SK006-최소복잡도"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# 라이브 서비스 비전 미달 — Anthem 안티패턴\n\n> 7년 개발 중 6년 5개월을 비전 정립에 소비. 출시된 18개월의 본격 프로덕션이 라이브 서비스 콘텐츠 파이프라인을 만들기에는 절대적으로 부족한 시간이었다.\n\n## 어떤 안티패턴인가\n\n라이브 서비스를 약속하면서 **출시 직후 콘텐츠 파이프라인이 부재**한 상태로 출시. 핵심 게임플레이는 좋아도, 다음 6개월의 공급이 없으면 라이브 서비스 모델은 즉시 붕괴한다.\n\n## 위반된 원칙\n\n- [[시스템-JS001-시스템주도콘텐츠]] — 시스템으로 콘텐츠를 곱하는 인프라 부재\n- [[프로덕션-TC011-마찰의균형]] — 비전 정립과 실행의 균형 실패\n- [[시스템-SK006-최소복잡도]] — 자버린(Javelin) 4종 + 무기 + 컴포넌트의 결정 트리가 너무 복잡\n\n## 왜 발생하는가\n\nKotaku의 추적 보도(Jason Schreier)에 따르면 Anthem 실패의 구조적 원인:\n\n1. **\"BioWare Magic\" 신화** — \"마지막 18개월에 모든 게 마법처럼 합쳐질 것\"이라는 조직 문화\n2. **EA의 라이브 서비스 강요** — *Mass Effect: Andromeda* 실패 후 BioWare에게 멀티플레이 피벗 요구\n3. **Frostbite 엔진과의 부적합** — RPG·라이브 서비스를 위한 도구 부재\n4. **에드몬튼·오스틴 스튜디오 갈등** — 일관된 비전 없는 두 팀\n5. **싱글플레이 강점을 라이브 서비스에 강제 끼워맞춤** — 사각 구멍에 동그란 못\n\n## 어떤 결과를 낳는가\n\n- 출시 후 4주 안에 동시 접속자 폭락\n- 약속한 \"Cataclysm\" 콘텐츠 1년 지연\n- *Anthem 2.0* 리부트 시도 → 코로나 사태로 취소\n- 2026년 서버 셧다운 결정\n\n## 어떻게 피하는가\n\n[[03_패턴/Destiny-레이드설계와30초의재미확장]]의 [[루크 스미스]] / [[앨런 블레인]] 사례 참조:\n\n1. **출시 시점 콘텐츠가 6~12개월치 준비** — Bungie는 *Destiny 1* 출시 시 1년 로드맵 확정\n2. **시스템적 모디파이어로 콘텐츠 곱하기** — 7단계 난이도, 시즌 모디파이어\n3. **코어 루프를 1,000시간 검증** — 출시 전 내부 alpha에서 핵심 게임플레이의 longevity 확인\n4. **\"BioWare Magic\" 같은 production 신화를 거부** — Sven Vincke가 GDC 2024에서 비판한 것과 같음\n\n## 대비되는 성공 사례\n\n- [[03_패턴/Destiny-레이드설계와30초의재미확장]] — 같은 장르, 다른 결과\n- [[03_패턴/Hades-내러티브와로그라이크통합]] — Early Access 2년으로 코어 루프 검증\n- [[FFXIV-라이브서비스회복]] (예정) — *FFXIV: A Realm Reborn* — 실패에서 회복하는 정직한 방법\n\n## 출처 링크\n\n- Kotaku — [How BioWare's Anthem Went Wrong (Jason Schreier)](https://kotaku.com/how-biowares-anthem-went-wrong-1833731964)\n- The Gamer — [Anthem Servers Shutdown - BioWare](https://www.thegamer.com/anthem-servers-shutdown-bioware/)\n- VGC — [Anthem 4-hour postmortem from executive producer](https://www.videogameschronicle.com/news/as-anthem-shuts-down-the-games-executive-producer-has-released-a-nearly-four-hour-post-mortem/)",
+    "wikilinks": [
+      {
+        "target": "시스템-JS001-시스템주도콘텐츠",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "시스템-SK006-최소복잡도",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "루크 스미스",
+        "display": null
+      },
+      {
+        "target": "앨런 블레인",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Destiny-레이드설계와30초의재미확장",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "FFXIV-라이브서비스회복",
+        "display": null
+      }
+    ],
+    "bodyLength": 1848,
+    "topics": [
+      "live_service",
+      "production"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-PRD-002-시장부재신규IP라이브서비스",
+    "slug": "ANTI-PRD-002-시장부재신규IP라이브서비스",
+    "fileName": "ANTI-PRD-002-시장부재신규IP라이브서비스",
+    "filePath": "04_안티패턴/ANTI-PRD-002-시장부재신규IP라이브서비스.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "시장 부재 신규 IP 라이브 서비스 — Concord 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "라이브서비스",
+      "신규IP",
+      "비즈니스모델"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2024-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "프로덕션-TC011-마찰의균형",
+      "시스템-SK002-접근성우선",
+      "시스템-SK010-UI명확성과스타일"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# 시장 부재 신규 IP 라이브 서비스 — Concord 안티패턴\n\n> 출시 2주 만에 서버 셧다운, 8년 개발 + 약 2억 달러 투자 손실. 라이브 서비스 hero shooter 시장은 *Overwatch*·*Apex*·*Valorant*가 이미 점유한 상태에서 신규 유료 IP를 강행한 결과.\n\n## 어떤 안티패턴인가\n\n**\"방어 가능한 차별점(defensible space)\"이 없는 신규 IP**를 **유료** + **라이브 서비스** 모델로 출시. 세 조건이 모두 불리한데 동시에 시도.\n\n## 위반된 원칙\n\n- [[프로덕션-TC011-마찰의균형]] — 시장 검증 없는 8년 투자\n- [[시스템-SK002-접근성우선]] — $34.99 가격 = 진입 장벽\n- [[시스템-SK010-UI명확성과스타일]] — \"drab and lacked imagination\"로 평가된 캐릭터 디자인\n\n## 왜 발생하는가\n\n1. **Sony의 라이브 서비스 12 프로젝트 전략** — 2022년 발표된 라이브 서비스 다중 IP 투자\n2. **2016년 *Overwatch* 시장의 잔영** — hero shooter가 여전히 큰 시장이라는 가정\n3. **2024년 시장 현실 무시** — *Overwatch 2*, *Apex*, *Valorant*, *Marvel Rivals*가 이미 점유\n4. **F2P 사상의 거부** — $34.99 가격이 \"초기 검증 비용\"을 막음\n5. **차별점 약함** — Mackey McCandlish가 [[03_패턴/Apex Legends-핑시스템]]에서 정의한 \"defensible space\" 부재\n\n## 어떤 결과를 낳는가\n\n- 출시 첫 주 동시 접속 최대 697명 (Steam + PS5 합산)\n- 첫 주 25,000 카피 판매\n- 9월 6일 출시 2주 후 서버 종료, 전액 환불\n- Firewalk Studios 폐쇄 (10월 29일)\n- 게임 산업 사상 가장 큰 단일 게임 손실 중 하나로 기록\n\n## 어떻게 피하는가\n\n[[03_패턴/Apex Legends-핑시스템]]의 Respawn 사례 참조:\n\n1. **F2P로 출시** — 진입 장벽 제거, 입소문 확산\n2. **방어 가능한 차별점** — Apex의 핑 시스템처럼 따라하기 어려운 시스템\n3. **기존 IP 활용** — Apex는 *Titanfall* 세계관 위, Marvel Rivals는 마블 IP\n4. **소프트 런칭** — 작은 시장에서 검증 후 확대\n5. **시장 timing** — hero shooter가 포화 상태인지 확인\n\n## 대비되는 성공 사례\n\n- [[03_패턴/Apex Legends-핑시스템]] — 같은 장르, 정반대 결과 (F2P + 차별점)\n- [[03_패턴/Halo-30초의재미루프]] — 강한 코어 루프가 IP를 만든 사례\n- *Marvel Rivals* (2024) — 마블 IP + F2P + Concord와 비슷한 시기 출시 → 성공\n\n## 출처 링크\n\n- Wikipedia — [Concord (video game)](https://en.wikipedia.org/wiki/Concord_(video_game))\n- Variety — [PlayStation to Shut Down Concord](https://variety.com/2024/gaming/news/playstation-shuts-down-concord-refund-players-1236128208/)\n- Kotaku — [Sony Shuts Down Studio Behind Concord Less Than Two Years After Buying It](https://kotaku.com/firewalk-studios-concord-ps5-sony-live-service-shutdown-1851684290)\n- The Sixth Axis — [Concord's Post-Mortem: One Year Later](https://www.thesixthaxis.com/2025/09/06/concords-ps5-cancelled-shut-down-offline/)",
+    "wikilinks": [
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "시스템-SK010-UI명확성과스타일",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Apex Legends-핑시스템",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Halo-30초의재미루프",
+        "display": null
+      }
+    ],
+    "bodyLength": 1994,
+    "topics": [
+      "combat",
+      "system",
+      "live_service",
+      "production"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-PRD-003-약속과결과의괴리",
+    "slug": "ANTI-PRD-003-약속과결과의괴리",
+    "fileName": "ANTI-PRD-003-약속과결과의괴리",
+    "filePath": "04_안티패턴/ANTI-PRD-003-약속과결과의괴리.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "약속과 결과의 괴리 — Cyberpunk 2077 출시 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "마케팅",
+      "약속의윤리",
+      "출시"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "프로덕션-TC011-마찰의균형",
+      "시스템-WS003-선택의대가",
+      "내러티브-JS001-팩션평판복합성"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# 약속과 결과의 괴리 — Cyberpunk 2077 출시 안티패턴\n\n> 8년 마케팅으로 만들어진 기대치가 출시 시점 게임 상태와 충돌. 콘솔 버전은 PSN/Xbox 스토어에서 환불·삭제되는 사상 초유의 사태로 이어짐.\n\n## 어떤 안티패턴인가\n\n마케팅에서 약속한 features와 실제 출시 build의 격차가 너무 커, **신뢰의 영구 손실**이 발생하는 케이스. 게임 자체는 좋더라도 약속을 지키지 못하면 산업 전체에 메시지를 남긴다.\n\n## 위반된 원칙\n\n- [[프로덕션-TC011-마찰의균형]] — 마케팅 약속과 실행의 균형 실패\n- [[시스템-WS003-선택의대가]] — 광고에서 강조된 분기·선택이 실제 게임에서 부재\n- [[내러티브-JS001-팩션평판복합성]] — 광고된 팩션 시스템이 부분 구현\n\n## 왜 발생하는가\n\n1. **8년 marketing의 누적 약속** — *The Witcher 3* 후속 기대치\n2. **콘솔 한계 무시** — PS4/Xbox One 출시 약속 (실제 build는 PS5/Xbox Series 우선)\n3. **Crunch 후 무리한 출시** — 2020년 12월 출시 강행\n4. **NPC AI, 경찰 시스템, 차량 AI 미완성**\n5. **Keanu Reeves 마케팅 vs 게임 실제 비중의 격차**\n\n## 어떤 결과를 낳는가\n\n- Sony가 사상 최초로 PSN에서 게임 삭제 + 전액 환불\n- CDPR 주가 30%+ 폭락\n- 임원진 사과문, 보너스 포기\n- 2~3년의 패치 롤백 작업 + *Phantom Liberty* DLC로 점진적 회복\n- 산업 전반에 \"출시 연기가 옳다\"는 학습\n\n## 어떻게 피하는가\n\n[[03_패턴/Hades-내러티브와로그라이크통합]] Supergiant 사례 참조:\n\n1. **Early Access로 기대 관리** — 발견되는 버그·미흡함을 투명하게\n2. **마케팅이 final build를 보고 시작** — 약속할 수 있는 것만 약속\n3. **콘솔 검증을 출시 6개월 전 완료** — 콘솔별 다른 build를 다른 timeline로\n4. **\"발표 = 출시\"가 아니라 \"발표 = 6개월 후\"** — 마케팅 윈도우 단축\n\n## 대비되는 성공 사례\n\n- *No Man's Sky* (2016 → 2020+) — 같은 안티패턴 후 4년 회복으로 명예 복구. *Hello Games*가 침묵 + 무료 업데이트로 복구\n- [[03_패턴/Hades-내러티브와로그라이크통합]] — Early Access로 기대 관리\n- *Baldur's Gate 3* (2023, Larian) — 3년 Early Access 후 출시 → [[스벤 빈케]] 사상\n\n## 추가 참고\n\n- [[스벤 빈케]]의 GDC 2024 키노트 비판: \"publisher와의 평생 싸움\" — 출시 압박이 약속 위반의 구조적 원인이라는 지적\n\n## 출처 링크\n\n- 다양한 게임 미디어 보도 (Kotaku, IGN, Eurogamer 2020-2021)\n- CDPR 임원 사과문 (2020년 12월)",
+    "wikilinks": [
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "내러티브-JS001-팩션평판복합성",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "스벤 빈케",
+        "display": null
+      },
+      {
+        "target": "스벤 빈케",
+        "display": null
+      }
+    ],
+    "bodyLength": 1476,
+    "topics": [
+      "ui",
+      "system",
+      "production"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-PRD-004-IP라이브서비스강제",
+    "slug": "ANTI-PRD-004-IP라이브서비스강제",
+    "fileName": "ANTI-PRD-004-IP라이브서비스강제",
+    "filePath": "04_안티패턴/ANTI-PRD-004-IP라이브서비스강제.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "단일플레이 IP의 라이브 서비스 강제 — Marvel's Avengers 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "라이브서비스",
+      "IP",
+      "영화적연출"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-JS001-시스템주도콘텐츠",
+      "프로덕션-TC011-마찰의균형",
+      "내러티브-HK002-영화적연출과게임플레이"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# 단일플레이 IP의 라이브 서비스 강제 — Marvel's Avengers 안티패턴\n\n> *Tomb Raider* 시리즈로 단일플레이 액션 어드벤처에 강한 Crystal Dynamics에게 마블 + 라이브 서비스 + 멀티플레이를 동시에 요구한 결과, 출시 1년 만에 구조조정.\n\n## 어떤 안티패턴인가\n\n스튜디오의 **검증된 강점이 단일플레이 시네마틱 액션**인데, **퍼블리셔가 라이브 서비스 매출을 요구**하면서 두 사상이 충돌하는 케이스. [[ANTI-PRD-001-라이브서비스비전미달|Anthem 안티패턴]]의 IP 버전.\n\n## 위반된 원칙\n\n- [[시스템-JS001-시스템주도콘텐츠]] — IP 캐릭터를 \"직업·장비\"로 환원하면 캐릭터 개성 손실\n- [[프로덕션-TC011-마찰의균형]] — 스튜디오 강점과 사업 모델의 불일치\n- [[내러티브-HK002-영화적연출과게임플레이]] — 영화적 IP가 grinding loop와 충돌\n\n## 왜 발생하는가\n\n1. **퍼블리셔의 라이브 서비스 매출 가정** — Square Enix의 GaaS 전략\n2. **IP의 \"영웅\" 정체성을 RPG 빌드에 환원** — 헐크/아이언맨이 같은 그라인드 루프\n3. **시네마틱 캠페인 + 라이브 서비스 동시 추구** — 두 사상의 필요 자원이 다름\n4. **콘텐츠 파이프라인 약속** — DLC 캐릭터 추가 약속이 개발 속도를 못 맞춤\n5. **Spider-Man 독점** — PS 독점 캐릭터가 Xbox/PC 플레이어 차별\n\n## 어떤 결과를 낳는가\n\n- 출시 후 동시 접속 빠른 폭락\n- Square Enix가 Crystal Dynamics 매각 (Embracer Group)\n- 서버 종료 (2023)\n- 게임 산업이 \"GaaS 전환\" 가정을 재고하는 사건 중 하나\n\n## 어떻게 피하는가\n\n[[03_패턴/GodOfWar-원샷카메라]] Sony Santa Monica 사례:\n\n1. **스튜디오 DNA 존중** — Crystal Dynamics의 *Tomb Raider* 강점을 그대로 유지\n2. **IP는 단일플레이 시네마틱에서 강함** — 마블이라면 *Spider-Man*(Insomniac) 사례 따르기\n3. **GaaS는 전용 스튜디오에 맡김** — Bungie, Respawn 같은 스튜디오\n4. **퍼블리셔가 매출 모델을 강요하지 말 것** — [[스벤 빈케]]의 GDC 2024 비판 적용\n\n## 대비되는 성공 사례\n\n- *Marvel's Spider-Man* (2018, Insomniac) — 단일플레이 시네마틱 + 마블 IP의 정점\n- *Marvel's Spider-Man 2* (2023) — 같은 사상의 진화\n- *Marvel Rivals* (2024) — F2P + 멀티플레이 hero shooter — 적절한 GaaS 사용\n\n## 출처 링크\n\n- 다양한 *Marvel's Avengers* 출시 후 분석 (Polygon, IGN)\n- Game Developer — Square Enix divests Crystal Dynamics (2022)",
+    "wikilinks": [
+      {
+        "target": "ANTI-PRD-001-라이브서비스비전미달",
+        "display": "Anthem 안티패턴"
+      },
+      {
+        "target": "시스템-JS001-시스템주도콘텐츠",
+        "display": null
+      },
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "03_패턴/GodOfWar-원샷카메라",
+        "display": null
+      },
+      {
+        "target": "스벤 빈케",
+        "display": null
+      }
+    ],
+    "bodyLength": 1491,
+    "topics": [
+      "system",
+      "live_service",
+      "production"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-PRD-005-크런치기반프로덕션",
+    "slug": "ANTI-PRD-005-크런치기반프로덕션",
+    "fileName": "ANTI-PRD-005-크런치기반프로덕션",
+    "filePath": "04_안티패턴/ANTI-PRD-005-크런치기반프로덕션.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "크런치 기반 프로덕션 — Industry-wide 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "프로덕션",
+      "크런치",
+      "산업"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2024-주요강연",
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "프로덕션-TC011-마찰의균형"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# 크런치 기반 프로덕션 — Industry-wide 안티패턴\n\n> 60–80시간 주당 근무, 6개월~2년 지속. 게임이 \"BioWare Magic\"으로 마지막 6개월에 합쳐질 거라는 신화. 결과는 출시 후 burnout, 인력 유출, 게임 품질 저하.\n\n## 어떤 안티패턴인가\n\n**프로젝트 후반의 무리한 노동량으로 비전 부재를 보상**하려는 시도. 단기 출시에는 도움이 될 수도 있지만 장기적으로 스튜디오의 인적 자본 파괴.\n\n## 위반된 원칙\n\n- [[프로덕션-TC011-마찰의균형]] — 자유도와 디렉션의 균형, 인적 자원의 지속성\n\n## 왜 발생하는가\n\n1. **\"BioWare Magic\" 신화** — 마지막에 마법처럼 합쳐질 것\n2. **출시일 압박** — 마케팅 약속, 분기 매출 기대\n3. **비전 정립 실패의 보상** — 디자인 부재를 노동으로 메우려 함\n4. **인디 → AAA의 문화 차이 무시** — 인디의 자발적 야근을 AAA에 강요\n5. **연봉 vs 시급 문화** — 연봉 = 무한 노동 가능이라는 잘못된 가정\n\n## 어떤 결과를 낳는가\n\n- **Cyberpunk 2077**: 1년 크런치 후 출시했지만 여전히 미완성\n- **Red Dead Redemption 2**: 100시간/주 보고 후 Rockstar 임원 사과\n- **Anthem**: 정신 건강 위기 다수 보고 (Kotaku 보도)\n- 핵심 인력 출시 후 즉시 이탈\n- 다음 게임 개발 정체 (인력 부재)\n- 산업 전체 평판 손상 → 신규 입사자 감소\n\n## 산업 GDC 반응\n\nGDC 2024에서 [[스벤 빈케]] 키노트가 이를 직격:\n\n> \"Publisher와의 평생 싸움\" — 크런치는 개발자의 잘못이 아닌 publisher의 출시 압박이 구조적 원인\n\n이는 GDC 2024의 가장 큰 화두 중 하나. 동시에 11,000명+ 정리해고가 산업 전체를 흔든 해.\n\n## 어떻게 피하는가\n\n[[03_패턴/Hades-내러티브와로그라이크통합]] / [[스벤 빈케|Larian]] 사례:\n\n1. **Early Access로 압박 분산** — Supergiant *Hades*가 2년 EA로 위험 분산\n2. **Publisher 압박 거부** — Larian이 자체 자금으로 *BG3* 6년 개발\n3. **프리프로덕션 충분 시간** — 18개월 vs 6개월의 차이\n4. **40시간/주 정책** — Respawn, Insomniac 등 일부 스튜디오의 모범\n5. **비전 정립을 노동으로 보상하지 말 것** — 디자인 부재는 디자인으로 해결\n\n## 대비되는 성공 사례\n\n- [[03_패턴/Hades-내러티브와로그라이크통합]] — Supergiant의 안정된 작업 환경\n- *Stardew Valley* — Eric Barone의 단독 개발 (다른 종류의 노동량이지만 자율적)\n- *Baldur's Gate 3* — Larian의 6년 자율 개발\n\n## 출처 링크\n\n- Kotaku — Jason Schreier의 다수 크런치 폭로 (Anthem, Cyberpunk, RDR2)\n- [[GDC-2024-주요강연]] — Sven Vincke 키노트\n- *Press Reset* (Jason Schreier, 2021) — 산업 크런치 책",
+    "wikilinks": [
+      {
+        "target": "프로덕션-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "스벤 빈케",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "스벤 빈케",
+        "display": "Larian"
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "GDC-2024-주요강연",
+        "display": null
+      }
+    ],
+    "bodyLength": 1577,
+    "topics": [
+      "system",
+      "production"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-SYS-001-페이투윈진행",
+    "slug": "ANTI-SYS-001-페이투윈진행",
+    "fileName": "ANTI-SYS-001-페이투윈진행",
+    "filePath": "04_안티패턴/ANTI-SYS-001-페이투윈진행.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "페이투윈 진행 — Diablo Immortal 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "F2P",
+      "P2W",
+      "보상설계"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-SK007-보상설계",
+      "시스템-SM001-흥미로운결정",
+      "시스템-SK002-접근성우선"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# 페이투윈 진행 — Diablo Immortal 안티패턴\n\n> 캐릭터를 최고 레벨까지 끌어올리는 데 약 $110,000 USD 추정. 모바일 P2W 모델을 *Diablo* IP에 그대로 이식해 코어 팬덤이 영구 이탈.\n\n## 어떤 안티패턴인가\n\n게임의 **진행(progression) 자체를 결제 게이트**로 만드는 모델. 일반 플레이어가 충분히 즐길 수 있다고 광고하지만, 엔드게임 콘텐츠가 결제 없이는 도달 불가.\n\n## 위반된 원칙\n\n- [[시스템-SK007-보상설계]] — 보상이 결제 압박의 도구가 되면 의미를 상실\n- [[시스템-SM001-흥미로운결정]] — \"이 빌드 vs 저 빌드\"가 아니라 \"결제 vs 미결제\"의 비-결정\n- [[시스템-SK002-접근성우선]] — 접근성을 가격으로 차단\n\n## 왜 발생하는가\n\n1. **모바일 F2P \"고래(whale)\" 모델 이식** — 상위 1% 결제자가 매출의 50%를 차지하는 패턴\n2. **NetEase의 중국 모바일 BM 검증** — 중국 시장에서 작동한 모델\n3. **Blizzard의 매출 압박** — Activision Blizzard 합병 시기의 단기 매출 요구\n4. **Legendary Gem 시스템** — 1성 → 5성 업그레이드의 결제 의존\n5. **PvP 매칭의 결제 격차** — 무과금자와 과금자가 같은 매칭 풀\n\n## 어떤 결과를 낳는가\n\n- 메타크리틱 유저 평점 0.5/10 (사상 최저급)\n- *Diablo* 코어 팬덤의 \"Blizzard 영구 보이콧\" 선언\n- *Diablo IV* 출시 시 부정적 영향 (P2W 우려)\n- 한국·미국에서 P2W 규제 논의의 사례\n- Battlefront II의 보상 시스템 사태(2017)와 함께 산업 BM 인식 전환점\n\n## 어떻게 피하는가\n\n[[03_패턴/Hades-내러티브와로그라이크통합]] Supergiant 사례:\n\n1. **Premium 단일 결제 모델** — *Hades* $25, 모든 콘텐츠 포함\n2. **F2P라면 \"외형(skin) 만 결제\"** — *Apex Legends*, *Fortnite* 모델\n3. **Battle Pass의 윤리적 디자인** — *Apex*는 시즌 패스를 시즌 안에 환수 가능 (이전 시즌 자원 누적)\n4. **PvP 매칭에서 결제 격차 차단** — 결제는 외형, 콘텐츠 접근만\n\n## 대비되는 성공 사례\n\n- [[03_패턴/Apex Legends-핑시스템]] — F2P + skin 결제로만 운영\n- *Path of Exile* — F2P + Stash Tab만 결제, 게임플레이 격차 없음\n- *Marvel Snap* — F2P + 시즌 패스, P2W 우회 가능\n\n## 안티패턴의 변형들\n\n- *Star Wars: Battlefront II* (2017 출시 시) — 영웅 잠금 해제에 40시간 또는 결제. 후 패치\n- *NBA 2K* 시리즈 — 매년 같은 P2W 패턴 비판받음\n- *Genshin Impact* (gacha) — 가챠는 P2W의 다른 형식; 사용자 평가 분기\n\n## 출처 링크\n\n- Polygon, Kotaku, PC Gamer 등 *Diablo Immortal* 출시 직후 보도 (2022)\n- Forbes — Diablo Immortal $100,000+ to fully gear analysis",
+    "wikilinks": [
+      {
+        "target": "시스템-SK007-보상설계",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "시스템-SK002-접근성우선",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Apex Legends-핑시스템",
+        "display": null
+      }
+    ],
+    "bodyLength": 1617,
+    "topics": [
+      "character",
+      "balance",
+      "live_service"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-SYS-002-NFT게임Play2Earn",
+    "slug": "ANTI-SYS-002-NFT게임Play2Earn",
+    "fileName": "ANTI-SYS-002-NFT게임Play2Earn",
+    "filePath": "04_안티패턴/ANTI-SYS-002-NFT게임Play2Earn.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "NFT / Play-to-Earn 게임 — 본질적 재미 부재",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "NFT",
+      "블록체인",
+      "P2E",
+      "거품"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "GDC-2022-주요강연"
+    ],
+    "relatedPrinciples": [
+      "시스템-SK007-보상설계",
+      "시스템-WW004-목표없는동기",
+      "시스템-SM001-흥미로운결정"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "critical",
+    "body": "# NFT / Play-to-Earn 게임 — 본질적 재미 부재 안티패턴\n\n> 게임의 코어 루프가 \"재미\"가 아닌 \"토큰 획득\"이 되면, 토큰 가치가 떨어지는 순간 게임은 즉시 죽는다. *Axie Infinity*는 정점에서 일일 사용자 280만 → 6개월 후 50만 미만으로 폭락.\n\n## 어떤 안티패턴인가\n\n**게임의 동기를 외부 금전 보상에 위임**하는 모델. 코어 게임플레이 자체가 재미있지 않으면, 보상 가치(토큰 가격)에 게임의 생사가 묶임.\n\n## 위반된 원칙\n\n- [[시스템-SK007-보상설계]] — 보상이 게임 외부의 변동 가치에 묶임\n- [[시스템-WW004-목표없는동기]] — Will Wright의 \"외부 보상 없이도 의미 있는 활동\" 사상에 정반대\n- [[시스템-SM001-흥미로운결정]] — 게임플레이 결정이 \"토큰 시세\"라는 외부 변수에 종속\n\n## 왜 발생하는가\n\n1. **2021년 NFT 거품** — 가상자산 시장의 광풍\n2. **\"플레이어가 돈을 번다\"는 마케팅** — 필리핀 등 저소득 국가의 노동 모델 진입\n3. **개발사의 단기 매출** — NFT 1차 판매로 수익 즉시 회수\n4. **\"디지털 소유권\" 마케팅** — 실제로는 게임이 종료되면 NFT도 가치 0\n5. **게임 본질 무시** — \"재미\"보다 \"수익\"이 핵심 KPI\n\n## 어떤 결과를 낳는가\n\n- *Axie Infinity*: SLP 토큰 가격 99% 하락\n- 필리핀 사용자들의 일일 수익 $30 → $1 미만\n- *STEPN* 등 모든 P2E 게임 동시 붕괴 (2022 5월)\n- Ronin Network 해킹 ($625M 손실, 2022 3월)\n- 산업 전반의 NFT 게임 회의주의 정착\n\n## 산업 GDC 반응\n\nGDC 2022에서 NFT가 광범위 화두였으나, 1년 후 GDC 2023에서는 거의 자취를 감춤. 이는 산업의 빠른 학습 사례.\n\n## 어떻게 피하는가\n\n[[03_패턴/Hades-내러티브와로그라이크통합]] Supergiant 사례:\n\n1. **코어 루프가 재미있어야** — 보상은 재미의 보조\n2. **외부 가치에 게임을 묶지 말 것** — 게임 내 화폐는 게임 안에서만\n3. **\"노동\" 게임이 아닌 \"놀이\" 게임** — Will Wright의 toy 사상\n4. **장기 운영을 가정한 BM** — 토큰 1차 판매가 아닌 지속 가능 수익\n\n## 안티패턴의 합리적 진화\n\n이론적으로 NFT/블록체인이 게임에 의미를 가질 수 있는 케이스:\n\n- 진정한 디지털 소유권 (게임 종료 후에도 가치 보장)\n- 사용자 생성 콘텐츠 거래\n- 크로스 게임 자산 (현실: 거의 작동 안 함)\n\n## 대비되는 성공 사례\n\n- *Hades* — Premium 결제, 외부 가치 의존 없음\n- *Apex Legends* — F2P + skin 결제, 게임플레이 수익 분리\n- *Path of Exile* — F2P 모델의 모범 사례\n\n## 출처 링크\n\n- 다양한 2022 가상자산 시장 붕괴 보도\n- Bloomberg, Reuters NFT 게임 분석\n- Wikipedia — Axie Infinity Ronin hack",
+    "wikilinks": [
+      {
+        "target": "시스템-SK007-보상설계",
+        "display": null
+      },
+      {
+        "target": "시스템-WW004-목표없는동기",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "03_패턴/Hades-내러티브와로그라이크통합",
+        "display": null
+      }
+    ],
+    "bodyLength": 1524,
+    "topics": [
+      "system"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-SYS-003-과한QTE의존",
+    "slug": "ANTI-SYS-003-과한QTE의존",
+    "fileName": "ANTI-SYS-003-과한QTE의존",
+    "filePath": "04_안티패턴/ANTI-SYS-003-과한QTE의존.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "과한 QTE 의존 — 입력 절도 안티패턴",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "QTE",
+      "인터랙션",
+      "시네마틱"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-SK009-AI플레이어설계",
+      "전투-SK001-위험과보상",
+      "내러티브-HK002-영화적연출과게임플레이"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "minor",
+    "body": "# 과한 QTE 의존 — 입력 절도 안티패턴\n\n> Quick Time Event(QTE)가 게임플레이를 대체하는 안티패턴. 시네마틱 화려한 장면을 만든다며 플레이어의 자율성을 빼앗고, 결국 영화도 게임도 아닌 무언가가 된다.\n\n## 어떤 안티패턴인가\n\n**플레이어 입력을 게임플레이가 아닌 영상 트리거**로 사용. 적이 와서 X 누르세요, 점프 시간이라 A 누르세요, 보스 처치도 패턴 따라 버튼 누르세요.\n\n## 위반된 원칙\n\n- [[시스템-SK009-AI플레이어설계]] — 사쿠라이의 \"AI도 플레이어처럼 보여야\" — QTE는 그 반대로 *플레이어를 AI*로 만든다\n- [[전투-SK001-위험과보상]] — 결정의 무게가 사라짐 (틀리면 그냥 다시)\n- [[내러티브-HK002-영화적연출과게임플레이]] — 코지마 사상의 정반대 (게임플레이를 영화에 종속)\n\n## 왜 발생하는가\n\n1. **시네마틱 영상의 \"참여감\" 욕망** — 컷씬을 그냥 보지 말고 누르게 하자\n2. **2010년대 초반 유행** — *God of War 3*, *Resident Evil 6*, *Heavy Rain*\n3. **개발 비용 절감** — 시스템적 보스전 < QTE 보스전 (개발 시간)\n4. **\"영화같은 게임\"의 마케팅** — QTE가 그 약속의 도구\n5. **검증 어려움** — QTE는 통과율 = 디자인 성공으로 잘못 측정\n\n## 어떤 결과를 낳는가\n\n- *Resident Evil 6*의 평가 폭락 — QTE 남발이 핵심 비판\n- *Heavy Rain* / *Beyond: Two Souls*가 \"게임이냐 영화냐\" 논쟁\n- 2015년 이후 QTE는 의식적으로 거의 사라짐\n- *God of War* (2018)이 QTE 거의 없이 시네마틱을 달성하면서 사상 전환\n\n## 어떻게 피하는가\n\n[[03_패턴/GodOfWar-원샷카메라]] / [[03_패턴/The Last of Us-컴패니언 AI 설계]] 사례:\n\n1. **시네마틱 = 게임플레이의 일부** — Cory Barlog의 원샷 카메라\n2. **QTE는 신중한 선택일 때만** — *Telltale* 시리즈의 결정 QTE는 의미 있음\n3. **인터랙션 ≠ 버튼 누르기** — 환경 인터랙션, 미니 메카닉으로\n4. **시네마틱 동안에도 자유** — *TLoU*의 컷씬 → 게임플레이 전환\n\n## 합리적 QTE 사용\n\n- **결정 QTE** — *Telltale*의 \"이 캐릭터를 살릴 것인가\" 같은 의미 있는 선택\n- **압축 시네마** — 짧은 시점에서 입력으로 흐름 유지\n- **컨텍스트 액션** — *Resident Evil 4* 리메이크의 적절한 사용\n\n## 대비되는 성공 사례\n\n- [[03_패턴/GodOfWar-원샷카메라]] — 시네마틱 + 게임플레이의 통합\n- [[03_패턴/The Last of Us-컴패니언 AI 설계]] — 컷씬 → 게임플레이의 끊김 없는 흐름\n- [[03_패턴/BotW-화학엔진과창발성]] — 보스전이 시스템적 메카닉의 정점\n\n## 출처 링크\n\n- Mark Brown Game Maker's Toolkit — QTE 비판 분석\n- Eurogamer — RE6 / Heavy Rain QTE 비평",
+    "wikilinks": [
+      {
+        "target": "시스템-SK009-AI플레이어설계",
+        "display": null
+      },
+      {
+        "target": "전투-SK001-위험과보상",
+        "display": null
+      },
+      {
+        "target": "내러티브-HK002-영화적연출과게임플레이",
+        "display": null
+      },
+      {
+        "target": "03_패턴/GodOfWar-원샷카메라",
+        "display": null
+      },
+      {
+        "target": "03_패턴/The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "03_패턴/GodOfWar-원샷카메라",
+        "display": null
+      },
+      {
+        "target": "03_패턴/The Last of Us-컴패니언 AI 설계",
+        "display": null
+      },
+      {
+        "target": "03_패턴/BotW-화학엔진과창발성",
+        "display": null
+      }
+    ],
+    "bodyLength": 1554,
+    "topics": [
+      "ui"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-SYS-004-가짜선택",
+    "slug": "ANTI-SYS-004-가짜선택",
+    "fileName": "ANTI-SYS-004-가짜선택",
+    "filePath": "04_안티패턴/ANTI-SYS-004-가짜선택.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "가짜 선택 — 결과가 같은 의사결정 분기",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "시스템",
+      "의사결정",
+      "흥미로운결정"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-팀 케인의 게임 디자인",
+      "유튜브-조시 소여의 게임 디자인"
+    ],
+    "relatedPrinciples": [
+      "시스템-SM001-흥미로운결정",
+      "시스템-WS003-선택의대가",
+      "시스템-JS003-선택의비용",
+      "시스템-DC001-플레이어의도"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 가짜 선택 — 결과가 같은 의사결정 분기\n\n> 두 길이 모두 같은 곳으로 이어진다면, 갈래는 길이 아닌 장식이다.\n\n## 어떤 안티패턴인가\n\n플레이어에게 분기를 제시하지만 *결과 상태가 동일*하거나 *비용/이익이 명확하지 않아 비교 불가능*하거나 *선택 즉시 결과를 되돌릴 수 있어* 무게가 없는 의사결정. UI상으로는 결정이지만 게임 상태 함수에서는 동치(identity).\n\n이 안티패턴은 [[ANTI-NAR-002-가짜회색도덕]]과 형제 관계 — 후자는 도덕 슬라이더에 한정된 형태이고, 이쪽은 모든 시스템 분기에 적용되는 일반형.\n\n## 위반된 원칙\n\n- [[시스템-SM001-흥미로운결정]] — Sid Meier의 정의: 결과가 다르고 결과를 예측 가능해야 결정\n- [[시스템-WS003-선택의대가]] — 대가 없는 선택은 게임플레이 통화가 아님\n- [[시스템-JS003-선택의비용]] — 선택은 닫히는 문이 있을 때만 의미를 가짐\n- [[시스템-DC001-플레이어의도]] — 의도가 결과로 이어지지 않으면 의도 자체가 강화되지 않음\n\n## 왜 발생하는가\n\n1. **분기 비용 회피** — 진짜 결과 분기는 콘텐츠량을 곱셈으로 늘림\n2. **밸런스 강박** — 어느 선택도 \"실수\"가 되지 않게 하려는 안전 운전\n3. **A/B 분기 가정** — 통계적으로 50:50 분포를 만들려다 차이를 평탄화\n4. **되돌리기 친화성** — 모바일·캐주얼화 압력으로 모든 결정을 리셋 가능하게\n5. **리소스 재활용** — 양쪽 분기가 같은 던전·NPC 풀을 공유하다 결과 차이가 표면적 대사로만 남음\n\n## 어떤 결과를 낳는가\n\n- 플레이어가 선택 메커니즘을 무시 — 직감이 아닌 트리거 단어로 진행\n- 진짜 결정의 무게가 인플레이션 — 게임이 한 *결정적 순간*을 만들어도 학습된 의심으로 인해 가벼워짐\n- 위키·가이드의 \"결국 같음\" 정보 확산 → 두 번째 플레이 동기 상실\n- 디자이너가 \"왜 플레이어가 우리 선택지에 무관심한가\" 하는 오해 — 학습된 행동임\n\n## 흥미로운 결정의 5가지 조건\n\nSid Meier 정리 + Tim Cain 보강:\n1. 두 옵션 모두 매력적 — 한쪽이 명백히 우월하면 결정이 아닌 답\n2. 결과가 다름 — 표면적 대사가 아닌 게임 상태 차이\n3. 결과가 예측 가능 — 무작위면 도박, 결정 아님\n4. 비용이 비대칭 — 같은 통화면 양적 비교, 다른 통화면 가치 판단\n5. 되돌릴 수 없음 — 되돌리면 시뮬레이션, 결정 아님\n\n## 어떻게 피하는가\n\n1. **닫히는 문** — 한 선택이 다른 선택의 콘텐츠를 비활성화 (FNV 팩션)\n2. **자원 트레이드오프** — 시간·돈·평판이 서로 다른 통화여서 직접 비교 불가\n3. **선택의 가시화** — 즉시 일부 결과를 노출해 비용 체감\n4. **NPC 영구 손실** — 컴패니언·상인이 실제로 사라짐\n5. **회피 옵션 제거** — \"양쪽 다 만족\" 경로 차단\n\n## 대비되는 성공 사례\n\n- *Disco Elysium* (2019) — 정치적 입장이 스킬 체크 가용성을 즉시 변경\n- *Tyranny* (2016) — 1막 결정이 2막 맵 접근성을 닫음\n- *Slay the Spire* (2019) — 카드 선택의 영구성으로 매 순간 진짜 결정\n- *Frostpunk* (2018) — 법령 선택이 시스템 상태와 도덕적 무게 동시 변화\n- [[시스템-SM001-흥미로운결정]] 정통 사례군\n\n## 출처 링크\n\n- Sid Meier GDC 2012 — \"Interesting Decisions\"\n- Tim Cain YouTube — \"Designing Meaningful Choices\"\n- Josh Sawyer 강의 — \"Reactivity in RPG Design\"",
+    "wikilinks": [
+      {
+        "target": "ANTI-NAR-002-가짜회색도덕",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      },
+      {
+        "target": "시스템-WS003-선택의대가",
+        "display": null
+      },
+      {
+        "target": "시스템-JS003-선택의비용",
+        "display": null
+      },
+      {
+        "target": "시스템-DC001-플레이어의도",
+        "display": null
+      },
+      {
+        "target": "시스템-SM001-흥미로운결정",
+        "display": null
+      }
+    ],
+    "bodyLength": 1825,
+    "topics": [
+      "ui",
+      "narrative",
+      "system"
+    ]
+  },
+  {
+    "id": "antipattern:ANTI-SYS-005-통계폭격RPG",
+    "slug": "ANTI-SYS-005-통계폭격RPG",
+    "fileName": "ANTI-SYS-005-통계폭격RPG",
+    "filePath": "04_안티패턴/ANTI-SYS-005-통계폭격RPG.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "통계 폭격 RPG — 의미 없는 수치 인플레의 디자인",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [
+      "안티패턴",
+      "시스템",
+      "RPG",
+      "수치설계"
+    ],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [
+      "유튜브-게임개발자회의"
+    ],
+    "relatedPrinciples": [
+      "시스템-DC003-FADT어휘",
+      "시스템-JB004-플레이어지능존중",
+      "시스템-DC002-인지가능한결과",
+      "시스템-TC011-마찰의균형"
+    ],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "updated": "Sat May 02 2026 09:00:00 GMT+0900 (Korean Standard Time)",
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": "major",
+    "body": "# 통계 폭격 RPG — 의미 없는 수치 인플레의 디자인\n\n> \"치명타 확률 +0.4%\"가 화면에 50줄 흐를 때, 플레이어는 비교를 포기하고 아이템 레벨 숫자만 본다. 그 순간 모든 통계는 한 개의 통계로 환원된다.\n\n## 어떤 안티패턴인가\n\n캐릭터 빌드·아이템·스킬에 다수의 작은 수치 변경자(+2% 화염 저항, +0.5초 쿨다운 감소 등)를 누적시켜 의사결정 표면적이 폭증하지만, 각 수치가 *체감 가능한 차이*를 만들지 않아 비교 자체가 의미를 잃은 상태. 결과적으로 단일 종합 점수(Item Level, Power Level)만 의사결정에 사용됨.\n\n## 위반된 원칙\n\n- [[시스템-DC003-FADT어휘]] — Feedback / Affordance / Decision / Telegraph 어휘가 수치 노이즈에 묻힘\n- [[시스템-JB004-플레이어지능존중]] — 비교 불가능한 수치를 비교하라는 요구는 지능 존중 위반\n- [[시스템-DC002-인지가능한결과]] — 1% 차이는 인지 가능한 결과가 아님\n- [[시스템-TC011-마찰의균형]] — 의사결정의 인지 마찰이 보상보다 큼\n\n## 왜 발생하는가\n\n1. **무작위 드랍 재미 가정** — \"다음 드랍이 더 나을 수도\"의 도박 루프 의존\n2. **시스템 깊이 = 변수 수 라는 오해** — 깊이는 *가능한 빌드 수*가 아니라 *결정의 명료성*에서 나옴\n3. **콘텐츠 인플레이션** — 매 시즌 새 수치를 추가하지 않으면 \"신선함\" 부족\n4. **밸런스 회피** — 핵심 메커니즘 변경보다 옆 수치 추가가 정치적으로 안전\n5. **Excel 디자인** — 디자이너가 게임 안에서 느끼지 않고 스프레드시트에서 만듦\n\n## 어떤 결과를 낳는가\n\n- 의사결정의 외주화 — 플레이어가 빌드 가이드·DPS 계산기에 의존\n- 빌드 다양성의 환상 — 표면적으로는 N개 빌드, 실제로는 메타 1~2개로 수렴\n- 신규 유저 진입장벽 — 수치를 읽는 학습 비용이 게임 실력 학습보다 큼\n- 엔드게임 동기 약화 — \"이번 드랍은 0.3% 더 좋다\"의 한계 효용 0 수렴\n\n## 차이를 만드는 단위\n\n체감 가능한 단위는 *상호작용을 바꾸는* 단위 — 1히트 더 견딤, 1콤보 더 발동, 패턴이 통과 → 미통과로 변경. *Path of Exile* \"패시브 트리\"가 거대해도 작동하는 이유는 각 노드가 빌드의 *카테고리*를 바꾸기 때문(키스톤·통계 마일스톤).\n\n## 어떻게 피하는가\n\n1. **수치 < 키스톤** — 작은 변경자보다 작동 방식을 바꾸는 키스톤 채택\n2. **단계 함수** — 선형 +1%가 아닌 임계점 기반 변화 (5스택 시 효과 트리거)\n3. **삭제의 용기** — 누적된 의미 없는 통계를 시즌 단위로 정리 (*Diablo III* 2.0 패치)\n4. **체감 검증 기준** — 플레이테스트에서 \"이 수치 차이가 *상호작용을* 바꾸는가\" 확인\n5. **종합 점수 노출 절제** — Item Level 하나로 환원되지 않게 다축 비교 가능성 유지\n\n## 대비되는 성공 사례\n\n- *Diablo III* 2.0 \"Loot 2.0\" 패치 — 통계 수를 줄이고 각 통계의 의미 증가\n- *Path of Exile* — 키스톤 + 통계 마일스톤으로 빌드 카테고리화\n- *Slay the Spire* — 모든 카드가 작동 방식을 바꿈, 단순 +N 카드 최소화\n- *Hades* (2020) — 부어(Boon)이 작동 방식을 바꾸지 +5% 데미지가 거의 없음\n- [[시스템-DC003-FADT어휘]]의 명료성 사례군\n\n## 출처 링크\n\n- Travis Day GDC — *Diablo III* Loot 2.0 postmortem\n- Edmund McMillen 인터뷰 — *Isaac* 아이템 설계 철학\n- Mark Brown — \"Designing Meaningful Builds\"",
+    "wikilinks": [
+      {
+        "target": "시스템-DC003-FADT어휘",
+        "display": null
+      },
+      {
+        "target": "시스템-JB004-플레이어지능존중",
+        "display": null
+      },
+      {
+        "target": "시스템-DC002-인지가능한결과",
+        "display": null
+      },
+      {
+        "target": "시스템-TC011-마찰의균형",
+        "display": null
+      },
+      {
+        "target": "시스템-DC003-FADT어휘",
+        "display": null
+      }
+    ],
+    "bodyLength": 1869,
+    "topics": [
+      "combat",
+      "character",
+      "system",
+      "balance"
+    ]
+  },
+  {
+    "id": "antipattern:README",
+    "slug": "README",
+    "fileName": "README",
+    "filePath": "04_안티패턴/README.md",
+    "type": "antipattern",
+    "domain": null,
+    "subType": null,
+    "sourceFolder": null,
+    "year": null,
+    "category": null,
+    "title": "README",
+    "titleEn": null,
+    "nameKo": null,
+    "principleId": null,
+    "aliases": [],
+    "tags": [],
+    "designers": [],
+    "gamesReferenced": [],
+    "sources": [],
+    "relatedPrinciples": [],
+    "sourceConfidence": null,
+    "status": null,
+    "preview": false,
+    "created": null,
+    "updated": null,
+    "notableWorks": [],
+    "roles": [],
+    "domains": [],
+    "url": null,
+    "sourceType": null,
+    "creator": null,
+    "language": null,
+    "severity": null,
+    "body": "# 04_안티패턴\n\n> \"이러면 망한다\" — 실패 사례와 안티패턴을 모아두는 폴더.\n\n## 작성 규칙\n\n```yaml\n---\ntype: antipattern\ntitle: 안티패턴 제목\nrelated_principles:\n  - \"[[위반된 원칙 문서]]\"\nexamples:\n  - 게임명1\n  - 게임명2\nseverity: critical | major | minor   # 영향도\ntags:\n  - 안티패턴\nsources:\n  - \"[[출처 문서명]]\"\ncreated: 2025-01-01\nupdated: 2025-01-01\n---\n```\n\n- 특정 게임을 비난하는 것이 아니라 **설계 판단의 교훈**에 집중한다.\n- 본문 구조: 어떤 안티패턴인가 → 왜 발생하는가 → 어떤 결과를 낳는가 → 어떻게 피하는가.\n- 가능하면 같은 문제를 잘 해결한 `03_패턴/` 사례와 대비한다.\n\n## 파일명 규칙\n\n- `ANTI-{도메인코드}-{번호3자리}-{한국어slug}.md` (예: `ANTI-CMB-001-정체성흐림슈터.md`)\n- 도메인 코드: CMB(전투), SYS(시스템), NAR(내러티브), LVL(레벨), PRD(프로덕션)\n\n## 다른 폴더와의 연결\n\n- **`02_원칙/`** — 이 안티패턴이 위반하는 원칙 문서와 양방향 wikilink.\n- **`03_패턴/`** — 같은 문제를 잘 해결한 성공 사례와 대비 참조.\n- **`99_출처/`** — 실패 사례의 근거가 되는 출처 문서 참조.\n\n## 등록 안티패턴 (2026-05-02 기준)\n\n### 프로덕션 (PRD)\n\n- [[ANTI-PRD-001-라이브서비스비전미달]] — Anthem (2019, BioWare)\n- [[ANTI-PRD-002-시장부재신규IP라이브서비스]] — Concord (2024, Firewalk)\n- [[ANTI-PRD-003-약속과결과의괴리]] — Cyberpunk 2077 (2020, CDPR), No Man's Sky (2016, Hello Games)\n- [[ANTI-PRD-004-IP라이브서비스강제]] — Marvel's Avengers (2020), Suicide Squad (2024)\n- [[ANTI-PRD-005-크런치기반프로덕션]] — 다수 AAA, Industry-wide\n\n### 시스템 (SYS)\n\n- [[ANTI-SYS-001-페이투윈진행]] — Diablo Immortal (2022)\n- [[ANTI-SYS-002-NFT게임Play2Earn]] — Axie Infinity (2018), STEPN\n- [[ANTI-SYS-003-과한QTE의존]] — Heavy Rain, Resident Evil 6, GoW 3\n- [[ANTI-SYS-004-가짜선택]] — 결과 동일 분기, 다수 AAA 후반부\n- [[ANTI-SYS-005-통계폭격RPG]] — Anthem 인스크립션, Destiny 1 초기, Diablo III 출시\n\n### 전투 (CMB)\n\n- [[ANTI-CMB-001-정체성흐림슈터]] — Battlefield 2042, Suicide Squad\n- [[ANTI-CMB-002-튜토리얼과강제대화]] — 모바일 F2P 다수, AAA 일부\n- [[ANTI-CMB-003-보스체력스폰지]] — Destiny 1 레이드, 다수 MMO 엔레이지 보스\n\n### 레벨 (LVL)\n\n- [[ANTI-LVL-001-의미없는수집요소]] — Ubisoft 패턴 (Assassin's Creed, Far Cry)\n- [[ANTI-LVL-002-빈오픈월드]] — Mad Max, Just Cause 3, Mafia III\n- [[ANTI-LVL-003-랜드마크없는미로]] — Anthem 동굴, 초기 3D 액션 어드벤처\n\n### 내러티브 (NAR)\n\n- [[ANTI-NAR-001-사이드미션과주인공아크단절]] — RDR2 외계인 사례, 톤 분열\n- [[ANTI-NAR-002-가짜회색도덕]] — Mass Effect 3, Fable III, BioShock Infinite\n- [[ANTI-NAR-003-루도내러티브부조화]] — Uncharted 2, BioShock, Spec Ops 의도적 활용\n- [[ANTI-NAR-004-오디오로그폭탄]] — BioShock Infinite, Doom 3, 다수 서바이벌호러\n\n## 그래프 뷰 연결 정책\n\n각 안티패턴은:\n1. 위반한 원칙(02_원칙) → wikilink\n2. 대조되는 성공 사례(03_패턴) → wikilink\n3. 출처(99_출처) → wikilink\n4. 같은 안티패턴의 다른 사례 → wikilink\n\n이로 인해 안티패턴이 원칙·패턴·출처 사이를 잇는 음(陰) 노드 역할을 한다.",
+    "wikilinks": [
+      {
+        "target": "위반된 원칙 문서",
+        "display": null
+      },
+      {
+        "target": "출처 문서명",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-001-라이브서비스비전미달",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-002-시장부재신규IP라이브서비스",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-003-약속과결과의괴리",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-004-IP라이브서비스강제",
+        "display": null
+      },
+      {
+        "target": "ANTI-PRD-005-크런치기반프로덕션",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-001-페이투윈진행",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-002-NFT게임Play2Earn",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-003-과한QTE의존",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-004-가짜선택",
+        "display": null
+      },
+      {
+        "target": "ANTI-SYS-005-통계폭격RPG",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-001-정체성흐림슈터",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-002-튜토리얼과강제대화",
+        "display": null
+      },
+      {
+        "target": "ANTI-CMB-003-보스체력스폰지",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-001-의미없는수집요소",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-002-빈오픈월드",
+        "display": null
+      },
+      {
+        "target": "ANTI-LVL-003-랜드마크없는미로",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-001-사이드미션과주인공아크단절",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-002-가짜회색도덕",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-003-루도내러티브부조화",
+        "display": null
+      },
+      {
+        "target": "ANTI-NAR-004-오디오로그폭탄",
+        "display": null
+      }
+    ],
+    "bodyLength": 2274,
+    "topics": []
+  }
+]

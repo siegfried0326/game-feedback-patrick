@@ -8,6 +8,7 @@
 import Link from "next/link"
 import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 
 export const metadata = {
   title: "요금제 | 아카이브 187(Archive187)",
@@ -153,9 +154,15 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
-                <Link href={plan.href}>{plan.cta}</Link>
-              </Button>
+              {!PAYMENTS_ENABLED && plan.href.startsWith("/payment/") ? (
+                <Button disabled className="w-full bg-[#162a4a] text-slate-500 opacity-60 cursor-not-allowed">
+                  결제 준비 중
+                </Button>
+              ) : (
+                <Button asChild className="w-full bg-[#162a4a] hover:bg-[#1e3a5f] text-white">
+                  <Link href={plan.href}>{plan.cta}</Link>
+                </Button>
+              )}
             </div>
           ))}
         </div>
@@ -218,21 +225,35 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button
-                asChild
-                className={`w-full ${
-                  plan.highlighted
-                    ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
-                    : plan.amber
-                    ? "bg-amber-500 hover:bg-amber-600 text-white"
-                    : "bg-[#162a4a] hover:bg-[#1e3a5f] text-white"
-                }`}
-              >
-                <Link href={plan.href}>{plan.cta}</Link>
-              </Button>
+              {!PAYMENTS_ENABLED ? (
+                <Button disabled className="w-full bg-[#162a4a] text-slate-500 opacity-60 cursor-not-allowed">
+                  결제 준비 중
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  className={`w-full ${
+                    plan.highlighted
+                      ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+                      : plan.amber
+                      ? "bg-amber-500 hover:bg-amber-600 text-white"
+                      : "bg-[#162a4a] hover:bg-[#1e3a5f] text-white"
+                  }`}
+                >
+                  <Link href={plan.href}>{plan.cta}</Link>
+                </Button>
+              )}
             </div>
           ))}
         </div>
+
+        {!PAYMENTS_ENABLED && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-10 text-center">
+            <p className="text-sm text-amber-400">
+              현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.
+            </p>
+          </div>
+        )}
 
         <p className="text-slate-500 text-xs mb-10">
           * 크레딧을 보유한 상태에서 구독 시, 보유 크레딧을 먼저 소모한 뒤 구독이 적용됩니다.

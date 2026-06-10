@@ -18,6 +18,7 @@ import { Progress } from "@/components/ui/progress"
 import { getSubscription, cancelSubscription } from "@/app/actions/subscription"
 import { getCreditOrders, refundCreditOrder } from "@/app/actions/payment"
 import { getUser } from "@/app/actions/auth"
+import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -262,11 +263,17 @@ export default function MyPage() {
 
               {(!isPaidPlan || subscription.status !== "active") && (subscription.analysis_credits ?? 0) === 0 && (
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
-                  <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매하거나 무제한 구독을 시작해 보세요.</p>
-                  <div className="flex gap-2 mt-3">
-                    <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/payment/credits">크레딧 구매</Link></Button>
-                    <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white"><Link href="/pricing">요금제 보기</Link></Button>
-                  </div>
+                  {PAYMENTS_ENABLED ? (
+                    <>
+                      <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매하거나 무제한 구독을 시작해 보세요.</p>
+                      <div className="flex gap-2 mt-3">
+                        <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/payment/credits">크레딧 구매</Link></Button>
+                        <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white"><Link href="/pricing">요금제 보기</Link></Button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-amber-400">현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.</p>
+                  )}
                 </div>
               )}
               {subscription.plan === "monthly" && subscription.status === "active" && (

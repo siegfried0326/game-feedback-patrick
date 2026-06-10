@@ -2,6 +2,82 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-06-10
+
+### 면접·라이브러리 관리자 전용 게이팅
+**배경**: 면접 연습과 게임 디자인 라이브러리는 아직 정식 공개 전(준비 중). 일반 사용자에게 노출되지 않도록 관리자 전용으로 제한.
+
+**면접** (이미 게이팅돼 있던 것 확인):
+- `app/interview/page.tsx`: 비관리자에게 "준비 중" 안내
+- `app/api/interview/*` 3개: `isAdminEmail` 체크
+- `app/admin/interview-questions/page.tsx`: 관리자 큐레이션 페이지 (redirect 게이팅)
+
+**라이브러리** (이번에 추가):
+- `app/library/layout.tsx`: async server로 전환 → `isAdminEmail` 아니면 `redirect("/")`. 하위 12개 라우트(`/library/*`)를 한 곳에서 게이팅.
+- `app/api/library/graph`, `app/api/library/search`: `isAdminEmail` 체크 → 403
+- `components/header.tsx`: "라이브러리" 네비 링크를 `user.isAdmin`일 때만 노출
+- `components/triple-feature-section.tsx`: 면접·라이브러리가 포함된 랜딩 3축 소개 섹션을 관리자에게만 렌더 (비관리자는 `null`)
+
+**⚠️ 정식 공개 시**: 위 게이팅을 해제하면 됨. (layout의 redirect, API의 403, header 조건, triple-feature의 null 반환)
+
+### 결제 일시 중단 — 전역 토글 도입
+**배경**: 서비스 재정비를 위해 결제(구독 + 크레딧 구매)를 일시 전면 차단. 추후 다시 오픈 예정.
+
+**구현**: 단일 플래그 `lib/payments-config.ts`의 `PAYMENTS_ENABLED = false`로 제어. 서버 진입점(우회 불가) + 클라이언트 결제 페이지 양쪽 차단.
+
+**차단 지점**:
+- 서버 `app/actions/payment.ts`: `processSubscriptionPayment`, `createCreditOrder`, `confirmCreditPayment` 함수 시작부에서 차단
+- 서버 `app/api/nicepay/billing/register/route.ts`: POST 핸들러 최상단에서 503 차단 (빌링키 발급 전)
+- 클라 `app/payment/billing/page.tsx`, `app/payment/credits/page.tsx`: 결제 폼 대신 "결제 서비스 준비 중" 안내 화면
+
+**유지(차단 안 함)**:
+- `refundCreditOrder` (크레딧 환불) — 닫힌 동안에도 환불은 가능해야 함
+
+**CTA 버튼 비활성화 (UX)**:
+- `app/pricing/page.tsx`, `components/pricing-section.tsx`, `components/pricing-modal.tsx`: 결제 버튼을 "결제 준비 중"으로 비활성화 + 안내 배너 표시. (무료 체험/요금제 보기 등 비결제 링크는 유지)
+- `app/mypage/page.tsx`: 크레딧 없음 안내의 "크레딧 구매" 버튼 → 결제 중단 안내 문구로 대체
+- `components/analyze-dashboard.tsx`: "크레딧 충전" 유도 배너를 결제 중단 시 숨김
+
+**⚠️ 다시 열 때**: `lib/payments-config.ts`의 `PAYMENTS_ENABLED`를 `true`로 변경 후 배포. (위 모든 UI가 자동으로 원복됨)
+
+## 2026-05-13
+
+### 게임 디자인 라이브러리 통합 (v1)
+**배경**: `~/Documents/GameDesignLibrary` (Obsidian Vault, 998+ .md, 321 원칙 + 80 디자이너 + 패턴/안티패턴/학습경로/계보/장르가이드/GDC 강연)를 Archive187에 통합하여 사이트를 **문서피드백 + 면접 + 게임 라이브러리** 통합 서비스로 확장.
+
+**변경 사항**:
+
+- 의존성 추가: `gray-matter`, `react-markdown`, `remark-gfm`, `rehype-slug`, `rehype-autolink-headings`, `react-force-graph-2d`
+- 임포트 파이프라인 (`scripts/import-library.mjs`): Vault → `content/library/*.json` (1,243 문서 / 2,971 alias / 8,310 엣지)
+  - `index.json` 요약 / `documents.json` 본문 / `by-type/*.json` 타입별 / `alias-map.json` / `graph.json`
+- 신규 라우트:
+  - `app/library/page.tsx` — 홈 (통계·도메인 5축·카테고리·preview·최근 갱신)
+  - `app/library/[type]/page.tsx` — 타입별 목록 + 필터
+  - `app/library/[type]/[slug]/page.tsx` — 문서 상세 + 위키링크 변환 + 백링크 사이드바
+  - `app/library/graph/page.tsx` — Obsidian 풍 force graph
+  - `app/library/search/page.tsx` — 통합 검색
+  - `app/api/library/graph/route.ts`, `app/api/library/search/route.ts`
+- 라이브러리 데이터 모듈: `lib/library/{types,loader,routes,markdown,vector}.ts`
+- 라이브러리 UI 컴포넌트: `components/library/{document-card,document-grid,document-meta,markdown-renderer,type-filter,graph-view,search-client}.tsx`
+- DB 마이그레이션: `scripts/018_create_library.sql` (`library_documents`, `library_chunks(vector 1536)`, `match_library_chunks` RPC, RLS 공개 read, HNSW 코사인 인덱스)
+- 시드/임베딩 스크립트: `scripts/seed-library-db.mjs`, `scripts/embed-library.mjs` (Node 22 `--env-file`)
+- npm scripts: `library:import`, `library:seed`, `library:embed`, `library:sync`
+- `app/actions/analyze.ts` 통합: 두 분석 경로(URL/문서)에서 `searchSimilarLibraryContent()`로 5~6개 원칙·패턴 청크 매칭 → 시스템 프롬프트에 주입. Claude가 `[PRIN-...]` 형식으로 인용 가능.
+- 헤더 네비에 "라이브러리" 메뉴 추가 (`components/header.tsx`)
+- 새 문서: `CLAUDE.md` (Archive187 작업 규칙), `docs/PRD_라이브러리.md`. `docs/REF_페이지라우트.md` / `docs/START_HERE.md` 갱신
+
+**비용 추산**:
+- 임베딩 1회: text-embedding-3-small × 47만 토큰 ≈ **$0.01**
+- 분석마다 RPC 1회 추가: 무료 (Supabase 내부)
+
+**미완료**:
+- 분석 결과 대시보드에 인용 원칙 카드 노출(categories[].references) — 후속 작업
+- 학습 경로 / 사상 계보 / 장르 가이드 전용 디자인(현재는 공통 detail 페이지)
+- 검색 의미(벡터) 모드 토글
+- preview 비공개 게이트 (구독자 한정)
+
+---
+
 ## 2026-05-06
 
 ### 중복 결제 방지 — 활성 구독 사전 검증 + race condition 차단

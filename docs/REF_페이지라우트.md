@@ -271,6 +271,22 @@ export function middleware(request: NextRequest) {
 
 ---
 
+## 📚 게임 디자인 라이브러리
+
+`docs/PRD_라이브러리.md` 참고.
+
+| 경로 | 설명 |
+|---|---|
+| `/library` | 홈 — 통계·도메인 5축·카테고리·preview 공개·최근 갱신 |
+| `/library/[type]` | 타입별 목록(검색·필터). type ∈ `principles · designers · patterns · antipatterns · paths · lineage · genres · core · gdc · sources · level-design` |
+| `/library/[type]/[slug]` | 문서 상세 (위키링크 내부 변환, 백링크 사이드바) |
+| `/library/graph` | Obsidian 풍 force graph (1,243 노드 / 8,310 엣지) |
+| `/library/search` | 통합 검색 |
+| `/api/library/graph` | 그래프 JSON (필터 query 지원) |
+| `/api/library/search` | 키워드 검색 결과 |
+
+---
+
 ## 📞 문제 해결
 
 ### 페이지가 안 열릴 때

@@ -5,18 +5,17 @@
  * - category 파라미터 없음 → 카테고리 목록 반환
  * - category 있음 → 해당 카테고리에서 count개 랜덤 질문 반환
  *
- * 보안: 현재 관리자 전용 테스트 단계 (출시 전 검증용)
+ * 보안: 관리자 + 과외 수강생 전용 (BM 개편: 수강생 혜택)
  */
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { isAdminEmail } from "@/lib/admin"
+import { hasPremiumAccess } from "@/lib/student-access"
 
 export async function GET(request: Request) {
-  // 관리자 권한 체크 (테스트 단계)
+  // 관리자 + 수강생 권한 체크
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdminEmail(user.email)) {
-    return NextResponse.json({ error: "FORBIDDEN", message: "관리자만 접근 가능합니다." }, { status: 403 })
+  if (!(await hasPremiumAccess())) {
+    return NextResponse.json({ error: "FORBIDDEN", message: "과외 수강생 전용 기능입니다." }, { status: 403 })
   }
 
   const { searchParams } = new URL(request.url)

@@ -10,7 +10,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Upload, Brain, Database, ArrowLeft, Mic } from "lucide-react"
+import { Upload, Brain, Database, ArrowLeft, Mic, GraduationCap } from "lucide-react"
 
 // 관리자 페이지 목록 (탭으로 표시)
 const adminTabs = [
@@ -34,6 +34,12 @@ const adminTabs = [
     href: "/admin/interview-questions",
     icon: Mic,
     isActive: (pathname: string) => pathname.startsWith("/admin/interview-questions"),
+  },
+  {
+    label: "수강생",
+    href: "/admin/students",
+    icon: GraduationCap,
+    isActive: (pathname: string) => pathname.startsWith("/admin/students"),
   },
 ]
 

@@ -2,21 +2,18 @@
  * 통합 서비스 3축 소개 — 분석 + 면접 + 라이브러리
  *   랜딩 페이지 hero 다음에 배치
  *
- * 🔒 면접·라이브러리는 현재 관리자 전용(준비 중)이므로,
- *    3축 소개 섹션도 관리자에게만 노출한다. 비관리자에겐 렌더하지 않음.
+ * 🔒 면접·라이브러리는 관리자 + 과외 수강생 전용이므로,
+ *    3축 소개 섹션도 해당 사용자에게만 노출한다. 그 외에는 렌더하지 않음.
  */
 
 import Link from "next/link"
 import { FileSearch, Mic, Library, ArrowRight } from "lucide-react"
 import { getLibraryStats } from "@/lib/library/loader"
-import { createClient } from "@/lib/supabase/server"
-import { isAdminEmail } from "@/lib/admin"
+import { hasPremiumAccess } from "@/lib/student-access"
 
 export async function TripleFeatureSection() {
-  // 면접·라이브러리가 포함된 섹션 — 관리자에게만 노출
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdminEmail(user.email)) {
+  // 면접·라이브러리가 포함된 섹션 — 관리자 + 수강생에게만 노출
+  if (!(await hasPremiumAccess())) {
     return null
   }
 

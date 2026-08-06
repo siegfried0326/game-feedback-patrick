@@ -6,16 +6,13 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getAllSummaries } from "@/lib/library/loader"
-import { createClient } from "@/lib/supabase/server"
-import { isAdminEmail } from "@/lib/admin"
+import { hasPremiumAccess } from "@/lib/student-access"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
-  // 라이브러리 관리자 전용 게이팅
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdminEmail(user.email)) {
+  // 라이브러리 게이팅: 관리자 + 수강생
+  if (!(await hasPremiumAccess())) {
     return NextResponse.json({ error: "접근 권한이 없습니다." }, { status: 403 })
   }
 

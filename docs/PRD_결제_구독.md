@@ -25,6 +25,11 @@
 
 ### 2.2 무제한 구독
 
+> **❌ 판매 종료 (2026-08-05 BM 개편)** — 아래는 이력 참고용.
+> 현재 판매 상품은 크레딧뿐이며, 반복 이용은 과외 수강생 혜택(매월 크레딧 지급)으로 대체.
+> 차단 위치: `lib/payments-config.ts` `SUBSCRIPTION_SALES_ENABLED=false`
+> (processSubscriptionPayment, /api/nicepay/billing/register, /payment/billing 페이지, 자동갱신 cron 모두 차단)
+
 | 플랜 | 가격 | 분석 횟수 | 프로젝트 | Claude 모델 | 기간 |
 |------|------|-----------|----------|-------------|------|
 | monthly | 13,900원/월 | 무제한 | 무제한 | Sonnet | 1개월 |

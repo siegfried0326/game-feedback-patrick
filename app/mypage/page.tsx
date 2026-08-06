@@ -265,7 +265,7 @@ export default function MyPage() {
                 <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
                   {PAYMENTS_ENABLED ? (
                     <>
-                      <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매하거나 무제한 구독을 시작해 보세요.</p>
+                      <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매해 주세요. 과외 수강생은 매월 크레딧이 지급됩니다.</p>
                       <div className="flex gap-2 mt-3">
                         <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/payment/credits">크레딧 구매</Link></Button>
                         <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white"><Link href="/pricing">요금제 보기</Link></Button>

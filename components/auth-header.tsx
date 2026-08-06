@@ -13,11 +13,23 @@ export async function AuthHeader() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // 수강생 여부 (라이브러리 등 프리미엄 메뉴 노출 판단용)
+  let isStudent = false
+  if (user && !isAdminEmail(user.email)) {
+    const { data } = await supabase
+      .from("users_subscription")
+      .select("is_student")
+      .eq("user_id", user.id)
+      .maybeSingle()
+    isStudent = data?.is_student === true
+  }
+
   const userData = user
     ? {
         email: user.email,
         name: user.user_metadata?.full_name || user.user_metadata?.name,
         isAdmin: isAdminEmail(user.email),
+        isStudent,
       }
     : null
 

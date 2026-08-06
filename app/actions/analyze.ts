@@ -342,6 +342,39 @@ async function getModelForUser(): Promise<string> {
   return "claude-sonnet-4-20250514"
 }
 
+// 분석 진입 공통 가드 — 서버에서 강제 (클라이언트 우회 차단)
+// ① 크레딧/구독 권한 확인 (기존엔 클라이언트 checkBeforeAnalysis만 있어 우회 가능했음)
+// ② 일일 상한: 계정당 24시간 5회 (재시도 폭주·악용 차단기, 관리자 제외)
+const DAILY_ANALYSIS_LIMIT = 5
+async function guardAnalysisEntry(): Promise<{ error?: string }> {
+  const allowance = await checkAnalysisAllowance()
+  if (!allowance.allowed) {
+    if (allowance.reason === "login_required") return { error: "먼저 로그인해주세요." }
+    if ("expired" in allowance && allowance.expired) {
+      return { error: "구독이 만료되었습니다. 크레딧을 구매해 주세요." }
+    }
+    return { error: "분석 크레딧이 없습니다. 크레딧을 구매해 주세요. 과외 수강생은 매월 크레딧이 지급됩니다." }
+  }
+
+  if (allowance.plan === "admin") return {}
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "먼저 로그인해주세요." }
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { count } = await supabase
+    .from("analysis_history")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("analyzed_at", since)
+
+  if ((count ?? 0) >= DAILY_ANALYSIS_LIMIT) {
+    return { error: `오늘 분석 한도(${DAILY_ANALYSIS_LIMIT}회)를 모두 사용했어요. 24시간 후에 다시 시도해주세요.` }
+  }
+  return {}
+}
+
 // URL이 내부 네트워크를 가리키는지 검사 (SSRF 방어)
 function isInternalUrl(urlStr: string): boolean {
   try {
@@ -390,6 +423,10 @@ export async function analyzeUrlDirect(input: {
   if (!authUser) {
     return { error: "먼저 로그인해주세요." }
   }
+
+  // 서버 강제 가드: 크레딧/구독 권한 + 일일 상한
+  const guard = await guardAnalysisEntry()
+  if (guard.error) return { error: guard.error }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -861,7 +898,7 @@ ${benchmarkSection}
   "companyFeedback": "위의 '회사별 합격 포트폴리오 벤치마크' 데이터를 반드시 참고하여 작성. **넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사 전부 작성. 각 회사별로 2~3문장씩. 형식: **회사명** 합격자들은 ~한 특징이 있습니다. 이 문서는 ~합니다. 회사마다 줄바꿈(\\n\\n)으로 구분. 절대 '~사례처럼' 표현 금지. [필수] 각 회사 벤치마크 데이터에서 해당 회사 합격자들의 핵심 특징(design/readability)을 인용하여 비교하세요. 각 회사 피드백의 '이 문서는 ~' 부분에서 반드시 이 문서에서 실제로 발견한 구체적인 내용을 인용하세요. 문서에 없는 기능이나 내용을 있다고 하면 안 됩니다."
 }`
 
-    const anthropic = new Anthropic({ apiKey, maxRetries: 3 })
+    const anthropic = new Anthropic({ apiKey, maxRetries: 1 }) // 재시도 축소: 폭주 시 비용 누수 방지 (기존 3회)
     const selectedModel = await getModelForUser()
 
     // 스트리밍 사용: 대용량 텍스트 + 거대한 시스템 프롬프트 조합 시 10분 초과 가능
@@ -1074,6 +1111,10 @@ export async function analyzeDocumentDirect(input: {
   if (!authUser) {
     return { error: "먼저 로그인해주세요." }
   }
+
+  // 서버 강제 가드: 크레딧/구독 권한 + 일일 상한
+  const guard = await guardAnalysisEntry()
+  if (guard.error) return { error: guard.error }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -1615,7 +1656,7 @@ ${benchmarkSection}
 
     try {
       // Claude API 호출 (플랜에 따라 모델 선택, 500 에러 자동 재시도)
-      const anthropic = new Anthropic({ apiKey, maxRetries: 3 })
+      const anthropic = new Anthropic({ apiKey, maxRetries: 1 }) // 재시도 축소: 폭주 시 비용 누수 방지 (기존 3회)
       const selectedModel = await getModelForUser()
 
       // 대용량 파일: 텍스트 기반 분석 / 일반 파일: 원본 문서 분석

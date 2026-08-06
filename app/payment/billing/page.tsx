@@ -17,7 +17,8 @@ import { ArrowLeft, CheckCircle, CreditCard, Eye, EyeOff, Loader2, Lock } from "
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { getSubscription } from "@/app/actions/subscription"
-import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE } from "@/lib/payments-config"
+import { SUBSCRIPTION_SALES_ENABLED, SUBSCRIPTION_ENDED_MESSAGE } from "@/lib/payments-config"
+import { TUTORING_KAKAO_URL } from "@/lib/tutoring-config"
 
 const PLANS = {
   monthly:     { name: "월 무제한",    price: "13,800", amount: 13800, period: "월",    description: "무제한 분석 + 버전 비교 + Claude AI" },
@@ -152,20 +153,20 @@ function BillingContent() {
     }
   }
 
-  // 결제 일시 중단 — 결제 폼 진입 자체를 차단
-  if (!PAYMENTS_ENABLED) {
+  // 구독 판매 종료 (BM 개편) — 크레딧 구매 또는 과외 상담으로 안내
+  if (!SUBSCRIPTION_SALES_ENABLED) {
     return (
       <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
           <Lock className="w-16 h-16 text-slate-500 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-3">결제 서비스 준비 중</h1>
-          <p className="text-slate-400 mb-8 leading-relaxed">{PAYMENTS_DISABLED_MESSAGE}</p>
+          <h1 className="text-2xl font-bold text-white mb-3">구독 상품 판매 종료</h1>
+          <p className="text-slate-400 mb-8 leading-relaxed">{SUBSCRIPTION_ENDED_MESSAGE}</p>
           <div className="flex gap-3 justify-center">
-            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
-              <Link href="/">홈으로</Link>
-            </Button>
             <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-              <Link href="/analyze">분석하러 가기</Link>
+              <Link href="/payment/credits">크레딧 구매</Link>
+            </Button>
+            <Button asChild variant="outline" className="border-amber-500/40 text-amber-400 hover:text-amber-300">
+              <a href={TUTORING_KAKAO_URL} target="_blank" rel="noopener noreferrer">1:1 과외 상담</a>
             </Button>
           </div>
         </div>

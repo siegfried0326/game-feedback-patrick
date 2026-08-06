@@ -1,18 +1,21 @@
 /**
  * 요금제 상세 페이지
  *
- * 전체 요금제 비교 (무료/크레딧/월구독/3개월).
- * PricingSection 컴포넌트와 유사하나 독립 페이지로 더 상세한 정보 포함.
+ * BM 개편(2026-08-05): 과외 중심 모델.
+ * - 크레딧 단건 판매 (무료 1회 + 1/5/10크레딧)
+ * - 1:1 과외 (가격 비공개, 오픈카톡 상담) — 수강생은 매월 크레딧 지급 + 면접·라이브러리 혜택
+ * - 구독(월/3개월)은 판매 종료
  * 라우트: /pricing (공개)
  */
 import Link from "next/link"
-import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap } from "lucide-react"
+import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
+import { TUTORING_KAKAO_URL } from "@/lib/tutoring-config"
 
 export const metadata = {
   title: "요금제 | 아카이브 187(Archive187)",
-  description: "아카이브 187(Archive187) 요금제 안내. 1회 2,900원부터. 월 무제한 13,800원.",
+  description: "아카이브 187(Archive187) 요금제 안내. 첫 1회 무료, 크레딧 2,900원부터. 1:1 과외 상담.",
 }
 
 const creditPlans = [
@@ -57,42 +60,13 @@ const creditPlans = [
   },
 ]
 
-const subscriptionPlans = [
-  {
-    name: "월 무제한",
-    price: "13,800",
-    period: "월",
-    description: "집중적인 포트폴리오 준비에 최적",
-    features: [
-      "무제한 분석",
-      "무제한 프로젝트",
-      "상세 코멘트 제공",
-      "포지션별 맞춤 피드백",
-      "버전별 점수 비교 분석",
-    ],
-    cta: "구독 시작하기",
-    href: "/payment/billing?plan=monthly",
-    highlighted: true,
-  },
-  {
-    name: "3개월 무제한",
-    price: "39,000",
-    period: "3개월",
-    description: "월 13,000원 수준 · 가장 합리적인 장기 플랜",
-    badge: "장기 합리가",
-    features: [
-      "무제한 분석",
-      "무제한 프로젝트",
-      "상세 코멘트 제공",
-      "포지션별 맞춤 피드백",
-      "버전별 점수 비교 분석",
-      "🏆 3개월 동안 모든 기능 무제한 이용",
-    ],
-    cta: "3개월 구매",
-    href: "/payment/billing?plan=three_month",
-    highlighted: false,
-    amber: true,
-  },
+const tutoringBenefits = [
+  "11년차 현업 게임 기획자의 1:1 맞춤 지도",
+  "포트폴리오 기획·구성부터 완성까지 직접 피드백",
+  "수강 기간 중 매월 AI 분석 크레딧 지급",
+  "면접 연습 모드 이용 (600문항 + AI 평가)",
+  "게임 디자인 라이브러리 이용 (1,200+ 자료)",
+  "수강료·커리큘럼은 상담으로 안내",
 ]
 
 export default function PricingPage() {
@@ -112,7 +86,8 @@ export default function PricingPage() {
             합리적인 요금제
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            첫 1회는 무료! 필요한 만큼 크레딧을 구매하거나, 무제한 구독을 시작하세요.
+            첫 1회는 무료! 필요한 만큼 크레딧을 구매하고,
+            더 깊은 피드백이 필요하다면 1:1 과외로 함께하세요.
           </p>
         </div>
 
@@ -167,96 +142,50 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* 무제한 구독 */}
-        <h2 className="text-xl font-bold text-white mb-4">무제한 구독</h2>
-        <p className="text-slate-400 text-sm mb-6">매일 분석한다면 구독이 훨씬 합리적이에요.</p>
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-16">
-          {subscriptionPlans.map((plan, index) => (
-            <div
-              key={index}
-              className={`relative bg-slate-900/80 rounded-2xl p-8 border transition-all duration-300 ${
-                plan.highlighted
-                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
-                  : plan.amber
-                  ? "border-amber-500/40 shadow-lg shadow-amber-500/5 hover:border-amber-500/70"
-                  : "border-[#1e3a5f] hover:border-[#5B8DEF]/30"
-              }`}
-            >
-              {"badge" in plan && plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-medium ${
-                    plan.amber ? "bg-amber-500" : "bg-[#5B8DEF]"
-                  }`}>
-                    <Sparkles className="w-3 h-3" />
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
-              {plan.highlighted && !("badge" in plan && plan.badge) && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#5B8DEF] text-white text-xs font-medium">
-                    추천
-                  </span>
-                </div>
-              )}
+        {/* 1:1 과외 */}
+        <h2 className="text-xl font-bold text-white mb-4">1:1 과외</h2>
+        <p className="text-slate-400 text-sm mb-6">
+          AI 피드백을 넘어, 187개 합격 포트폴리오를 만든 현업 기획자가 직접 지도합니다.
+        </p>
+        <div className="relative bg-slate-900/80 rounded-2xl p-8 border border-amber-500/40 shadow-lg shadow-amber-500/5 mb-16">
+          <div className="absolute -top-3 left-8">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-medium">
+              <Sparkles className="w-3 h-3" />
+              수강생 전용 혜택 포함
+            </span>
+          </div>
 
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-2">{plan.name}</h3>
-                <p className={`text-sm ${plan.amber ? "text-amber-400/80" : "text-slate-400"}`}>{plan.description}</p>
-              </div>
-
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-slate-400">원</span>
-                  <span className="text-slate-400 text-sm">/ {plan.period}</span>
-                </div>
-                {"discountNote" in plan && plan.discountNote && (
-                  <p className="text-xs text-emerald-400 mt-2">{plan.discountNote}</p>
-                )}
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, i) => (
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-2">게임 기획 1:1 과외</h3>
+              <p className="text-sm text-amber-400/80 mb-4">수강료는 목표·기간에 맞춰 상담 후 안내드립니다.</p>
+              <ul className="space-y-3">
+                {tutoringBenefits.map((benefit, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm">
-                    <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
-                    <span className="text-slate-400">{feature}</span>
+                    <Check className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                    <span className="text-slate-300">{benefit}</span>
                   </li>
                 ))}
               </ul>
-
-              {!PAYMENTS_ENABLED ? (
-                <Button disabled className="w-full bg-[#162a4a] text-slate-500 opacity-60 cursor-not-allowed">
-                  결제 준비 중
-                </Button>
-              ) : (
-                <Button
-                  asChild
-                  className={`w-full ${
-                    plan.highlighted
-                      ? "bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
-                      : plan.amber
-                      ? "bg-amber-500 hover:bg-amber-600 text-white"
-                      : "bg-[#162a4a] hover:bg-[#1e3a5f] text-white"
-                  }`}
-                >
-                  <Link href={plan.href}>{plan.cta}</Link>
-                </Button>
-              )}
             </div>
-          ))}
+            <div className="text-center">
+              <p className="text-slate-400 text-sm mb-4">
+                포트폴리오 상태를 알고 계신가요?<br />
+                무료 분석 결과를 들고 오시면 상담이 더 정확해집니다.
+              </p>
+              <Button asChild size="lg" className="bg-amber-500 hover:bg-amber-600 text-white w-full md:w-auto px-8">
+                <a href={TUTORING_KAKAO_URL} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  오픈카톡으로 상담하기
+                </a>
+              </Button>
+              <p className="text-xs text-slate-500 mt-3">부담 없이 문의하세요. 상담은 무료입니다.</p>
+            </div>
+          </div>
         </div>
 
-        {!PAYMENTS_ENABLED && (
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-10 text-center">
-            <p className="text-sm text-amber-400">
-              현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.
-            </p>
-          </div>
-        )}
-
         <p className="text-slate-500 text-xs mb-10">
-          * 크레딧을 보유한 상태에서 구독 시, 보유 크레딧을 먼저 소모한 뒤 구독이 적용됩니다.
+          * 과외 수강생에게는 수강 기간 중 매월 분석 크레딧이 지급되며, 별도 결제가 필요하지 않습니다.
         </p>
 
         {/* 서비스 상세 설명 */}
@@ -278,8 +207,7 @@ export default function PricingPage() {
                 <h3 className="font-medium text-white mb-1">서비스 제공 기간</h3>
                 <p className="text-sm text-slate-400">
                   크레딧: 만료 없음<br />
-                  월 구독: 결제일부터 1개월<br />
-                  3개월: 결제일부터 3개월
+                  과외 수강생 지급 크레딧: 수강 기간 중 매월 지급
                 </p>
               </div>
             </div>
@@ -300,7 +228,7 @@ export default function PricingPage() {
 
         {/* 안내 */}
         <div className="text-center text-sm text-slate-500 space-y-1">
-          <p>모든 요금제는 언제든지 해지 가능합니다. 숨겨진 비용이 없습니다.</p>
+          <p>숨겨진 비용이 없습니다. 크레딧은 사용한 만큼만.</p>
           <p>
             결제 관련 문의:{" "}
             <a

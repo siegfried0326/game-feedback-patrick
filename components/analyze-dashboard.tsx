@@ -37,6 +37,7 @@ import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBe
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
+import { TUTORING_KAKAO_URL } from "@/lib/tutoring-config"
 import { extractTextFromPdf } from "@/lib/pdf-extract"
 import { extractTextFromOffice, isOfficeFile } from "@/lib/office-extract"
 import { compressPdf } from "@/lib/pdf-compress"
@@ -1386,45 +1387,48 @@ export function AnalyzeDashboard() {
                     </Card>
                   )}
 
-                  {/* 구독 유도 (무료 사용자) */}
+                  {/* 과외 상담 퍼널 (무료 사용자) — 점수를 확인한 직후가 상담 최적 타이밍 */}
                   {(!allowanceInfo?.plan || allowanceInfo.plan === "free") && (
                     <Card className="bg-gradient-to-r from-amber-500/10 to-purple-500/10 border-amber-400/30">
                       <CardContent className="p-6">
-                        <p className="text-white font-semibold mb-1">더 많은 분석이 필요하신가요?</p>
-                        <p className="text-sm text-slate-400 mb-4">구독하면 무제한 분석, 버전 비교, 프리미엄 AI를 사용할 수 있습니다.</p>
+                        <p className="text-white font-semibold mb-1">점수보다 중요한 건, 다음 스텝입니다</p>
+                        <p className="text-sm text-slate-400 mb-4">
+                          187개 합격 포트폴리오를 만든 11년차 현업 기획자가 1:1 과외로 합격까지 함께합니다.
+                          방금 받은 분석 결과를 들고 오시면 상담이 더 정확해져요.
+                        </p>
                         <div className="flex items-center gap-3">
-                          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
-                            <Link href="/pricing">구독하기</Link>
-                          </Button>
                           <a
-                            href="http://pf.kakao.com/_bXgIX"
+                            href={TUTORING_KAKAO_URL}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 border border-[#1e3a5f] text-slate-300 hover:bg-slate-800 rounded-lg transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors text-sm"
                           >
-                            1:1 상담 신청
+                            1:1 과외 상담 (무료)
                             <ArrowRight className="w-4 h-4" />
                           </a>
+                          <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent">
+                            <Link href="/payment/credits">크레딧 구매</Link>
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
                   )}
 
-                  {/* 1:1 상담 카드 (구독자용) */}
+                  {/* 과외 상담 카드 (크레딧/수강생) */}
                   {allowanceInfo?.plan && allowanceInfo.plan !== "free" && (
                     <Card className="bg-slate-900/80 border-[#1e3a5f]">
                       <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div>
                           <p className="text-white font-semibold mb-1">AI 분석 결과에 대해 궁금한 점이 있으신가요?</p>
-                          <p className="text-sm text-slate-400">1:1 상담을 통해 더 자세한 피드백을 받아보세요.</p>
+                          <p className="text-sm text-slate-400">11년차 현업 기획자의 1:1 과외로 더 깊은 피드백을 받아보세요.</p>
                         </div>
                         <a
-                          href="http://pf.kakao.com/_bXgIX"
+                          href={TUTORING_KAKAO_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm"
                         >
-                          1:1 상담 신청
+                          1:1 과외 상담
                           <ArrowRight className="w-4 h-4" />
                         </a>
                       </CardContent>
@@ -1528,7 +1532,7 @@ export function AnalyzeDashboard() {
                   크레딧이 얼마 남지 않았습니다.{" "}
                   <Link href="/payment/credits" className="underline hover:text-amber-300">크레딧 충전</Link>
                   {" 또는 "}
-                  <Link href="/pricing" className="underline hover:text-amber-300">무제한 구독</Link>을 확인해 보세요.
+                  <Link href="/pricing" className="underline hover:text-amber-300">요금제</Link>를 확인해 보세요.
                 </p>
               </div>
             )}

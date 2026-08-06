@@ -19,6 +19,7 @@ type HeaderProps = {
     email?: string
     name?: string
     isAdmin?: boolean
+    isStudent?: boolean
   } | null
 }
 
@@ -37,7 +38,7 @@ export function Header({ user }: HeaderProps) {
           <Link href="/analyze" className="text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors font-medium">
             분석하기
           </Link>
-          {user?.isAdmin && (
+          {(user?.isAdmin || user?.isStudent) && (
             <Link
               href="/library"
               className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors font-medium"

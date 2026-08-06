@@ -3,7 +3,7 @@
  *   - 사이트 헤더 + 좁은 라이브러리 서브 헤더
  *   - 페이지 컨테이너
  *
- * 🔒 접근제어: 라이브러리는 현재 관리자 전용. 비관리자는 홈으로 리다이렉트.
+ * 🔒 접근제어: 관리자 + 과외 수강생(is_student) 전용. 그 외는 홈으로 리다이렉트.
  *    (하위 모든 /library/* 라우트가 이 layout을 거치므로 한 곳에서 게이팅)
  */
 
@@ -11,14 +11,11 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Library, Network, Search, Sparkles, Users, Layers } from "lucide-react"
 import { AuthHeader } from "@/components/auth-header"
-import { createClient } from "@/lib/supabase/server"
-import { isAdminEmail } from "@/lib/admin"
+import { hasPremiumAccess } from "@/lib/student-access"
 
 export default async function LibraryLayout({ children }: { children: React.ReactNode }) {
-  // 관리자 전용 게이팅 (준비 중 — 일반 공개 전까지)
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdminEmail(user.email)) {
+  // 관리자 + 수강생 게이팅 (BM 개편: 수강생 전용 혜택)
+  if (!(await hasPremiumAccess())) {
     redirect("/")
   }
 

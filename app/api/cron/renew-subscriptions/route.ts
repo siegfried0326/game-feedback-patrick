@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { approveBillingPayment, deleteBillingKey } from "@/lib/nice-api"
+import { SUBSCRIPTION_SALES_ENABLED } from "@/lib/payments-config"
 
 const PLAN_CONFIG = {
   monthly:     { amount: 13800, name: "아카이브 187 월 무제한",    months: 1 },
@@ -19,6 +20,13 @@ const PLAN_CONFIG = {
 const MAX_FAIL_COUNT = 3 // 3회 실패 시 구독 만료 처리
 
 export async function GET(request: NextRequest) {
+  // BM 개편(2026-08-05): 구독 판매 영구 종료 — 자동 갱신 결제도 전면 중단.
+  // vercel.json에서 cron 등록도 제거했지만, 수동 호출까지 이중으로 차단한다.
+  if (!SUBSCRIPTION_SALES_ENABLED) {
+    console.log("[cron] 구독 자동 갱신 비활성화됨 (SUBSCRIPTION_SALES_ENABLED=false)")
+    return NextResponse.json({ success: true, renewed: 0, failed: 0, disabled: true })
+  }
+
   // 보안: Authorization 헤더 검증
   const authHeader = request.headers.get("authorization")
   const cronSecret = process.env.CRON_SECRET

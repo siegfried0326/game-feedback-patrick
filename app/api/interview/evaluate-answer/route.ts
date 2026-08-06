@@ -7,16 +7,13 @@
  *      archive187 크레딧 시스템 통합 후 공개 예정.
  */
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { createClient } from "@/lib/supabase/server"
-import { isAdminEmail } from "@/lib/admin"
+import { hasPremiumAccess } from "@/lib/student-access"
 
 export async function POST(req: Request) {
   try {
-    // 관리자 권한 체크 (테스트 단계)
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || !isAdminEmail(user.email)) {
-      return Response.json({ error: "FORBIDDEN", message: "관리자만 접근 가능합니다." }, { status: 403 })
+    // 관리자 + 수강생 권한 체크
+    if (!(await hasPremiumAccess())) {
+      return Response.json({ error: "FORBIDDEN", message: "과외 수강생 전용 기능입니다." }, { status: 403 })
     }
 
     const { question, answer, difficulty } = await req.json()

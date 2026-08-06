@@ -2,6 +2,44 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-08-05
+
+### BM 개편 — 과외 중심 모델 (구독 폐지, 크레딧 재오픈, 수강생 혜택)
+**배경**: 기존 BM의 구조적 결함 = "무제한 정액 × 종량 원가" — 헤비유저 1명이 마진 전체를 삼킬 수 있음(5월 hk 사건). 재정비 후 재개하며 수익 구조를 과외 중심으로 재설계.
+
+**새 구조**:
+- 메인 수익원: **1:1 과외** (가격 비공개, 오픈카톡 상담 https://open.kakao.com/o/sLz0kgBf, 결제는 사이트 밖)
+- 서브 수익원: **크레딧 단건 판매** (1/5/10 = 2,900/7,900/12,900원 — 원가율 15~35%로 안전)
+- 수강생 혜택: 매월 크레딧 지급(기본 20) + 면접 연습 + 게임 디자인 라이브러리
+- 구독(월/3개월): **판매 영구 종료**
+
+**P2 — 구독 판매 종료 + 크레딧 재오픈**
+- `lib/payments-config.ts`: `PAYMENTS_ENABLED=true`(크레딧 재오픈) + `SUBSCRIPTION_SALES_ENABLED=false` 신설
+- `vercel.json`: 자동갱신 cron 제거 + cron 라우트에 이중 가드 (⚠️ hk 8/4 자동결제 여부 NICEPay에서 확인 필요)
+- `processSubscriptionPayment` / `/api/nicepay/billing/register` / `/payment/billing` 페이지: 판매 종료 처리(410)
+- 가격표·가격 섹션·가격 모달: 구독 카드 제거 → 크레딧 + 과외 카드 2축 재구성
+
+**P3 — 관리자 수강생 지급 도구**
+- `scripts/019_add_student_grants.sql`: `is_student` 컬럼 + `credit_grants` 이력 테이블 + 빌링키 일괄 정리 (**Supabase에서 실행 필요**)
+- `app/actions/student-admin.ts`: 서비스롤 기반 검색/지급/회수/이력 (관리자 검증)
+- `/admin/students` 페이지 + admin-nav "수강생" 탭: 이메일 검색 → 매월 지급(기본 20) → 이력 기록
+
+**P4 — 과외 퍼널**
+- `lib/tutoring-config.ts`: 오픈카톡 링크 + 기본 지급량 상수
+- 분석 결과 하단 CTA를 과외 상담 중심으로 교체 (무료 사용자: "점수보다 중요한 건 다음 스텝")
+- 가격표에 과외 카드 (상담 후 안내), 면접 페이지 비수강생 안내에도 상담 CTA
+
+**P5 — 수강생 게이트 + 안전장치**
+- `lib/student-access.ts`: `hasPremiumAccess()` = 관리자 OR `is_student`
+- 면접(페이지+API 3개)·라이브러리(layout+API 2개)·헤더 링크·랜딩 3축 섹션: 관리자→관리자|수강생으로 확장
+- `analyze.ts`: `guardAnalysisEntry()` 신설 — 서버에서 크레딧/구독 권한 강제(기존 클라이언트 체크 우회 가능 결함 해소) + **일일 상한 24시간 5회**(관리자 제외)
+- `maxRetries` 3→1 (재시도 폭주 비용 차단)
+- 레거시 과외 결제 코드 삭제: `app/actions/tutoring.ts`, `/payment/tutoring/success`
+
+**후속 (백로그)**:
+- 프롬프트 캐싱 — 시스템 프롬프트 정적/동적 분리 필요 (원가 500→300원)
+- hk 8/4 자동갱신 결제 여부 확인 → 발생 시 취소
+
 ## 2026-06-10
 
 ### 면접·라이브러리 관리자 전용 게이팅

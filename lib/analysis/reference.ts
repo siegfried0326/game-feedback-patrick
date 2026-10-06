@@ -225,9 +225,11 @@ function buildChecklist(carded: ReferencePortfolio[]): string {
     const keys = new Set([...(p.standard_card?.artifacts ?? []), ...(p.standard_card?.standard_elements ?? [])])
     for (const k of keys) counts[k] = (counts[k] ?? 0) + 1
   }
+  // 과반이 갖춘 요소만, 최대 10개 — 대조표가 길어지면 사용자에게 핵심이 흐려진다
   const rows = Object.entries(counts)
-    .filter(([, n]) => n >= Math.max(2, Math.ceil(carded.length * 0.4)))
-    .sort((a, b) => b[1] - a[1])
+    .filter(([, n]) => n >= Math.max(2, Math.ceil(carded.length * 0.6)))
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 10)
     .map(([k, n]) => `| ${label(k)} | ${n}/${carded.length} |`)
   if (rows.length === 0) return ""
   return `### 이 직군 합격작 공통 요소 (검수된 기준 카드 ${carded.length}건 기준)

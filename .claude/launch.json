@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev-local",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-lc", "export PATH=/opt/homebrew/bin:$PATH && cd ~/Dev-local/game-feedback-landing-page && npx next dev -p 3100"],
+      "port": 3100
+    }
+  ]
+}

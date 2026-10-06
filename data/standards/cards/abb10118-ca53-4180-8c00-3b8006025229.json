@@ -1,0 +1,61 @@
+{
+ "id": "abb10118-ca53-4180-8c00-3b8006025229",
+ "file_name": "NC_쿠키런 킹덤 토핑 시스템 역기획서.pdf",
+ "companies": [
+  "엔씨소프트"
+ ],
+ "domain": "system",
+ "secondary": [
+  "economy",
+  "uiux"
+ ],
+ "docForm": "reverse",
+ "gameTitle": "쿠키런: 킹덤 (토핑 시스템)",
+ "anon_label": "모바일 수집형 RPG 장비 슬롯(장착·강화·분해) 시스템 역기획서, 13p — 도입 전후 비교 기획 의도, 단계별 강화 비용·확률표, 세트 효과표, 화면 영역별 UI 명세",
+ "pages": 13,
+ "structure": [
+  "시스템 요약: 도입 전/후 비교 기획 의도와 기대 효과",
+  "획득: 획득처·종류(효과 10종)·등급(하/중/고급, 강화 한도·추가 효과 수)",
+  "조각 획득과 분해(등급별 분해 획득량)",
+  "강화: 단계별 필요 조각·코인·성공 확률, 숨겨진 효과, 2/5세트 효과",
+  "메인 UI 6개 영역 명세(해금 조건·출력 규칙·자료형)",
+  "분해 UI 명세(목록·선택 순서·총 획득량 표시)"
+ ],
+ "artifacts": [
+  "numeric_table",
+  "wireframe",
+  "screenshot_analysis"
+ ],
+ "depth": {
+  "numeric_tables": 4,
+  "diagrams": 0,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "기획 의도를 '도입 전 문제(단순 딜교환, 성장 경로 3종뿐, 코인 소비처 부족) → 도입 후 → 기대 효과' 3열 비교로 정리해 시스템이 왜 필요한지부터 보여준다",
+  "강화 1~12단계의 필요 조각·코인·성공 확률(100%→25%)을 표로 제시하고, 등급별 강화 한도(6/9/12강)와 숨겨진 효과 부여 구간을 연결했다",
+  "분해 시 등급별 조각 획득량과 강화 레벨만큼 추가 반환 규칙을 적어 획득-소비 순환을 닫았다",
+  "2세트/5세트 효과를 장착 아이템별 표로 정리해 '서로 다른 조합 vs 같은 장착 아이템 몰아주기'라는 선택지를 수치로 보여준다",
+  "UI를 번호 영역별로 쪼개 해금 조건(캐릭터 레벨 ≥ 필요 레벨), 빈 슬롯 문구, 세트 효과 출력 규칙, string/int/float 자료형까지 명시했다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "problem_definition",
+  "expected_effect",
+  "rule_spec",
+  "sink_source",
+  "growth_curve",
+  "ui_flow",
+  "component_spec"
+ ],
+ "excerpt_pages": [
+  3,
+  5,
+  6,
+  8,
+  9
+ ],
+ "notes": "13페이지 짧은 역기획. 일부 오탈자가 있으나 핵심 수치표(강화 비용·확률, 세트 효과)가 이미지로 들어가 있음.",
+ "status": "draft"
+}

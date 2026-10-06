@@ -1,0 +1,60 @@
+{
+ "id": "5edc3e9f-67a8-4dee-905c-4583626125e4",
+ "file_name": "웹젠_03_창작데이터테이블_스낵캐처_김수진.xlsx",
+ "companies": [
+  "웹젠"
+ ],
+ "domain": "data",
+ "secondary": [
+  "level",
+  "economy"
+ ],
+ "docForm": "table",
+ "gameTitle": "스낵캐처 (창작 캐주얼 게임 — 수업 중 몰래 간식 먹기)",
+ "anon_label": "눈치 게임형 캐주얼 창작 게임의 데이터 테이블, 10시트 — 스테이지·적(감시자)·간식·아이템·뽑기 확률·업적 테이블, 인덱스 참조 구조, 난이도 단계별 수치",
+ "pages": 10,
+ "structure": [
+  "Stage: 24개 스테이지 구성(감시자·간식 참조 인덱스, 제한시간, 별 1~3개 보상 범위와 확률)",
+  "Teacher: 감시자 16종(4과목×4난이도) — 지켜보는 시간·허용 데시벨·뒤돌아보기 간격·스킬 쿨타임·아트/사운드 리소스명",
+  "Snack / SnackType: 간식 개체와 종류별 발생 데시벨·양·먹는 속도",
+  "Item: 아이템 5종 효과·수치·리소스",
+  "Gacha / GachaRate: 일반·고급 뽑기 비용과 보상별 확률",
+  "Quest / QuestType: 업적 목록과 업적 유형 Enum 12종",
+  "Buff: 도감(부적) 수집 단계별 영구 버프"
+ ],
+ "artifacts": [
+  "data_table",
+  "numeric_table"
+ ],
+ "depth": {
+  "numeric_tables": 10,
+  "diagrams": 0,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "모든 시트가 '한글 헤더 → 영문 컬럼명 → 자료형(INT/STRING/FLOAT) → 데이터' 4단 헤더로 통일돼 바로 클라이언트에 연결할 수 있는 형태다",
+  "Stage가 감시자·간식을 인덱스로 참조하고, Snack이 SnackType을, Quest가 QuestType Enum을 참조하는 식으로 테이블 간 관계가 분리·정규화돼 있다",
+  "감시자를 과목별 고유 스킬 × 4단계 난이도(신입→능숙→베테랑→잠식)로 설계하고 지켜보는 시간·허용 데시벨·뒤돌아보기 간격·쿨타임을 단계마다 조정해 난이도 조절 축이 수치로 드러난다",
+  "챕터가 진행될수록 제한시간·간식 수·별 보상 구간이 바뀌어 스테이지 페이싱이 테이블만으로 읽힌다",
+  "뽑기 비용과 보상별 확률, 업적, 도감 버프까지 연결해 플레이 보상 순환을 데이터 단위로 닫았다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "referential_integrity",
+  "enum_usage",
+  "sample_rows",
+  "designer_tunable",
+  "pricing_logic"
+ ],
+ "excerpt_pages": [
+  1,
+  2,
+  4,
+  6,
+  7,
+  9
+ ],
+ "notes": "xlsx 10시트(pages=시트 수). 같은 창작 게임의 개발 스펙 문서(웹젠_02_창작개발스펙_스낵캐처) 카드와 세트. 설계 의도 서술은 테이블 내 설명 컬럼 수준. excerpt_pages는 시트 순번(1 Stage, 2 Teacher, 4 SnackType, 6 Gacha, 7 GachaRate, 9 QuestType).",
+ "status": "draft"
+}

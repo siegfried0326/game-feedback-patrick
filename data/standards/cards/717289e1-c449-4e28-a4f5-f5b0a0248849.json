@@ -1,0 +1,66 @@
+{
+ "id": "717289e1-c449-4e28-a4f5-f5b0a0248849",
+ "file_name": "넥슨_11.27 수업 과제_카드도감시스템.pdf",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "uiux",
+ "secondary": [
+  "system",
+  "data"
+ ],
+ "docForm": "reverse",
+ "gameTitle": "로스트아크 (카드 도감 시스템)",
+ "anon_label": "PC MMORPG 수집 도감(세트 수집 효과) 시스템 역기획서, 27p — 단계별 활성화 순서도, UI 그룹·컴포넌트 단위 명세표, 정렬·필터 규칙, 출력 항목별 참조 데이터·사운드",
+ "pages": 27,
+ "structure": [
+  "문서 소개: 개요·기획 의도(능력치 상승·편의성·시나리오 연관 묶음)·기대 효과(재화 소비·하위 등급 가치·리텐션)",
+  "시스템 구성: 도감 1~4단계 활성화 순서도",
+  "목록보기 UI: 그룹 7개 분류 → 그룹별 컴포넌트 명세표",
+  "앨범보기 UI: 그룹 6개 분류 → 그룹별 컴포넌트 명세표",
+  "시스템 기능: 열기/닫기·수집 효과 활성화 조건·검색·즐겨찾기·2단 정렬·수집 완료 구분",
+  "출력 데이터: UI 항목별 참조 데이터(데이터 테이블/캐릭터 DB)와 출력 사운드"
+ ],
+ "artifacts": [
+  "flowchart",
+  "wireframe",
+  "screenshot_analysis",
+  "data_table"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 3,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "UI를 번호 그룹으로 분류한 뒤 그룹마다 '컴포넌트 종류(Button/Radio/Dropdown/Search bar/Tooltip/Pagination) · UI 구성 · 조작 가능 여부 · 조작법 · 출력 내용'의 같은 표 형식으로 명세해 개발자가 바로 구현할 수 있는 수준이다",
+  "수집 효과 활성화 조건을 '1단계는 전 카드 1장 이상, 2~4단계는 구성 카드 수의 2·4·5배 각성 단계 합'으로 규칙화하고 10장 도감 예시(20/40/50)로 검증했다",
+  "2칸 드롭다운 정렬의 활성화 조건, 적용 우선순위(왼쪽→오른쪽), 동률 시 데이터 테이블 우선순위 정렬까지 예외 처리를 적었다",
+  "화면의 출력 항목마다 정적 데이터 테이블과 캐릭터 DB 중 어디를 참조하는지 구분해 매핑했고, 출력 사운드 파일과 재생 조건까지 정리했다",
+  "기대 효과를 재화 소비 증가·하위 등급 카드 수요 증가·헤비 유저 목표 제시처럼 BM·리텐션 관점으로 연결했다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "expected_effect",
+  "ia_structure",
+  "component_spec",
+  "user_flow",
+  "rule_spec",
+  "state_transition",
+  "system_links",
+  "data_schema"
+ ],
+ "excerpt_pages": [
+  3,
+  4,
+  5,
+  8,
+  10,
+  19,
+  21,
+  23
+ ],
+ "notes": "목록보기/앨범보기 명세가 상당 부분 반복됨. 레퍼런스 비교 없이 실제 게임 UI 캡처를 기반으로 한 순수 역기획.",
+ "status": "draft"
+}

@@ -1,0 +1,60 @@
+{
+ "id": "d7945163-a812-47d2-9fc8-43a931c6507f",
+ "file_name": "NC_몬스터 컬렉션 시스템 기획서.pdf",
+ "companies": [
+  "엔씨소프트"
+ ],
+ "domain": "system",
+ "secondary": [
+  "uiux"
+ ],
+ "docForm": "reverse",
+ "gameTitle": "메이플스토리 (몬스터 컬렉션 역기획)",
+ "anon_label": "장수 MMORPG 몬스터 수집(컬렉션) 시스템 역기획서, 12p — 기획 의도 역추론, 획득·분류·보상 규칙, 화면별 UI 요소 해설, 시스템 구성도",
+ "pages": 12,
+ "structure": [
+  "기획 의도(역추론): 수집 욕구, 저사냥 지역 방문 유도, 캐릭터 간 공유로 다직업 육성 유도",
+  "시스템 요약",
+  "획득 방법·알 아이템 획득 경로·몬스터 등급 분류",
+  "탐험(파견)과 보상: 줄·페이지 완성 보상, 탐험 상자 등급별 구성",
+  "화면별 구성: 전체보기·컬렉션·훈장·탐험(상태 4가지)",
+  "시스템 구성도"
+ ],
+ "artifacts": [
+  "screenshot_analysis",
+  "wireframe",
+  "data_table",
+  "flowchart"
+ ],
+ "depth": {
+  "numeric_tables": 1,
+  "diagrams": 7,
+  "references_analyzed": 1,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "단순 기능 나열 전에 '사냥률 낮은 지역 방문 유도', '같은 월드 캐릭터 공유로 다양한 직업 육성 유도'처럼 시스템이 운영 측면에서 노리는 효과를 먼저 역추론했다",
+  "획득(사냥 확률·알 아이템·이벤트) → 등급 분류(별 1~5·스페셜) → 줄/페이지 완성 보상 → 탐험 파견으로 이어지는 순환을 규칙 단위로 정리했다",
+  "화면마다 번호를 매긴 UI 요소 해설로 수집 전 흑백/후 컬러, 보상 버튼 3상태, 페이지 넘김을 택한 이유(페이지 보상 직관성)까지 UI 결정의 이유를 짚었다",
+  "마지막에 메인 화면에서 컬렉션·훈장·탐험으로 갈라지는 정보 구조를 구성도로 묶어 전체 구조를 한 장에 보여준다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "rule_spec",
+  "system_links",
+  "ui_flow",
+  "ia_structure",
+  "state_transition",
+  "pricing_logic"
+ ],
+ "excerpt_pages": [
+  3,
+  4,
+  5,
+  7,
+  11,
+  12
+ ],
+ "notes": "12p 분량의 짧은 역기획서. 수치 분석(확률·보상량)은 다루지 않고 구조·UI 해설 중심.",
+ "status": "draft"
+}

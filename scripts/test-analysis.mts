@@ -20,8 +20,13 @@ import { formatBenchmarkForPrompt } from "../lib/analysis/benchmark"
 import { scanDocumentWithClaude } from "../lib/analysis/classify"
 import { extractJsonBlock, safeParseJSON } from "../lib/analysis/json"
 import { summarizeUsage, logUsage } from "../lib/analysis/usage"
+import { maskForPrompt, scrubOutput } from "../lib/analysis/anonymize"
 
-const [pdfPath, domainArg, tierArg] = process.argv.slice(2)
+const args = process.argv.slice(2)
+const excludeArg = args.find(a => a.startsWith("--exclude="))
+const [pdfPath, domainArg, tierArg] = args.filter(a => !a.startsWith("--"))
+// --exclude=<portfolio id>: 합격 문서로 검증할 때 비교군·발췌에서 자기 자신과 그 사본을 뺀다
+const excludeIds: string[] = []
 if (!pdfPath || !fs.existsSync(pdfPath)) {
   console.error("사용: npx tsx --env-file=.env.local scripts/test-analysis.mts <PDF 경로> [domain] [tier]")
   process.exit(1)
@@ -57,7 +62,12 @@ const tier = isModelTier(tierArg) ? tierArg : "basic"
 const model = resolveModelId(tier)
 
 // 3) 비교군 + 벡터 검색
-const reference = await loadReferenceSet(supabase, domain)
+if (excludeArg) {
+  const selfId = excludeArg.split("=")[1]
+  const { data: rel } = await supabase.from("portfolios").select("id").or(`id.eq.${selfId},duplicate_of.eq.${selfId}`)
+  excludeIds.push(...(rel ?? []).map(r => r.id))
+}
+const reference = await loadReferenceSet(supabase, domain, excludeIds)
 console.log(`[3] 비교군: ${DOMAIN_LABELS[domain]} ${reference.sameDomainCount}건 (카드 ${reference.cardedCount}건)${reference.insufficient ? " ⚠️표본 부족" : ""}`)
 
 const embRes = await fetch("https://api.openai.com/v1/embeddings", {
@@ -69,10 +79,12 @@ const { data: chunks } = await supabase.rpc("match_portfolio_chunks", {
   query_embedding: JSON.stringify(embRes.data[0].embedding), match_threshold: 0.4, match_count: 15,
 })
 const companiesById = new Map(reference.all.map(p => [p.id, p.companies]))
-const vectorSection = (chunks ?? []).length
-  ? `## 📝 유사 합격 포트폴리오 실제 내용 발췌\n\n${(chunks as { portfolio_id: string; chunk_text: string }[]).map((c, i) => `### 유사 사례 ${i + 1} (${(companiesById.get(c.portfolio_id) ?? []).join(", ")} 합격)\n${c.chunk_text}`).join("\n\n")}\n\n---\n단, 발췌에 나오는 게임 제목·고유명사·사람 이름은 응답에 절대 옮기지 마세요. 합격작은 구조로만 가리키세요.`
+const chunksFiltered = ((chunks ?? []) as { portfolio_id: string; chunk_text: string }[]).filter(c => !excludeIds.includes(c.portfolio_id))
+const vectorSectionRaw = chunksFiltered.length
+  ? `## 📝 유사 합격 포트폴리오 실제 내용 발췌\n\n${chunksFiltered.map((c, i) => `### 유사 사례 ${i + 1} (${(companiesById.get(c.portfolio_id) ?? []).join(", ")} 합격)\n${c.chunk_text}`).join("\n\n")}\n\n---\n단, 발췌에 나오는 게임 제목·고유명사·사람 이름은 응답에 절대 옮기지 마세요. 합격작은 구조로만 가리키세요.`
   : ""
-console.log(`[3] 유사 발췌 ${(chunks ?? []).length}청크`)
+const vectorSection = maskForPrompt(vectorSectionRaw, text)
+console.log(`[3] 유사 발췌 ${chunksFiltered.length}청크${excludeIds.length ? ` (자기 자신·사본 ${excludeIds.length}건 제외)` : ""}`)
 
 // 4) 모델 호출 (Files API → base64 폴백)
 const system = buildSystemBlocks({ domain, secondary, docForm, mode: "pdf", reference, benchmarkSection: formatBenchmarkForPrompt(true), vectorSection, librarySection: "", keywords: [] })
@@ -105,13 +117,20 @@ console.log(`[4] stop_reason=${message.stop_reason}`)
 
 // 5) 결과
 const responseText = message.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map(b => b.text).join("")
-const analysis = safeParseJSON(extractJsonBlock(responseText))
+const rawAnalysis = safeParseJSON(extractJsonBlock(responseText))
+// 띄어쓰기 무시 비교 (anonymize.ts와 같은 기준 — PDF 추출 텍스트는 공백이 원본과 다르다)
+const sq = (s: string) => s.replace(/\s+/g, "").toLowerCase()
+const rawLeaks = (JSON.parse(fs.readFileSync(path.join(process.cwd(), "data/standards/banned-terms.json"), "utf8")).games as string[]).filter(w => sq(JSON.stringify(rawAnalysis)).includes(sq(w)) && !sq(text).includes(sq(w)))
+const { value: analysis, removed } = scrubOutput(rawAnalysis, text)
+console.log(`[5] 모델 원응답 고유명: ${rawLeaks.length ? rawLeaks.join(", ") : "없음"} → 출력 단계에서 ${removed}건 제거`)
 const outPath = pdfPath.replace(/\.pdf$/i, "") + ".analysis.json"
 fs.writeFileSync(outPath, JSON.stringify({ domain, tier, model, usage, analysis }, null, 2))
 
-const leakWords = ["계몽", "호라이즌", "오버워치", "RDR", "레드 데드", "스플래툰", "청새치", "Last Sanctuary", "성역", "수도원"]
-const flat = JSON.stringify(analysis)
-const leaks = leakWords.filter(w => flat.includes(w))
+const leakWords: string[] = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data/standards/banned-terms.json"), "utf8")).games
+// 사용자 문서 자체가 다루는 게임명은 누출이 아니다 — 사용자 문서 텍스트에 있는 단어는 제외
+const flat = sq(JSON.stringify(analysis))
+const ownText = sq(text)
+const leaks = leakWords.filter(w => flat.includes(sq(w)) && !ownText.includes(sq(w)))
 console.log(`\n=== 결과 (${outPath}) ===`)
 console.log(`점수 ${analysis.score} | ${analysis.domainFit ?? ""}`)
 console.log(`고유명 누출 검사: ${leaks.length ? "⚠️ " + leaks.join(", ") : "없음"}`)

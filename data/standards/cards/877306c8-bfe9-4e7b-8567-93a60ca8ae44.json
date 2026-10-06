@@ -1,0 +1,48 @@
+{
+ "id": "877306c8-bfe9-4e7b-8567-93a60ca8ae44",
+ "file_name": "스마일게이트_일반회사_[4] 신동윤_2D 플랫포머 게임의 조작감과 레벨 디자인.pdf",
+ "companies": [
+  "스마일게이트",
+  "일반게임회사"
+ ],
+ "domain": "level",
+ "secondary": [
+  "combat"
+ ],
+ "docForm": "analysis",
+ "gameTitle": "2D 플랫포머 분석(셀레스트 등) + 메이플스토리 플랫포밍 레벨 디자인",
+ "anon_label": "2D 플랫포머 조작감·플랫포밍 레벨 분석 문서의 표지(외부 문서 링크), 1p — 물리 파라미터 표 캡처, 점프 타이밍 구간 분석 영상",
+ "pages": 1,
+ "structure": [
+  "전체 문서 바로가기(표지 1장)",
+  "a. 2D 플랫포머 게임 분석: 플레이 시간·진행도, 이동 물리 파라미터 표(입력 속도·점프력·질량·중력·가감속) 캡처",
+  "b. 2D 횡스크롤 MMORPG의 플랫포밍 레벨 디자인: 플랫포밍 콘텐츠가 어려운 이유 분석 + 짧은 점프 성공 구간(타이밍) 영상 캡처",
+  "제목·이미지 클릭 시 외부 노트 페이지로 연결"
+ ],
+ "artifacts": [
+  "numeric_table",
+  "screenshot_analysis",
+  "prototype_video"
+ ],
+ "depth": {
+  "numeric_tables": 1,
+  "diagrams": 0,
+  "references_analyzed": 2,
+  "intent_to_decision": "weak"
+ },
+ "why_it_works": [
+  "조작감을 감각이 아니라 입력 속도·점프력·질량·중력·지상/공중 가감속 같은 물리 파라미터 수치로 측정해 비교하려는 접근을 표지에서 바로 보여준다",
+  "플랫포밍 난이도의 원인을 '너무 짧은 점프 성공 구간(타이밍)'처럼 구체적인 레벨 요소로 짚고 실제 플레이 영상으로 근거를 붙였다",
+  "분석 문서 두 편을 한 장의 목차 페이지로 묶어 열람 동선을 정리했다"
+ ],
+ "standard_elements": [
+  "spatial_metrics",
+  "problem_definition",
+  "reference_to_decision"
+ ],
+ "excerpt_pages": [
+  1
+ ],
+ "notes": "PDF는 Notion 본문으로 연결되는 1페이지 표지뿐이라 실제 분석 본문은 이 파일에 없음. 카드는 표지에 보이는 범위로만 작성 — 비교 재료로서 가중치 낮게 둘 것.",
+ "status": "draft"
+}

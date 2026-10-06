@@ -94,7 +94,8 @@ UI/UX: `ia_structure` 정보 구조 · `user_flow` 사용자 흐름 · `componen
 - [x] DB 재구축 코드 (2026-10-06): `scripts/021_add_standard_cards.sql` + `scripts/seed-standards.mjs` (원문 187건 개인정보 제거 후 content_text, 카드 → standard_card/anon_label/design_domain, 사본 → duplicate_of). `lib/analysis/reference.ts`가 카드·기준표를 비교 재료로 사용, Gemini 약점·요약은 미사용
 - [x] DB 반영 (2026-10-06): 021 SQL 적용 → `seed-standards.mjs --apply` 187/187 (원문 234만 자, 이름 30명·이메일·전화번호 제거 후 잔존 0) → `embed-portfolios.mjs`로 원문 기준 재임베딩 184건/청크 1,485개($0.04). Gemini 요약 기반 옛 청크는 전부 교체됨
 - 카드 추가 후 갱신: `node --env-file=.env.local scripts/seed-standards.mjs --apply` (임베딩은 원문이 바뀔 때만 다시)
-- [ ] 카드 작성 5 / 약 167 (중복 제외) — 레벨 디자인부터
-- [ ] 직군별 기준서
-- [ ] DB 반영 SQL (021)
-- [ ] reference.ts 교체
+- [x] 카드 작성 158/158 + 사본 29건 연결 (2026-10-07) — system 45 · combat 33 · data 22 · level 22 · general 17 · uiux 16 · narrative 3
+- [x] 카드 검사 `scripts/validate-cards.mjs` 문제 0건 · 금지어 `banned-terms.json` (출력 차단 `lib/analysis/anonymize.ts`와 공유)
+- [x] DB 반영 187/187 + 사본 제외 재임베딩 (청크 1,267개)
+- [x] reference.ts 교체 + 점수 보정(깊이 지표 사분위)
+- [ ] 직군별 기준서 (서사 카드 3건뿐 — 표본 보강 필요)

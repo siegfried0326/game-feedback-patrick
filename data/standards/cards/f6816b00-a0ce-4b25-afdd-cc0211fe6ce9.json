@@ -1,0 +1,51 @@
+{
+ "id": "f6816b00-a0ce-4b25-afdd-cc0211fe6ce9",
+ "file_name": "일반회사_10.16 수업 과제_세키로_비헤이비어트리_V1.5.xlsx",
+ "companies": [
+  "일반게임회사"
+ ],
+ "domain": "combat",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "reverse",
+ "gameTitle": "세키로: 섀도우 다이 트와이스 (일반 몬스터·아시나 겐이치로 1·2페이즈 비헤이비어 트리)",
+ "anon_label": "소울라이크 액션 게임 몬스터·보스 AI 비헤이비어 트리 역설계(엑셀 도식), 3시트 — 일반 몬스터 감지·경계·순찰 트리, 보스 페이즈별 트리, 노드 범례·데코레이터 조건",
+ "pages": 3,
+ "structure": [
+  "노드 범례: Entry Condition·Node Type·Progress Variable·Leaf Node 구분",
+  "일반 몬스터 AI: 식별 여부 → 감지/미감지 → 경계(알림 아이콘·경고) → 추적 → 전투 → 순찰 유형(배회·이동·복귀) 분기",
+  "보스 1페이즈 AI: 대상 식별 → 전투 영역·공격 범위 판정 → 스킬 그룹 랜덤 선택 → 체간 50% 미만 시 후퇴 → 아이템 사용 대응",
+  "보스 2페이즈 AI: 1페이즈 구조 계승 + 신규 스킬과 '스킬 튕겨냄' 조건 분기 추가",
+  "종료 조건: 대상 HP 0 시 전투 종료·대사 출력"
+ ],
+ "artifacts": [
+  "state_machine",
+  "flowchart"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 3,
+  "references_analyzed": 1,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "실제 게임의 적 AI를 Selector·Sequence·Decorator·Leaf 노드로 분해해 엑셀 도형만으로 3개의 완결된 비헤이비어 트리를 그렸다",
+  "노드 범례(진입 조건·노드 타입·진행 변수·리프)를 먼저 정의해 트리 전체가 같은 문법으로 읽힌다",
+  "일반 몬스터는 식별→감지→경계→추적→전투와 순찰 유형(배회·이동·복귀)까지 분기해 스텔스 대응 AI의 상태 흐름을 빠짐없이 다룬다",
+  "보스는 공격 범위·체간 50% 미만 후퇴·플레이어 아이템 사용·스킬 튕겨냄 등 플레이어 행동에 반응하는 조건을 데코레이터로 명시하고, 2페이즈 트리는 1페이즈를 계승해 차이를 비교할 수 있게 했다"
+ ],
+ "standard_elements": [
+  "ai_states",
+  "state_transition",
+  "phase_design",
+  "player_kit_interaction"
+ ],
+ "excerpt_pages": [
+  1,
+  2,
+  3
+ ],
+ "notes": "엑셀 도형으로 그린 트리라 셀 텍스트 추출은 거의 없음(도형 텍스트로 내용 확인, 시트당 64~68개 노드). 수치·설계 의도 서술은 없는 순수 도식 문서 — 같은 수업의 데이터 테이블(525e15d8)과 세트. 페이지 이미지 없음. excerpt_pages는 시트 번호.",
+ "status": "draft"
+}

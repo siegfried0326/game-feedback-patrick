@@ -1,0 +1,50 @@
+{
+ "id": "dc20d449-70a9-440e-a0e0-84c2d68fb96a",
+ "file_name": "일반회사_02. 게임화면 기획서(ver.20230108).pdf",
+ "companies": [
+  "일반게임회사"
+ ],
+ "domain": "uiux",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "original",
+ "gameTitle": null,
+ "anon_label": "모바일 캐주얼 게임 시작 화면 UI 기획서, 2p — 실행~메인 진입 순서도, 와이어프레임 2장, 번호 매긴 UI 컴포넌트 명세표",
+ "pages": 2,
+ "structure": [
+  "화면 규칙: 세로 플레이, 16:9 기준 해상도 대응",
+  "게임 시작 순서도: 앱 실행 → 업데이트 확인 분기 → 로딩 → 메인 → 종료 확인 팝업",
+  "게임 시작 UI 와이어프레임(로딩 화면·메인 화면)",
+  "UI 컴포넌트 명세: 번호·이름·컴포넌트 타입·세부 동작 표(10개)"
+ ],
+ "artifacts": [
+  "flowchart",
+  "wireframe",
+  "data_table"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 3,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "앱 실행부터 메인 화면, 뒤로가기 시 종료 확인 팝업까지를 Yes/No 분기가 있는 순서도로 그려 예외 흐름(업데이트 미완료 반복, 종료 취소 복귀)을 놓치지 않았다",
+  "와이어프레임의 요소마다 번호를 붙이고 같은 번호로 컴포넌트 표(이름·Image/Text/Progress bar/button 타입·동작)를 연결해 화면과 명세가 1:1로 대응한다",
+  "재화 표시(코인·다이아·에너지)를 누르면 상점의 해당 탭으로 바로 이동하도록 정해, 화면 요소가 다른 시스템으로 이어지는 지점을 명시했다",
+  "2페이지 안에 화면 규칙 → 흐름 → 레이아웃 → 컴포넌트 명세의 UI 기획서 기본 순서를 빠짐없이 갖췄다"
+ ],
+ "standard_elements": [
+  "user_flow",
+  "component_spec",
+  "ia_structure",
+  "system_links"
+ ],
+ "excerpt_pages": [
+  1,
+  2
+ ],
+ "notes": "2페이지 단편 UI 문서. 범위가 시작 화면에 한정 — 기본기 확인용 참고 자료.",
+ "status": "draft"
+}

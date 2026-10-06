@@ -1,0 +1,71 @@
+{
+ "id": "69325f5e-8d8d-400c-941f-688ffbc6d457",
+ "file_name": "NC_프롤로그_몬스터시스템기획서_개발문서.pdf",
+ "companies": [
+  "엔씨소프트"
+ ],
+ "domain": "combat",
+ "secondary": [
+  "system",
+  "data"
+ ],
+ "docForm": "original",
+ "gameTitle": "프롤로그 팀 프로젝트 (초고속 액션 게임 몬스터 AI)",
+ "anon_label": "팀 프로젝트 액션 게임의 몬스터 AI 시스템 개발 문서, 52p — 기획 의도 5개(원인→결과), 4모드 FSM, 수치별 최소/최대 기준점, 애니메이션 이벤트 프레임, 상태별 플로우차트, 데이터 3종",
+ "pages": 52,
+ "structure": [
+  "문서 소개: 목적·범위·용어/단위(1M=엔진 단위)·애니메이션 이벤트·PC 선입력/대시 우선 규칙",
+  "시스템 소개: 플레이 컨셉 → 기획 의도 5개(공격 단순화·직관적 연출·PC 중심 시선·레벨 연관·대시 유도)",
+  "몬스터 유형별 공격 패턴(근거리·투사체·박격포)과 공격 애니메이션 이벤트",
+  "시스템 규칙: 대기/감지/전투/피격 4모드 FSM",
+  "모드별 상세 규칙 — 데이터 수치의 최소값·최대값 기준점, 점프·백스텝 상태와 지형 감지",
+  "상태별 플로우차트",
+  "데이터 구조도(Monster/Skill/State DB)와 컬럼 상세"
+ ],
+ "artifacts": [
+  "state_machine",
+  "flowchart",
+  "data_table",
+  "erd",
+  "storyboard",
+  "concept_art",
+  "reference_comparison"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 14,
+  "references_analyzed": 1,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "기획 의도 5개를 각각 '원인 → 결과' 구조로 쓰고 그 결과를 패턴 설계로 바로 옮긴다 — 회피 선택지가 무의미해지는 문제 → 공격 타이밍을 과장된 준비 동작으로 연출, 대시 활용이 줄어드는 문제 → 근거리 돌진·원거리 거리 벌리기 패턴 추가",
+  "대기·감지·전투·피격 4개 모드로 묶은 FSM과 HP 조건 전이, PC 사망 시 전원 IDLE 복귀 같은 예외까지 정의했다",
+  "배회 쿨타임·감지 거리·이동 속도 같은 수치마다 '최소값 기준점/최대값 기준점'을 플레이 경험 근거로 제시해, 값을 정하는 원칙을 문서화했다(예: 배회 속도는 추적 속도의 70% 미만)",
+  "공격 알림·투사체 발사·점프·백스텝을 애니메이션 프레임 막대 위 이벤트로 표시해 프로그래머·애니메이터가 바로 구현할 수 있는 수준이다",
+  "Monster/Skill/State DB를 개별 값·스킬·공통 상태 값으로 나누고 컬럼별 자료형·Enum·조건값을 정의해 시스템 규칙과 데이터를 연결했다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "problem_definition",
+  "ai_states",
+  "pattern_telegraph",
+  "player_kit_interaction",
+  "state_transition",
+  "rule_spec",
+  "data_schema",
+  "designer_tunable",
+  "column_definition"
+ ],
+ "excerpt_pages": [
+  7,
+  9,
+  12,
+  14,
+  22,
+  24,
+  44,
+  48
+ ],
+ "notes": "이미지 위주(텍스트 추출 거의 없음) — 페이지 이미지로 확인. 실제 팀 개발용 문서 형식(용어·단위 정의, 엔진 기준). 수치 '값' 자체보다 값의 상·하한 원칙을 서술하는 방식. 레퍼런스는 공격 연출 예시 1건(WindBlown).",
+ "status": "draft"
+}

@@ -1,0 +1,58 @@
+{
+ "id": "4a2adeb4-ecd9-4e5f-a299-a9a9db71023a",
+ "file_name": "크래프톤_2022_여름방학_Cypics_NPC2시스템.pdf",
+ "companies": [
+  "크래프톤"
+ ],
+ "domain": "system",
+ "secondary": [
+  "level",
+  "economy"
+ ],
+ "docForm": "original",
+ "gameTitle": "Cypics (2022 여름방학 팀 프로젝트, 로그라이크 2D) — NPC2(스탯 강화 NPC)",
+ "anon_label": "로그라이크 팀 프로젝트의 스탯 강화 NPC 상세 기획서, 8p — 위치별 상태 변환표, 먹이주기→알 획득 입출력 표, 랜덤 스탯 보상 테이블",
+ "pages": 8,
+ "structure": [
+  "문서 헤더(관련 문서·테이블·히스토리)와 개요(목적·정의·기획 방향)",
+  "NPC 의도와 위치별 상태 변환(던전 / 데려오기 전·후 허브) + 던전 내 배치도",
+  "데려오기 입력 규칙과 허브 건물 상태",
+  "대화 연출(카메라 줌인·말풍선·타이핑 효과)과 대사",
+  "먹이주기 → 알 생성 → 둥지 창 → 알 획득(입력/출력 표) → 알 사용",
+  "랜덤 증가 스탯 테이블과 재료 획득 규칙",
+  "그래픽 리소스 요청(NPC·둥지·알·재료 아이템)"
+ ],
+ "artifacts": [
+  "data_table",
+  "numeric_table",
+  "floor_plan",
+  "concept_art"
+ ],
+ "depth": {
+  "numeric_tables": 1,
+  "diagrams": 2,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "NPC가 던전·허브(데려오기 전/후)에서 어떤 외형과 상호작용을 갖는지 위치별 상태 변환표로 정리해 구현자가 상태를 놓치지 않게 했다",
+  "먹이주기 → 알 생성 → 둥지 확대 창 → 알 획득 → 사용을 입력/출력/비고 표로 단계화하고, 알이 있을 때와 없을 때의 화면을 나눠 보여준다",
+  "알 5종 × 2개 = 10개 중 랜덤 1개 획득, 재획득 불가, 재료는 맵 1개 클리어당 1개처럼 보상 규칙을 수치와 예외까지 명시했다",
+  "그래픽 리소스를 참조 사진·크기 예시·색상(오로라 테두리) 지침과 함께 요청해 아트 협업 문서로 기능한다"
+ ],
+ "standard_elements": [
+  "rule_spec",
+  "state_transition",
+  "ui_flow",
+  "stat_table",
+  "system_links"
+ ],
+ "excerpt_pages": [
+  2,
+  5,
+  6,
+  7
+ ],
+ "notes": "8p 상세 문서. 상위 개요(ce33a222)·전투 지역(dbfb2c96)과 같은 프로젝트.",
+ "status": "draft"
+}

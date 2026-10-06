@@ -1,0 +1,47 @@
+{
+ "id": "5d1f3bd4-f01b-4a40-9479-c7b800a1bbe6",
+ "file_name": "웹젠_레벨디자인분석 연습_송재영.pdf",
+ "companies": [
+  "웹젠"
+ ],
+ "domain": "level",
+ "secondary": [
+  "combat"
+ ],
+ "docForm": "analysis",
+ "gameTitle": "오버워치 (거점 점령맵 1개)",
+ "anon_label": "팀 기반 FPS 거점 공격/수비맵 레벨 분석 연습, 1p — 아이소메트릭 맵 위 진입로·고지 표시, 역할군별 교전 예측",
+ "pages": 1,
+ "structure": [
+  "아이소메트릭 맵 구조도 위에 주요 진입로(①)·고저차 거점(②)·이동 화살표 표시",
+  "역할군 활용성 총평",
+  "공격팀 전략(탱커 정면 + 기동형 영웅 샛길 우회)",
+  "수비팀 전략(고지대 원거리/포탑, 샛길 지역 방어)",
+  "교전 양상 예측(중앙 원거리 교전, 측면 방 소규모 근접 교전)과 역전 가능성 분석"
+ ],
+ "artifacts": [
+  "route_map",
+  "floor_plan"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 1,
+  "references_analyzed": 1,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "맵 구조도 위에 진입로와 고저차 거점을 번호로 표시하고 화살표로 우회 동선을 그려, 텍스트 분석과 도면이 1:1로 대응한다",
+  "공간 구조를 역할군(탱커·기동형·포탑·저격)과 연결해 '누가 어디서 유리한가'로 해석했다",
+  "수비가 유리해져도 ① 이상으로는 밀고 들어가기 어려운 구조가 역전 기회를 남긴다는 점을 읽어, 맵이 일방적인 게임을 막는 설계 의도까지 추론했다"
+ ],
+ "standard_elements": [
+  "section_intent",
+  "player_kit_interaction",
+  "landmark_guidance"
+ ],
+ "excerpt_pages": [
+  1
+ ],
+ "notes": "1페이지짜리 분석 연습 시트. 규격 수치·플레이타임 측정은 없음 — 짧은 과제형 문서로 참고 가중치 낮음.",
+ "status": "draft"
+}

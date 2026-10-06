@@ -1,0 +1,53 @@
+{
+ "id": "d8479431-192f-4039-a1ef-f719020f39bd",
+ "file_name": "넥슨_쥐상낙원_테이블설계도_권채린 복사본.pdf",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "data",
+ "secondary": [
+  "system",
+  "narrative"
+ ],
+ "docForm": "table",
+ "gameTitle": "쥐상낙원 (팀 프로젝트, 모바일 수직 굴착 어드벤처) — 테이블 설계도",
+ "anon_label": "모바일 수직 굴착 어드벤처 팀 프로젝트의 테이블 설계도, 7p — 24개 엔티티 정제(Key/Main/Active 분류), 한글·영문 필드 매핑, 관계 정립 매트릭스, 전체 ERD",
+ "pages": 7,
+ "structure": [
+  "표지",
+  "테이블 구조: 엔티티·필드 정제(한글 필드명, 엔티티 유형 Key/Main/Active 분류)",
+  "테이블 구조: 영문 테이블명·필드명 매핑(snake_case)",
+  "데이터베이스 관계 정의: 테이블 간 관계 정립 매트릭스",
+  "ERD: 전체 테이블 관계도"
+ ],
+ "artifacts": [
+  "erd",
+  "data_table"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 3,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "게임 플레이 데이터(플레이어·캐릭터·저장 정보·도구·맵 요소)부터 콘텐츠(시나리오·스토리 조각·엔딩 카드)와 제작 리소스(액션·이미지·사운드·오류)까지 24개 엔티티로 빠짐없이 정제했다",
+  "엔티티를 Key/Main/Active로 분류해 기준 데이터와 플레이 중 변하는 데이터를 구분하고, 저장 정보 테이블에 강화 단계·임시 저장 자원·부활 횟수·선택 횟수처럼 상태 값을 따로 모았다",
+  "한글 필드명과 영문 snake_case 필드명을 같은 배치로 나란히 제시해 기획자와 프로그래머가 같은 구조를 보고 소통할 수 있게 했다",
+  "테이블×테이블 관계 정립 매트릭스(관련 없음 null, 자기 참조 없음 none 구분)를 먼저 만들고 이를 전체 ERD로 옮겨 참조 관계를 두 가지 방식으로 검증했다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "referential_integrity",
+  "data_schema",
+  "system_map"
+ ],
+ "excerpt_pages": [
+  3,
+  4,
+  6,
+  7
+ ],
+ "notes": "7페이지의 짧은 구조 문서로 필드 타입·예시 값은 별도 시스템 테이블 링크로 위임. 같은 팀 프로젝트의 개발 스펙 문서·추격 시스템 xlsx와 한 세트.",
+ "status": "draft"
+}

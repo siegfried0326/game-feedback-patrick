@@ -1,0 +1,50 @@
+{
+ "id": "49869faf-c52b-4e79-a5b2-988917b8621f",
+ "file_name": "웹젠_배틀그라운드 총기 테이블.xlsx",
+ "companies": [
+  "웹젠"
+ ],
+ "domain": "data",
+ "secondary": [
+  "combat"
+ ],
+ "docForm": "table",
+ "gameTitle": "배틀그라운드 (총기 데이터 역기획)",
+ "anon_label": "배틀로얄 슈터 총기 데이터 테이블 역기획, 1시트 — 무기 52종×57컬럼, 컬럼별 정의·단위 주석, 부위별 피해·탄도·반동·발사 모드·부착물 슬롯",
+ "pages": 1,
+ "structure": [
+  "컬럼 그룹 헤더(소켓·부위 피해량·탄도 각도·발사 딜레이·발사 모드·부착물·이펙트)",
+  "컬럼별 한글 설명 행(정의·단위·0/1 사용 여부 규칙, 피해량은 체력 1000 기준)",
+  "영문 컬럼명 행(WEAPON ID·DAMAGE PER SHOT 등)",
+  "무기 데이터 52행(AR·DMR·SR·SMG·LMG·샷건·권총·근접·기타 9개 유형, 유형별 그룹 ID)"
+ ],
+ "artifacts": [
+  "data_table",
+  "numeric_table"
+ ],
+ "depth": {
+  "numeric_tables": 1,
+  "diagrams": 0,
+  "references_analyzed": 1,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "모든 컬럼에 '무엇을 뜻하는지 + 단위(m/s, RPM, %, cm, 초)'를 한 줄 설명으로 달아 테이블만 보고도 데이터의 의미를 해석할 수 있다",
+  "무기 ID를 '유형_탄종+순번' 규칙으로 부여하고 유형별 그룹 ID를 따로 두어 9개 무기 유형 52종을 일관된 키 체계로 관리한다",
+  "피해량을 체력 1000 기준으로 정규화하고 머리·목·어깨·가슴·배·팔·다리 9개 부위로 나눠, 부위별 배율 설계를 한눈에 비교할 수 있게 했다",
+  "발사 속도·거리별 감쇠·반동 횟수와 좌우 확률·자세별 정확도·이동 속도까지 총기 감각을 결정하는 파라미터를 세분화해 기획자가 조정 가능한 항목으로 드러냈다",
+  "발사 모드·소켓·부착물 슬롯을 0/1 플래그로, 사운드를 리소스 키로 연결해 클라이언트·리소스와 연동되는 데이터 형식을 갖췄다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "enum_usage",
+  "sample_rows",
+  "designer_tunable",
+  "stat_table"
+ ],
+ "excerpt_pages": [
+  1
+ ],
+ "notes": "xlsx 단일 시트(52행×약 57컬럼). 설계 의도 서술 없이 데이터 정리에 집중한 테이블 문서. 일부 컬럼 NONE 처리. excerpt_pages는 시트 번호.",
+ "status": "draft"
+}

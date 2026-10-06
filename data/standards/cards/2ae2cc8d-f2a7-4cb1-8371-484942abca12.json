@@ -22,7 +22,6 @@
  "artifacts": [
   "floor_plan",
   "route_map",
-  "placement_table",
   "state_machine"
  ],
  "depth": {

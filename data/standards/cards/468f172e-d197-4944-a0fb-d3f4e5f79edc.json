@@ -1,0 +1,65 @@
+{
+ "id": "468f172e-d197-4944-a0fb-d3f4e5f79edc",
+ "file_name": "일반회사_03_[창작]_로스트 소드_스킬 순차 발동 시스템.pdf",
+ "companies": [
+  "일반게임회사"
+ ],
+ "domain": "system",
+ "secondary": [
+  "uiux",
+  "combat"
+ ],
+ "docForm": "proposal",
+ "gameTitle": "로스트 소드 (스킬 순차 발동 시스템 제안, 레퍼런스: V4, 세븐나이츠)",
+ "anon_label": "횡스크롤 방치형 RPG 자동전투 스킬 순차 발동 시스템 제안서, 17p — 문제 상황 2가지 도식, 시너지 수치 근거, 설정 플로우차트, Figma 프로토타입",
+ "pages": 17,
+ "structure": [
+  "개요: 기존 자동 스킬 발동 규칙",
+  "문제 인식·분석: 이동 중 오발동, 행동 불가로 순서 붕괴",
+  "레퍼런스 활용 2건(스킬 우선순위 시스템, 단일 팝업 자동 설정 UI)",
+  "기획 의도: 최적 빌드 제공(캐릭터 궁극기 시너지 표), 범용성, 기대 효과",
+  "시스템 개념: 정의·활성화 조건·사용법·구성 요소",
+  "순차 스킬 설정 플로우차트",
+  "UI 구성: 자동 스킬 설정·순차 스킬 설정·모험 설정 화면",
+  "Figma UI 프로토타입"
+ ],
+ "artifacts": [
+  "flowchart",
+  "wireframe",
+  "reference_comparison",
+  "screenshot_analysis",
+  "numeric_table",
+  "prototype_video"
+ ],
+ "depth": {
+  "numeric_tables": 1,
+  "diagrams": 4,
+  "references_analyzed": 2,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "자동전투의 문제를 '라운드 이동 중 사거리 진입으로 인한 오발동'과 '행동 불가 상태로 인한 순서 붕괴' 두 상황으로 나눠 배치 도식으로 재현해 문제가 눈에 보인다",
+  "캐릭터 3명의 궁극기 쿨타임·피해량·디버프 수치를 표로 제시하고 '버프 → 감전 → 딜' 순서일 때만 최대 시너지가 난다는 계산으로 시스템 필요성을 증명한다",
+  "레퍼런스 2건을 각각 '스킬 우선순위 개념'과 '뎁스를 줄인 단일 팝업 UI'로 역할을 나눠 차용하고, 무엇을 가져오는지 명확히 적었다",
+  "활성화 조건, 기본값(첫 진입 시 자동 스킬 유지), 순서 취소 시 뒤 순서가 당겨지는 처리까지 규칙과 예외를 플로우차트와 UI 설명에 담았다",
+  "화면 ID를 붙인 UI 설계와 실제 동작하는 Figma 프로토타입으로 결과물을 확인할 수 있게 했다"
+ ],
+ "standard_elements": [
+  "problem_definition",
+  "intent_statement",
+  "reference_to_decision",
+  "rule_spec",
+  "ui_flow",
+  "expected_effect",
+  "system_links"
+ ],
+ "excerpt_pages": [
+  4,
+  5,
+  8,
+  12,
+  14
+ ],
+ "notes": "기존 라이브 게임 개선 제안. 커뮤니티·스토어 리뷰 분석을 기대 효과 근거로 언급(구체 데이터는 미제시).",
+ "status": "draft"
+}

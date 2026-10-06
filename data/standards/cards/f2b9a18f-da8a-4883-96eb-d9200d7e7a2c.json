@@ -1,0 +1,58 @@
+{
+ "id": "f2b9a18f-da8a-4883-96eb-d9200d7e7a2c",
+ "file_name": "NC_쿠키런UX 박수아.pdf",
+ "companies": [
+  "엔씨소프트"
+ ],
+ "domain": "uiux",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "proposal",
+ "gameTitle": "쿠키런: 오븐브레이크",
+ "anon_label": "모바일 러닝 액션 게임 UI/UX 분석·개선 제안서, 14p — 유저 설문 기반 페르소나 4종, UI 만족도 니즈 추출, 기존/수정 화면 비교 3건",
+ "pages": 14,
+ "structure": [
+  "유저 설문 설계(플레이 습관·시간대·목적·콘텐츠별 불편사항)",
+  "사용자 행동 분석: 페르소나 4종(behavior·need·하루 플레이 타임라인)",
+  "기술 수용 주기 모형으로 본 게임 생애주기",
+  "프로젝트 목표(직관성·자연스러운 흐름·플레이 집중)",
+  "사용자 니즈 추출: UI 만족도 5개 항목",
+  "UI 수정 제안 3건: 기존 화면 → 문제 → 수정 제안 화면"
+ ],
+ "artifacts": [
+  "persona",
+  "screenshot_analysis",
+  "wireframe"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 2,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "직접 유저 설문을 실시해 플레이 습관과 콘텐츠·기본 메뉴·상점·캐릭터 목록별 불편사항을 수집하는 것에서 출발해, 개선 근거를 개인 의견이 아닌 사용자 응답에 둔다",
+  "응답자를 행동(behavior)·니즈(need)·하루 중 플레이 시간대로 정리한 페르소나 4종을 만들어 누구의 불편을 해결하는지 분명히 했다",
+  "UI 만족도를 버튼 직관성·필요 정보 표시·화면 이동 흐름·콘텐츠 접근성·콘텐츠 적절성 5개 항목으로 나눠, 가장 낮은 항목을 개선 대상으로 짚는다",
+  "수정 제안 3건 모두 '기존 화면 캡처 → 문제 서술 → 수정 화면'의 같은 포맷으로, 보유 재화 상시 표시·뒤로가기 위치 고정·추천 조합 원클릭 적용처럼 범위가 작고 바로 구현 가능한 개선을 제시한다"
+ ],
+ "standard_elements": [
+  "problem_definition",
+  "intent_statement",
+  "before_after",
+  "ux_principle",
+  "user_flow"
+ ],
+ "excerpt_pages": [
+  3,
+  4,
+  9,
+  10,
+  11,
+  12,
+  13
+ ],
+ "notes": "14p 짧은 UX 개선 제안서. 설문 결과 그래프·페르소나는 이미지로만 존재해 응답자 수 등 수치는 텍스트로 확인되지 않음.",
+ "status": "draft"
+}

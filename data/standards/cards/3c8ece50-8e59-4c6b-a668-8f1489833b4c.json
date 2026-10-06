@@ -19,7 +19,6 @@
  "artifacts": [
   "floor_plan",
   "route_map",
-  "placement_table",
   "flowchart"
  ],
  "depth": {

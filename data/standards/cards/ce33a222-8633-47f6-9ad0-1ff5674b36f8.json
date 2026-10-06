@@ -1,0 +1,51 @@
+{
+ "id": "ce33a222-8633-47f6-9ad0-1ff5674b36f8",
+ "file_name": "크래프톤_2022_여름방학_Cypics_멀티버스_NPC_시스템.pdf",
+ "companies": [
+  "크래프톤"
+ ],
+ "domain": "system",
+ "secondary": [
+  "level"
+ ],
+ "docForm": "original",
+ "gameTitle": "Cypics (2022 여름방학 팀 프로젝트, 로그라이크 2D) — 멀티버스 NPC 시스템",
+ "anon_label": "로그라이크 팀 프로젝트의 허브 NPC 시스템 개요서, 5p — 관련 문서·히스토리 헤더, 허브 건물 활성/비활성 상태 정의, 데려오기 입력 규칙, 그래픽 리소스 요청표",
+ "pages": 5,
+ "structure": [
+  "문서 헤더: 관련 문서·관련 테이블·변경 히스토리",
+  "개요: 문서 목적·NPC 정의·기획 방향",
+  "NPC 시스템 개요: 허브 건물 배치·건물 상태(비활성/활성)",
+  "던전 NPC 데려오기: 던전 내 NPC 지역·배치 예상도·선택 입력 규칙",
+  "그래픽 리소스: NPC별 설명·레퍼런스 사진·버튼 문구/색상"
+ ],
+ "artifacts": [
+  "floor_plan",
+  "data_table",
+  "concept_art"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 2,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "짧은 문서지만 관련 문서·관련 테이블·변경 히스토리 헤더를 갖춰, 개별 NPC 기획서들을 묶는 상위 문서 역할을 분명히 한다",
+  "허브 건물을 비활성(클릭 무반응·빛 없음)/활성(상호작용 가능) 두 상태로 정의하고, 던전에서 NPC를 데려오는 행동이 상태 전환 조건임을 명시했다",
+  "데려오기 선택을 키보드·마우스 입력별로 정리하고, 그래픽 리소스를 '설명 + 레퍼런스 사진 + 크기 비율(플레이어 대비 3배)' 형식으로 요청해 아트 협업용 문서 형식을 갖췄다"
+ ],
+ "standard_elements": [
+  "rule_spec",
+  "state_transition",
+  "system_links"
+ ],
+ "excerpt_pages": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "notes": "5p 상위 개요 문서. 같은 프로젝트의 NPC2 상세(4a2adeb4)·전투 지역(dbfb2c96)과 세트.",
+ "status": "draft"
+}

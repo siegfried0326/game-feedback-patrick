@@ -178,6 +178,15 @@ Gemini 약점 문장을 정제하는 대신 **비교 재료 자체를 교체**�
 - 규약·진행 현황: `data/standards/README.md`, 목표 출력 예시: `data/standards/EXAMPLE_feedback_*.md`
 - 반영 절차: `scripts/021_add_standard_cards.sql` → `node --env-file=.env.local scripts/seed-standards.mjs --apply` → `DELETE FROM portfolio_chunks` → 관리자 임베딩(force)
 
+### 6.5 점수 보정 + 고유명 차단 (2026-10-07)
+- **점수 보정**: 합격 문서를 자기 자신 빼고 넣어도 52~69점이 나오던 문제. `buildChecklist`가 같은 직군 카드의 깊이 지표(수치 표·도식·분석 레퍼런스·의도→결정) 사분위를 계산해 "점수 보정 기준" 블록을 프롬프트에 넣는다 — 합격 하위 25% 수준 78~84 / 중앙값 85~90 / 상위 25% 91+ / 절반 이하 60~77 / 초안 60 미만. 점수 구간표(prompt.ts)도 같은 경계로 맞춤
+- 공통 요소표는 **주 직군 카드만** 사용 (보조 직군 섞임 방지), 35% 이상 등장 요소 상위 10개
+- **고유명 차단 2겹** (`lib/analysis/anonymize.ts`, 금지어 원본 `data/standards/banned-terms.json`):
+  1. `maskForPrompt` — 원문 발췌를 프롬프트에 넣기 전 금지어를 `[고유명]`으로 가림
+  2. `scrubOutput` — 모델 응답 JSON의 모든 문자열에서 금지어를 "한 합격 문서"로 치환
+  - 사용자 자기 문서에 있는 단어는 건드리지 않음. 비교는 **공백 무시** (PDF 추출 텍스트는 띄어쓰기가 원본과 달라 자기 문서 이름을 잘못 지우던 문제 수정)
+  - 금지어 목록에 없는 새 고유명은 막지 못한다 → 새 합격 문서 추가 시 `validate-cards.mjs`와 함께 목록 갱신
+
 ## 7. URL 분석 흐름
 
 ```

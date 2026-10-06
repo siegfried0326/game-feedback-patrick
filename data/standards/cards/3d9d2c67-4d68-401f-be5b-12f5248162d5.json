@@ -1,0 +1,51 @@
+{
+ "id": "3d9d2c67-4d68-401f-be5b-12f5248162d5",
+ "file_name": "넥슨_플레이어 캐릭터_데이터 테이블.xlsx",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "data",
+ "secondary": [
+  "combat"
+ ],
+ "docForm": "table",
+ "gameTitle": "창작 액션 게임 플레이어 캐릭터 데이터 테이블 (캐릭터 '아랑', 연꽃 게이지)",
+ "anon_label": "액션 게임 플레이어 캐릭터 데이터 테이블, 3시트 — 컬럼명·자료형·설명·단위 정의, 스테이터스/스킬 테이블 분리와 ID 참조",
+ "pages": 3,
+ "structure": [
+  "컬럼 정의 시트: 캐릭터 스테이터스 컬럼 31개·스킬 컬럼 16개의 자료형·설명·단위 + 기타 규칙",
+  "캐릭터 스테이터스 테이블: 체력·스태미나·이동·회피·패링·피해 감소·고유 게이지·명중/회피/치명",
+  "캐릭터 스킬 테이블: 일반 공격 3종·스킬 3종의 공격력 범위·공격 속도·쿨타임·범위 형태·게이지 증감"
+ ],
+ "artifacts": [
+  "data_table",
+  "numeric_table"
+ ],
+ "depth": {
+  "numeric_tables": 2,
+  "diagrams": 0,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "모든 컬럼에 자료형(byte·int·float·enum)·설명·단위(%·ms·m/s·m/s²·°)를 붙여 엔지니어가 바로 읽을 수 있는 컬럼 정의서를 먼저 만들었다",
+  "스테이터스와 스킬을 별도 테이블로 나누고 스킬 테이블이 캐릭터 ID·애니메이션 ID를 참조하게 해 정규화된 구조를 갖췄다",
+  "회피·패링 성공 시 고유 게이지가 오르고 스킬이 게이지를 소모하는 자원 순환을 컬럼(증가량/소모량)으로 표현해, 일반 공격은 게이지를 쌓고 스킬은 쓰는 역할 분담이 데이터에 드러난다",
+  "스킬 범위를 직선형/원형 Enum과 길이·각도로 정의해 판정 형태를 수치로 조정할 수 있게 했다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "referential_integrity",
+  "enum_usage",
+  "sample_rows",
+  "designer_tunable",
+  "stat_table"
+ ],
+ "excerpt_pages": [
+  1,
+  2,
+  3
+ ],
+ "notes": "xlsx 3시트, 캐릭터 1명분의 짧은 테이블(페이지 = 시트 순서). 컬럼 정의 시트에 '테이블 구조도'·'ID 생성 규칙' 항목이 있으나 내용은 이미지로 추정되어 텍스트로 확인 불가.",
+ "status": "draft"
+}

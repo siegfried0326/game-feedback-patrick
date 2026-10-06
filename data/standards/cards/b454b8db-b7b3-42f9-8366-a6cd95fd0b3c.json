@@ -1,0 +1,53 @@
+{
+ "id": "b454b8db-b7b3-42f9-8366-a6cd95fd0b3c",
+ "file_name": "넥슨_01-1_데이터 테이블_시스템 역기획_팰월드 포획 시스템.xlsx",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "data",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "table",
+ "gameTitle": "팰월드 (포획 시스템 데이터 테이블)",
+ "anon_label": "몬스터 수집 생존게임 포획 시스템 데이터 테이블(xlsx), 4시트 — 컬럼 정의 시트, 참조 테이블 연결, Enum 입력값 명세, 예시 행",
+ "pages": 4,
+ "structure": [
+  "Define 시트: 테이블별 컬럼명·역할·자료형·참조 테이블·설명 일괄 정의",
+  "ItemTable: 아이템 기본 정보(타입·희귀도 Enum, 무게·가격·적재량) + 포획 도구 7행",
+  "PalSphereTable: 포획 도구별 포획력·최대 적정 레벨(ItemTable 참조)",
+  "PalTable: 몬스터 속성 2종·작업 적성 12종(0~4)·식사량·드롭·포획 가능 여부·난이도 계수 12행"
+ ],
+ "artifacts": [
+  "data_table",
+  "numeric_table",
+  "erd"
+ ],
+ "depth": {
+  "numeric_tables": 3,
+  "diagrams": 0,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "별도 Define 시트에 모든 컬럼의 역할·자료형·참조 테이블·설명을 모아 두어 테이블을 처음 보는 사람도 구조를 파악할 수 있다",
+  "각 테이블 상단에 참조 테이블/키 행과 자료형 행을 두고 ID 입력 규칙(접두어_Name)을 통일해 테이블 간 참조 관계(Item ↔ Sphere, Pal → String/Resource/Skill/Drop)가 명확하다",
+  "타입·희귀도·속성 같은 범주 값은 Enum으로 입력 가능 값을 열거하고, 작업 적성은 0~4, 식사량은 0~10처럼 입력 범위를 명시했다",
+  "포획력과 최대 적정 레벨, 포획 난이도 계수처럼 포획 확률 계산에 필요한 조정 파라미터를 분리된 컬럼으로 노출했다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "referential_integrity",
+  "enum_usage",
+  "sample_rows",
+  "designer_tunable",
+  "data_schema"
+ ],
+ "excerpt_pages": [
+  1,
+  3,
+  4
+ ],
+ "notes": "xlsx 4시트(시트 번호를 페이지로 사용). 동일 작성자의 '01 시스템 역기획(포획 시스템)' 문서의 부록 성격 — 단독으로는 포획 확률 공식·설계 의도 서술이 없음. 예시 행은 원작 실제 값 기반.",
+ "status": "draft"
+}

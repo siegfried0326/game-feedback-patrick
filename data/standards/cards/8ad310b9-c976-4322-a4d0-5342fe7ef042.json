@@ -1,0 +1,46 @@
+{
+ "id": "8ad310b9-c976-4322-a4d0-5342fe7ef042",
+ "file_name": "스마일게이트_일반회사_01. 조작 기획서(ver.20230110).pdf",
+ "companies": [
+  "스마일게이트",
+  "일반게임회사"
+ ],
+ "domain": "system",
+ "secondary": [
+  "uiux"
+ ],
+ "docForm": "original",
+ "gameTitle": null,
+ "anon_label": "모바일 세로형 원터치 러너 조작 시스템 기획서, 2p — 터치 방향 전환·스와이프 점프 규칙, 조작 화면 목업",
+ "pages": 2,
+ "structure": [
+  "조작 규칙: 세로 화면·시작 방향·자동 전진",
+  "입력: 화면 터치 시 좌우 방향 전환, 위로 스와이프 시 점프(다중 점프 불가), 포물선 점프·점프 거리",
+  "조작 화면 예시: 휴대폰 목업 2컷(전진/터치 방향 전환)",
+  "점프 조작 예시"
+ ],
+ "artifacts": [
+  "wireframe"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 3,
+  "references_analyzed": 0,
+  "intent_to_decision": "weak"
+ },
+ "why_it_works": [
+  "조작을 '자동 전진 + 터치 = 방향 전환 + 위 스와이프 = 점프' 세 규칙으로 압축해 원터치 모바일 게임의 입력 체계를 짧게 정의했다",
+  "점프 중 재점프 불가, 진행 방향으로 포물선 점프, 점프 거리 4처럼 예외와 기준값을 함께 적었다",
+  "휴대폰 화면 목업에 터치 위치와 캐릭터 방향을 그려 규칙을 시각적으로 확인할 수 있게 했다"
+ ],
+ "standard_elements": [
+  "rule_spec",
+  "scope_limits"
+ ],
+ "excerpt_pages": [
+  1,
+  2
+ ],
+ "notes": "2p 단편 조작 명세(동일 작성자의 다른 시스템 문서 묶음 중 1편으로 보임). excerpt_pages가 2개뿐인 이유는 문서 분량. 게임명 미기재.",
+ "status": "draft"
+}

@@ -1,0 +1,50 @@
+{
+ "id": "40f9ba95-55c1-448b-b7e8-a245fc58def5",
+ "file_name": "크래프톤_2022_여름방학_Cypics_게임_개요.pdf",
+ "companies": [
+  "크래프톤"
+ ],
+ "domain": "general",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "original",
+ "gameTitle": "Cypics (2022 여름방학 팀 프로젝트) 게임 개요",
+ "anon_label": "탑뷰 2D 도트 어드벤처 RPG 팀 프로젝트 게임 개요서, 3p — 장르·타겟·플랫폼 표, 제작 규격, 게임 흐름도와 콘텐츠 순환 구조",
+ "pages": 3,
+ "structure": [
+  "문서 정보·히스토리",
+  "게임 요약·개요(장르·타겟·그래픽·플랫폼)",
+  "제작 참고 사항(해상도·플레이어 크기·애니메이션 프레임·화풍)",
+  "게임 전체 흐름도와 콘텐츠 순환 구조(던전 ↔ 마을 → 성장 → 최종 보스)",
+  "화면·공간별 설명(시작화면·컷씬·튜토리얼·지도·멀티버스·지역)"
+ ],
+ "artifacts": [
+  "flowchart",
+  "data_table",
+  "concept_art"
+ ],
+ "depth": {
+  "numeric_tables": 1,
+  "diagrams": 2,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "3페이지 안에 장르·타겟·그래픽·플랫폼과 해상도·플레이어 크기(120×120)·기본 6프레임 같은 제작 규격을 표로 확정해 팀원이 바로 작업 기준으로 쓸 수 있다",
+  "게임 진행 흐름도와 '던전 사냥·파밍 ↔ 마을 건축 → 캐릭터 성장 → 최종 보스' 순환 구조도를 나란히 두어 코어 루프를 한눈에 보여준다",
+  "화면·공간 단위(시작화면, 컷씬, 튜토리얼, 지도 12개 지역, 마이룸)로 게임 전체 구성을 정리했다"
+ ],
+ "standard_elements": [
+  "core_loop",
+  "market_target",
+  "system_map",
+  "scope_limits"
+ ],
+ "excerpt_pages": [
+  2,
+  3
+ ],
+ "notes": "3p 개요 문서로 매우 얇다. 팀 프로젝트 문서 묶음의 표지 역할. 단독 비교 재료로는 한계가 있음.",
+ "status": "draft"
+}

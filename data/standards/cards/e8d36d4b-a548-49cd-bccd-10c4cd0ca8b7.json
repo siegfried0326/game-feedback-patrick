@@ -1,0 +1,51 @@
+{
+ "id": "e8d36d4b-a548-49cd-bccd-10c4cd0ca8b7",
+ "file_name": "일반회사_3. 스트링 리스트.pdf",
+ "companies": [
+  "일반게임회사"
+ ],
+ "domain": "data",
+ "secondary": [
+  "system",
+  "uiux"
+ ],
+ "docForm": "table",
+ "gameTitle": "바람의 나라: 연 (신수 쟁탈전 모드 스트링)",
+ "anon_label": "모바일 MMORPG 진영전 모드의 다국어 스트링 리스트, 14p — 스트링 ID 명명 규칙, 참조 코드 체계, 83개 항목 한·중·일 3개 언어",
+ "pages": 14,
+ "structure": [
+  "표지(모드명·문서 종류)",
+  "한국어 스트링 표(스트링 ID·참조 코드·텍스트) 83개",
+  "중국어 스트링 표(동일 ID·참조 코드)",
+  "일본어 스트링 표(동일 ID·참조 코드)"
+ ],
+ "artifacts": [
+  "data_table"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 0,
+  "references_analyzed": 0,
+  "intent_to_decision": "weak"
+ },
+ "why_it_works": [
+  "스트링 ID를 'UI_모드명_용도_세부' 형식(DATE, HELP1~6, MSG_BUFF_RED1~5, MSG_UNSEAL_진영 등)으로 일관되게 명명해, 이름만 보고 어느 화면·어느 상황의 문구인지 알 수 있다",
+  "모든 항목에 순번 참조 코드를 붙이고 한·중·일 3개 언어 표가 같은 ID와 코드를 공유하도록 맞춰 현지화 작업에서 참조 관계가 깨지지 않는다",
+  "도움말·시간표·버프 단계별 효과·봉인 해제·이탈 경고·결과 화면까지 모드 한 판의 흐름에 필요한 문구를 빠짐없이 뽑아, 문구 목록만으로 모드의 규칙과 UI 범위가 드러난다",
+  "진영별·단계별로 갈라지는 메시지를 접미사로 분리해 변수 치환이 필요한 문구(장군 변경 등)와 고정 문구를 구분했다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "referential_integrity",
+  "sample_rows",
+  "enum_usage"
+ ],
+ "excerpt_pages": [
+  2,
+  3,
+  4,
+  6
+ ],
+ "notes": "같은 모드의 다른 기획서와 세트로 제출된 부속 산출물로 보임. 단독으로는 설계 의도 서술이 없는 실무 데이터 문서 — 데이터/현지화 실무 감각을 보여주는 참고 자료. 표지에 작성자 이메일 포함.",
+ "status": "draft"
+}

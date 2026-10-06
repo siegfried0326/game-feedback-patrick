@@ -1,0 +1,53 @@
+{
+ "id": "2cc6ee9f-d385-404e-974f-f734dc48935d",
+ "file_name": "넥슨_ 광기군단장 쿠크세이튼 스킬 테이블_박동아.xlsx",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "data",
+ "secondary": [
+  "combat"
+ ],
+ "docForm": "table",
+ "gameTitle": "로스트아크 (광기군단장 쿠크세이튼 레이드)",
+ "anon_label": "MMORPG 레이드 보스 스킬 데이터 테이블 역설계, 3시트 — 난이도·관문·보스 구분 자릿수 ID, 패턴/판정 유형 Enum, 시전 시간·범위·상태이상·행동 제한 컬럼, ID 대역 설계표",
+ "pages": 3,
+ "structure": [
+  "Skill_table 헤더: 컬럼별 정의·단위 설명 행 → 한글 컬럼명 → 영문 키 → 자료형(string/enum/float/int/boolean) → 사용처(클라이언트·서버)",
+  "Skill_table 데이터: 난이도 2종(하/중)×관문별 보스 스킬 약 70행 — 패턴 유형·판정·범위 모양·캐스팅·시전 시간·세트 수·범위 지름·타겟 수·즉사·상태이상·행동 제한 시간",
+  "애니메이션·이펙트·툴팁 테이블 참조 컬럼(파일명 자리)",
+  "Sheet2: 던전 레벨→관문→보스별 스킬 ID 대역 설계표",
+  "History: 변경 이력 시트"
+ ],
+ "artifacts": [
+  "data_table",
+  "numeric_table"
+ ],
+ "depth": {
+  "numeric_tables": 2,
+  "diagrams": 0,
+  "references_analyzed": 1,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "ID를 '던전 난이도·관문·스킬 번호' 자릿수 규칙으로 만들고, 보스 두 형태의 스킬 번호 대역(1~50 / 51~100)까지 별도 시트에서 설계해 데이터 확장 방식이 명확하다",
+  "컬럼마다 정의·단위(초·m)를 적고 한글명·영문 키·자료형·사용처(클라이언트/서버)를 4단 헤더로 정리해 실무 데이터 테이블 형식을 갖췄다",
+  "패턴 유형(조건형·타겟형·범위형·광역형·전환형·반사형)과 범위 모양(원·부채꼴·직선·십자·링)을 Enum으로 분류해 레이드 기믹의 성격을 데이터로 표현했다",
+  "같은 스킬을 난이도별 행으로 나눠 타겟 수·시전 시간 같은 값만 달리해, 난이도 차이를 조정 가능한 파라미터로 관리한다",
+  "애니메이션·이펙트·툴팁을 다른 테이블 참조 컬럼으로 분리하고 변경 이력 시트를 둬 협업을 고려했다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "enum_usage",
+  "referential_integrity",
+  "sample_rows",
+  "designer_tunable",
+  "pattern_telegraph"
+ ],
+ "excerpt_pages": [
+  1,
+  2
+ ],
+ "notes": "xlsx 3시트. 같은 작성자의 동일 레이드 역기획서·스킬 기획서(넷마블_03/04 카드)와 세트인 데이터 테이블. 리소스 참조 컬럼은 '파일명입력' 자리 표시. 데이터 마지막 행은 '…'로 생략 표기. excerpt_pages는 시트 번호.",
+ "status": "draft"
+}

@@ -1,0 +1,59 @@
+{
+ "id": "e4d23bb2-8150-48b4-bd5c-1ae9ef300554",
+ "file_name": "넥슨_13.계몽의_성역_적_세부_기획서.pdf",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "combat",
+ "secondary": [
+  "level"
+ ],
+ "docForm": "original",
+ "gameTitle": "Last Sanctuary - 잿더미 위의 맹세 (팀 프로젝트 2D 메트로배니아, 두 번째 스테이지 적)",
+ "anon_label": "2D 메트로배니아 팀 프로젝트의 스테이지 일반·엘리트 적 세부 기획서, 17p — 그로기 상태를 추가한 FSM, 적별 학습 역할, 공격 판정 프레임·모션 리스트, 반사형 기믹 적",
+ "pages": 17,
+ "structure": [
+  "문서 개요: 튜토리얼 이후 추가되는 적 4종(일반/엘리트 구분)과 각자의 유도 목표",
+  "일반 몬스터 상태 구조: 그로기(퍼펙트 가드 시 진입·처형 가능) 상태 추가",
+  "근접 적: 개요 → 공격 패턴 의도 → 모션 세부 수치 → 모션 리스트",
+  "방어형 적: 공격 후 전방 무적, 퍼펙트 가드 숙련 요구",
+  "원거리 거점형 적: 투사체 생성 프레임",
+  "벽 고정 반사형 적: 모습이 비칠 때만 공격 가능, 아닐 때 반사 피해"
+ ],
+ "artifacts": [
+  "state_machine",
+  "numeric_table",
+  "data_table",
+  "concept_art"
+ ],
+ "depth": {
+  "numeric_tables": 5,
+  "diagrams": 2,
+  "references_analyzed": 0,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "튜토리얼 FSM에 '퍼펙트 가드로 막히면 그로기 진입, 처형 가능' 상태를 더해 스테이지가 진행될수록 전투 규칙이 한 단계 깊어지는 구조를 보여준다",
+  "적마다 학습 목표를 달리해 방어형 적은 무적 타이밍을 읽게, 반사형 적은 무분별한 공격을 억제하고 정확한 판단을 요구하게 설계했다",
+  "거울에 모습이 비칠 때만 피격되고 그렇지 않을 때 공격하면 반사 피해를 받는 규칙처럼 기믹 적의 성공·실패 조건을 명확히 정의했다",
+  "모든 공격에 총 프레임·판정 발생 프레임을, 모션마다 프레임 수·발동 조건·사용 상태를 표로 정리해 구현 명세로 쓸 수 있다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "ai_states",
+  "state_transition",
+  "pattern_telegraph",
+  "player_kit_interaction",
+  "rule_spec"
+ ],
+ "excerpt_pages": [
+  4,
+  5,
+  8,
+  10,
+  16,
+  17
+ ],
+ "notes": "같은 팀 프로젝트(d58711a1·988aab51, 레벨 카드 2ae2cc8d)와 동일 템플릿. 일부 페이지는 앞 적의 의도 문구를 재사용한 흔적이 있으나 카드에는 반영하지 않음.",
+ "status": "draft"
+}

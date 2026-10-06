@@ -1,0 +1,52 @@
+{
+ "id": "a9329221-24f4-4ac1-934a-d27b0deb18f8",
+ "file_name": "크래프톤_2022_여름방학_Cypics_추가_기획서.pdf",
+ "companies": [
+  "크래프톤"
+ ],
+ "domain": "system",
+ "secondary": [
+  "uiux"
+ ],
+ "docForm": "original",
+ "gameTitle": "Cypics (2022 여름방학 팀 프로젝트) 플레이어 시스템 추가 기획서",
+ "anon_label": "탑뷰 2D RPG 팀 프로젝트의 플레이어 시스템 추가 기획서, 6p — 체력·사망·지역 클리어 규칙, 메인·환경설정 화면, 커서 상태 정의",
+ "pages": 6,
+ "structure": [
+  "문서 정보·목차·히스토리",
+  "플레이어 스탯: 체력(구간별 색상)·사망 처리·공격력 공식·지역 클리어 처리",
+  "메인 화면 구성",
+  "크레딧·환경 설정 화면",
+  "마우스 커서 상태별 표시",
+  "키 설정"
+ ],
+ "artifacts": [
+  "wireframe",
+  "formula",
+  "concept_art"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 3,
+  "references_analyzed": 0,
+  "intent_to_decision": "weak"
+ },
+ "why_it_works": [
+  "체력바 색상 구간(100~60% 초록 / 59~20% 노랑 / 19~1% 빨강)처럼 구현자가 바로 쓸 수 있는 수준으로 값을 확정했다",
+  "사망 시 처리 순서(모션 → 지도 이동 → 전투 획득 자원 소멸)와 지역 클리어 시 처리(아이템 이동, 항복 보스 등장, 10개 지역 클리어 시 다리 연출)를 단계별로 적었다",
+  "커서를 기본·공격 가능 대상 위·아이템 드래그 3가지 상태로 나눠 정의하는 등 작은 UI 상태까지 빠짐없이 챙겼다"
+ ],
+ "standard_elements": [
+  "rule_spec",
+  "state_transition",
+  "ui_flow",
+  "component_spec"
+ ],
+ "excerpt_pages": [
+  2,
+  3,
+  5
+ ],
+ "notes": "6p 보조 스펙 문서로 분량이 얇다. 기획 의도·근거 서술은 거의 없고 구현용 규칙 나열 위주. 팀 프로젝트 묶음 중 하나.",
+ "status": "draft"
+}

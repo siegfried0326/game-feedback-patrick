@@ -47,6 +47,7 @@ import { formatBenchmarkForPrompt } from "@/lib/analysis/benchmark"
 import { scanDocumentWithClaude, type DocumentScan } from "@/lib/analysis/classify"
 import { extractJsonBlock, safeParseJSON } from "@/lib/analysis/json"
 import { summarizeUsage, logUsage, type TokenUsage } from "@/lib/analysis/usage"
+import { maskForPrompt, scrubOutput } from "@/lib/analysis/anonymize"
 
 // ───────────────────────────────────────────
 // 공개 타입 (클라이언트가 그대로 받는다)
@@ -570,7 +571,8 @@ async function runAnalysis(params: {
   ])
   console.log(`[분석] 비교군 ${reference.sameDomainCount}건${reference.insufficient ? " (표본 부족)" : ""}, 유사 청크 ${vectorResult.chunks.length}, 라이브러리 ${libraryResult.chunks.length}`)
 
-  const vectorSection = vectorResult.chunks.length ? formatChunksForPrompt(vectorResult.chunks) : ""
+  // 합격작 발췌 속 게임명·고유 콘텐츠명을 가린다 (사용자 문서에 나오는 단어는 예외) — lib/analysis/anonymize.ts
+  const vectorSection = vectorResult.chunks.length ? maskForPrompt(formatChunksForPrompt(vectorResult.chunks), searchText) : ""
   const librarySection = libraryResult.chunks.length ? formatLibraryChunksForPrompt(libraryResult.chunks) : ""
 
   const client = new Anthropic({ apiKey: params.apiKey, maxRetries: 1 })
@@ -680,7 +682,10 @@ async function runAnalysis(params: {
     .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
     .map(b => b.text)
     .join("")
-  const analysis = safeParseJSON(extractJsonBlock(responseText))
+  // 응답에서도 한 번 더 고유명을 지운다 (프롬프트 규칙을 어기고 옮겨 적는 경우 대비)
+  const scrubbed = scrubOutput(safeParseJSON(extractJsonBlock(responseText)), searchText)
+  if (scrubbed.removed > 0) console.warn(`[분석] 응답에서 합격작 고유명 ${scrubbed.removed}건 제거`)
+  const analysis = scrubbed.value
 
   const categories = normalizeCategories(analysis.categories, domain)
   const applicableValues = categories.filter(c => c.applicable && typeof c.value === "number").map(c => c.value as number)

@@ -178,8 +178,14 @@ function pickBalanced(rows: ReferencePortfolio[], limit: number): ReferencePortf
   return picked
 }
 
-export async function loadReferenceSet(supabase: SupabaseClient, domain: DesignDomain): Promise<ReferenceSet> {
-  const all = dedupe(await fetchAllPortfolios(supabase))
+export async function loadReferenceSet(
+  supabase: SupabaseClient,
+  domain: DesignDomain,
+  /** 테스트용: 비교군에서 뺄 portfolios.id (합격 문서로 리브-원-아웃 검증할 때 자기 자신과 사본 제외) */
+  excludeIds: string[] = [],
+): Promise<ReferenceSet> {
+  const exclude = new Set(excludeIds)
+  const all = dedupe(await fetchAllPortfolios(supabase)).filter(p => !exclude.has(p.id))
 
   const sameDomain = domain === "general"
     ? all
@@ -211,13 +217,14 @@ export async function loadReferenceSet(supabase: SupabaseClient, domain: DesignD
   for (const p of statsPool) for (const t of p.tags) tagCounts[t] = (tagCounts[t] ?? 0) + 1
   const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([t]) => t)
 
-  const carded = sameDomain.filter(p => p.standard_card)
+  // 대조표·깊이 분포는 이 직군이 '주 직군'인 카드로만 계산 (부 직군 문서가 섞이면 공통 요소가 희석된다)
+  const carded = sameDomain.filter(p => p.standard_card && (domain === "general" ? true : p.resolvedDomain === domain))
   const section = buildReferenceSection({ domain, examples, fillerIds, sameDomainCount: sameDomain.length, total: all.length, insufficient, carded, topTags })
 
   return { domain, examples, sameDomain, all, sameDomainCount: sameDomain.length, cardedCount: carded.length, insufficient, companyStats, avgOverall, topTags, section }
 }
 
-/** 직군 기준표: 카드가 있는 합격작에서 각 요소를 몇 건이 갖췄는지 */
+/** 직군 기준표: 카드가 있는 합격작에서 각 요소를 몇 건이 갖췄는지 + 깊이 분포(점수 보정 기준) */
 function buildChecklist(carded: ReferencePortfolio[]): string {
   if (carded.length === 0) return ""
   const counts: Record<string, number> = {}
@@ -225,19 +232,45 @@ function buildChecklist(carded: ReferencePortfolio[]): string {
     const keys = new Set([...(p.standard_card?.artifacts ?? []), ...(p.standard_card?.standard_elements ?? [])])
     for (const k of keys) counts[k] = (counts[k] ?? 0) + 1
   }
-  // 과반이 갖춘 요소만, 최대 10개 — 대조표가 길어지면 사용자에게 핵심이 흐려진다
+  // 35% 이상이 갖춘 요소 중 많이 갖춘 순 최대 10개 — 길어지면 사용자에게 핵심이 흐려진다
   const rows = Object.entries(counts)
-    .filter(([, n]) => n >= Math.max(2, Math.ceil(carded.length * 0.6)))
+    .filter(([, n]) => n >= Math.max(2, Math.ceil(carded.length * 0.35)))
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, 10)
     .map(([k, n]) => `| ${label(k)} | ${n}/${carded.length} |`)
   if (rows.length === 0) return ""
-  return `### 이 직군 합격작 공통 요소 (검수된 기준 카드 ${carded.length}건 기준)
+
+  // 합격작도 편차가 크다는 사실을 수치로 준다 — 없으면 모델이 합격작 수준 문서에도 60점대를 준다
+  const quartiles = (vals: number[]) => {
+    const s = [...vals].sort((a, b) => a - b)
+    const at = (q: number) => s[Math.min(s.length - 1, Math.max(0, Math.round((s.length - 1) * q)))]
+    return { p25: at(0.25), p50: at(0.5), p75: at(0.75) }
+  }
+  const depth = (key: "numeric_tables" | "diagrams" | "references_analyzed") =>
+    quartiles(carded.map(p => p.standard_card?.depth?.[key] ?? 0))
+  const nt = depth("numeric_tables"), dg = depth("diagrams"), rf = depth("references_analyzed")
+  const strong = carded.filter(p => p.standard_card?.depth?.intent_to_decision === "strong").length
+
+  return `### 이 직군 합격작 공통 요소 (기준 카드 ${carded.length}건)
 | 요소 | 갖춘 합격작 |
 |---|---|
 ${rows.join("\n")}
 
-→ 응답의 standardsCheck에 위 요소마다 이 문서가 "있음/부분/없음"인지 판정하고 근거를 한 줄로 적으세요.`
+→ 응답의 standardsCheck에 위 요소마다 이 문서가 "있음/부분/없음"인지 판정하고 근거를 한 줄로 적으세요.
+
+### 이 직군 합격작 깊이 분포 (하위 25% / 중앙값 / 상위 25%)
+- 수치 표: ${nt.p25} / ${nt.p50} / ${nt.p75}개
+- 도식(플로우차트·구조도·평면도 등): ${dg.p25} / ${dg.p50} / ${dg.p75}개
+- 분석한 레퍼런스: ${rf.p25} / ${rf.p50} / ${rf.p75}개
+- 기획 의도가 설계 결정으로 강하게 이어지는 문서: ${strong}/${carded.length}건
+
+### 점수 보정 기준 (반드시 따를 것)
+- 합격작끼리도 편차가 크다. 위 공통 요소를 모두 갖춘 합격작은 없다. **요소 하나가 없다고 크게 깎지 말고 전체 수준을 합격작 분포와 비교하라.**
+- 공통 요소 대부분 + 깊이가 합격작 **하위 25% 이상** → 78~84점
+- 공통 요소 대부분 + 깊이가 합격작 **중앙값 근처** → 85~90점
+- 깊이·완성도 모두 합격작 **상위 25%** 이상 → 91점 이상
+- 공통 요소의 절반 이하 또는 깊이가 하위 25%에 못 미침 → 60~77점
+- 핵심 요소 대부분이 없거나 미완성 초안 → 60점 미만`
 }
 
 function describeCard(c: StandardCard): string {
@@ -300,5 +333,5 @@ ${exampleText}
 - 합격 문서는 위의 **구조 설명으로만** 가리켜라. 예: "PvP 쟁탈맵 리메이크 합격작은 모든 공간에 W×L×H를 적었다", "같은 직군 합격작은 전부 루트도가 있다".
 - 게임 제목, 프로젝트 고유명, 사람 이름, 파일명, "비교 기준 N번"은 절대 쓰지 마라.
 - 합격 문서의 장점을 근거로 사용자 문서의 **격차**를 말하되, 합격 문서의 단점은 언급하지 마라 (우리는 합격 문서의 단점을 기록하지 않는다).
-- 일반 사용자 문서의 가장 흔한 점수대는 **50~75점**이다. 70점대 후반에 수렴하지 마라.`
+- 점수는 위 **점수 보정 기준**의 구간을 먼저 정한 뒤 그 안에서 매겨라. 취준생 문서는 대개 60~77 구간이지만, 합격작 수준의 문서에 그 구간을 강요하지 마라.`
 }

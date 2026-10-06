@@ -1,0 +1,67 @@
+{
+ "id": "19042c5e-3be1-41c9-9f06-c67251a8682e",
+ "file_name": "넷마블_창작게임 게이지 UI 시스템 기획서.pdf",
+ "companies": [
+  "넷마블"
+ ],
+ "domain": "system",
+ "secondary": [
+  "uiux",
+  "combat"
+ ],
+ "docForm": "original",
+ "gameTitle": "창작 배틀로얄 게임 (게이지 시스템, 레퍼런스: 테일즈런너·리그 오브 레전드)",
+ "anon_label": "쿼터뷰 배틀로얄 창작 게임의 게이지 시스템·UI 기획서, 17p — 게이지 5종 감소·회복 공식, 스탯 투자 수치표, 오브젝트 상호작용, 게이지 테이블 정의",
+ "pages": 17,
+ "structure": [
+  "개요: 개발 게임 정보·시스템 정의·기획 의도(표)·기대효과",
+  "레퍼런스 분석 2종: 장단점 표 → 적용 및 개선 사항 5가지",
+  "게이지 UI: 화면 프레임 구분 → 캐릭터 상단 UI·화면 하단 UI 번호별 컴포넌트 명세",
+  "게이지 시스템: 게이지 5종 정의, 캐릭터 스탯, 추가 스탯 증가량 수치표",
+  "게이지별 감소·회복 공식(피해량 공식 포함)",
+  "게이지-오브젝트 상호작용(건물 범위 효과·랜덤 생성 포션)",
+  "참조 테이블: 필요 테이블 구조 → Gauge Table 컬럼 정의"
+ ],
+ "artifacts": [
+  "wireframe",
+  "numeric_table",
+  "formula",
+  "reference_comparison",
+  "data_table",
+  "screenshot_analysis"
+ ],
+ "depth": {
+  "numeric_tables": 3,
+  "diagrams": 4,
+  "references_analyzed": 2,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "레퍼런스 2종을 장점·단점 표로 나눈 뒤 '조건부 게이지 획득, 세밀한 연출, 수치 시각화, 색약 배려, 직관적 상태 UI' 5개 적용 항목으로 바로 연결해 분석이 설계 결정으로 이어진다",
+  "생명·이동·스킬·특수·경험치 게이지마다 감소 조건, 회복 조건, 0이 되었을 때의 효과를 다르게 정의하고 이를 '행동에 제약을 걸어 다양한 상황을 만든다'는 기획 의도와 연결했다",
+  "UI 명세가 번호·이름·컴포넌트 타입(Progress bar/Int/String/Button)·동작 설명 형식으로 정리되어 있고, 회복 중 명도 90%·채도 40%, 닉네임 최대 20Byte 같은 구현 가능한 수치까지 적었다",
+  "스탯 12종의 상승 수치·최대 상승 값(횟수)·소모 골드를 표로 제시하고, 물리·마법 피해량 공식과 이동 게이지 0.1초당 2 감소 등 계산 규칙을 명시했다",
+  "건물 오브젝트(반경 50m, 회복 +70%, 생명력 2000, 중첩 가능)와 30초 유지 랜덤 포션의 규칙을 정의해 게이지가 맵 공간과 연결되며, 마지막에 Gauge Table 컬럼 정의로 데이터 구조까지 내려간다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "reference_to_decision",
+  "rule_spec",
+  "component_spec",
+  "stat_table",
+  "system_links",
+  "data_schema",
+  "expected_effect"
+ ],
+ "excerpt_pages": [
+  3,
+  6,
+  8,
+  11,
+  12,
+  13,
+  17
+ ],
+ "notes": "목차상 섹션 번호(Ⅲ/Ⅳ)가 본문과 일부 어긋나지만 내용 흐름은 '개요 → 레퍼런스 → UI → 시스템 → 테이블'로 일관. UI 이미지는 레퍼런스 화면 위 목업.",
+ "status": "draft"
+}

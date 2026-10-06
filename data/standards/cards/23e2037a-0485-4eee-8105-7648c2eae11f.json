@@ -1,0 +1,61 @@
+{
+ "id": "23e2037a-0485-4eee-8105-7648c2eae11f",
+ "file_name": "크래프톤_2022_여름방학_Cypics_NPC1_시스템.pdf",
+ "companies": [
+  "크래프톤"
+ ],
+ "domain": "system",
+ "secondary": [
+  "uiux",
+  "narrative"
+ ],
+ "docForm": "original",
+ "gameTitle": "Cypics (2022 여름방학 팀 프로젝트) NPC 1(연금술사) 시스템",
+ "anon_label": "탑뷰 2D RPG 팀 프로젝트의 무기 제작 NPC 시스템 기획서, 12p — NPC 상태 변환, 제작 UI 요소별 명세, 제작 플로우차트, 아트 리소스 지시",
+ "pages": 12,
+ "structure": [
+  "문서 정보·개요(NPC 정의·기획 방향)",
+  "NPC 의도(탐험·성장의 재미)와 상태 변환(던전 → 마이룸 데려오기 전/후)·배치 위치",
+  "데려오기 상호작용과 건물 활성화 규칙",
+  "대화 연출(카메라 줌인·말풍선·타이핑 효과)",
+  "무기 제작: 상호작용 연출 → UI 요소 9개 명세 → 제작 플로우차트 → 생성 연출",
+  "그래픽 리소스 지시(NPC·버튼·집·제작 창)"
+ ],
+ "artifacts": [
+  "flowchart",
+  "wireframe",
+  "state_machine",
+  "concept_art",
+  "floor_plan",
+  "data_table"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 4,
+  "references_analyzed": 0,
+  "intent_to_decision": "partial"
+ },
+ "why_it_works": [
+  "NPC를 '구출 전(던전) → 데려온 후(마이룸)'로 상태를 나누고 상태별 외형·건물 활성화·가능 상호작용을 표로 정리해 시스템과 탐험 동기를 연결했다",
+  "무기 제작 창의 UI 요소 9개를 번호별로 동작 규칙(자원 부족 시 빨간 숫자, 제작 가능 시 초록 버튼, 최대 3레벨 시 'Maximum!' 표시)까지 명세했다",
+  "'필요 자원 보유 여부 → 레벨 3 미만 여부 → 제작' 분기를 플로우차트로 그려 예외 처리를 분명히 했다",
+  "버튼·집·제작 창마다 레퍼런스 이미지와 아트 지시를 붙이고 프로그래머 제작 영역을 구분해 팀 협업용 문서로 완결성이 있다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "state_transition",
+  "rule_spec",
+  "ui_flow",
+  "component_spec",
+  "narrative_to_system"
+ ],
+ "excerpt_pages": [
+  2,
+  5,
+  6,
+  7,
+  9
+ ],
+ "notes": "방학 팀 프로젝트 실무 스펙. 수치·밸런스 근거는 다루지 않음(무기 스탯은 별도 무기 기획서 참조).",
+ "status": "draft"
+}

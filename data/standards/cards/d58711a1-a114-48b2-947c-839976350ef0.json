@@ -1,0 +1,58 @@
+{
+ "id": "d58711a1-a114-48b2-947c-839976350ef0",
+ "file_name": "네오위즈_04.튜토리얼_적_세부_기획서.pdf",
+ "companies": [
+  "네오위즈"
+ ],
+ "domain": "combat",
+ "secondary": [
+  "level"
+ ],
+ "docForm": "original",
+ "gameTitle": "Last Sanctuary - 잿더미 위의 맹세 (팀 프로젝트 2D 메트로배니아, 튜토리얼 스테이지 적)",
+ "anon_label": "2D 메트로배니아 팀 프로젝트의 튜토리얼 일반 적 세부 기획서, 12p — 적마다 가르칠 조작 1개 지정, 공통 FSM, 공격 판정 프레임·모션 리스트",
+ "pages": 12,
+ "structure": [
+  "문서 개요: 튜토리얼 목표(핵심 전투 조작 단계적 체득)와 등장 몬스터 4종의 학습 역할",
+  "일반 몬스터 상태 구조(FSM)와 상태 설명",
+  "근접 적: 개요(ID·분류) → 공격 기획 의도 → 모션 세부 수치 → 모션 리스트",
+  "중거리 적: 동일 템플릿(퍼펙트 가드 패턴 캔슬 유도)",
+  "원거리 거점형 적: 동일 템플릿(가드·점프 회피 유도)",
+  "공중형 적: 동일 템플릿(점프 공격 유도)"
+ ],
+ "artifacts": [
+  "state_machine",
+  "numeric_table",
+  "data_table",
+  "concept_art"
+ ],
+ "depth": {
+  "numeric_tables": 4,
+  "diagrams": 2,
+  "references_analyzed": 0,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "튜토리얼 적 4종에 각각 '기본 공격·회피 타이밍', '퍼펙트 가드 패턴 캔슬', '가드·점프 회피', '점프 공격'처럼 가르칠 조작을 하나씩 배정해 몬스터 설계가 학습 설계로 기능한다",
+  "공통 FSM(대기·배회·추적·공격·피격·사망, Any State)을 먼저 정의하고 원거리 적은 배회 없는 거점형이라는 예외를 따로 적어 구조와 예외가 분명하다",
+  "공격 모션마다 총 프레임과 판정 발생 프레임(예: 13프레임 중 5·6·9·10)을 명시해 전조 동작으로 회피 타이밍을 학습시키는 의도를 수치로 뒷받침한다",
+  "모션 리스트를 '모션명·발동 조건·사용 상태·주요 행동'으로 표준화해 아트·프로그램이 바로 작업할 수 있다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "ai_states",
+  "pattern_telegraph",
+  "player_kit_interaction",
+  "stat_table",
+  "section_intent"
+ ],
+ "excerpt_pages": [
+  3,
+  4,
+  6,
+  8,
+  12
+ ],
+ "notes": "같은 팀 프로젝트(레벨 카드 2ae2cc8d와 동일 게임) 문서 묶음. HP·공격력 수치는 별도 몬스터 데이터 테이블로 분리됨. 같은 배치의 e4d23bb2(다음 스테이지 적), 988aab51(튜토리얼 보스)와 같은 템플릿.",
+ "status": "draft"
+}

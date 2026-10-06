@@ -1,0 +1,48 @@
+{
+ "id": "a72b0386-1775-44aa-b5b3-936e3ce7d915",
+ "file_name": "넥슨_쥐상낙원_테이블 복사본.pdf",
+ "companies": [
+  "넥슨"
+ ],
+ "domain": "data",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "table",
+ "gameTitle": "쥐상낙원 (팀 프로젝트, 모바일 수직 굴착 어드벤처) — 테이블 관계도·용어집 초기본",
+ "anon_label": "모바일 수직 굴착 어드벤처 팀 프로젝트의 테이블 관계도·필드 용어집, 3p — 테이블 관계도 1장, 테이블 15종 필드별 의미·단위·참조 정의",
+ "pages": 3,
+ "structure": [
+  "테이블 관계도(ERD 형태 박스·연결선)",
+  "용어: 플레이어·스토리·캐릭터·도구·엔딩·타임캡슐·도구 강화·업적 테이블의 필드 정의",
+  "용어(계속): 방해물·챕터·함정·크리처·지질·자원 테이블의 필드 정의"
+ ],
+ "artifacts": [
+  "erd",
+  "data_table"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 1,
+  "references_analyzed": 0,
+  "intent_to_decision": "weak"
+ },
+ "why_it_works": [
+  "게임의 데이터 엔티티를 15종 테이블로 나누고 관계도로 연결해, 짧은 분량에서도 전체 데이터 구조를 한 장에 보여 준다",
+  "필드마다 의미를 한 줄로 정의하면서 '인덱스는 스토리 작성 날짜 순', '유속 예: 0.5m/s', '함정 가로 크기 0.5~1.0'처럼 정렬 규칙·단위·값 범위를 함께 적었다",
+  "도구의 굴착 폭·길이·행운·힘마다 강화 상한 필드를 짝으로 두고, 크리처·타임캡슐·캐릭터가 STORY_INDEX·TOOL_INDEX·CHAPTER_INDEX로 서로를 참조하도록 설계해 테이블 간 참조 관계가 드러난다"
+ ],
+ "standard_elements": [
+  "column_definition",
+  "referential_integrity",
+  "data_schema",
+  "designer_tunable"
+ ],
+ "excerpt_pages": [
+  1,
+  2,
+  3
+ ],
+ "notes": "3페이지 분량의 얇은 문서. 같은 팀 프로젝트의 확장판(테이블 설계도 7p, 개발 스펙 56p)이 별도로 있으며 이 문서는 그 이전 단계의 초기 테이블 정의로 보임. 단독 합격 근거보다는 포트폴리오 묶음의 보조 산출물로 보는 것이 적절.",
+ "status": "draft"
+}

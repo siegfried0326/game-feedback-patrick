@@ -1,0 +1,38 @@
+{
+ "id": "4e00d2fc-79ff-4d71-805a-8ff2f636cfca",
+ "file_name": "크래프톤_2023_잔월_노션링크.pdf",
+ "companies": [
+  "크래프톤"
+ ],
+ "domain": "general",
+ "secondary": [],
+ "docForm": "pr",
+ "gameTitle": "잔월 (팀 프로젝트)",
+ "anon_label": "팀 프로젝트 협업 도구 운영 소개 페이지, 1p — 문서 관리 도구 선택 이유, 담당 업무 목록, 기획서 링크",
+ "pages": 1,
+ "structure": [
+  "팀 개발·기획서 문서 링크",
+  "도구 선택 이유(실시간 공유 문제 해결)",
+  "담당 업무(팀 문서 공간 개설·일정·기획서·회의록·주차별 작업 관리)"
+ ],
+ "artifacts": [],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 0,
+  "references_analyzed": 0,
+  "intent_to_decision": "weak"
+ },
+ "why_it_works": [
+  "기존 문서 공유 방식의 불편(업데이트 시 실시간 공유 불가)을 짚고 도구를 바꾼 이유를 한 줄로 설명해, 협업 문제를 스스로 정의하고 해결한 경험을 보여준다",
+  "팀 문서 공간 개설, 파트별 일정, 회의록, 주차별 작업 관리 등 맡은 PM성 업무를 구체적으로 나열했다"
+ ],
+ "standard_elements": [
+  "problem_definition",
+  "dev_plan"
+ ],
+ "excerpt_pages": [
+  1
+ ],
+ "notes": "1p 링크 안내 페이지로 실질적 기획 내용 없음. 같은 지원자의 플레이어 캐릭터 시스템 기획서(a28b4397)와 함께 제출된 보조 자료. 원문에 연락처 포함되어 있음(카드에는 미기재). 기준서 집계 시 제외 검토.",
+ "status": "draft"
+}

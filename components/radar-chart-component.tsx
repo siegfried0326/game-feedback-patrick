@@ -13,7 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type CategoryData = {
   subject: string
-  value: number
+  /** 직군 기준 '해당 없음' 항목은 null (기본 5개 역량은 항상 숫자) */
+  value: number | null
   fullMark: number
 }
 
@@ -31,8 +32,10 @@ function getScoreColor(value: number): string {
 }
 
 export function RadarChartComponent({ data }: RadarChartProps) {
-  const basicData = data.filter(d => BASIC_SUBJECTS.includes(d.subject))
-  const chartData = basicData.length > 0 ? basicData : data.slice(0, 5)
+  const numeric = data
+    .filter((d): d is CategoryData & { value: number } => typeof d.value === "number")
+  const basicData = numeric.filter(d => BASIC_SUBJECTS.includes(d.subject))
+  const chartData = basicData.length > 0 ? basicData : numeric.slice(0, 5)
 
   return (
     <Card className="bg-slate-900/80 border-[#1e3a5f] h-full flex flex-col">

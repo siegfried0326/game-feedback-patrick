@@ -1,0 +1,64 @@
+{
+ "id": "6c1cc490-12d3-4681-bd08-659bcc957b88",
+ "file_name": "넷마블_스플래툰_레벨디자인_역기획서.pdf",
+ "companies": [
+  "넷마블"
+ ],
+ "domain": "level",
+ "secondary": [
+  "combat"
+ ],
+ "docForm": "reverse",
+ "gameTitle": "스플래툰3 (청새치공항)",
+ "pages": 42,
+ "structure": [
+  "개요: 역기획 GOAL(균형·단차·영역 3키워드) → 핵심 시스템 레퍼런스(젯셋라디오·포탈2·오셀로·PvZ) → 맵 컨셉·칠할 수 없는 벽의 역할",
+  "플레이 케이스 분석: 웨펀 분석 시트(링크) → 플레이어 3유형(공격/돌격/영역) × 대표 웨펀 3개씩 → 유형별 동선",
+  "레벨 제작: 구성요소(잉크레일·프로펠러·네트영역) 분석 → 평면도 → 주요 이동경로·리스폰 경로 소요 시간 실측",
+  "가레벨: 오브젝트 규격 → 3D 가레벨 → 테스트 리스트(균형/단차/영역/오브젝트별 약 40문항) → 회고"
+ ],
+ "artifacts": [
+  "floor_plan",
+  "route_map",
+  "numeric_table",
+  "reference_comparison",
+  "data_table",
+  "test_list",
+  "screenshot_analysis",
+  "prototype_video"
+ ],
+ "depth": {
+  "numeric_tables": 3,
+  "diagrams": 14,
+  "references_analyzed": 13,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "분석 틀(균형·단차·영역)을 먼저 선언하고 맵의 모든 요소를 그 틀로 설명해 역기획서가 '나열'이 아니라 '해석'이 된다",
+  "플레이어 유형 × 웨펀 → 동선을 평면도 위에 투영해 '누가 어디로 움직이는가'를 보여준다",
+  "직접 측정한 이동 시간(징어스폰 3초 / 징어대시·잉크레일 6초 / 걷기 12초)에서 3의 배수 패턴을 발견하고 '위험과 보상의 균형'이라는 설계 의도를 추론한다 — 역기획의 핵심 동작",
+  "칠할 수 없는 벽을 사거리 제한·교전지 유도·재질 어포던스라는 세 가지 기능으로 읽어낸다",
+  "테스트 리스트가 '플레이어가 ~를 인지했는가' 질문 형식이라 기획 의도 검증용으로 바로 쓸 수 있다",
+  "회고에서 '완벽한 대칭이 재미를 보장하지 않는다, 의도된 비대칭'이라는 통찰로 마무리한다"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "reference_to_decision",
+  "spatial_metrics",
+  "pacing_curve",
+  "playtest_plan",
+  "expected_effect"
+ ],
+ "excerpt_pages": [
+  5,
+  10,
+  11,
+  23,
+  31,
+  32,
+  36
+ ],
+ "notes": "펄어비스 제출본(3440f719)은 동일 문서. 웨펀 수치는 외부 스프레드시트 링크로 분리.",
+ "status": "draft",
+ "anon_label": "4대4 영역 쟁탈 슈팅 맵 역기획서, 42p — 분석 틀 3키워드, 플레이어 유형×무기→동선, 이동 시간 실측, 인지 검증 테스트 40문항"
+}

@@ -80,7 +80,8 @@ export function VersionComparison({ analyses }: VersionComparisonProps) {
     }
     if (item.categories && Array.isArray(item.categories)) {
       item.categories.forEach((cat) => {
-        entry[cat.subject] = cat.value
+        // 직군 기준 '해당 없음' 항목은 value가 null → 차트에서 제외
+        if (typeof cat.value === "number") entry[cat.subject] = cat.value
       })
     }
     return entry

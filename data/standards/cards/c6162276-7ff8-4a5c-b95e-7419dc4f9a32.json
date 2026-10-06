@@ -1,0 +1,65 @@
+{
+ "id": "c6162276-7ff8-4a5c-b95e-7419dc4f9a32",
+ "file_name": "넷마블_01_Red Dead Redemption 2_창작 레벨디자인 기획서.pdf",
+ "companies": [
+  "넷마블"
+ ],
+ "domain": "level",
+ "secondary": [
+  "narrative"
+ ],
+ "docForm": "original",
+ "gameTitle": "Red Dead Redemption 2",
+ "pages": 21,
+ "structure": [
+  "퀘스트 개요(서사 설정)",
+  "RDR2 게임 플레이 분석: 선택 시스템, 비선형 탐험 × 선형 미션",
+  "기획 의도: 전면전/잠입 2루트, 루트별 퀘스트 목표 플로우",
+  "레퍼런스 장소 선정·분석·리폼 계획(그리스 Saint Barbara 수도원, 조감뷰·탑뷰)",
+  "Level Study: 리폼 전 현황 도식 → 리폼 후 도식(비교)",
+  "규격: 전체 평면도(140×130m), 엄폐물 3종(1/1.5/2m), 잠입·전면전 예상 플레이 플로우, 본관·예배당 층별 평면도",
+  "주요 플레이 지점 요약 → UE5 가레벨 영상"
+ ],
+ "artifacts": [
+  "floor_plan",
+  "route_map",
+  "reference_comparison",
+  "flowchart",
+  "numeric_table",
+  "prototype_video"
+ ],
+ "depth": {
+  "numeric_tables": 2,
+  "diagrams": 11,
+  "references_analyzed": 2,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "원작의 핵심 경험(양자택일 선택)을 레벨 기획 의도(전면전/잠입 2루트)로 번역하고, 그 번역 과정을 먼저 보여준다",
+  "실제 장소(수도원)를 조감·탑뷰로 분석한 뒤 '리폼 전/후' 도식을 나란히 두어 설계 결정이 어디서 왜 바뀌었는지 보인다(출입구 1→2, 직선 경사 → 곡선, 선형 → 비선형)",
+  "엄폐물을 높이별(1m/1.5m/2m)로 규격화하고 가능한 액션(웅크려 사격·장애물 넘기·서서 엄폐)을 붙여 전투 경험을 수치로 설계한다",
+  "루트별 예상 플레이에 튜토리얼(마구간 암살) → 학습(클라이밍 구역) → 응용 순서를 넣고, 잠입 실패 시 전면전 전환 조건(3초 노출·소음)까지 정의했다",
+  "다리 붕괴 같은 환경 변화 기믹으로 두 루트가 서로 영향을 주게 했고, 복층 전투·프레이밍으로 동선 유도를 설명한다",
+  "21페이지로 분석 → 의도 → 규격 → 검증(가레벨 영상)이 끊기지 않는 간결한 구성"
+ ],
+ "standard_elements": [
+  "intent_statement",
+  "reference_to_decision",
+  "spatial_metrics",
+  "section_intent",
+  "pacing_curve",
+  "scope_limits"
+ ],
+ "excerpt_pages": [
+  5,
+  7,
+  10,
+  13,
+  14,
+  15,
+  17
+ ],
+ "notes": "적 AI·수치 밸런스는 다루지 않음(레벨 문서 범위 밖, 의도적 분리로 읽힘).",
+ "status": "draft",
+ "anon_label": "실제 건축물을 리폼한 단일 미션 공간(2루트) 레벨 창작 기획서, 21p — 리폼 전/후 비교, 엄폐물 높이 규격, 루트별 예상 플레이"
+}

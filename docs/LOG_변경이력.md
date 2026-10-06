@@ -2,6 +2,35 @@
 
 > 최신 변경사항이 위에 표시됩니다.
 
+## 2026-10-06
+
+### 분석 엔진 개편 — 직군별 채점 + 모델 세대 교체 + 대용량 PDF 구조 개선 + 가격 조정
+**배경**: 레벨 기획서에 BM·몬스터 수치를 요구하는 등 직군과 무관한 피드백이 반복됨. 원인은 (1) 모든 문서를 시스템기획 중심 15개 카테고리로 동일 채점, (2) 비교 합격작을 전체에서 무작위 추출, (3) 학습 DB의 약점 문장 자체에 직군 불일치 노이즈(약 10%)가 있었음. 상세: `TASK_서비스개선_2026-10.md`, `AUDIT_학습DB_정제_2026-10-06.md`.
+
+**분석 품질 (3번 과제)**
+- `lib/analysis/domains.ts`: 8개 직군(레벨/전투·AI/시스템/경제·BM/UI·UX/캐릭터·서사/데이터테이블/종합) × 15개 카테고리 핵심/관련/해당 없음 채점표. 해당 없음 항목은 `value: null`로 점수 제외
+- `lib/analysis/classify.ts`: 1단계 스캔을 키워드 추출 → **직군·문서형식·키워드 스캔**(Haiku 4.5)으로 확장. 사용자가 직군을 확인·변경 후 분석
+- `lib/analysis/reference.ts`: 같은 직군 합격작만 비교군으로 선택. 표본 5건 미만이면 무작위로 채우지 않고 "표본 부족"을 결과에 표시. 정렬 결정적(셔플 제거). 직군 무관 약점 문장은 주입 전 필터
+- `lib/analysis/prompt.ts`: 두 진입점에 중복돼 있던 프롬프트를 4블록(핵심 규칙 / 벤치마크 / 직군 / 요청별)으로 통합, 앞 3블록 `cache_control` 적용
+- 모델: `claude-sonnet-4-20250514` 하드코딩 제거 → 기본 분석 Sonnet 5.5 / 정밀 분석 Opus 5.5(effort high) / 스캔 Haiku 4.5 (`lib/analysis/model.ts`, 환경변수로 덮어쓰기 가능). `temperature` 제거(신모델 400 방지)
+- 랭킹: 고정 187 대신 같은 직군 표본 수 기준 (표본 부족 시 전체)
+
+**대용량 PDF (4번 과제)**
+- `app/actions/analyze.ts` 전면 재작성: 원본 PDF를 **Files API**로 업로드 후 참조 → base64 32MB 제한 회피, 10MB 초과 텍스트 폴백 제거. 업로드 실패 시 base64(≤20MB) → 텍스트 폴백 순. 분석 후 업로드 파일 삭제
+- 텍스트 모드 상한 10만 자 → 40만 자, 클라이언트 추출 200p/8만 자 → 300p/30만 자 (`lib/pdf-extract.ts`)
+- 토큰 사용량·추정 원가를 로그 + `analysis_history.token_usage`에 기록 (`lib/analysis/usage.ts`)
+
+**가격 (5번 과제)** — `PRD_가격표_요금제.md` 선반영
+- 1/5/10크레딧 2,900/7,900/12,900 → **3,900/12,900/19,900원**. 정밀 분석 2크레딧 차감 (`deductCredit(amount)`)
+- 가격 기준값을 `lib/payments-config.ts` `CREDIT_PACKAGES`로 단일화. 개편 전 주문 환불은 당시 정가 2,900원으로 차감 (`unitPriceForOrder`)
+
+**DB**
+- `scripts/020_add_design_domain_model_tier.sql`: `portfolios.design_domain`, `analysis_history.design_domain / model_tier / token_usage` (**Supabase에서 실행 필요**, 미실행 시 코드가 자동 폴백)
+- 학습 DB 정제는 `AUDIT_학습DB_정제_2026-10-06.md`의 결정 후 021로 진행
+
+**UI**
+- 분석 설정 모달: 직군 선택(8개) + 분석 모드(기본/정밀) + 키워드. 결과 화면에 직군·모드·비교 표본 뱃지, 해당 없음 항목 표시 (`design-scores.tsx`)
+
 ## 2026-08-05
 
 ### BM 개편 — 과외 중심 모델 (구독 폐지, 크레딧 재오픈, 수강생 혜택)

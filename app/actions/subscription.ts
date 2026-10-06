@@ -225,7 +225,8 @@ export async function checkAnalysisAllowance() {
 }
 
 // 분석 완료 후 크레딧 차감 (크레딧 우선 소모 → 크레딧 0이면 구독 사용)
-export async function deductCredit() {
+// amount: 기본 분석 1, 정밀 분석 2 (lib/analysis/model.ts MODEL_TIERS[tier].creditCost)
+export async function deductCredit(amount: number = 1) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -247,13 +248,15 @@ export async function deductCredit() {
   // ① 크레딧이 있으면 무조건 크레딧부터 차감 (구독 여부 무관)
   const currentCredits = subscription.analysis_credits || 0
   if (currentCredits > 0) {
+    const cost = Math.max(1, Math.round(amount))
+    const remaining = Math.max(0, currentCredits - cost)
     const { error } = await supabase
       .from("users_subscription")
-      .update({ analysis_credits: currentCredits - 1, updated_at: new Date().toISOString() })
+      .update({ analysis_credits: remaining, updated_at: new Date().toISOString() })
       .eq("user_id", user.id)
 
     if (error) return dbError("크레딧 차감에 실패했습니다.", error)
-    return { success: true, remaining: currentCredits - 1, source: "credit" as const }
+    return { success: true, remaining, source: "credit" as const }
   }
 
   // ② 크레딧 없으면 → 유효한 구독이면 차감 안 함 (무제한)
@@ -330,28 +333,42 @@ export async function saveAnalysisHistory(result: {
   analysisSource?: string
   readabilityCategories?: Record<string, unknown>[]
   layoutRecommendations?: Record<string, unknown>[]
+  // 2026-10 추가 (scripts/020). 마이그레이션 전이면 컬럼 없이 재시도한다.
+  designDomain?: string
+  modelTier?: string
+  tokenUsage?: Record<string, unknown>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: "로그인이 필요합니다." }
 
-  const { error } = await supabase
-    .from("analysis_history")
-    .insert({
-      user_id: user.id,
-      project_id: result.projectId,
-      file_name: result.fileName,
-      overall_score: result.score,
-      categories: result.categories,
-      strengths: result.strengths,
-      weaknesses: result.weaknesses,
-      ranking: result.ranking,
-      company_feedback: result.companyFeedback || "",
-      analysis_source: result.analysisSource || "pdf",
-      readability_categories: result.readabilityCategories || null,
-      layout_recommendations: result.layoutRecommendations || null,
-    })
+  const baseRow = {
+    user_id: user.id,
+    project_id: result.projectId,
+    file_name: result.fileName,
+    overall_score: result.score,
+    categories: result.categories,
+    strengths: result.strengths,
+    weaknesses: result.weaknesses,
+    ranking: result.ranking,
+    company_feedback: result.companyFeedback || "",
+    analysis_source: result.analysisSource || "pdf",
+    readability_categories: result.readabilityCategories || null,
+    layout_recommendations: result.layoutRecommendations || null,
+  }
+  const extendedRow = {
+    ...baseRow,
+    design_domain: result.designDomain ?? null,
+    model_tier: result.modelTier ?? "basic",
+    token_usage: result.tokenUsage ?? null,
+  }
+
+  let { error } = await supabase.from("analysis_history").insert(extendedRow)
+  if (error && /design_domain|model_tier|token_usage/.test(error.message)) {
+    console.warn("[subscription] analysis_history에 020 컬럼이 없어 기본 컬럼으로만 저장합니다. scripts/020을 실행하세요.")
+    ;({ error } = await supabase.from("analysis_history").insert(baseRow))
+  }
 
   if (error) return dbError("분석 결과 저장에 실패했습니다.", error)
 

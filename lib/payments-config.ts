@@ -24,3 +24,55 @@ export const PAYMENTS_DISABLED_MESSAGE =
 /** 구독 판매 종료 안내 메시지 */
 export const SUBSCRIPTION_ENDED_MESSAGE =
   "구독 상품 판매가 종료되었습니다. 크레딧 구매 또는 1:1 과외 수강생 혜택을 이용해 주세요."
+
+// ────────────────────────────────────────────
+// 크레딧 가격표 — 단일 기준값 (docs/PRD_가격표_요금제.md가 원본)
+// 2026-10-06 개편: 모델 세대 교체(Opus 5.5 정밀 분석 도입)에 맞춰 단가 조정.
+// 서버(payment.ts)와 모든 UI가 이 상수만 참조한다. 가격을 바꿀 땐 PRD 먼저, 그다음 여기만 수정.
+// ────────────────────────────────────────────
+
+export type CreditPackageKey = "credit_1" | "credit_5" | "credit_10"
+
+export interface CreditPackage {
+  key: CreditPackageKey
+  name: string
+  credits: number
+  /** 결제 금액 (원) */
+  price: number
+  /** 크레딧당 단가 (원, 반올림) */
+  perCredit: number
+  /** 1크레딧 정가 대비 할인율 뱃지. 없으면 null */
+  badge: string | null
+}
+
+/** 1크레딧 정가 — 부분 환불 시 사용분 차감 단가로도 쓰인다 */
+export const CREDIT_UNIT_PRICE = 3900
+
+export const CREDIT_PACKAGES: readonly CreditPackage[] = [
+  { key: "credit_1", name: "1크레딧", credits: 1, price: 3900, perCredit: 3900, badge: null },
+  { key: "credit_5", name: "5크레딧", credits: 5, price: 12900, perCredit: 2580, badge: "34% 할인" },
+  { key: "credit_10", name: "10크레딧", credits: 10, price: 19900, perCredit: 1990, badge: "49% 할인" },
+] as const
+
+export function getCreditPackage(key: string): CreditPackage | undefined {
+  return CREDIT_PACKAGES.find(p => p.key === key)
+}
+
+/**
+ * 2026-10-06 개편 이전 가격으로 산 주문의 사용분 차감 단가.
+ * 옛 가격(2,900 / 7,900 / 12,900원)으로 결제한 주문을 새 정가 3,900원으로 차감하면
+ * 환불액이 부당하게 줄어들므로, 결제 당시 정가(2,900원)를 적용한다.
+ */
+const LEGACY_PACKAGE_AMOUNTS = new Set([2900, 7900, 12900])
+const LEGACY_UNIT_PRICE = 2900
+
+export function unitPriceForOrder(order: { amount: number; credits: number }): number {
+  if (LEGACY_PACKAGE_AMOUNTS.has(order.amount) && order.amount / order.credits < CREDIT_UNIT_PRICE) {
+    return LEGACY_UNIT_PRICE
+  }
+  return CREDIT_UNIT_PRICE
+}
+
+export function formatWon(amount: number): string {
+  return `${amount.toLocaleString("ko-KR")}원`
+}

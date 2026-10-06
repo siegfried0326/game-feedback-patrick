@@ -18,7 +18,7 @@
 | 프론트/백 | Next.js 16 (App Router, Server Actions), React 19, TailwindCSS 4 |
 | UI | shadcn/ui (new-york), Geist 폰트, recharts, react-force-graph-2d |
 | DB | Supabase (PostgreSQL + pgvector) |
-| AI 분석 | Anthropic Claude Sonnet (단일) |
+| AI 분석 | Anthropic Claude — 기본 분석 Sonnet 5.5 (1크레딧) / 정밀 분석 Opus 5.5 (2크레딧) / 1단계 스캔 Haiku 4.5. `lib/analysis/*` |
 | AI 학습 | Gemini 2.0 Flash (관리자 포트폴리오 분석) |
 | AI 임베딩 | OpenAI text-embedding-3-small (1536d) |
 | 결제 | TossPayments (일반 + 빌링키) |
@@ -36,7 +36,9 @@
 - 컴포넌트: `components/*.tsx` (shadcn UI는 `components/ui/`)
 - 라이브러리 헬퍼: `lib/*.ts`
 - 라이브러리 데이터: `lib/library/*` + `components/library/*` + `app/library/*` + `content/library/*.json`
-- DB 마이그레이션: `scripts/NNN_*.sql` (다음 번호 = 019)
+- 분석 파이프라인: `lib/analysis/*` (직군 채점표 domains.ts · 모델 티어 model.ts · 비교군 reference.ts · 프롬프트 prompt.ts · 스캔 classify.ts · 원가 usage.ts)
+- 합격 기준 카드: `data/standards/` (README에 규약). 사용자 피드백에 합격 문서의 파일명·게임명·작성자명을 절대 넣지 않음 — `anon_label`로만 지칭
+- DB 마이그레이션: `scripts/NNN_*.sql` (다음 번호 = 022)
 
 ### 디자인 토큰
 - Background: `#0a1628`
@@ -102,6 +104,9 @@ npm run library:embed  # → library_chunks (벡터 임베딩)
 NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY     # 라이브러리 시드/임베딩 스크립트용
 ANTHROPIC_API_KEY             # Claude 분석
+ANALYSIS_MODEL_BASIC          # (선택) 기본 분석 모델 덮어쓰기, 기본 claude-sonnet-5-5
+ANALYSIS_MODEL_PRECISION      # (선택) 정밀 분석 모델 덮어쓰기, 기본 claude-opus-5-5
+ANALYSIS_MODEL_CLASSIFIER     # (선택) 1단계 스캔 모델 덮어쓰기, 기본 claude-haiku-4-5
 GOOGLE_GENERATIVE_AI_API_KEY  # Gemini 학습 데이터 분석
 OPENAI_API_KEY                # 벡터 임베딩
 TOSS_SECRET_KEY / NEXT_PUBLIC_TOSS_CLIENT_KEY

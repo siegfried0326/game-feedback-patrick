@@ -47,26 +47,26 @@ export function PricingSection() {
                 <div>
                   <span className="text-white font-medium">1크레딧</span>
                 </div>
-                <span className="text-white font-bold">2,900원</span>
+                <span className="text-white font-bold">3,900원</span>
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
                 <div>
                   <span className="text-white font-medium">5크레딧</span>
-                  <span className="text-amber-400 text-xs ml-2">45%↓</span>
+                  <span className="text-amber-400 text-xs ml-2">34%↓</span>
                 </div>
-                <span className="text-white font-bold">7,900원</span>
+                <span className="text-white font-bold">12,900원</span>
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50">
                 <div>
                   <span className="text-white font-medium">10크레딧</span>
-                  <span className="text-amber-400 text-xs ml-2">55%↓</span>
+                  <span className="text-amber-400 text-xs ml-2">49%↓</span>
                 </div>
-                <span className="text-white font-bold">12,900원</span>
+                <span className="text-white font-bold">19,900원</span>
               </div>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1">
-              {["15개 항목 점수 평가", "상세 코멘트 제공", "크레딧 만료 없음"].map((f, i) => (
+              {["기본 분석 1크레딧 · 정밀 분석 2크레딧", "직군별 채점표로 15개 항목 평가", "상세 코멘트 제공", "크레딧 만료 없음"].map((f, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm">
                   <Check className="w-4 h-4 text-[#5B8DEF] mt-0.5 shrink-0" />
                   <span className="text-slate-400">{f}</span>

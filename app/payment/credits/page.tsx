@@ -17,6 +17,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
+import { CREDIT_PACKAGES } from "@/lib/payments-config"
 import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, Lock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -34,32 +35,15 @@ declare global {
 
 const NICEPAY_CLIENT_ID = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID ?? ""
 
-const PACKAGES = [
-  {
-    key: "credit_1",
-    name: "1크레딧",
-    credits: 1,
-    price: 2900,
-    perCredit: "2,900",
-    badge: null as string | null,
-  },
-  {
-    key: "credit_5",
-    name: "5크레딧",
-    credits: 5,
-    price: 7900,
-    perCredit: "1,580",
-    badge: "45% 할인",
-  },
-  {
-    key: "credit_10",
-    name: "10크레딧",
-    credits: 10,
-    price: 12900,
-    perCredit: "1,290",
-    badge: "55% 할인",
-  },
-]
+// 가격 기준값: lib/payments-config.ts CREDIT_PACKAGES (PRD_가격표_요금제.md가 원본)
+const PACKAGES = CREDIT_PACKAGES.map(p => ({
+  key: p.key,
+  name: p.name,
+  credits: p.credits,
+  price: p.price,
+  perCredit: p.perCredit.toLocaleString("ko-KR"),
+  badge: p.badge as string | null,
+}))
 
 export default function CreditsPage() {
   return (

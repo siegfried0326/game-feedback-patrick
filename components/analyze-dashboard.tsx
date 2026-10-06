@@ -33,7 +33,10 @@ import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
-import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, extractKeywords } from "@/app/actions/analyze"
+import { StandardsCheck } from "@/components/standards-check"
+import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
+import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
+import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -81,9 +84,11 @@ type AnalysisResult = {
   score: number
   categories: {
     subject: string
-    value: number
+    /** 직군 기준 '해당 없음' 항목은 null */
+    value: number | null
     fullMark: number
     feedback?: string
+    applicable?: boolean
   }[]
   strengths: string[]
   weaknesses: string[]
@@ -92,6 +97,15 @@ type AnalysisResult = {
   analysisSource?: "pdf" | "url"
   readabilityCategories?: ReadabilityCategory[]
   layoutRecommendations?: LayoutRecommendation[]
+  // 2026-10: 직군별 채점 + 모델 티어
+  domainFit?: string
+  designDomain?: DesignDomain
+  designDomainLabel?: string
+  modelTier?: ModelTier
+  modelTierLabel?: string
+  comparisonPool?: { sameDomainCount: number; total: number; insufficient: boolean; cardedCount?: number }
+  standardsCheck?: { element: string; status: "있음" | "부분" | "없음"; note: string }[]
+  nextSteps?: string[]
   ranking?: {
     total: number
     percentile: number
@@ -139,6 +153,12 @@ export function AnalyzeDashboard() {
   const [isExtractingKeywords, setIsExtractingKeywords] = useState(false)
   const [newKeywordInput, setNewKeywordInput] = useState("")
   const [pendingFiles, setPendingFiles] = useState<FileStatus[]>([])
+  // 1단계 스캔 결과: 직군 (AI 추정값 + 사용자 확정값) / 문서 형식 / 분석 티어
+  const [detectedDomain, setDetectedDomain] = useState<DesignDomain | null>(null)
+  const [selectedDomain, setSelectedDomain] = useState<DesignDomain>("general")
+  const [scanDocForm, setScanDocForm] = useState<DocForm>("unknown")
+  const [scanConfidence, setScanConfidence] = useState<number>(0)
+  const [selectedTier, setSelectedTier] = useState<ModelTier>(DEFAULT_TIER)
   // 1단계에서 업로드된 파일 정보 (2단계에서 재사용)
   const [uploadedFileInfo, setUploadedFileInfo] = useState<{
     fileUrl: string; filePath: string; mimeType: string; extractedText?: string
@@ -276,8 +296,16 @@ export function AnalyzeDashboard() {
     }
   }
 
+  type AnalyzeRunOptions = { tier: ModelTier; domain: DesignDomain; docForm: DocForm }
+
   // 여러 파일 분석 (2단계: 합격작 비교)
-  const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], _unused?: string, keywords?: string[]) => {
+  const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], _unused?: string, keywords?: string[], runOptions?: AnalyzeRunOptions) => {
+    const analyzeOptions = {
+      tier: runOptions?.tier ?? selectedTier,
+      domain: runOptions?.domain ?? selectedDomain,
+      docForm: runOptions?.docForm ?? scanDocForm,
+      keywords,
+    }
     if (!selectedProjectId) {
       setError("먼저 프로젝트를 선택해주세요.")
       return
@@ -368,6 +396,7 @@ export function AnalyzeDashboard() {
             projectId: selectedProjectId,
             extractedText,
             fileName: fileStatus.file.name,
+            ...analyzeOptions,
           })
           if (textResult.error) {
             if (textResult.error === "CREDIT_LIMIT_EXCEEDED") {
@@ -462,7 +491,7 @@ export function AnalyzeDashboard() {
         }
 
         // === Supabase 업로드 → 풀 분석 (압축된 파일 또는 원본) ===
-        let analysisResult: { error?: string; data?: Record<string, unknown> }
+        let analysisResult: Awaited<ReturnType<typeof analyzeDocumentDirect>>
         {
           const supabase = createClient()
           const fileExt = fileToUpload.name.split(".").pop()
@@ -532,7 +561,7 @@ export function AnalyzeDashboard() {
             mimeType: fileStatus.file.type,
             filePath,
             extractedText: extractedTextForSearch,
-            keywords,
+            ...analyzeOptions,
           })
 
           if (analysisResult.error) {
@@ -663,26 +692,35 @@ export function AnalyzeDashboard() {
       // 추출된 텍스트를 저장 (2단계에서 재사용 — 대용량 파일 폴백용)
       setUploadedFileInfo({ fileUrl: "", filePath: "", mimeType: fileStatus.file.type, extractedText })
 
-      // 텍스트가 충분하면 키워드 추출 (서버에는 앞 3000자만 전송)
-      if (extractedText.length >= 50) {
-        const result = await extractKeywords({
-          extractedText: extractedText.slice(0, 5000),
-          fileName: fileStatus.file.name,
-        })
-        if (result.keywords.length > 0) {
-          setExtractedKeywords(result.keywords)
-        } else {
-          // 키워드 추출 실패 시 파일명에서 기본 추출
-          setExtractedKeywords(extractFallbackKeywords(fileStatus.file.name))
-        }
+      // 직군·형식·키워드 스캔 (Haiku, 크레딧 차감 없음). 서버에는 앞 8000자만 전송
+      const result = await scanDocument({
+        extractedText: extractedText.slice(0, 8000),
+        fileName: fileStatus.file.name,
+      })
+      if (result.scan) {
+        setDetectedDomain(result.scan.domain)
+        setSelectedDomain(result.scan.domain)
+        setScanDocForm(result.scan.docForm)
+        setScanConfidence(result.scan.confidence)
+        setExtractedKeywords(
+          result.scan.keywords.length > 0 ? result.scan.keywords : extractFallbackKeywords(fileStatus.file.name)
+        )
       } else {
-        // 텍스트 부족 시 파일명에서 기본 추출
+        setDetectedDomain(null)
+        setSelectedDomain("general")
+        setScanDocForm("unknown")
+        setScanConfidence(0)
         setExtractedKeywords(extractFallbackKeywords(fileStatus.file.name))
       }
+      setSelectedTier(DEFAULT_TIER)
 
       setShowKeywordEditor(true)
     } catch (err) {
-      console.error("키워드 추출 오류:", err)
+      console.error("문서 스캔 오류:", err)
+      setDetectedDomain(null)
+      setSelectedDomain("general")
+      setScanDocForm("unknown")
+      setSelectedTier(DEFAULT_TIER)
       setExtractedKeywords(extractFallbackKeywords(filesToProcess[0]?.file.name || ""))
       setShowKeywordEditor(true)
     } finally {
@@ -720,24 +758,35 @@ export function AnalyzeDashboard() {
     setExtractedKeywords(prev => prev.filter(k => k !== keyword))
   }
 
-  // 2단계: 합격작 비교 시작
+  // 2단계: 합격작 비교 시작 (확정된 직군·티어·키워드로)
   const handleStartComparison = () => {
     setShowKeywordEditor(false)
     const filesToAnalyze = [...pendingFiles]
+    const runOptions: AnalyzeRunOptions = { tier: selectedTier, domain: selectedDomain, docForm: scanDocForm }
     setPendingFiles([])
     setTimeout(() => {
-      handleAnalyzeFiles(filesToAnalyze, undefined, extractedKeywords)
+      handleAnalyzeFiles(filesToAnalyze, undefined, extractedKeywords, runOptions)
     }, 100)
   }
 
-  // 키워드 편집 취소
+  // 분석 설정 취소
   const handleKeywordCancel = () => {
     setShowKeywordEditor(false)
     setExtractedKeywords([])
+    setDetectedDomain(null)
+    setSelectedDomain("general")
+    setScanDocForm("unknown")
+    setSelectedTier(DEFAULT_TIER)
     setUploadedFileInfo(null)
     setPendingFiles([])
     setFiles([])
   }
+
+  // 크레딧 사용자가 정밀 분석(2크레딧)을 고를 수 있는지
+  const remainingCredits = allowanceInfo?.remaining ?? 0
+  const isUnlimitedUser = !!allowanceInfo?.unlimited
+  const canAffordTier = (tier: ModelTier) => isUnlimitedUser || remainingCredits >= MODEL_TIERS[tier].creditCost
+  const selectedTierCost = MODEL_TIERS[selectedTier].creditCost
 
   // 크레딧 차감 취소
   const handleCreditCancel = () => {
@@ -1233,6 +1282,32 @@ export function AnalyzeDashboard() {
                   </p>
                 )}
 
+                {/* 직군·분석 모드·비교군 안내 */}
+                {(results[currentIndex].designDomainLabel || results[currentIndex].modelTierLabel) && (
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    {results[currentIndex].designDomainLabel && (
+                      <span className="px-2.5 py-1 rounded-full bg-[#5B8DEF]/15 border border-[#5B8DEF]/30 text-[#5B8DEF]">
+                        {results[currentIndex].designDomainLabel} 문서 기준 채점
+                      </span>
+                    )}
+                    {results[currentIndex].modelTierLabel && (
+                      <span className="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+                        {results[currentIndex].modelTierLabel}
+                      </span>
+                    )}
+                    {results[currentIndex].comparisonPool && (
+                      <span className={`px-2.5 py-1 rounded-full border ${results[currentIndex].comparisonPool!.insufficient ? "bg-amber-500/10 border-amber-500/30 text-amber-300" : "bg-slate-800 border-slate-700 text-slate-400"}`}>
+                        {results[currentIndex].comparisonPool!.insufficient
+                          ? `같은 직군 합격 표본 ${results[currentIndex].comparisonPool!.sameDomainCount}건 — 전체 합격작 기준으로 보완 비교`
+                          : `같은 직군 합격작 ${results[currentIndex].comparisonPool!.sameDomainCount}건과 비교`}
+                      </span>
+                    )}
+                    {results[currentIndex].domainFit && (
+                      <p className="w-full text-slate-400 mt-1">{results[currentIndex].domainFit}</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid lg:grid-cols-2 gap-8">
                   <ScoreCard score={results[currentIndex].score} ranking={results[currentIndex].ranking} />
                   <RadarChartComponent data={results[currentIndex].categories} />
@@ -1339,8 +1414,15 @@ export function AnalyzeDashboard() {
                   weaknesses={results[currentIndex].weaknesses}
                 />
 
-                {/* 게임 디자인 역량 점수 */}
-                <DesignScores data={results[currentIndex].categories} />
+                {/* 같은 직군 합격 문서 공통 요소 대조 + 다음에 할 일 */}
+                <StandardsCheck
+                  items={results[currentIndex].standardsCheck ?? []}
+                  nextSteps={results[currentIndex].nextSteps}
+                  domainLabel={results[currentIndex].designDomainLabel}
+                />
+
+                {/* 게임 디자인 역량 점수 (직군 기준 해당 없음 항목은 제외 표시) */}
+                <DesignScores data={results[currentIndex].categories} domainLabel={results[currentIndex].designDomainLabel} />
 
                 {/* 문서 가독성 (PDF만) */}
                 {results[currentIndex].analysisSource === "pdf" && results[currentIndex].readabilityCategories && results[currentIndex].readabilityCategories!.length > 0 ? (
@@ -1477,24 +1559,27 @@ export function AnalyzeDashboard() {
                   <span className="text-lg font-bold text-white">{allowanceInfo?.remaining ?? 0}크레딧</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">이번 분석</span>
-                  <span className="text-lg font-bold text-red-400">−{pendingFiles.length}크레딧</span>
+                  <span className="text-sm text-slate-400">이번 분석 (기본 분석 기준)</span>
+                  <span className="text-lg font-bold text-red-400">−{pendingFiles.length * MODEL_TIERS.basic.creditCost}크레딧</span>
                 </div>
                 <div className="border-t border-[#1e3a5f] pt-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-400">분석 후 잔여</span>
                     <span className="text-lg font-bold text-[#5B8DEF]">
-                      {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length, 0)}크레딧
+                      {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length * MODEL_TIERS.basic.creditCost, 0)}크레딧
                     </span>
                   </div>
                 </div>
+                <p className="text-[11px] text-slate-500">
+                  다음 단계에서 정밀 분석(상위 모델, {MODEL_TIERS.precision.creditCost}크레딧)으로 바꿀 수 있어요.
+                </p>
               </div>
 
               {/* 게이지 바 */}
               <div className="mt-4">
                 <div className="flex justify-between text-xs text-slate-500 mb-1.5">
                   <span>잔여 크레딧</span>
-                  <span>{Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length, 0)} / {allowanceInfo?.remaining ?? 0}</span>
+                  <span>{Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length * MODEL_TIERS.basic.creditCost, 0)} / {allowanceInfo?.remaining ?? 0}</span>
                 </div>
                 <div className="h-3 bg-slate-800 rounded-full overflow-hidden relative">
                   {/* 현재 보유량 (흐린 배경) */}
@@ -1562,8 +1647,8 @@ export function AnalyzeDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
             <Loader2 className="w-10 h-10 text-[#5B8DEF] animate-spin mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-white mb-2">1단계: 키워드 스캔</h3>
-            <p className="text-slate-400 text-sm">문서를 스캔하는 중...</p>
+            <h3 className="text-lg font-bold text-white mb-2">1단계: 문서 스캔</h3>
+            <p className="text-slate-400 text-sm">문서의 직군과 키워드를 파악하는 중...</p>
           </div>
         </div>
       )}
@@ -1571,15 +1656,15 @@ export function AnalyzeDashboard() {
       {/* 2단계 전: 키워드 편집 모달 */}
       {showKeywordEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
+          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-6 max-w-lg mx-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             {/* 헤더 */}
             <div className="text-center mb-5">
               <div className="w-12 h-12 bg-[#5B8DEF]/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Plus className="w-6 h-6 text-[#5B8DEF]" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">키워드를 직접 추가해주세요</h3>
+              <h3 className="text-lg font-bold text-white mb-1">분석 설정을 확인해주세요</h3>
               <p className="text-sm text-slate-400">
-                키워드가 많을수록 비교 정확도가 높아집니다
+                직군에 맞는 채점표와 같은 직군 합격작으로 비교합니다
               </p>
             </div>
 
@@ -1590,6 +1675,74 @@ export function AnalyzeDashboard() {
                 <span className="text-sm text-white truncate">{pendingFiles[0].file.name}</span>
               </div>
             )}
+
+            {/* 직군 확인 */}
+            <div className="mb-4">
+              <p className="text-xs text-slate-500 mb-2">
+                문서 직군
+                {detectedDomain && (
+                  <span className="ml-2 text-[#5B8DEF]">
+                    AI 판단: {DOMAIN_LABELS[detectedDomain]}{scanConfidence > 0 ? ` (${Math.round(scanConfidence * 100)}%)` : ""}
+                    {scanDocForm !== "unknown" ? ` · ${DOC_FORM_LABELS[scanDocForm]}` : ""}
+                  </span>
+                )}
+              </p>
+              <div className="grid grid-cols-4 gap-1.5">
+                {ALL_DOMAINS.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setSelectedDomain(d)}
+                    className={`px-2 py-1.5 rounded-lg text-xs border transition-colors ${
+                      selectedDomain === d
+                        ? "bg-[#5B8DEF] border-[#5B8DEF] text-white font-medium"
+                        : "bg-slate-800/60 border-slate-700 text-slate-300 hover:border-[#5B8DEF]/50"
+                    }`}
+                  >
+                    {DOMAIN_LABELS[d]}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1.5 px-1">
+                직군이 다르면 바꿔주세요. 선택한 직군에서 평가하지 않는 항목(예: 레벨 문서의 재화 흐름)은 점수에서 제외돼요.
+              </p>
+            </div>
+
+            {/* 분석 모드 */}
+            <div className="mb-4">
+              <p className="text-xs text-slate-500 mb-2">분석 모드</p>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(MODEL_TIERS) as ModelTier[]).map((tier) => {
+                  const info = MODEL_TIERS[tier]
+                  const affordable = canAffordTier(tier)
+                  const active = selectedTier === tier
+                  return (
+                    <button
+                      key={tier}
+                      type="button"
+                      disabled={!affordable}
+                      onClick={() => setSelectedTier(tier)}
+                      className={`text-left p-3 rounded-xl border transition-colors ${
+                        active
+                          ? "bg-[#5B8DEF]/15 border-[#5B8DEF] text-white"
+                          : "bg-slate-800/60 border-slate-700 text-slate-300 hover:border-[#5B8DEF]/50"
+                      } disabled:opacity-40 disabled:cursor-not-allowed`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold">{info.label}</span>
+                        <span className={`text-xs ${active ? "text-[#5B8DEF]" : "text-slate-500"}`}>
+                          {isUnlimitedUser ? "무제한" : `${info.creditCost}크레딧`}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-snug">{info.description}</p>
+                      {!affordable && (
+                        <p className="text-[11px] text-amber-400 mt-1">크레딧 {info.creditCost}개 필요</p>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
 
             {/* 키워드 칩 */}
             <div className="mb-4">
@@ -1651,8 +1804,8 @@ export function AnalyzeDashboard() {
             <div className="mb-5 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
               <p className="text-xs text-slate-400">
                 <Shield className="w-3.5 h-3.5 inline mr-1" />
-                187개 합격 포트폴리오 중 키워드가 일치하는 문서를 찾아 비교합니다.
-                매 분석마다 다른 합격작을 참조하여 다양한 피드백을 제공합니다.
+                합격 포트폴리오 중 <span className="text-slate-200">{DOMAIN_LABELS[selectedDomain]}</span> 직군 문서를 기준선으로 비교하고,
+                내용이 가장 비슷한 합격작의 실제 발췌를 함께 참고합니다.
               </p>
             </div>
 
@@ -1666,11 +1819,11 @@ export function AnalyzeDashboard() {
               </button>
               <button
                 onClick={handleStartComparison}
-                disabled={extractedKeywords.length === 0}
+                disabled={extractedKeywords.length === 0 || !canAffordTier(selectedTier)}
                 className="flex-1 py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye className="w-4 h-4" />
-                문서 분석하기
+                {MODEL_TIERS[selectedTier].label} 시작{isUnlimitedUser ? "" : ` (${selectedTierCost}크레딧)`}
               </button>
             </div>
           </div>

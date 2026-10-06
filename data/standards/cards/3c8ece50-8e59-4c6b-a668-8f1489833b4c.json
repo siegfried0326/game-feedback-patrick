@@ -1,0 +1,59 @@
+{
+ "id": "3c8ece50-8e59-4c6b-a668-8f1489833b4c",
+ "file_name": "네오위즈_06.튜토리얼_레벨_디자인_기획서.pdf",
+ "companies": [
+  "네오위즈"
+ ],
+ "domain": "level",
+ "secondary": [
+  "system"
+ ],
+ "docForm": "original",
+ "gameTitle": "Last Sanctuary - 진리의 성역(튜토리얼 스테이지)",
+ "pages": 34,
+ "structure": [
+  "문서 개요: 기획 의도(학습 키워드 8개) → 튜토리얼 지역 구성도(모듈 다이어그램 + 범례)",
+  "각 지역 구성: 전체 지도 → 13개 구역별 몬스터·오브젝트·UI 배치표 + 구성 요소 설명",
+  "동선 설계: 13개 구역별 플레이 시나리오(정규 동선/선택 동선 구분)"
+ ],
+ "artifacts": [
+  "floor_plan",
+  "route_map",
+  "placement_table",
+  "flowchart"
+ ],
+ "depth": {
+  "numeric_tables": 0,
+  "diagrams": 27,
+  "references_analyzed": 0,
+  "intent_to_decision": "strong"
+ },
+ "why_it_works": [
+  "학습 목표(이동·점프·로프·회복·전투·가드·상단 공격·퍼펙트 가드→처형·궁극기·숏컷·보스)를 '구역 1개 = 개념 1개'로 매핑해 튜토리얼의 뼈대가 한눈에 보인다",
+  "UI 노출 조건(범위 진입 시 출력, 이탈 시 미출력)과 등장 조건까지 표로 명세해 구현 가능한 수준이다",
+  "'UI로 학습 유도 → 행동으로 검증(상단 공격 없이는 못 잡는 적) → 보상(영구 스탯)'의 학습 패턴이 반복된다",
+  "플레이어 심리를 설계에 반영한다: 모든 적을 잡지 않아도 된다는 인지, 지상 몬스터는 플랫폼을 못 오른다는 인지를 배치로 가르침",
+  "정규 동선과 선택 동선을 색으로 구분해 비선형 탐색의 첫 경험(양갈래 루트)을 의도적으로 넣었다",
+  "몬스터 상세는 별도 기획서를 참조하도록 범위를 분리해 문서 역할이 명확하다"
+ ],
+ "standard_elements": [
+  "section_intent",
+  "placement_table",
+  "ui_flow",
+  "pacing_curve",
+  "landmark_guidance",
+  "system_links"
+ ],
+ "excerpt_pages": [
+  4,
+  5,
+  8,
+  16,
+  19,
+  22,
+  33
+ ],
+ "notes": "보스 구간은 페이즈 전환·그로기·컷신 흐름을 시나리오로만 기술(세부는 보스 기획서로 분리).",
+ "status": "draft",
+ "anon_label": "구간별 학습 목표를 설계한 튜토리얼 레벨 기획서, 34p — 구역 1개=개념 1개, UI 노출 조건 표, 정규/선택 동선"
+}

@@ -460,12 +460,12 @@ export function formatChunksForPrompt(chunks: SimilarChunk[]): string {
     grouped.get(key)!.texts.push(chunk.chunkText)
   }
 
-  // 프롬프트 텍스트 생성
+  // 프롬프트 텍스트 생성 — 파일명은 넣지 않는다 (게임명·작성자명이 들어 있어 모델이 출력에 인용할 수 있음)
   const sections = Array.from(grouped.entries()).map(([, group], idx) => {
     const companiesStr = group.companies.length > 0
       ? ` (${group.companies.join(", ")} 합격)`
       : ""
-    return `### 유사 사례 ${idx + 1}: ${group.fileName}${companiesStr}
+    return `### 유사 사례 ${idx + 1}${companiesStr}
 ${group.texts.join("\n\n---\n\n")}`
   })
 
@@ -478,5 +478,6 @@ ${sections.join("\n\n")}
 
 ---
 위 유사 사례의 **실제 작성 방식, 구조, 표현**을 참고하여 현재 문서를 비교 평가하세요.
+단, 발췌에 나오는 게임 제목·고유명사·사람 이름은 응답에 절대 옮기지 마세요. 합격작은 구조로만 가리키세요.
 `
 }

@@ -22,14 +22,13 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { approvePayment, cancelPayment } from "@/lib/nice-api"
-import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE, SUBSCRIPTION_SALES_ENABLED, SUBSCRIPTION_ENDED_MESSAGE } from "@/lib/payments-config"
+import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE, SUBSCRIPTION_SALES_ENABLED, SUBSCRIPTION_ENDED_MESSAGE, CREDIT_PACKAGES, unitPriceForOrder } from "@/lib/payments-config"
 
 // 서버 가격표 (클라이언트 조작 방지)
-const CREDIT_PRICES: Record<string, { credits: number; amount: number }> = {
-  credit_1: { credits: 1, amount: 2900 },
-  credit_5: { credits: 5, amount: 7900 },
-  credit_10: { credits: 10, amount: 12900 },
-}
+// 가격 기준값은 lib/payments-config.ts CREDIT_PACKAGES 하나만 참조한다 (PRD_가격표_요금제.md가 원본)
+const CREDIT_PRICES: Record<string, { credits: number; amount: number }> = Object.fromEntries(
+  CREDIT_PACKAGES.map(p => [p.key, { credits: p.credits, amount: p.price }])
+)
 
 const SUBSCRIPTION_PRICES: Record<string, number> = {
   monthly: 13800,
@@ -256,7 +255,7 @@ export async function confirmCreditPayment(
 // 크레딧 환불
 // ────────────────────────────────────────────
 
-const CREDIT_UNIT_PRICE = 2900 // 정가 1크레딧당 2,900원
+// 정가 1크레딧당 3,900원 (2026-10-06~). 개편 전 가격으로 산 주문은 unitPriceForOrder()가 2,900원을 적용한다.
 
 /** 환불 가능한 크레딧 주문 목록 조회 */
 export async function getCreditOrders() {
@@ -289,7 +288,8 @@ export async function getCreditOrders() {
 
     const refundableCredits = Math.min(remainingCredits, order.credits)
     const usedCredits = order.credits - refundableCredits
-    const refundAmount = Math.max(0, order.amount - usedCredits * CREDIT_UNIT_PRICE)
+    const unitPrice = unitPriceForOrder(order)
+    const refundAmount = Math.max(0, order.amount - usedCredits * unitPrice)
     const canRefund = isWithin7Days && refundAmount > 0 && refundableCredits > 0
 
     const packageLabel = order.package_type === "credit_1" ? "1크레딧"
@@ -303,6 +303,7 @@ export async function getCreditOrders() {
       isWithin7Days,
       refundableCredits,
       usedCredits,
+      unitPrice,
       refundAmount,
       canRefund,
       paidAtFormatted: paidAt ? paidAt.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "",
@@ -342,7 +343,7 @@ export async function refundCreditOrder(orderId: string) {
   const remainingCredits = sub?.analysis_credits || 0
   const refundableCredits = Math.min(remainingCredits, order.credits)
   const usedCredits = order.credits - refundableCredits
-  const refundAmount = Math.max(0, order.amount - usedCredits * CREDIT_UNIT_PRICE)
+  const refundAmount = Math.max(0, order.amount - usedCredits * unitPriceForOrder(order))
 
   if (refundAmount <= 0 || refundableCredits <= 0) {
     return { error: "사용한 크레딧이 많아 환불 가능 금액이 없습니다." }

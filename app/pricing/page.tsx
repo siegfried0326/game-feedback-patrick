@@ -15,7 +15,7 @@ import { TUTORING_KAKAO_URL } from "@/lib/tutoring-config"
 
 export const metadata = {
   title: "요금제 | 아카이브 187(Archive187)",
-  description: "아카이브 187(Archive187) 요금제 안내. 첫 1회 무료, 크레딧 2,900원부터. 1:1 과외 상담.",
+  description: "아카이브 187(Archive187) 요금제 안내. 첫 1회 무료, 크레딧 3,900원부터. 1:1 과외 상담.",
 }
 
 const creditPlans = [
@@ -30,31 +30,31 @@ const creditPlans = [
   },
   {
     name: "1크레딧",
-    price: "2,900",
+    price: "3,900",
     period: "1크레딧",
     description: "필요할 때 한 번만",
     perCredit: null as string | null,
-    features: ["1크레딧 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    features: ["기본 분석 1회 (정밀 분석은 2크레딧)", "직군별 채점표 15개 항목", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_1",
   },
   {
     name: "5크레딧",
-    price: "7,900",
+    price: "12,900",
     period: "5크레딧",
-    description: "크레딧당 1,580원 (45% 할인)",
-    badge: "45% 할인",
-    features: ["5크레딧 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    description: "크레딧당 2,580원 (34% 할인)",
+    badge: "34% 할인",
+    features: ["기본 분석 5회 또는 정밀 분석 2회", "직군별 채점표 15개 항목", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_5",
   },
   {
     name: "10크레딧",
-    price: "12,900",
+    price: "19,900",
     period: "10크레딧",
-    description: "크레딧당 1,290원 (55% 할인)",
-    badge: "55% 할인",
-    features: ["10크레딧 분석", "15개 항목 점수 평가", "상세 코멘트 제공"],
+    description: "크레딧당 1,990원 (49% 할인)",
+    badge: "49% 할인",
+    features: ["기본 분석 10회 또는 정밀 분석 5회", "직군별 채점표 15개 항목", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_10",
   },

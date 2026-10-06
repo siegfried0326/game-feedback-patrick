@@ -7,11 +7,14 @@
  * 사용 시점: analyze-dashboard.tsx에서 파일이 100MB 초과 시 호출.
  * 텍스트만 추출하므로 이미지/레이아웃 평가(가독성 10항목, 레이아웃 개선 제안)는 불가.
  *
- * 제한:
- * - 최대 200페이지까지 추출
- * - 80,000자 도달 시 조기 종료 (충분한 텍스트 확보)
- * - 100,000자 초과 시 잘라냄 (Claude 컨텍스트 제한)
+ * 제한 (2026-10 상향 — 1M 컨텍스트 모델 기준):
+ * - 최대 300페이지까지 추출
+ * - 300,000자 도달 시 조기 종료
+ * - 400,000자 초과 시 잘라냄 (서버 TEXT_MODE_MAX_CHARS와 동일)
  * - 타임아웃 없음 (192MB 파일 등 대용량 대응)
+ *
+ * 원본 PDF는 이제 서버가 Files API로 모델에 그대로 전달하므로, 이 텍스트는
+ * 벡터 검색·직군 스캔용이거나 원본 전송이 실패했을 때의 폴백으로 쓰인다.
  *
  * @param file - 브라우저 File 객체 (PDF)
  * @param onProgress - 페이지 처리 진행 콜백 (current, total)
@@ -30,7 +33,7 @@ export async function extractTextFromPdf(
   const arrayBuffer = await file.arrayBuffer()
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
 
-  const maxPages = Math.min(pdf.numPages, 200) // 최대 200페이지까지만 처리
+  const maxPages = Math.min(pdf.numPages, 300) // 최대 300페이지까지만 처리
   let fullText = ""
 
   for (let i = 1; i <= maxPages; i++) {
@@ -44,13 +47,13 @@ export async function extractTextFromPdf(
       .join(" ")
     fullText += `\n--- 페이지 ${i}/${pdf.numPages} ---\n${pageText}`
 
-    // 80,000자 넘으면 조기 종료 — Claude에 보낼 텍스트가 충분
-    if (fullText.length > 80000) break
+    // 300,000자 넘으면 조기 종료 — 텍스트 폴백에도 충분한 분량
+    if (fullText.length > 300000) break
   }
 
-  // Claude 컨텍스트 제한 대비 — 100,000자 하드 리밋
-  if (fullText.length > 100000) {
-    fullText = fullText.substring(0, 100000)
+  // 서버 텍스트 모드 상한과 동일 — 400,000자 하드 리밋
+  if (fullText.length > 400000) {
+    fullText = fullText.substring(0, 400000)
   }
 
   return fullText.trim()

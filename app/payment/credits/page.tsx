@@ -18,7 +18,7 @@
 import { Suspense, useEffect, useState } from "react"
 import { LARGE_DOC_NOTICE } from "@/lib/analysis/pages"
 import Link from "next/link"
-import { CREDIT_PACKAGES } from "@/lib/payments-config"
+import { CREDIT_PACKAGES, EASY_PAY } from "@/lib/payments-config"
 import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, Lock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -99,7 +99,7 @@ function CreditsContent() {
 
   const pkg = PACKAGES.find(p => p.key === selectedPackage) || PACKAGES[0]
 
-  async function handlePayment() {
+  async function handlePayment(method: "cardAndEasyPay" | "kakaopay" | "naverpayCard" = "cardAndEasyPay") {
     setLoading(true)
     setError("")
 
@@ -121,7 +121,7 @@ function CreditsContent() {
       // NICEPayments 결제창 호출 (Server 승인 모델)
       window.AUTHNICE.requestPay({
         clientId: NICEPAY_CLIENT_ID,
-        method: "cardAndEasyPay",
+        method,
         orderId: orderResult.orderId!,
         amount: orderResult.amount!,
         goodsName: `문라이트 아카이브 분석 ${pkg.name}`,
@@ -238,7 +238,7 @@ function CreditsContent() {
         )}
 
         <Button
-          onClick={handlePayment}
+          onClick={() => handlePayment()}
           disabled={loading || !sdkReady}
           className="w-full py-6 text-lg bg-primary hover:bg-primary/90 text-white"
         >
@@ -250,6 +250,32 @@ function CreditsContent() {
             <>{pkg.price.toLocaleString()}원 결제하기</>
           )}
         </Button>
+
+        {/* 간편결제 바로가기 — 나이스페이에서 승인된 것만 (lib/payments-config.ts EASY_PAY) */}
+        {(EASY_PAY.kakaopay || EASY_PAY.naverpay) && (
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {EASY_PAY.kakaopay && (
+              <button
+                type="button"
+                onClick={() => handlePayment("kakaopay")}
+                disabled={loading || !sdkReady}
+                className="py-3 rounded-xl font-bold text-[#191919] bg-[#FEE500] hover:brightness-95 disabled:opacity-50 transition"
+              >
+                카카오페이
+              </button>
+            )}
+            {EASY_PAY.naverpay && (
+              <button
+                type="button"
+                onClick={() => handlePayment("naverpayCard")}
+                disabled={loading || !sdkReady}
+                className="py-3 rounded-xl font-bold text-white bg-[#03C75A] hover:brightness-95 disabled:opacity-50 transition"
+              >
+                네이버페이
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </main>
   )

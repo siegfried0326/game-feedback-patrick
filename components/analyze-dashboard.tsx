@@ -25,7 +25,7 @@ import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload, getDroppedFiles } from "@/lib/pending-upload"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -282,6 +282,14 @@ export function AnalyzeDashboard() {
           // preselected가 없으면 가장 최근(첫 번째) 프로젝트 자동 선택
           if (!preselectedProjectId && projectsResult.data.length > 0) {
             setSelectedProjectId(projectsResult.data[0].id)
+          }
+          // 프로젝트가 하나도 없으면 기본 프로젝트를 만들어 바로 올릴 수 있게 한다 (로그인 직후 첫 화면 = 업로드 창)
+          if (projectsResult.data.length === 0 && projectAllowance.allowed) {
+            const created = await createProject("내 포트폴리오")
+            if (created.data) {
+              setProjects([{ ...created.data, analysis_count: 0, best_score: null } as Project])
+              setSelectedProjectId(created.data.id)
+            }
           }
         }
 
@@ -877,14 +885,16 @@ export function AnalyzeDashboard() {
   return (
     <div className="pt-24 pb-16 px-6 bg-background min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-black text-foreground mb-4">
-            게임 기획 문서 분석
-          </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            기획서, 포트폴리오, 이력서를 업로드하면 AI가 원본 그대로 직접 읽고 분석합니다.
-          </p>
-        </div>
+        {/* 대표 문구 — 홈과 같은 첫 화면 (결과가 없을 때) */}
+        {results.length === 0 && (
+          <div className="text-center mb-8">
+            <h1 className="sr-only">게임 기획 문서 분석</h1>
+            <p className="text-xl sm:text-2xl md:text-3xl text-foreground leading-snug font-medium">
+              <span className="font-extrabold text-primary">187개의 합격 포트폴리오</span>를 기준으로,
+              <br className="hidden sm:block" /> 당신의 기획 문서가 실제로 통하는지 진단합니다.
+            </p>
+          </div>
+        )}
 
         {/* 로딩 중 */}
         {checkingAllowance && (
@@ -893,27 +903,21 @@ export function AnalyzeDashboard() {
           </div>
         )}
 
-        {/* 구독 제한 안내 (로그인은 됐지만 횟수 초과/만료) */}
+        {/* 크레딧 소진 안내 (로그인은 됐지만 남은 크레딧 없음) */}
         {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && allowanceInfo.reason !== "login_required" && (
           <Card className="mb-8 bg-card border-border">
             <CardContent className="pt-8 pb-8 text-center">
               <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              {allowanceInfo.reason === "expired" ? (
-                <>
-                  <h2 className="text-xl font-black text-foreground mb-2">구독이 만료되었습니다</h2>
-                  <p className="text-muted-foreground mb-6">계속 이용하시려면 구독을 갱신해 주세요.</p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl font-black text-foreground mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
-                  <p className="text-muted-foreground mb-6">
-                    무료 플랜은 총 1크레딧 분석이 가능합니다.<br />
-                    무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.
-                  </p>
-                </>
-              )}
+              <h2 className="text-xl font-black text-foreground mb-2">남은 크레딧이 없어요</h2>
+              <p className="text-muted-foreground mb-6">
+                크레딧을 충전하면 바로 이어서 분석할 수 있어요.<br />
+                기본 분석 1크레딧 · 정밀 분석 2크레딧
+              </p>
               <div className="flex justify-center gap-3">
                 <Button asChild className="bg-primary hover:bg-primary/90 text-white">
+                  <Link href="/payment/credits">크레딧 충전</Link>
+                </Button>
+                <Button asChild variant="outline" className="border-border text-foreground hover:bg-secondary bg-transparent">
                   <Link href="/pricing">요금제 보기</Link>
                 </Button>
               </div>
@@ -921,338 +925,211 @@ export function AnalyzeDashboard() {
           </Card>
         )}
 
-        {/* 무료 플랜 안내 배너 */}
-        {!checkingAllowance && allowanceInfo?.allowed && allowanceInfo.plan === "free" && !allowanceInfo.unlimited && results.length === 0 && (
-          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm text-amber-600">
-                무료 플랜은 총 <span className="font-bold">1크레딧 분석</span>이 가능합니다.
-                {allowanceInfo.remaining !== undefined && (
-                  <> 현재 <span className="font-bold">{allowanceInfo.remaining}크레딧</span> 남았습니다.</>
-                )}
-              </p>
-              <p className="text-xs text-amber-600/70 mt-1">
-                무제한 분석과 프리미엄 AI를 원하시면{" "}
-                <Link href="/pricing" className="underline hover:text-amber-700">구독을 시작</Link>해 주세요.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ========== 프로젝트 선택 (로그인한 유저만) ========== */}
-        {!checkingAllowance && isLoggedIn && allowanceInfo?.allowed && results.length === 0 && (
-          <Card className="mb-6 bg-card border-border">
-            {/* 프로젝트 1개 + 선택됨: 간소화 표시 */}
-            {projects.length === 1 && selectedProjectId ? (
-              <CardContent className="py-4 px-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4 text-primary" />
-                    <span className="text-foreground text-sm font-medium">{projects[0].name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {projects[0].analysis_count}개 분석
-                      {projects[0].best_score !== null && ` · 최고 ${projects[0].best_score}점`}
-                    </span>
+        {/* 업로드 — 로그인 직후 가장 먼저 보이는 분석 창. 비로그인도 보여주고 올리면 로그인 유도 */}
+        {!checkingAllowance && (allowanceInfo?.allowed || allowanceInfo?.reason === "login_required") && results.length === 0 && (
+          <div className="mb-8 max-w-5xl mx-auto">
+            {isAnalyzing ? (
+              /* 분석 진행 중 — 업로드 창 자리에 진행 화면 */
+              <div className="w-full min-h-[360px] sm:min-h-0 sm:aspect-[16/9] lg:aspect-[2.35/1] rounded-[2rem] border-2 border-primary/40 bg-accent/30 flex flex-col items-center justify-center gap-5 px-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
+                  <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                </div>
+                {files.length > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-lg border border-border">
+                    <FileText className="w-4 h-4 text-primary" />
+                    <span className="text-sm text-foreground truncate max-w-[250px]">{files[0].file.name}</span>
+                    <span className="text-xs text-muted-foreground">{(files[0].file.size / 1024 / 1024).toFixed(1)} MB</span>
                   </div>
-                  {canCreateProject && (
-                    <button
-                      onClick={() => { setShowNewProject(true); setSelectedProjectId(null) }}
-                      className="text-xs text-primary hover:underline"
+                )}
+                <div>
+                  <p className="font-semibold text-foreground text-lg">
+                    {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">보통 30초~1분 정도 소요됩니다</p>
+                </div>
+                <Progress value={fakeProgress} className="h-2 w-full max-w-sm" />
+              </div>
+            ) : (
+              /* 평소 — 홈과 같은 큰 업로드 창 */
+              <div
+                {...getRootProps()}
+                className={`group w-full min-h-[360px] sm:min-h-0 sm:aspect-[16/9] lg:aspect-[2.35/1] rounded-[2rem] border-2 border-dashed
+                  flex flex-col items-center justify-center gap-6 px-6 text-center transition-all ${
+                  isLoggedIn && !selectedProjectId
+                    ? "border-border bg-secondary/50 cursor-not-allowed opacity-60"
+                    : isDragActive
+                    ? "border-primary bg-accent/60 shadow-[0_24px_70px_-20px_rgba(0,70,173,0.45)] cursor-pointer"
+                    : "border-primary/25 bg-card shadow-[0_12px_50px_-24px_rgba(0,70,173,0.35)] hover:border-primary/60 hover:bg-accent/25 cursor-pointer"
+                }`}
+              >
+                <input {...getInputProps()} aria-label="분석할 문서 올리기" />
+                <span className={`flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full transition-all ${
+                  isDragActive ? "bg-primary text-white scale-110" : "bg-accent text-primary group-hover:bg-primary group-hover:text-white"
+                }`}>
+                  <Plus className="w-8 h-8 md:w-10 md:h-10" strokeWidth={2.25} />
+                </span>
+                <div className="flex flex-col items-center gap-1.5">
+                  <p className="text-lg md:text-xl font-extrabold text-primary">
+                    {isLoggedIn && !selectedProjectId
+                      ? "아래에서 저장할 프로젝트를 먼저 골라주세요"
+                      : isDragActive ? "놓으면 바로 분석을 시작합니다" : "여기에 문서를 드래그해 주세요"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {!isLoggedIn ? "파일을 올리면 로그인 후 바로 분석이 시작됩니다" : "또는 클릭해서 파일 선택"}
+                  </p>
+                  <p className="text-xs text-muted-foreground/80 mt-1">PDF · DOCX · PPTX · XLSX · TXT · 권장 10MB 이하 (최대 200MB)</p>
+                </div>
+              </div>
+            )}
+
+            {/* 저장할 프로젝트 · 남은 크레딧 — 한 줄 */}
+            {isLoggedIn && allowanceInfo?.allowed && (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1 text-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FolderOpen className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-muted-foreground shrink-0">저장할 프로젝트</span>
+                  {projects.length > 0 ? (
+                    <select
+                      value={selectedProjectId ?? ""}
+                      onChange={(e) => { setSelectedProjectId(e.target.value || null); setShowNewProject(false) }}
+                      disabled={isAnalyzing}
+                      className="min-w-0 max-w-[220px] truncate bg-secondary border border-border rounded-md px-2 py-1 text-sm text-foreground focus:outline-none focus:border-primary"
                     >
+                      {!selectedProjectId && <option value="">선택해 주세요</option>}
+                      {projects.map(project => (
+                        <option key={project.id} value={project.id}>
+                          {project.name} ({project.analysis_count}개 분석)
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-foreground/80">없음</span>
+                  )}
+                  {canCreateProject && !showNewProject && !isAnalyzing && (
+                    <button type="button" onClick={() => setShowNewProject(true)} className="shrink-0 text-primary hover:underline">
                       + 새 프로젝트
                     </button>
                   )}
                 </div>
-              </CardContent>
-            ) : (
-            <>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground text-base">
-                <FolderOpen className="w-5 h-5 text-primary" />
-                프로젝트 선택
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* 기존 프로젝트 목록 */}
-                {projects.map(project => {
-                  const isSelected = selectedProjectId === project.id
-                  return (
-                    <button
-                      key={project.id}
-                      onClick={() => { setSelectedProjectId(project.id); setShowNewProject(false) }}
-                      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? "border-primary bg-primary/15 ring-2 ring-primary/30 shadow-lg shadow-primary/10"
-                          : "border-border/60 hover:border-primary/40 bg-secondary/50 opacity-70 hover:opacity-100"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FolderOpen className={`w-4 h-4 ${isSelected ? "text-primary" : "text-muted-foreground/80"}`} />
-                          <span className={`text-sm ${isSelected ? "text-foreground font-semibold" : "text-muted-foreground font-medium"}`}>
-                            {project.name}
-                          </span>
-                          {isSelected && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 bg-primary text-white rounded-full">
-                              ✓ 선택됨
-                            </span>
-                          )}
-                        </div>
-                        <span className={`text-xs ${isSelected ? "text-muted-foreground" : "text-muted-foreground/80"}`}>
-                          {project.analysis_count}개 분석
-                          {project.best_score !== null && ` · 최고 ${project.best_score}점`}
-                        </span>
-                      </div>
-                    </button>
-                  )
-                })}
-
-                {/* 새 프로젝트 만들기 */}
-                {!showNewProject ? (
-                  <button
-                    onClick={() => {
-                      if (canCreateProject) {
-                        setShowNewProject(true)
-                        setSelectedProjectId(null)
-                      }
-                    }}
-                    className={`w-full text-left p-3 rounded-lg border border-dashed transition-all ${
-                      canCreateProject
-                        ? "border-border hover:border-primary/50 cursor-pointer"
-                        : "border-border/50 cursor-not-allowed opacity-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {canCreateProject ? (
-                          <Plus className="w-4 h-4 text-primary" />
-                        ) : (
-                          <Lock className="w-4 h-4 text-muted-foreground/80" />
-                        )}
-                        <span className={canCreateProject ? "text-primary text-sm" : "text-muted-foreground/80 text-sm"}>
-                          새 프로젝트 만들기
-                        </span>
-                      </div>
-                      {!canCreateProject && (
-                        <Link href="/pricing" className="text-xs text-amber-600 hover:underline" onClick={e => e.stopPropagation()}>
-                          구독 필요
-                        </Link>
-                      )}
-                    </div>
-                  </button>
-                ) : (
-                  <div className="p-3 rounded-lg border border-primary bg-primary/5">
-                    <p className="text-xs text-muted-foreground mb-2">프로젝트 이름을 입력하세요</p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newProjectName}
-                        onChange={e => setNewProjectName(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && handleCreateProject()}
-                        placeholder="예: 넥슨 포트폴리오"
-                        className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
-                        autoFocus
-                      />
-                      <Button
-                        onClick={handleCreateProject}
-                        disabled={creatingProject || !newProjectName.trim()}
-                        className="bg-primary hover:bg-primary/90 text-white text-sm px-4"
-                      >
-                        {creatingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : "생성"}
-                      </Button>
-                      <Button
-                        onClick={() => { setShowNewProject(false); setNewProjectName("") }}
-                        variant="outline"
-                        className="border-border text-muted-foreground text-sm px-3"
-                      >
-                        취소
-                      </Button>
-                    </div>
+                {!allowanceInfo.unlimited && allowanceInfo.remaining !== undefined && (
+                  <div className="text-muted-foreground">
+                    남은 크레딧 <span className="font-bold text-foreground">{allowanceInfo.remaining}</span>
+                    <span className="mx-1.5 text-border">|</span>
+                    <Link href="/payment/credits" className="text-primary hover:underline">충전</Link>
                   </div>
                 )}
               </div>
-            </CardContent>
-            </>
             )}
-          </Card>
-        )}
 
-        {/* Upload Section - 비로그인도 보여줌, 분석 시작 시 로그인 유도 */}
-        {!checkingAllowance && (allowanceInfo?.allowed || allowanceInfo?.reason === "login_required") && results.length === 0 && (
-          <Card className="mb-8 bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Upload className="w-5 h-5 text-primary" />
-                문서 분석
-              </CardTitle>
-              {/* 데이터 보호 안내 */}
-              <div className="mt-2 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
-                <p className="text-xs text-emerald-600/80">
-                  업로드된 문서는 분석 즉시 서버에서 완전 삭제됩니다. 분석 결과는 본인만 조회 가능합니다.
-                </p>
+            {/* 새 프로젝트 이름 입력 */}
+            {showNewProject && (
+              <div className="mt-2 p-3 rounded-lg border border-primary/40 bg-accent/30 flex gap-2">
+                <input
+                  type="text"
+                  value={newProjectName}
+                  onChange={e => setNewProjectName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && !e.nativeEvent.isComposing && handleCreateProject()}
+                  placeholder="새 프로젝트 이름 (예: 넥슨 지원용 포트폴리오)"
+                  className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
+                  autoFocus
+                />
+                <Button
+                  onClick={handleCreateProject}
+                  disabled={creatingProject || !newProjectName.trim()}
+                  className="bg-primary hover:bg-primary/90 text-white text-sm px-4"
+                >
+                  {creatingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : "만들기"}
+                </Button>
+                <Button
+                  onClick={() => { setShowNewProject(false); setNewProjectName("") }}
+                  variant="outline"
+                  className="border-border text-muted-foreground text-sm px-3"
+                >
+                  취소
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              {/* 파일 업로드 */}
-              {(
-                <>
-                  {isAnalyzing ? (
-                    /* 분석 진행 중 — 드롭존을 로딩 화면으로 대체 */
-                    <div className="border-2 border-primary/40 rounded-xl p-12 text-center bg-primary/5">
-                      <div className="flex flex-col items-center gap-5">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
-                          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                        </div>
-                        {files.length > 0 && (
-                          <div className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-lg">
-                            <FileText className="w-4 h-4 text-primary" />
-                            <span className="text-sm text-foreground truncate max-w-[250px]">{files[0].file.name}</span>
-                            <span className="text-xs text-muted-foreground">{(files[0].file.size / 1024 / 1024).toFixed(1)} MB</span>
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-semibold text-foreground text-lg">
-                            {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-2">보통 30초~1분 정도 소요됩니다</p>
-                        </div>
-                        <Progress value={fakeProgress} className="h-2 w-full max-w-sm" />
+            )}
+
+            {/* 선택된 파일 목록 (에러/완료 상태) */}
+            {files.length > 0 && (
+              <div className="mt-6 space-y-2">
+                <p className="text-sm text-muted-foreground mb-3">선택된 파일</p>
+                {files.map((fileStatus, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between p-3 rounded-lg ${
+                      fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
+                      fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
+                      "bg-secondary border border-transparent"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {fileStatus.status === "success" ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      ) : fileStatus.status === "error" ? (
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="text-sm text-foreground truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
+                          {fileStatus.result && ` · ${fileStatus.result.score}점`}
+                          {fileStatus.error && ` · ${fileStatus.error}`}
+                        </p>
                       </div>
                     </div>
-                  ) : (
-                    /* 평소 — 파일 드롭존 */
-                    <>
-                      <div
-                        {...getRootProps()}
-                        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                          isLoggedIn && !selectedProjectId
-                            ? "border-border/50 cursor-not-allowed opacity-50"
-                            : isDragActive
-                            ? "border-primary bg-primary/5 cursor-pointer"
-                            : "border-border hover:border-primary/50 hover:bg-secondary cursor-pointer"
-                        }`}
-                      >
-                        <input {...getInputProps()} />
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
-                            <Upload className="w-8 h-8 text-muted-foreground" />
-                          </div>
-                          <div>
-                            {!isLoggedIn ? (
-                              <>
-                                <p className="font-medium text-foreground">무료로 문서를 분석해 보세요</p>
-                                <p className="text-sm text-muted-foreground mt-1">파일을 올리면 로그인 후 바로 분석이 시작됩니다</p>
-                              </>
-                            ) : selectedProjectId ? (
-                              <>
-                                <p className="font-medium text-foreground">문서를 업로드하고 분석하세요</p>
-                                <p className="text-sm text-muted-foreground mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="font-medium text-foreground/80">위에서 프로젝트를 먼저 선택해 주세요</p>
-                                <p className="text-sm text-muted-foreground mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
-                              </>
-                            )}
-                            <p className="text-xs text-muted-foreground mt-2">PDF, DOCX, PPTX, XLSX, TXT · 권장 10MB 이하 (최대 200MB)</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 선택된 파일 목록 (에러/완료 상태) */}
-                      {files.length > 0 && (
-                        <div className="mt-6 space-y-2">
-                          <p className="text-sm text-muted-foreground mb-3">선택된 파일</p>
-                          {files.map((fileStatus, index) => (
-                            <div
-                              key={index}
-                              className={`flex items-center justify-between p-3 rounded-lg ${
-                                fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
-                                fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
-                                "bg-secondary border border-transparent"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                {fileStatus.status === "success" ? (
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                                ) : fileStatus.status === "error" ? (
-                                  <AlertCircle className="w-4 h-4 text-red-600" />
-                                ) : (
-                                  <FileText className="w-4 h-4 text-muted-foreground" />
-                                )}
-                                <div>
-                                  <p className="text-sm text-foreground truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
-                                    {fileStatus.result && ` · ${fileStatus.result.score}점`}
-                                    {fileStatus.error && ` · ${fileStatus.error}`}
-                                  </p>
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => removeFile(index)}
-                                className="text-muted-foreground hover:text-red-600 transition-colors"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* 파일 크기 사용팁 — 항상 표시 (분석 중에도 유지) */}
-              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-xl">
-                <p className="text-sm font-semibold text-primary mb-2 flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4" />
-                  더 정확한 분석을 받고 싶나요?
-                </p>
-                <p className="text-[11px] text-muted-foreground mb-3">
-                  파일 크기에 따라 분석 방식이 달라집니다. 작을수록 이미지·레이아웃까지 꼼꼼하게 봐요.
-                </p>
-                <div className="flex flex-col gap-2 mb-3">
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
-                    <span className="text-primary text-xs font-bold whitespace-nowrap mt-0.5">10MB 이하</span>
-                    <span className="text-[11px] text-foreground/80 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-primary font-semibold">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-muted-foreground hover:text-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/5 border border-primary/10 rounded-lg">
-                    <span className="text-primary/80 text-xs font-bold whitespace-nowrap mt-0.5">10~100MB</span>
-                    <span className="text-[11px] text-foreground/80 leading-relaxed">텍스트를 추출해서 분석해요 — 이미지·레이아웃 평가는 추정으로 작성돼요</span>
-                  </div>
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-secondary border border-border rounded-lg">
-                    <span className="text-muted-foreground text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
-                    <span className="text-[11px] text-foreground/80 leading-relaxed">텍스트만 추출해서 분석해요 — 이미지·레이아웃 평가는 빠져요</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 10MB 이하로 줄일 수 있어요.
-                </p>
+                ))}
               </div>
+            )}
 
-
-              {error && (
-                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-600">{error}</p>
-                </div>
-              )}
-              {/* 개인정보 안내 */}
-              <div className="mt-4 text-center space-y-1">
-                <p className="text-muted-foreground text-xs">
-                  업로드 시 <span className="text-muted-foreground">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다.
-                </p>
-                <p className="text-muted-foreground/80 text-xs">
-                  🔒 업로드된 자료는 분석 후 즉시 서버에서 삭제됩니다.
-                </p>
+            {error && (
+              <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-600">{error}</p>
               </div>
-            </CardContent>
-          </Card>
+            )}
+
+            <p className="mt-4 text-xs text-muted-foreground/80 text-center">
+              업로드 시 <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">개인정보 처리방침</Link>에 동의한 것으로 봅니다 · 자료는 분석 후 서버에서 삭제되고 결과는 본인만 볼 수 있습니다
+            </p>
+
+            {/* 파일 크기 사용팁 — 항상 표시 (분석 중에도 유지) */}
+            <div className="mt-8 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+              <p className="text-sm font-semibold text-primary mb-2 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4" />
+                더 정확한 분석을 받고 싶나요?
+              </p>
+              <p className="text-[11px] text-muted-foreground mb-3">
+                파일 크기에 따라 분석 방식이 달라집니다. 작을수록 이미지·레이아웃까지 꼼꼼하게 봐요.
+              </p>
+              <div className="flex flex-col gap-2 mb-3">
+                <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
+                  <span className="text-primary text-xs font-bold whitespace-nowrap mt-0.5">10MB 이하</span>
+                  <span className="text-[11px] text-foreground/80 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-primary font-semibold">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
+                </div>
+                <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/5 border border-primary/10 rounded-lg">
+                  <span className="text-primary/80 text-xs font-bold whitespace-nowrap mt-0.5">10~100MB</span>
+                  <span className="text-[11px] text-foreground/80 leading-relaxed">텍스트를 추출해서 분석해요 — 이미지·레이아웃 평가는 추정으로 작성돼요</span>
+                </div>
+                <div className="flex items-start gap-2.5 px-3 py-2.5 bg-secondary border border-border rounded-lg">
+                  <span className="text-muted-foreground text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
+                  <span className="text-[11px] text-foreground/80 leading-relaxed">텍스트만 추출해서 분석해요 — 이미지·레이아웃 평가는 빠져요</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 10MB 이하로 줄일 수 있어요.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Analysis Results */}

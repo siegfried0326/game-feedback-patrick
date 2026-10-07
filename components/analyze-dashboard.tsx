@@ -26,9 +26,11 @@ import { useDropzone } from "react-dropzone"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload, getDroppedFiles } from "@/lib/pending-upload"
 import { notifyCreditsChanged } from "@/components/credit-chip"
 import { CompanyFeedback } from "@/components/company-feedback"
+import { GradeScale } from "@/components/grade-scale"
+import { VersionDelta } from "@/components/version-delta"
 import { TARGET_COMPANIES } from "@/lib/analysis/companies"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
-import { FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -168,7 +170,6 @@ export function AnalyzeDashboard() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [showCreditError, setShowCreditError] = useState(false)
-  const [showCreditConfirm, setShowCreditConfirm] = useState(false)
   const [showKeywordEditor, setShowKeywordEditor] = useState(false)
   const [extractedKeywords, setExtractedKeywords] = useState<string[]>([])
   const [isExtractingKeywords, setIsExtractingKeywords] = useState(false)
@@ -184,6 +185,8 @@ export function AnalyzeDashboard() {
   // 프로젝트에서 들어온 경우 그 프로젝트의 분석 이력 — 지난 분석 설정을 기본값으로 불러온다
   const [projectHistory, setProjectHistory] = useState<SavedSettingsRow[]>([])
   const [settingsNote, setSettingsNote] = useState("")
+  // 같은 문서의 직전 버전 (결과 화면 "이전 버전 대비")
+  const [prevVersion, setPrevVersion] = useState<{ score: number; categories: { subject: string; value: number | null }[]; version: number } | null>(null)
   // 사용자가 직접 적은 주제 (AI 키워드와 함께 비교 검색에 쓰인다)
   const [customTopics, setCustomTopics] = useState<string[]>([])
   const [scanDocForm, setScanDocForm] = useState<DocForm>("unknown")
@@ -348,14 +351,61 @@ export function AnalyzeDashboard() {
     setSettingsNote(notes.length ? `지난 분석의 ${notes.join("·")} 설정을 불러왔어요` : "")
   }
 
+  // 결과가 프로젝트에 저장돼 있으면 같은 문서의 직전 버전을 찾아 비교한다
+  const currentHistoryId = results[currentIndex]?.historyId ?? null
+  const currentProjectId = results[currentIndex]?.projectId ?? null
+  useEffect(() => {
+    setPrevVersion(null)
+    if (!currentHistoryId || !currentProjectId) return
+    let cancelled = false
+    getProjectAnalyses(currentProjectId).then(res => {
+      if (cancelled || !("data" in res) || !res.data) return
+      type Row = { id: string; file_name: string; document_name?: string | null; analyzed_at: string; overall_score: number; categories?: { subject: string; value: number | null }[] }
+      const rows = res.data as Row[]
+      const me = rows.find(r => r.id === currentHistoryId)
+      if (!me) return
+      const key = (r: Row) => r.document_name?.trim() || fileBaseName(r.file_name)
+      const same = rows.filter(r => key(r) === key(me)).sort((a, b) => a.analyzed_at.localeCompare(b.analyzed_at))
+      const idx = same.findIndex(r => r.id === me.id)
+      if (idx > 0) setPrevVersion({ score: same[idx - 1].overall_score, categories: same[idx - 1].categories ?? [], version: idx + 1 })
+    }).catch(() => {})
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentHistoryId, currentProjectId])
+
+  const resolveDocName = (fileName: string): string | null => {
+    if (preselectedDocument) return preselectedDocument
+    const mine = docKeyLoose(fileBaseName(fileName))
+    if (!mine) return null
+    const match = projectHistory.find(r => docKeyLoose(fileBaseName(r.file_name)) === mine || docKeyLoose(r.document_name || "") === mine)
+    return match ? (match.document_name?.trim() || fileBaseName(match.file_name)) : null
+  }
+
   const fileBaseName = (name?: string) => (name || "").replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
 
   // 저장 대상 프로젝트의 기존 문서명 목록 (같은 문서의 새 버전으로 넣을 수 있게)
-  const loadDocOptions = async (projectId: string) => {
+  // 파일명이 조금 달라도(버전 번호·날짜·"최종"·"수정" 등) 같은 문서로 보고 기존 문서를 미리 고른다
+  const docKeyLoose = (name: string) => name
+    .toLowerCase()
+    .replace(/\(\d+\)|\[\d+\]/g, "")
+    .replace(/(_|\s|-)?(v|ver|버전)\s*\d+(\.\d+)*/g, "")
+    .replace(/최종|수정본?|복사본|copy|final|ver/g, "")
+    .replace(/\d+\s*차/g, "")
+    .replace(/\d{4,8}/g, "")
+    .replace(/[\s_\-.()[\]]/g, "")
+    .replace(/\d+$/, "")
+
+  const loadDocOptions = async (projectId: string, fileName?: string) => {
     if (projectId === "new") { setSaveDocOptions([]); return }
     const res = await getProjectAnalyses(projectId)
     const rows = ("data" in res && res.data ? res.data : []) as { document_name?: string | null; file_name: string }[]
-    setSaveDocOptions([...new Set(rows.map(r => r.document_name || fileBaseName(r.file_name)).filter(Boolean))])
+    const options = [...new Set(rows.map(r => r.document_name || fileBaseName(r.file_name)).filter(Boolean))]
+    setSaveDocOptions(options)
+    if (fileName) {
+      const mine = docKeyLoose(fileBaseName(fileName))
+      const match = rows.find(r => docKeyLoose(fileBaseName(r.file_name)) === mine || docKeyLoose(r.document_name || "") === mine)
+      if (match && mine) setSaveDocName(match.document_name || fileBaseName(match.file_name))
+    }
   }
 
   const openSaveDialog = () => {
@@ -364,7 +414,7 @@ export function AnalyzeDashboard() {
     setSaveDocName(base.slice(0, 60))
     const target = projects.length > 0 ? projects[0].id : "new"
     setSaveTarget(target)
-    loadDocOptions(target)
+    loadDocOptions(target, results[currentIndex]?.fileName)
     setShowSaveDialog(true)
   }
 
@@ -493,7 +543,7 @@ export function AnalyzeDashboard() {
           setStatusMessage("AI 분석 중...")
           const textResult = await analyzeUrlDirect({
             projectId: selectedProjectId,
-            documentName: selectedProjectId ? preselectedDocument : null,
+            documentName: selectedProjectId ? resolveDocName(fileStatus.file.name) : null,
             extractedText,
             fileName: fileStatus.file.name,
             ...analyzeOptions,
@@ -656,7 +706,7 @@ export function AnalyzeDashboard() {
 
           analysisResult = await analyzeDocumentDirect({
             projectId: selectedProjectId,
-            documentName: selectedProjectId ? preselectedDocument : null,
+            documentName: selectedProjectId ? resolveDocName(fileStatus.file.name) : null,
             fileName: fileStatus.file.name,
             fileUrl: urlData.publicUrl,
             mimeType: fileStatus.file.type,
@@ -746,23 +796,12 @@ export function AnalyzeDashboard() {
         setError(null)
       }
 
-      // 크레딧 유저 (무제한 구독이 아닌 경우) → 차감 확인 모달 표시
-      if (allowanceInfo?.allowed && !allowanceInfo?.unlimited && allowanceInfo?.remaining !== undefined) {
-        setPendingFiles(newFiles)
-        setShowCreditConfirm(true)
-      } else {
-        // 무제한 구독자 → 바로 키워드 추출 시작
-        setPendingFiles(newFiles)
-        startKeywordExtraction(newFiles)
-      }
+      // 바로 스캔 → 분석 설정 창 하나에서 크레딧 차감까지 확인한다 (예전엔 차감 확인 창이 따로 떠서 확인을 두 번 했다)
+      setPendingFiles(newFiles)
+      startKeywordExtraction(newFiles)
     }
   }, [selectedProjectId, isLoggedIn, router, allowanceInfo])
 
-  // 크레딧 차감 확인 → 키워드 추출 시작
-  const handleCreditConfirm = () => {
-    setShowCreditConfirm(false)
-    startKeywordExtraction(pendingFiles)
-  }
 
   // 1단계: 키워드 추출 (파일 업로드 + 텍스트 추출 + Claude 키워드 추출)
   const startKeywordExtraction = async (filesToProcess: FileStatus[]) => {
@@ -907,12 +946,6 @@ export function AnalyzeDashboard() {
   const canAffordTier = (tier: ModelTier) => isUnlimitedUser || remainingCredits >= tierCost(tier)
   const selectedTierCost = tierCost(selectedTier)
 
-  // 크레딧 차감 취소
-  const handleCreditCancel = () => {
-    setShowCreditConfirm(false)
-    setPendingFiles([])
-    setFiles([])
-  }
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
@@ -975,7 +1008,7 @@ export function AnalyzeDashboard() {
         )}
 
         {/* 크레딧 소진 안내 (로그인은 됐지만 남은 크레딧 없음) */}
-        {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && allowanceInfo.reason !== "login_required" && (
+        {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && allowanceInfo.reason !== "login_required" && results.length === 0 && (
           <Card className="mb-8 bg-card border-border">
             <CardContent className="pt-8 pb-8 text-center">
               <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -1252,74 +1285,32 @@ export function AnalyzeDashboard() {
                   </div>
                 )}
 
+                {prevVersion && (
+                  <VersionDelta
+                    prevScore={prevVersion.score}
+                    prevCategories={prevVersion.categories}
+                    score={results[currentIndex].score}
+                    categories={results[currentIndex].categories}
+                    versionNumber={prevVersion.version}
+                  />
+                )}
+
                 <div className="grid lg:grid-cols-2 gap-8">
                   <ScoreCard score={results[currentIndex].score} ranking={results[currentIndex].ranking} />
                   <RadarChartComponent data={results[currentIndex].categories} />
                 </div>
 
-                {/* 합격자 포트폴리오 사이 랭킹 */}
-                {results[currentIndex].ranking && results[currentIndex].ranking!.total > 0 && (() => {
-                  const ranking = results[currentIndex].ranking!
+                {/* 합격 문서 기준 위치 + 회사별 분석 (합격 문서끼리 줄 세우지 않는다) */}
+                {(() => {
                   const userScore = results[currentIndex].score
-                  // 점수 기반 5단계 등급
-                  const getRankGrade = (s: number) => {
-                    if (s >= 90) return { label: "합격 가능", color: "text-purple-600", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
-                    if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-600", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
-                    if (s >= 70) return { label: "보완 필요", color: "text-primary", bg: "bg-primary/10 border-primary/20", emoji: "📝" }
-                    if (s >= 60) return { label: "개선 필요", color: "text-amber-600", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
-                    return { label: "재작성 권장", color: "text-red-600", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
-                  }
-                  const grade = getRankGrade(userScore)
                   return (
-                  <Card className="bg-gradient-to-br from-secondary to-secondary border-primary/30">
+                  <Card className="bg-card border-border">
                     <CardHeader>
-                      <CardTitle className="text-foreground flex items-center gap-2 text-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        합격자 포트폴리오 {ranking.total}개 중 내 위치
-                      </CardTitle>
+                      <CardTitle className="text-foreground text-lg">합격 문서 기준 위치</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {/* 랭킹 요약 - 2컬럼 */}
-                      <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="text-center p-5 bg-primary/10 border border-primary/20 rounded-xl">
-                          <p className="text-xs text-muted-foreground mb-2">내 점수</p>
-                          <p className="text-4xl font-bold text-primary">
-                            {userScore}<span className="text-lg text-muted-foreground">점</span>
-                          </p>
-                        </div>
-                        <div className={`text-center p-5 border rounded-xl ${grade.bg}`}>
-                          <p className="text-xs text-muted-foreground mb-2">{ranking.total}개 기준 평가</p>
-                          <p className={`text-3xl font-bold ${grade.color}`}>
-                            {grade.emoji} {grade.label}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* 5단계 등급 스케일 */}
                       <div className="mb-8">
-                        <p className="text-muted-foreground text-sm mb-3">합격 가능성 등급</p>
-                        <div className="flex gap-1">
-                          {[
-                            { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-700", min: 0, max: 59 },
-                            { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-700", min: 60, max: 69 },
-                            { label: "보완 필요", range: "70~79", color: "bg-primary/30", textColor: "text-blue-700", min: 70, max: 79 },
-                            { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-700", min: 80, max: 89 },
-                            { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-700", min: 90, max: 100 },
-                          ].map((g, i) => (
-                            <div
-                              key={i}
-                              className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-primary ring-offset-2 ring-offset-background font-bold' : ''}`}
-                            >
-                              <span className="hidden sm:inline">{g.label}</span>
-                              <span className="sm:hidden">{g.range}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2 text-center">
-                          내 점수 {userScore}점 · 재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 경쟁력 있음 &lt; 합격 가능
-                        </p>
+                        <GradeScale score={userScore} />
                       </div>
 
                       {/* 회사별 분석 — 지원 회사를 골랐으면 그 회사가 맨 앞 */}
@@ -1457,7 +1448,7 @@ export function AnalyzeDashboard() {
                   }`}
                 >
                   <span className="flex items-center gap-2 min-w-0">
-                    <input type="radio" name="save-target" checked={saveTarget === project.id} onChange={() => { setSaveTarget(project.id); loadDocOptions(project.id) }} className="accent-[#0046AD]" />
+                    <input type="radio" name="save-target" checked={saveTarget === project.id} onChange={() => { setSaveTarget(project.id); loadDocOptions(project.id, results[currentIndex]?.fileName) }} className="accent-[#0046AD]" />
                     <span className="text-sm text-foreground font-medium truncate">{project.name}</span>
                   </span>
                   <span className="text-xs text-muted-foreground shrink-0">{project.analysis_count}개 분석</span>
@@ -1536,125 +1527,6 @@ export function AnalyzeDashboard() {
         </div>
       )}
 
-      {/* 크레딧 차감 확인 모달 */}
-      {showCreditConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
-            {/* 헤더 */}
-            <div className="text-center mb-6">
-              <div className="w-14 h-14 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Coins className="w-7 h-7 text-primary" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-1">크레딧 차감 안내</h3>
-              <p className="text-muted-foreground text-sm">
-                {allowanceInfo?.plan === "free"
-                  ? "무료 체험 크레딧이 사용됩니다"
-                  : "분석 시 보유 크레딧에서 차감됩니다"}
-              </p>
-            </div>
-
-            {/* 파일 정보 */}
-            {pendingFiles.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-2 mb-5 bg-secondary rounded-lg border border-border">
-                <FileText className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm text-foreground truncate">{pendingFiles[0].file.name}</span>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {(pendingFiles[0].file.size / 1024 / 1024).toFixed(1)} MB
-                </span>
-              </div>
-            )}
-
-            {/* 크레딧 차감 내역 */}
-            <div className="bg-secondary rounded-xl p-5 mb-5 border border-border/50">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">현재 보유</span>
-                  <span className="text-lg font-bold text-foreground">{allowanceInfo?.remaining ?? 0}크레딧</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">이번 분석 (기본 분석 기준)</span>
-                  <span className="text-lg font-bold text-red-600">−{pendingFiles.length * MODEL_TIERS.basic.creditCost}크레딧</span>
-                </div>
-                <div className="border-t border-border pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">분석 후 잔여</span>
-                    <span className="text-lg font-bold text-primary">
-                      {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length * MODEL_TIERS.basic.creditCost, 0)}크레딧
-                    </span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  다음 단계에서 정밀 분석(상위 모델, {MODEL_TIERS.precision.creditCost}크레딧)으로 바꿀 수 있어요.
-                  <br />{LARGE_DOC_NOTICE}
-                </p>
-              </div>
-
-              {/* 게이지 바 */}
-              <div className="mt-4">
-                <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-                  <span>잔여 크레딧</span>
-                  <span>{Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length * MODEL_TIERS.basic.creditCost, 0)} / {allowanceInfo?.remaining ?? 0}</span>
-                </div>
-                <div className="h-3 bg-secondary rounded-full overflow-hidden relative">
-                  {/* 현재 보유량 (흐린 배경) */}
-                  <div
-                    className="absolute inset-y-0 left-0 bg-primary/20 rounded-full"
-                    style={{ width: "100%" }}
-                  />
-                  {/* 차감 후 잔여량 (밝은 게이지) */}
-                  <div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/90 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${((allowanceInfo?.remaining ?? 0) - pendingFiles.length) / (allowanceInfo?.remaining ?? 1) * 100}%`
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 무료 플랜 안내 */}
-            {allowanceInfo?.plan === "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 0 && (
-              <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-xs text-amber-600">
-                  <Zap className="w-3.5 h-3.5 inline mr-1" />
-                  마지막 무료 크레딧입니다. 추가 분석이 필요하시면{" "}
-                  <Link href="/pricing" className="underline hover:text-amber-700">요금제를 확인</Link>해 주세요.
-                </p>
-              </div>
-            )}
-
-            {/* 크레딧 유저 안내 (잔여 1크레딧 이하) — 결제 중단 시 숨김 */}
-            {PAYMENTS_ENABLED && allowanceInfo?.plan !== "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 1 && (allowanceInfo?.remaining ?? 0) > 0 && (
-              <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-xs text-amber-600">
-                  <Zap className="w-3.5 h-3.5 inline mr-1" />
-                  크레딧이 얼마 남지 않았습니다.{" "}
-                  <Link href="/payment/credits" className="underline hover:text-amber-700">크레딧 충전</Link>
-                  {" 또는 "}
-                  <Link href="/pricing" className="underline hover:text-amber-700">요금제</Link>를 확인해 보세요.
-                </p>
-              </div>
-            )}
-
-            {/* 버튼 */}
-            <div className="flex gap-3">
-              <button
-                onClick={handleCreditCancel}
-                className="flex-1 py-3 border border-border text-foreground/80 rounded-xl font-medium hover:bg-secondary transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleCreditConfirm}
-                className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Zap className="w-4 h-4" />
-                분석하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 1단계: 키워드 추출 로딩 */}
       {isExtractingKeywords && (
@@ -1831,14 +1703,23 @@ export function AnalyzeDashboard() {
               )}
             </div>
 
-            {/* 안내 */}
-            <div className="mb-5 p-3 bg-secondary border border-border rounded-lg">
-              <p className="text-xs text-muted-foreground">
-                <Shield className="w-3.5 h-3.5 inline mr-1" />
-                합격 포트폴리오 중 <span className="text-foreground">{DOMAIN_LABELS[selectedDomain]}</span> 직군 문서를 기준선으로 비교하고,
-                내용이 가장 비슷한 합격작의 실제 발췌를 함께 참고합니다.
-              </p>
-            </div>
+            {/* 크레딧 — 이 창 하나에서 차감까지 확인한다 */}
+            {!isUnlimitedUser && (
+              <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary px-4 py-3 text-sm">
+                <span className="text-muted-foreground">
+                  보유 <span className="font-bold text-foreground">{remainingCredits}</span> → 분석 후{" "}
+                  <span className={`font-bold ${canAffordTier(selectedTier) ? "text-primary" : "text-red-600"}`}>
+                    {Math.max(remainingCredits - selectedTierCost, 0)}
+                  </span>
+                  크레딧
+                </span>
+                {!canAffordTier(selectedTier) ? (
+                  <Link href="/payment/credits" className="shrink-0 text-xs font-semibold text-primary hover:underline">충전하기</Link>
+                ) : remainingCredits - selectedTierCost === 0 ? (
+                  <span className="shrink-0 text-xs text-muted-foreground">이번이 마지막 크레딧이에요</span>
+                ) : null}
+              </div>
+            )}
 
             {/* 버튼 */}
             <div className="flex gap-3">
@@ -1850,7 +1731,7 @@ export function AnalyzeDashboard() {
               </button>
               <button
                 onClick={handleStartComparison}
-                disabled={extractedKeywords.length === 0 || !canAffordTier(selectedTier)}
+                disabled={!canAffordTier(selectedTier)}
                 className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye className="w-4 h-4" />

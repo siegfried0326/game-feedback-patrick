@@ -13,7 +13,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
-import { ArrowLeft, FileText, Calendar, Loader2, X, Trophy, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check, Inbox } from "lucide-react"
+import { ArrowLeft, FileText, Calendar, Loader2, X, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject, getUnsavedAnalyses, assignAnalysisToProject, setAnalysisDocument, renameDocument } from "@/app/actions/subscription"
 import { ScoreCard } from "@/components/score-card"
@@ -24,6 +24,8 @@ import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { VersionComparison } from "@/components/version-comparison"
 import { CompanyFeedback } from "@/components/company-feedback"
+import { GradeScale } from "@/components/grade-scale"
+import { gradeOf } from "@/lib/analysis/grade"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -85,10 +87,7 @@ function getGrade(score: number) {
 type UnsavedItem = { id: string; file_name: string; overall_score: number; analyzed_at: string }
 
 function scoreColor(score: number) {
-  if (score >= 85) return "text-primary"
-  if (score >= 70) return "text-foreground"
-  if (score >= 60) return "text-amber-600"
-  return "text-red-600"
+  return gradeOf(score).text
 }
 
 export default function ProjectsPage() {
@@ -790,55 +789,12 @@ export default function ProjectsPage() {
                     <ScoreCard score={detail.overall_score} ranking={detail.ranking} />
                     {detail.categories?.length > 0 && <RadarChartComponent data={detail.categories} />}
                   </div>
-                  {detail.ranking && detail.ranking.total > 0 && (() => {
+                  {(() => {
                     const userScore = detail.overall_score
-                    const getRankGrade = (s: number) => {
-                      if (s >= 90) return { label: "합격 가능", color: "text-purple-600", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
-                      if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-600", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
-                      if (s >= 70) return { label: "보완 필요", color: "text-primary", bg: "bg-primary/10 border-primary/20", emoji: "📝" }
-                      if (s >= 60) return { label: "개선 필요", color: "text-amber-600", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
-                      return { label: "재작성 권장", color: "text-red-600", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
-                    }
-                    const rankGrade = getRankGrade(userScore)
                     return (
-                      <div className="bg-gradient-to-br from-secondary to-secondary rounded-xl border border-primary/30 p-6">
-                        <h4 className="text-foreground font-semibold mb-4 flex items-center gap-2">
-                          <Trophy className="w-5 h-5 text-amber-600" /> 합격자 포트폴리오 {detail.ranking.total}개 중 내 위치
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-xl">
-                            <p className="text-xs text-muted-foreground mb-2">내 점수</p>
-                            <p className="text-3xl font-bold text-primary">
-                              {userScore}<span className="text-base text-muted-foreground">점</span>
-                            </p>
-                          </div>
-                          <div className={`text-center p-4 border rounded-xl ${rankGrade.bg}`}>
-                            <p className="text-xs text-muted-foreground mb-2">{detail.ranking.total}개 기준 평가</p>
-                            <p className={`text-2xl font-bold ${rankGrade.color}`}>
-                              {rankGrade.emoji} {rankGrade.label}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mb-6">
-                          <p className="text-muted-foreground text-sm mb-3">합격 가능성 등급</p>
-                          <div className="flex gap-1">
-                            {[
-                              { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-700", min: 0, max: 59 },
-                              { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-700", min: 60, max: 69 },
-                              { label: "보완 필요", range: "70~79", color: "bg-primary/30", textColor: "text-blue-700", min: 70, max: 79 },
-                              { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-700", min: 80, max: 89 },
-                              { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-700", min: 90, max: 100 },
-                            ].map((g, i) => (
-                              <div key={i} className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-primary ring-offset-2 ring-offset-background font-bold' : ''}`}>
-                                <span className="hidden sm:inline">{g.label}</span>
-                                <span className="sm:hidden">{g.range}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2 text-center">
-                            내 점수 {userScore}점 · 재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 경쟁력 있음 &lt; 합격 가능
-                          </p>
-                        </div>
+                      <div className="rounded-xl border border-border p-6">
+                        <h4 className="text-foreground font-semibold mb-4">합격 문서 기준 위치</h4>
+                        <div className="mb-6"><GradeScale score={userScore} /></div>
                         {detail.company_feedback && (
                           <CompanyFeedback feedback={detail.company_feedback} targetCompany={(detail.ranking as { targetCompany?: string } | undefined)?.targetCompany} />
                         )}

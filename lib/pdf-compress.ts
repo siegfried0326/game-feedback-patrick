@@ -28,7 +28,8 @@ export async function compressPdf(
   const pdfjsLib = await import("pdfjs-dist")
   const { jsPDF } = await import("jspdf")
 
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+  // 같은 출처에서 워커 로드 — CSP가 외부 CDN 스크립트를 막는다 (scripts/copy-pdf-worker.mjs가 빌드 전 복사)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs"
 
   const arrayBuffer = await file.arrayBuffer()
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise

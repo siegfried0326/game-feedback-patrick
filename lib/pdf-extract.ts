@@ -26,8 +26,8 @@ export async function extractTextFromPdf(
 ): Promise<string> {
   // pdfjs-dist 동적 임포트 — 번들 크기 최적화를 위해 사용 시점에 로드
   const pdfjsLib = await import("pdfjs-dist")
-  // CDN에서 Web Worker 로드 (메인 스레드 블로킹 방지)
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+  // 같은 출처에서 워커 로드 — CSP가 외부 CDN 스크립트를 막는다 (scripts/copy-pdf-worker.mjs가 빌드 전 복사)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs"
 
   // 파일 전체를 메모리에 로드 — 100MB+ 파일의 경우 이 단계가 가장 느림
   const arrayBuffer = await file.arrayBuffer()

@@ -283,3 +283,26 @@ export function isDocForm(value: unknown): value is DocForm {
 export function notApplicableSubjects(domain: DesignDomain): CategorySubject[] {
   return CATEGORY_SUBJECTS.filter(s => DOMAIN_RUBRIC[domain][s] === "na")
 }
+
+
+/** 직군별로 함께 다뤄지기 쉬운 이웃 직군 — AI가 보조 직군을 2개 못 고를 때 채우는 순서 */
+const NEIGHBOR_DOMAINS: Record<DesignDomain, DesignDomain[]> = {
+  level: ["combat", "narrative", "general"],
+  combat: ["system", "level", "data"],
+  system: ["economy", "data", "combat"],
+  economy: ["system", "data", "general"],
+  uiux: ["system", "general", "narrative"],
+  narrative: ["level", "general", "uiux"],
+  data: ["system", "economy", "combat"],
+  general: ["system", "level", "combat"],
+}
+
+/** 주 직군 + 보조 직군을 정확히 3개로 맞춘다 (분석 설정 화면의 AI 기본 선택) */
+export function pickThreeDomains(primary: DesignDomain, secondary: DesignDomain[] = []): DesignDomain[] {
+  const out: DesignDomain[] = [primary]
+  for (const d of [...secondary, ...NEIGHBOR_DOMAINS[primary]]) {
+    if (out.length >= 3) break
+    if (!out.includes(d)) out.push(d)
+  }
+  return out
+}

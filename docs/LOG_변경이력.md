@@ -4,6 +4,12 @@
 
 ## 2026-10-07
 
+### 운영 버그: 브라우저 PDF 텍스트 추출 전면 실패 수정 + 분석 설정 창 통합
+- **원인**: pdf.js 워커를 cdnjs에서 받는데 사이트 CSP(`script-src 'self'`)가 막아 운영에서 브라우저 텍스트 추출이 항상 실패 → 1단계 AI 스캔이 휴리스틱 폴백(확신도 30%), 유사 합격작 발췌 검색도 빈 텍스트로 동작. 언제부터인지는 미확인(CSP 도입 시점 추정)
+- **수정**: 워커를 `public/pdf.worker.min.mjs`로 자체 호스팅 (`scripts/copy-pdf-worker.mjs`, `prebuild`/`predev`가 설치된 pdfjs-dist에서 복사). `lib/pdf-extract.ts`·`lib/pdf-compress.ts` workerSrc 교체. 미들웨어 matcher에서 `.mjs`/`.otf` 제외
+- 내장 브라우저(Electron)에서 드롭 실패: react-dropzone 기본 수집기의 `FileSystemFileHandle.getFile()`이 막힘 → 표준 `dataTransfer.files` 수집기(`getDroppedFiles`)
+- **분석 설정 창**: 직군 선택 + 키워드 칩을 "문서 분야" 하나로 통합. AI가 3개를 미리 고르고(첫 번째 = 주 직군 채점표, 나머지 = 보조 직군으로 프롬프트에 전달), 사용자가 눌러 바꾸거나 주제를 직접 입력. AI 키워드는 화면에서 숨기고 사용자 입력과 함께 비교 검색에 사용. 스캔 프롬프트는 보조 직군을 정확히 2개 반환, 부족하면 `pickThreeDomains`가 이웃 직군으로 채움
+
 ### 크레딧 묶음 1/10/30 + 40쪽 단위 추가 차감
 - 묶음 1/5/10 → **1/10/30크레딧 = 3,900 / 19,900 / 44,900원** (5크레딧 판매 종료). 무제한 구독은 월 20회 안팎부터 적자라 재도입 안 함 — 근거 `PRD_가격표_요금제.md` 2.4
 - **40쪽마다 +1크레딧** (41~80쪽 +1, 81~120쪽 +2 …, 300쪽 상한 +7). 서버가 PDF 원본 쪽수를 `pdf-parse`로 직접 세고(`analyze.ts countPdfPages`), 부족하면 분석 전에 막는다. 기준·문구 `lib/analysis/pages.ts`

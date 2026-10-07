@@ -76,8 +76,8 @@ ${FORM_GUIDE}
 합격 포트폴리오 DB 태그와 매칭할 키워드 5~10개 (문서 유형, 다루는 게임 요소, 게임 타이틀).
 
 ## 출력 형식 (JSON만, 다른 텍스트 없이)
-{"domain":"level","secondary":["combat"],"docForm":"reverse","keywords":["레벨디자인","역기획","던전","동선"],"gameTitle":"로스트아크","confidence":0.9}
-- secondary: 부차적으로 다루는 직군 0~2개
+{"domain":"level","secondary":["combat","narrative"],"docForm":"reverse","keywords":["레벨디자인","역기획","던전","동선"],"gameTitle":"로스트아크","confidence":0.9}
+- secondary: 주 직군 다음으로 관련 깊은 직군 정확히 2개, 관련도 순 (화면에서 사용자에게 3개를 미리 골라 보여준다)
 - confidence: 분류 확신도 0~1`,
       messages: [{
         role: "user",

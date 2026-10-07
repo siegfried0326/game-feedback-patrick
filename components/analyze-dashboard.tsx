@@ -38,7 +38,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
-import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
+import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
 import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -157,7 +157,11 @@ export function AnalyzeDashboard() {
   const [pendingFiles, setPendingFiles] = useState<FileStatus[]>([])
   // 1단계 스캔 결과: 직군 (AI 추정값 + 사용자 확정값) / 문서 형식 / 분석 티어
   const [detectedDomain, setDetectedDomain] = useState<DesignDomain | null>(null)
-  const [selectedDomain, setSelectedDomain] = useState<DesignDomain>("general")
+  // 문서 분야: AI가 3개를 미리 고르고(첫 번째 = 주 직군, 나머지 = 보조 직군) 사용자가 바꾼다
+  const [pickedDomains, setPickedDomains] = useState<DesignDomain[]>(["general"])
+  const selectedDomain: DesignDomain = pickedDomains[0] ?? "general"
+  // 사용자가 직접 적은 주제 (AI 키워드와 함께 비교 검색에 쓰인다)
+  const [customTopics, setCustomTopics] = useState<string[]>([])
   const [scanDocForm, setScanDocForm] = useState<DocForm>("unknown")
   const [scanConfidence, setScanConfidence] = useState<number>(0)
   const [selectedTier, setSelectedTier] = useState<ModelTier>(DEFAULT_TIER)
@@ -247,6 +251,7 @@ export function AnalyzeDashboard() {
     setError(null)
     setUploadedFileInfo(null)
     setExtractedKeywords([])
+    setCustomTopics([])
     setDetectedDomain(null)
     window.scrollTo({ top: 0, behavior: "smooth" })
     checkBeforeAnalysis().then(setAllowanceInfo).catch(() => {})
@@ -312,13 +317,14 @@ export function AnalyzeDashboard() {
     }
   }
 
-  type AnalyzeRunOptions = { tier: ModelTier; domain: DesignDomain; docForm: DocForm }
+  type AnalyzeRunOptions = { tier: ModelTier; domain: DesignDomain; secondaryDomains?: DesignDomain[]; docForm: DocForm }
 
   // 여러 파일 분석 (2단계: 합격작 비교)
   const handleAnalyzeFiles = async (filesToAnalyze: FileStatus[], _unused?: string, keywords?: string[], runOptions?: AnalyzeRunOptions) => {
     const analyzeOptions = {
       tier: runOptions?.tier ?? selectedTier,
       domain: runOptions?.domain ?? selectedDomain,
+      secondaryDomains: runOptions?.secondaryDomains ?? pickedDomains.slice(1),
       docForm: runOptions?.docForm ?? scanDocForm,
       keywords,
     }
@@ -715,7 +721,7 @@ export function AnalyzeDashboard() {
       })
       if (result.scan) {
         setDetectedDomain(result.scan.domain)
-        setSelectedDomain(result.scan.domain)
+        setPickedDomains(pickThreeDomains(result.scan.domain, result.scan.secondary))
         setScanDocForm(result.scan.docForm)
         setScanConfidence(result.scan.confidence)
         setExtractedKeywords(
@@ -723,20 +729,22 @@ export function AnalyzeDashboard() {
         )
       } else {
         setDetectedDomain(null)
-        setSelectedDomain("general")
+        setPickedDomains(pickThreeDomains("general"))
         setScanDocForm("unknown")
         setScanConfidence(0)
         setExtractedKeywords(extractFallbackKeywords(fileStatus.file.name))
       }
       setSelectedTier(DEFAULT_TIER)
+      setCustomTopics([])
 
       setShowKeywordEditor(true)
     } catch (err) {
       console.error("문서 스캔 오류:", err)
       setDetectedDomain(null)
-      setSelectedDomain("general")
+      setPickedDomains(pickThreeDomains("general"))
       setScanDocForm("unknown")
       setSelectedTier(DEFAULT_TIER)
+      setCustomTopics([])
       setExtractedKeywords(extractFallbackKeywords(filesToProcess[0]?.file.name || ""))
       setShowKeywordEditor(true)
     } finally {
@@ -760,28 +768,37 @@ export function AnalyzeDashboard() {
     return keywords.length > 0 ? keywords : ["게임기획"]
   }
 
-  // 키워드 추가
+  // 사용자 주제 추가 / 삭제
   const handleAddKeyword = () => {
     const trimmed = newKeywordInput.trim()
-    if (trimmed && !extractedKeywords.includes(trimmed)) {
-      setExtractedKeywords(prev => [...prev, trimmed])
-      setNewKeywordInput("")
+    if (trimmed && !customTopics.includes(trimmed)) {
+      setCustomTopics(prev => [...prev, trimmed].slice(0, 10))
     }
+    setNewKeywordInput("")
   }
 
-  // 키워드 삭제
   const handleRemoveKeyword = (keyword: string) => {
-    setExtractedKeywords(prev => prev.filter(k => k !== keyword))
+    setCustomTopics(prev => prev.filter(k => k !== keyword))
+  }
+
+  // 분야 칩: 선택된 칩을 누르면 빠지고(최소 1개 유지), 새 칩은 3개까지 추가 · 이미 3개면 마지막 것과 교체
+  const toggleDomain = (d: DesignDomain) => {
+    setPickedDomains(prev => {
+      if (prev.includes(d)) return prev.length > 1 ? prev.filter(x => x !== d) : prev
+      return prev.length < 3 ? [...prev, d] : [...prev.slice(0, 2), d]
+    })
   }
 
   // 2단계: 합격작 비교 시작 (확정된 직군·티어·키워드로)
   const handleStartComparison = () => {
     setShowKeywordEditor(false)
     const filesToAnalyze = [...pendingFiles]
-    const runOptions: AnalyzeRunOptions = { tier: selectedTier, domain: selectedDomain, docForm: scanDocForm }
+    const runOptions: AnalyzeRunOptions = { tier: selectedTier, domain: selectedDomain, secondaryDomains: pickedDomains.slice(1), docForm: scanDocForm }
+    // 사용자가 적은 주제를 앞에 두고 AI 키워드를 뒤에 (중복 제거)
+    const keywords = [...new Set([...customTopics, ...extractedKeywords])]
     setPendingFiles([])
     setTimeout(() => {
-      handleAnalyzeFiles(filesToAnalyze, undefined, extractedKeywords, runOptions)
+      handleAnalyzeFiles(filesToAnalyze, undefined, keywords, runOptions)
     }, 100)
   }
 
@@ -789,8 +806,9 @@ export function AnalyzeDashboard() {
   const handleKeywordCancel = () => {
     setShowKeywordEditor(false)
     setExtractedKeywords([])
+    setCustomTopics([])
     setDetectedDomain(null)
-    setSelectedDomain("general")
+    setPickedDomains(pickThreeDomains("general"))
     setScanDocForm("unknown")
     setSelectedTier(DEFAULT_TIER)
     setUploadedFileInfo(null)
@@ -1671,35 +1689,75 @@ export function AnalyzeDashboard() {
               </div>
             )}
 
-            {/* 직군 확인 */}
-            <div className="mb-4">
+            {/* 문서 분야 — AI가 3개를 미리 고르고, 사용자가 바꾸거나 주제를 직접 적는다 */}
+            <div className="mb-5">
               <p className="text-xs text-muted-foreground mb-2">
-                문서 직군
-                {detectedDomain && (
-                  <span className="ml-2 text-primary">
-                    AI 판단: {DOMAIN_LABELS[detectedDomain]}{scanConfidence > 0 ? ` (${Math.round(scanConfidence * 100)}%)` : ""}
-                    {scanDocForm !== "unknown" ? ` · ${DOC_FORM_LABELS[scanDocForm]}` : ""}
-                  </span>
-                )}
+                문서 분야
+                <span className="ml-2 text-primary">
+                  {detectedDomain ? "AI가 3개를 골랐어요" : "분야를 골라주세요"}
+                  {scanDocForm !== "unknown" && DOC_FORM_LABELS[scanDocForm] ? ` · ${DOC_FORM_LABELS[scanDocForm]}` : ""}
+                </span>
               </p>
               <div className="grid grid-cols-4 gap-1.5">
-                {ALL_DOMAINS.map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setSelectedDomain(d)}
-                    className={`px-2 py-1.5 rounded-lg text-xs border transition-colors ${
-                      selectedDomain === d
-                        ? "bg-primary border-primary text-white font-medium"
-                        : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
-                    }`}
-                  >
-                    {DOMAIN_LABELS[d]}
-                  </button>
-                ))}
+                {ALL_DOMAINS.map((d) => {
+                  const order = pickedDomains.indexOf(d)
+                  const picked = order >= 0
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => toggleDomain(d)}
+                      className={`px-2 py-1.5 rounded-lg text-xs border transition-colors ${
+                        order === 0
+                          ? "bg-primary border-primary text-white font-semibold"
+                          : picked
+                            ? "bg-primary/10 border-primary text-primary font-medium"
+                            : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                      }`}
+                    >
+                      {order === 0 && (
+                        <span className="mr-1 rounded bg-white/25 px-1 py-px text-[10px] font-bold">주</span>
+                      )}
+                      {DOMAIN_LABELS[d]}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* 직접 적은 주제 */}
+              {customTopics.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {customTopics.map((kw) => (
+                    <span key={kw} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 bg-accent border border-primary/25 text-accent-foreground rounded-full text-xs">
+                      {kw}
+                      <button type="button" onClick={() => handleRemoveKeyword(kw)} className="hover:text-red-600 transition-colors" aria-label={`${kw} 삭제`}>
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="text"
+                  value={newKeywordInput}
+                  onChange={(e) => setNewKeywordInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); handleAddKeyword() } }}
+                  placeholder="다루는 주제를 직접 적어도 돼요 (예: 보스 패턴, 가챠 확률) — Enter"
+                  className="flex-1 px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddKeyword}
+                  disabled={!newKeywordInput.trim()}
+                  className="px-3 py-2 bg-primary/15 text-primary rounded-lg text-sm hover:bg-primary/25 disabled:opacity-30 transition-colors"
+                  aria-label="주제 추가"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
               </div>
               <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
-                직군이 다르면 바꿔주세요. 선택한 직군에서 평가하지 않는 항목(예: 레벨 문서의 재화 흐름)은 점수에서 제외돼요.
+                <span className="font-semibold text-foreground/80">주</span> 표시 분야의 채점표로 평가하고, 나머지는 보조로 참고해요. 눌러서 빼거나 바꿀 수 있어요.
               </p>
             </div>
 
@@ -1739,66 +1797,10 @@ export function AnalyzeDashboard() {
               </div>
               {pageExtra > 0 && !isUnlimitedUser && (
                 <p className="text-[11px] text-primary mt-2">
-                  이 문서는 {docPages}쪽이라 {PAGES_PER_CREDIT}쪽마다 1크레딧씩, {pageExtra}크레딧이 더해졌어요.
+                  이 문서는 {docPages}쪽이라 {PAGES_PER_CREDIT}쪽마다 {pageExtra > 1 ? `1크레딧, 총 ${pageExtra}크레딧이` : "1크레딧이"} 더해졌어요.
                 </p>
               )}
             </div>
-
-            {/* 키워드 칩 */}
-            <div className="mb-4">
-              <p className="text-xs text-muted-foreground mb-2">AI가 추출한 키워드 (원하면 삭제/추가 가능)</p>
-              <div className="flex flex-wrap gap-2">
-                {extractedKeywords.map((kw) => (
-                  <span
-                    key={kw}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/15 border border-primary/30 text-primary rounded-full text-sm"
-                  >
-                    {kw}
-                    <button
-                      onClick={() => handleRemoveKeyword(kw)}
-                      className="hover:text-red-600 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-                {extractedKeywords.length === 0 && (
-                  <span className="text-xs text-muted-foreground">키워드를 추가해주세요</span>
-                )}
-              </div>
-            </div>
-
-            {/* 키워드 추가 입력 */}
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newKeywordInput}
-                onChange={(e) => setNewKeywordInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddKeyword() } }}
-                placeholder="키워드 입력 후 Enter 또는 + 버튼"
-                className="flex-1 px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder-slate-500 focus:outline-none focus:border-primary"
-              />
-              <button
-                onClick={handleAddKeyword}
-                disabled={!newKeywordInput.trim()}
-                className="px-3 py-2 bg-primary/20 text-primary rounded-lg text-sm hover:bg-primary/30 disabled:opacity-30 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-[11px] text-muted-foreground mb-5 px-1">
-              💡 입력 후 <kbd className="px-1.5 py-0.5 bg-secondary border border-border rounded text-[10px] text-foreground/80">Enter</kbd> 키를 누르면 추가됩니다
-            </p>
-
-            {/* 키워드 부족 경고 (항목 8) */}
-            {extractedKeywords.length < 3 && (
-              <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 leading-relaxed">
-                  <strong>키워드가 {extractedKeywords.length}개뿐이에요.</strong> 키워드가 적으면 비교 대상 합격작이 적어져 분석 정확도가 떨어집니다. 3개 이상 추가해주세요.
-                </p>
-              </div>
-            )}
 
             {/* 안내 */}
             <div className="mb-5 p-3 bg-secondary border border-border rounded-lg">

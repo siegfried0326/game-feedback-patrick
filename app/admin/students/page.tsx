@@ -18,15 +18,15 @@ export default async function StudentsAdminPage() {
   if (!user || !isAdminEmail(user.email)) redirect("/")
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-slate-200 p-6 md:p-10">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <header className="space-y-1">
-          <div className="text-xs text-amber-400">관리자</div>
-          <h1 className="text-3xl font-bold text-white">수강생 크레딧 지급</h1>
-          <p className="text-sm text-slate-400">
+          <div className="text-xs text-amber-600">관리자</div>
+          <h1 className="text-3xl font-black text-foreground">수강생 크레딧 지급</h1>
+          <p className="text-sm text-muted-foreground">
             과외 수강생에게 매월 분석 크레딧을 지급합니다. 지급 시 자동으로 수강생으로 표시됩니다.
           </p>
-          <div className="text-xs text-slate-500 mt-2 p-3 rounded-lg border border-[#1e3a5f] bg-[#0d1f3c]">
+          <div className="text-xs text-muted-foreground mt-2 p-3 rounded-lg border border-border bg-card">
             💡 매월 초에 수강생 목록(검색어 없이 조회)을 확인하고 일괄 지급하세요.
             수강 종료 시 &quot;수강생 해제&quot;를 눌러주세요. 이력은 하단에 기록됩니다.
           </div>

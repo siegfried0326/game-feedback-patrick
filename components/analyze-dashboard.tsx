@@ -23,6 +23,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
+import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload } from "@/lib/pending-upload"
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -235,6 +236,20 @@ export function AnalyzeDashboard() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAnalyzing])
+
+  // 계속 분석하기 — 결과를 닫고 첫 업로드 화면으로 돌아간다 (남은 크레딧도 다시 읽음)
+  const startOver = () => {
+    setResults([])
+    setFiles([])
+    setPendingFiles([])
+    setCurrentIndex(0)
+    setError(null)
+    setUploadedFileInfo(null)
+    setExtractedKeywords([])
+    setDetectedDomain(null)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+    checkBeforeAnalysis().then(setAllowanceInfo).catch(() => {})
+  }
 
   // 페이지 로드 시 구독 상태 + 프로젝트 목록 체크
   useEffect(() => {
@@ -821,28 +836,28 @@ export function AnalyzeDashboard() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     onDropRejected,
-    accept: {
-      "application/pdf": [".pdf"],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
-      "application/vnd.ms-powerpoint": [".ppt"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
-      "application/vnd.ms-excel": [".xls"],
-      "text/plain": [".txt"],
-    },
+    accept: UPLOAD_ACCEPT,
     maxFiles: MAX_FILES,
-    maxSize: 200 * 1024 * 1024,
+    maxSize: UPLOAD_MAX_SIZE,
     disabled: isLoggedIn && !selectedProjectId,
   })
 
+  // 홈 업로드 창에서 넘어온 파일 — 로그인·프로젝트 확인이 끝나면 바로 분석 흐름으로 넣는다
+  useEffect(() => {
+    if (checkingAllowance || isAnalyzing || !hasPendingUpload()) return
+    if (isLoggedIn && !selectedProjectId) return
+    const handed = takePendingUpload()
+    if (handed) onDrop(handed)
+  }, [checkingAllowance, isAnalyzing, isLoggedIn, selectedProjectId, onDrop])
+
   return (
-    <div className="pt-24 pb-16 px-6 bg-[#0a1628] min-h-screen">
+    <div className="pt-24 pb-16 px-6 bg-background min-h-screen">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl md:text-4xl font-black text-foreground mb-4">
             게임 기획 문서 분석
           </h1>
-          <p className="text-slate-400 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             기획서, 포트폴리오, 이력서를 업로드하면 AI가 원본 그대로 직접 읽고 분석합니다.
           </p>
         </div>
@@ -850,31 +865,31 @@ export function AnalyzeDashboard() {
         {/* 로딩 중 */}
         {checkingAllowance && (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
         )}
 
         {/* 구독 제한 안내 (로그인은 됐지만 횟수 초과/만료) */}
         {!checkingAllowance && allowanceInfo && !allowanceInfo.allowed && allowanceInfo.reason !== "login_required" && (
-          <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
+          <Card className="mb-8 bg-card border-border">
             <CardContent className="pt-8 pb-8 text-center">
-              <Lock className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+              <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               {allowanceInfo.reason === "expired" ? (
                 <>
-                  <h2 className="text-xl font-bold text-white mb-2">구독이 만료되었습니다</h2>
-                  <p className="text-slate-400 mb-6">계속 이용하시려면 구독을 갱신해 주세요.</p>
+                  <h2 className="text-xl font-black text-foreground mb-2">구독이 만료되었습니다</h2>
+                  <p className="text-muted-foreground mb-6">계속 이용하시려면 구독을 갱신해 주세요.</p>
                 </>
               ) : (
                 <>
-                  <h2 className="text-xl font-bold text-white mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
-                  <p className="text-slate-400 mb-6">
+                  <h2 className="text-xl font-black text-foreground mb-2">무료 분석 횟수를 모두 사용했습니다</h2>
+                  <p className="text-muted-foreground mb-6">
                     무료 플랜은 총 1크레딧 분석이 가능합니다.<br />
                     무제한 분석과 프리미엄 AI를 원하시면 구독을 시작해 주세요.
                   </p>
                 </>
               )}
               <div className="flex justify-center gap-3">
-                <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                <Button asChild className="bg-primary hover:bg-primary/90 text-white">
                   <Link href="/pricing">요금제 보기</Link>
                 </Button>
               </div>
@@ -885,17 +900,17 @@ export function AnalyzeDashboard() {
         {/* 무료 플랜 안내 배너 */}
         {!checkingAllowance && allowanceInfo?.allowed && allowanceInfo.plan === "free" && !allowanceInfo.unlimited && results.length === 0 && (
           <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-amber-400">
+              <p className="text-sm text-amber-600">
                 무료 플랜은 총 <span className="font-bold">1크레딧 분석</span>이 가능합니다.
                 {allowanceInfo.remaining !== undefined && (
                   <> 현재 <span className="font-bold">{allowanceInfo.remaining}크레딧</span> 남았습니다.</>
                 )}
               </p>
-              <p className="text-xs text-amber-400/70 mt-1">
+              <p className="text-xs text-amber-600/70 mt-1">
                 무제한 분석과 프리미엄 AI를 원하시면{" "}
-                <Link href="/pricing" className="underline hover:text-amber-300">구독을 시작</Link>해 주세요.
+                <Link href="/pricing" className="underline hover:text-amber-700">구독을 시작</Link>해 주세요.
               </p>
             </div>
           </div>
@@ -903,15 +918,15 @@ export function AnalyzeDashboard() {
 
         {/* ========== 프로젝트 선택 (로그인한 유저만) ========== */}
         {!checkingAllowance && isLoggedIn && allowanceInfo?.allowed && results.length === 0 && (
-          <Card className="mb-6 bg-slate-900/80 border-[#1e3a5f]">
+          <Card className="mb-6 bg-card border-border">
             {/* 프로젝트 1개 + 선택됨: 간소화 표시 */}
             {projects.length === 1 && selectedProjectId ? (
               <CardContent className="py-4 px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4 text-[#5B8DEF]" />
-                    <span className="text-white text-sm font-medium">{projects[0].name}</span>
-                    <span className="text-xs text-slate-500">
+                    <FolderOpen className="w-4 h-4 text-primary" />
+                    <span className="text-foreground text-sm font-medium">{projects[0].name}</span>
+                    <span className="text-xs text-muted-foreground">
                       {projects[0].analysis_count}개 분석
                       {projects[0].best_score !== null && ` · 최고 ${projects[0].best_score}점`}
                     </span>
@@ -919,7 +934,7 @@ export function AnalyzeDashboard() {
                   {canCreateProject && (
                     <button
                       onClick={() => { setShowNewProject(true); setSelectedProjectId(null) }}
-                      className="text-xs text-[#5B8DEF] hover:underline"
+                      className="text-xs text-primary hover:underline"
                     >
                       + 새 프로젝트
                     </button>
@@ -929,8 +944,8 @@ export function AnalyzeDashboard() {
             ) : (
             <>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white text-base">
-                <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
+              <CardTitle className="flex items-center gap-2 text-foreground text-base">
+                <FolderOpen className="w-5 h-5 text-primary" />
                 프로젝트 선택
               </CardTitle>
             </CardHeader>
@@ -945,23 +960,23 @@ export function AnalyzeDashboard() {
                       onClick={() => { setSelectedProjectId(project.id); setShowNewProject(false) }}
                       className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                         isSelected
-                          ? "border-[#5B8DEF] bg-[#5B8DEF]/15 ring-2 ring-[#5B8DEF]/30 shadow-lg shadow-[#5B8DEF]/10"
-                          : "border-[#1e3a5f]/60 hover:border-[#5B8DEF]/40 bg-[#0d1b2a]/50 opacity-70 hover:opacity-100"
+                          ? "border-primary bg-primary/15 ring-2 ring-primary/30 shadow-lg shadow-primary/10"
+                          : "border-border/60 hover:border-primary/40 bg-secondary/50 opacity-70 hover:opacity-100"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <FolderOpen className={`w-4 h-4 ${isSelected ? "text-[#5B8DEF]" : "text-slate-600"}`} />
-                          <span className={`text-sm ${isSelected ? "text-white font-semibold" : "text-slate-400 font-medium"}`}>
+                          <FolderOpen className={`w-4 h-4 ${isSelected ? "text-primary" : "text-muted-foreground/80"}`} />
+                          <span className={`text-sm ${isSelected ? "text-foreground font-semibold" : "text-muted-foreground font-medium"}`}>
                             {project.name}
                           </span>
                           {isSelected && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 bg-[#5B8DEF] text-white rounded-full">
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 bg-primary text-white rounded-full">
                               ✓ 선택됨
                             </span>
                           )}
                         </div>
-                        <span className={`text-xs ${isSelected ? "text-slate-400" : "text-slate-600"}`}>
+                        <span className={`text-xs ${isSelected ? "text-muted-foreground" : "text-muted-foreground/80"}`}>
                           {project.analysis_count}개 분석
                           {project.best_score !== null && ` · 최고 ${project.best_score}점`}
                         </span>
@@ -981,31 +996,31 @@ export function AnalyzeDashboard() {
                     }}
                     className={`w-full text-left p-3 rounded-lg border border-dashed transition-all ${
                       canCreateProject
-                        ? "border-[#1e3a5f] hover:border-[#5B8DEF]/50 cursor-pointer"
-                        : "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
+                        ? "border-border hover:border-primary/50 cursor-pointer"
+                        : "border-border/50 cursor-not-allowed opacity-50"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {canCreateProject ? (
-                          <Plus className="w-4 h-4 text-[#5B8DEF]" />
+                          <Plus className="w-4 h-4 text-primary" />
                         ) : (
-                          <Lock className="w-4 h-4 text-slate-600" />
+                          <Lock className="w-4 h-4 text-muted-foreground/80" />
                         )}
-                        <span className={canCreateProject ? "text-[#5B8DEF] text-sm" : "text-slate-600 text-sm"}>
+                        <span className={canCreateProject ? "text-primary text-sm" : "text-muted-foreground/80 text-sm"}>
                           새 프로젝트 만들기
                         </span>
                       </div>
                       {!canCreateProject && (
-                        <Link href="/pricing" className="text-xs text-amber-400 hover:underline" onClick={e => e.stopPropagation()}>
+                        <Link href="/pricing" className="text-xs text-amber-600 hover:underline" onClick={e => e.stopPropagation()}>
                           구독 필요
                         </Link>
                       )}
                     </div>
                   </button>
                 ) : (
-                  <div className="p-3 rounded-lg border border-[#5B8DEF] bg-[#5B8DEF]/5">
-                    <p className="text-xs text-slate-400 mb-2">프로젝트 이름을 입력하세요</p>
+                  <div className="p-3 rounded-lg border border-primary bg-primary/5">
+                    <p className="text-xs text-muted-foreground mb-2">프로젝트 이름을 입력하세요</p>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -1013,20 +1028,20 @@ export function AnalyzeDashboard() {
                         onChange={e => setNewProjectName(e.target.value)}
                         onKeyDown={e => e.key === "Enter" && handleCreateProject()}
                         placeholder="예: 넥슨 포트폴리오"
-                        className="flex-1 bg-[#0d1b2a] border border-[#1e3a5f] rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#5B8DEF]"
+                        className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
                         autoFocus
                       />
                       <Button
                         onClick={handleCreateProject}
                         disabled={creatingProject || !newProjectName.trim()}
-                        className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-sm px-4"
+                        className="bg-primary hover:bg-primary/90 text-white text-sm px-4"
                       >
                         {creatingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : "생성"}
                       </Button>
                       <Button
                         onClick={() => { setShowNewProject(false); setNewProjectName("") }}
                         variant="outline"
-                        className="border-[#1e3a5f] text-slate-400 text-sm px-3"
+                        className="border-border text-muted-foreground text-sm px-3"
                       >
                         취소
                       </Button>
@@ -1042,16 +1057,16 @@ export function AnalyzeDashboard() {
 
         {/* Upload Section - 비로그인도 보여줌, 분석 시작 시 로그인 유도 */}
         {!checkingAllowance && (allowanceInfo?.allowed || allowanceInfo?.reason === "login_required") && results.length === 0 && (
-          <Card className="mb-8 bg-slate-900/80 border-[#1e3a5f]">
+          <Card className="mb-8 bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Upload className="w-5 h-5 text-[#5B8DEF]" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Upload className="w-5 h-5 text-primary" />
                 문서 분석
               </CardTitle>
               {/* 데이터 보호 안내 */}
               <div className="mt-2 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
-                <p className="text-xs text-emerald-400/80">
+                <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
+                <p className="text-xs text-emerald-600/80">
                   업로드된 문서는 분석 즉시 서버에서 완전 삭제됩니다. 분석 결과는 본인만 조회 가능합니다.
                 </p>
               </div>
@@ -1062,23 +1077,23 @@ export function AnalyzeDashboard() {
                 <>
                   {isAnalyzing ? (
                     /* 분석 진행 중 — 드롭존을 로딩 화면으로 대체 */
-                    <div className="border-2 border-[#5B8DEF]/40 rounded-xl p-12 text-center bg-[#5B8DEF]/5">
+                    <div className="border-2 border-primary/40 rounded-xl p-12 text-center bg-primary/5">
                       <div className="flex flex-col items-center gap-5">
-                        <div className="w-20 h-20 rounded-full bg-[#5B8DEF]/10 border-2 border-[#5B8DEF]/30 flex items-center justify-center">
-                          <Loader2 className="w-10 h-10 animate-spin text-[#5B8DEF]" />
+                        <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
+                          <Loader2 className="w-10 h-10 animate-spin text-primary" />
                         </div>
                         {files.length > 0 && (
-                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800/80 rounded-lg">
-                            <FileText className="w-4 h-4 text-[#5B8DEF]" />
-                            <span className="text-sm text-white truncate max-w-[250px]">{files[0].file.name}</span>
-                            <span className="text-xs text-slate-500">{(files[0].file.size / 1024 / 1024).toFixed(1)} MB</span>
+                          <div className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-lg">
+                            <FileText className="w-4 h-4 text-primary" />
+                            <span className="text-sm text-foreground truncate max-w-[250px]">{files[0].file.name}</span>
+                            <span className="text-xs text-muted-foreground">{(files[0].file.size / 1024 / 1024).toFixed(1)} MB</span>
                           </div>
                         )}
                         <div>
-                          <p className="font-semibold text-white text-lg">
+                          <p className="font-semibold text-foreground text-lg">
                             {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
                           </p>
-                          <p className="text-sm text-slate-400 mt-2">보통 30초~1분 정도 소요됩니다</p>
+                          <p className="text-sm text-muted-foreground mt-2">보통 30초~1분 정도 소요됩니다</p>
                         </div>
                         <Progress value={fakeProgress} className="h-2 w-full max-w-sm" />
                       </div>
@@ -1090,35 +1105,35 @@ export function AnalyzeDashboard() {
                         {...getRootProps()}
                         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                           isLoggedIn && !selectedProjectId
-                            ? "border-[#1e3a5f]/50 cursor-not-allowed opacity-50"
+                            ? "border-border/50 cursor-not-allowed opacity-50"
                             : isDragActive
-                            ? "border-[#5B8DEF] bg-[#5B8DEF]/5 cursor-pointer"
-                            : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/50 cursor-pointer"
+                            ? "border-primary bg-primary/5 cursor-pointer"
+                            : "border-border hover:border-primary/50 hover:bg-secondary cursor-pointer"
                         }`}
                       >
                         <input {...getInputProps()} />
                         <div className="flex flex-col items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-                            <Upload className="w-8 h-8 text-slate-400" />
+                          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
+                            <Upload className="w-8 h-8 text-muted-foreground" />
                           </div>
                           <div>
                             {!isLoggedIn ? (
                               <>
-                                <p className="font-medium text-white">무료로 문서를 분석해 보세요</p>
-                                <p className="text-sm text-slate-400 mt-1">파일을 올리면 로그인 후 바로 분석이 시작됩니다</p>
+                                <p className="font-medium text-foreground">무료로 문서를 분석해 보세요</p>
+                                <p className="text-sm text-muted-foreground mt-1">파일을 올리면 로그인 후 바로 분석이 시작됩니다</p>
                               </>
                             ) : selectedProjectId ? (
                               <>
-                                <p className="font-medium text-white">문서를 업로드하고 분석하세요</p>
-                                <p className="text-sm text-slate-400 mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
+                                <p className="font-medium text-foreground">문서를 업로드하고 분석하세요</p>
+                                <p className="text-sm text-muted-foreground mt-1">드래그 앤 드롭하거나 클릭하여 파일을 선택하세요</p>
                               </>
                             ) : (
                               <>
-                                <p className="font-medium text-slate-300">위에서 프로젝트를 먼저 선택해 주세요</p>
-                                <p className="text-sm text-slate-400 mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
+                                <p className="font-medium text-foreground/80">위에서 프로젝트를 먼저 선택해 주세요</p>
+                                <p className="text-sm text-muted-foreground mt-1">프로젝트를 선택하면 문서를 업로드할 수 있습니다</p>
                               </>
                             )}
-                            <p className="text-xs text-slate-500 mt-2">PDF, DOCX, PPTX, XLSX, TXT · 권장 10MB 이하 (최대 200MB)</p>
+                            <p className="text-xs text-muted-foreground mt-2">PDF, DOCX, PPTX, XLSX, TXT · 권장 10MB 이하 (최대 200MB)</p>
                           </div>
                         </div>
                       </div>
@@ -1126,27 +1141,27 @@ export function AnalyzeDashboard() {
                       {/* 선택된 파일 목록 (에러/완료 상태) */}
                       {files.length > 0 && (
                         <div className="mt-6 space-y-2">
-                          <p className="text-sm text-slate-400 mb-3">선택된 파일</p>
+                          <p className="text-sm text-muted-foreground mb-3">선택된 파일</p>
                           {files.map((fileStatus, index) => (
                             <div
                               key={index}
                               className={`flex items-center justify-between p-3 rounded-lg ${
                                 fileStatus.status === "success" ? "bg-emerald-500/10 border border-emerald-500/30" :
                                 fileStatus.status === "error" ? "bg-red-500/10 border border-red-500/30" :
-                                "bg-slate-800/50 border border-transparent"
+                                "bg-secondary border border-transparent"
                               }`}
                             >
                               <div className="flex items-center gap-3">
                                 {fileStatus.status === "success" ? (
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                 ) : fileStatus.status === "error" ? (
-                                  <AlertCircle className="w-4 h-4 text-red-400" />
+                                  <AlertCircle className="w-4 h-4 text-red-600" />
                                 ) : (
-                                  <FileText className="w-4 h-4 text-slate-400" />
+                                  <FileText className="w-4 h-4 text-muted-foreground" />
                                 )}
                                 <div>
-                                  <p className="text-sm text-white truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
-                                  <p className="text-xs text-slate-500">
+                                  <p className="text-sm text-foreground truncate max-w-[200px] sm:max-w-[300px]">{fileStatus.file.name}</p>
+                                  <p className="text-xs text-muted-foreground">
                                     {(fileStatus.file.size / 1024 / 1024).toFixed(2)} MB
                                     {fileStatus.result && ` · ${fileStatus.result.score}점`}
                                     {fileStatus.error && ` · ${fileStatus.error}`}
@@ -1155,7 +1170,7 @@ export function AnalyzeDashboard() {
                               </div>
                               <button
                                 onClick={() => removeFile(index)}
-                                className="text-slate-500 hover:text-red-400 transition-colors"
+                                className="text-muted-foreground hover:text-red-600 transition-colors"
                               >
                                 <X className="w-4 h-4" />
                               </button>
@@ -1169,29 +1184,29 @@ export function AnalyzeDashboard() {
               )}
 
               {/* 파일 크기 사용팁 — 항상 표시 (분석 중에도 유지) */}
-              <div className="mt-4 p-4 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-xl">
-                <p className="text-sm font-semibold text-[#5B8DEF] mb-2 flex items-center gap-1.5">
+              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                <p className="text-sm font-semibold text-primary mb-2 flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4" />
                   더 정확한 분석을 받고 싶나요?
                 </p>
-                <p className="text-[11px] text-slate-400 mb-3">
+                <p className="text-[11px] text-muted-foreground mb-3">
                   파일 크기에 따라 분석 방식이 달라집니다. 작을수록 이미지·레이아웃까지 꼼꼼하게 봐요.
                 </p>
                 <div className="flex flex-col gap-2 mb-3">
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                    <span className="text-emerald-400 text-xs font-bold whitespace-nowrap mt-0.5">10MB 이하</span>
-                    <span className="text-[11px] text-slate-300 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-emerald-400 font-medium">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
+                    <span className="text-primary text-xs font-bold whitespace-nowrap mt-0.5">10MB 이하</span>
+                    <span className="text-[11px] text-foreground/80 leading-relaxed">이미지·레이아웃까지 분석하는 <span className="text-primary font-semibold">최고 품질</span> — 가장 정확한 결과를 받을 수 있어요</span>
                   </div>
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                    <span className="text-yellow-400 text-xs font-bold whitespace-nowrap mt-0.5">10~100MB</span>
-                    <span className="text-[11px] text-slate-300 leading-relaxed">텍스트를 추출해서 분석해요 — 이미지·레이아웃 평가는 추정으로 작성돼요</span>
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/5 border border-primary/10 rounded-lg">
+                    <span className="text-primary/80 text-xs font-bold whitespace-nowrap mt-0.5">10~100MB</span>
+                    <span className="text-[11px] text-foreground/80 leading-relaxed">텍스트를 추출해서 분석해요 — 이미지·레이아웃 평가는 추정으로 작성돼요</span>
                   </div>
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                    <span className="text-orange-400 text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
-                    <span className="text-[11px] text-slate-300 leading-relaxed">텍스트만 추출해서 분석해요 — 이미지·레이아웃 평가는 빠져요</span>
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-secondary border border-border rounded-lg">
+                    <span className="text-muted-foreground text-xs font-bold whitespace-nowrap mt-0.5">100MB 이상</span>
+                    <span className="text-[11px] text-foreground/80 leading-relaxed">텍스트만 추출해서 분석해요 — 이미지·레이아웃 평가는 빠져요</span>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-muted-foreground">
                   💡 이미지 해상도를 낮추거나 불필요한 페이지를 지우면 대부분 10MB 이하로 줄일 수 있어요.
                 </p>
               </div>
@@ -1199,16 +1214,16 @@ export function AnalyzeDashboard() {
 
               {error && (
                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-400">{error}</p>
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-600">{error}</p>
                 </div>
               )}
               {/* 개인정보 안내 */}
               <div className="mt-4 text-center space-y-1">
-                <p className="text-slate-500 text-xs">
-                  업로드 시 <span className="text-slate-400">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다.
+                <p className="text-muted-foreground text-xs">
+                  업로드 시 <span className="text-muted-foreground">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다.
                 </p>
-                <p className="text-slate-600 text-xs">
+                <p className="text-muted-foreground/80 text-xs">
                   🔒 업로드된 자료는 분석 후 즉시 서버에서 삭제됩니다.
                 </p>
               </div>
@@ -1220,7 +1235,7 @@ export function AnalyzeDashboard() {
         {results.length > 0 && (
           <div ref={resultsRef} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2 text-[#5B8DEF]">
+              <div className="flex items-center gap-2 text-primary">
                 <CheckCircle2 className="w-5 h-5" />
                 <span className="font-medium">
                   {results.length === 1 ? "분석 완료" : `${results.length}개 문서 분석 완료`}
@@ -1231,7 +1246,7 @@ export function AnalyzeDashboard() {
                   <Button
                     variant="outline"
                     asChild
-                    className="border-[#5B8DEF]/30 text-[#5B8DEF] hover:bg-[#5B8DEF]/10 bg-transparent"
+                    className="border-primary/30 text-primary hover:bg-primary/10 bg-transparent"
                   >
                     <Link href="/projects">
                       <FolderOpen className="w-3.5 h-3.5 mr-1" /> 프로젝트로 가기
@@ -1240,14 +1255,10 @@ export function AnalyzeDashboard() {
                 )}
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setResults([])
-                    setFiles([])
-                    setCurrentIndex(0)
-                  }}
-                  className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
+                  onClick={startOver}
+                  className="border-border text-foreground/80 hover:bg-secondary bg-transparent"
                 >
-                  새로운 분석 시작
+                  계속 분석하기
                 </Button>
               </div>
             </div>
@@ -1260,11 +1271,11 @@ export function AnalyzeDashboard() {
                     onClick={() => setCurrentIndex(idx)}
                     className={`px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
                       currentIndex === idx
-                        ? "bg-[#5B8DEF] text-white"
-                        : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                        ? "bg-primary text-white"
+                        : "bg-secondary text-foreground/80 hover:bg-muted"
                     }`}
                   >
-                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-bold text-white ${getGrade(r.score).color}`}>
+                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-bold text-foreground ${getGrade(r.score).color}`}>
                       {getGrade(r.score).grade}
                     </span>
                     <span className="truncate max-w-[150px] inline-block align-middle">{r.fileName}</span>
@@ -1277,8 +1288,8 @@ export function AnalyzeDashboard() {
             {results[currentIndex] && (
               <>
                 {results.length > 1 && (
-                  <p className="text-slate-400 text-sm">
-                    현재 보기: <span className="text-white">{results[currentIndex].fileName}</span>
+                  <p className="text-muted-foreground text-sm">
+                    현재 보기: <span className="text-foreground">{results[currentIndex].fileName}</span>
                   </p>
                 )}
 
@@ -1286,24 +1297,24 @@ export function AnalyzeDashboard() {
                 {(results[currentIndex].designDomainLabel || results[currentIndex].modelTierLabel) && (
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     {results[currentIndex].designDomainLabel && (
-                      <span className="px-2.5 py-1 rounded-full bg-[#5B8DEF]/15 border border-[#5B8DEF]/30 text-[#5B8DEF]">
+                      <span className="px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary">
                         {results[currentIndex].designDomainLabel} 문서 기준 채점
                       </span>
                     )}
                     {results[currentIndex].modelTierLabel && (
-                      <span className="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+                      <span className="px-2.5 py-1 rounded-full bg-secondary border border-border text-foreground/80">
                         {results[currentIndex].modelTierLabel}
                       </span>
                     )}
                     {results[currentIndex].comparisonPool && (
-                      <span className={`px-2.5 py-1 rounded-full border ${results[currentIndex].comparisonPool!.insufficient ? "bg-amber-500/10 border-amber-500/30 text-amber-300" : "bg-slate-800 border-slate-700 text-slate-400"}`}>
+                      <span className={`px-2.5 py-1 rounded-full border ${results[currentIndex].comparisonPool!.insufficient ? "bg-amber-500/10 border-amber-500/30 text-amber-700" : "bg-secondary border-border text-muted-foreground"}`}>
                         {results[currentIndex].comparisonPool!.insufficient
                           ? `같은 직군 합격 표본 ${results[currentIndex].comparisonPool!.sameDomainCount}건 — 전체 합격작 기준으로 보완 비교`
                           : `같은 직군 합격작 ${results[currentIndex].comparisonPool!.sameDomainCount}건과 비교`}
                       </span>
                     )}
                     {results[currentIndex].domainFit && (
-                      <p className="w-full text-slate-400 mt-1">{results[currentIndex].domainFit}</p>
+                      <p className="w-full text-muted-foreground mt-1">{results[currentIndex].domainFit}</p>
                     )}
                   </div>
                 )}
@@ -1319,18 +1330,18 @@ export function AnalyzeDashboard() {
                   const userScore = results[currentIndex].score
                   // 점수 기반 5단계 등급
                   const getRankGrade = (s: number) => {
-                    if (s >= 90) return { label: "합격 가능", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
-                    if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
-                    if (s >= 70) return { label: "보완 필요", color: "text-[#5B8DEF]", bg: "bg-[#5B8DEF]/10 border-[#5B8DEF]/20", emoji: "📝" }
-                    if (s >= 60) return { label: "개선 필요", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
-                    return { label: "재작성 권장", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
+                    if (s >= 90) return { label: "합격 가능", color: "text-purple-600", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
+                    if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-600", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
+                    if (s >= 70) return { label: "보완 필요", color: "text-primary", bg: "bg-primary/10 border-primary/20", emoji: "📝" }
+                    if (s >= 60) return { label: "개선 필요", color: "text-amber-600", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
+                    return { label: "재작성 권장", color: "text-red-600", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
                   }
                   const grade = getRankGrade(userScore)
                   return (
-                  <Card className="bg-gradient-to-br from-slate-900/80 to-[#0d1b2a] border-[#5B8DEF]/30">
+                  <Card className="bg-gradient-to-br from-secondary to-secondary border-primary/30">
                     <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2 text-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <CardTitle className="text-foreground flex items-center gap-2 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                         합격자 포트폴리오 {ranking.total}개 중 내 위치
@@ -1339,14 +1350,14 @@ export function AnalyzeDashboard() {
                     <CardContent>
                       {/* 랭킹 요약 - 2컬럼 */}
                       <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="text-center p-5 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
-                          <p className="text-xs text-slate-400 mb-2">내 점수</p>
-                          <p className="text-4xl font-bold text-[#5B8DEF]">
-                            {userScore}<span className="text-lg text-slate-400">점</span>
+                        <div className="text-center p-5 bg-primary/10 border border-primary/20 rounded-xl">
+                          <p className="text-xs text-muted-foreground mb-2">내 점수</p>
+                          <p className="text-4xl font-bold text-primary">
+                            {userScore}<span className="text-lg text-muted-foreground">점</span>
                           </p>
                         </div>
                         <div className={`text-center p-5 border rounded-xl ${grade.bg}`}>
-                          <p className="text-xs text-slate-400 mb-2">{ranking.total}개 기준 평가</p>
+                          <p className="text-xs text-muted-foreground mb-2">{ranking.total}개 기준 평가</p>
                           <p className={`text-3xl font-bold ${grade.color}`}>
                             {grade.emoji} {grade.label}
                           </p>
@@ -1355,14 +1366,14 @@ export function AnalyzeDashboard() {
 
                       {/* 5단계 등급 스케일 */}
                       <div className="mb-8">
-                        <p className="text-slate-400 text-sm mb-3">합격 가능성 등급</p>
+                        <p className="text-muted-foreground text-sm mb-3">합격 가능성 등급</p>
                         <div className="flex gap-1">
                           {[
-                            { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-300", min: 0, max: 59 },
-                            { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-300", min: 60, max: 69 },
-                            { label: "보완 필요", range: "70~79", color: "bg-[#5B8DEF]/30", textColor: "text-blue-300", min: 70, max: 79 },
-                            { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-300", min: 80, max: 89 },
-                            { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-300", min: 90, max: 100 },
+                            { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-700", min: 0, max: 59 },
+                            { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-700", min: 60, max: 69 },
+                            { label: "보완 필요", range: "70~79", color: "bg-primary/30", textColor: "text-blue-700", min: 70, max: 79 },
+                            { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-700", min: 80, max: 89 },
+                            { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-700", min: 90, max: 100 },
                           ].map((g, i) => (
                             <div
                               key={i}
@@ -1373,7 +1384,7 @@ export function AnalyzeDashboard() {
                             </div>
                           ))}
                         </div>
-                        <p className="text-xs text-slate-500 mt-2 text-center">
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
                           내 점수 {userScore}점 · 재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 경쟁력 있음 &lt; 합격 가능
                         </p>
                       </div>
@@ -1381,17 +1392,17 @@ export function AnalyzeDashboard() {
                       {/* 회사별 합격자 비교 - 텍스트 코멘트 */}
                       {results[currentIndex].companyFeedback && (
                         <div>
-                          <p className="text-white font-semibold text-base mb-4">회사별 합격자 포트폴리오 특징 비교</p>
+                          <p className="text-foreground font-semibold text-base mb-4">회사별 합격자 포트폴리오 특징 비교</p>
                           <div className="space-y-3">
                             {results[currentIndex].companyFeedback!.split('\n\n').filter(Boolean).map((paragraph, idx) => {
                               // **회사명** 패턴을 찾아서 강조
                               const parts = paragraph.split(/\*\*(.*?)\*\*/)
                               return (
-                                <div key={idx} className="p-4 bg-slate-800/50 border border-[#1e3a5f]/50 rounded-xl">
-                                  <p className="text-sm text-slate-300 leading-relaxed">
+                                <div key={idx} className="p-4 bg-secondary border border-border/50 rounded-xl">
+                                  <p className="text-sm text-foreground/80 leading-relaxed">
                                     {parts.map((part, i) =>
                                       i % 2 === 1
-                                        ? <span key={i} className="text-[#5B8DEF] font-semibold">{part}</span>
+                                        ? <span key={i} className="text-primary font-semibold">{part}</span>
                                         : <span key={i}>{part}</span>
                                     )}
                                   </p>
@@ -1399,7 +1410,7 @@ export function AnalyzeDashboard() {
                               )
                             })}
                           </div>
-                          <p className="text-xs text-slate-500 mt-4 text-center">
+                          <p className="text-xs text-muted-foreground mt-4 text-center">
                             * 실제 합격 포트폴리오와 비교 분석 · 데이터는 지속 업데이트됩니다
                           </p>
                         </div>
@@ -1433,36 +1444,33 @@ export function AnalyzeDashboard() {
                     )}
                   </>
                 ) : results[currentIndex].analysisSource === "url" ? (
-                  <Card className="bg-slate-900/80 border-[#1e3a5f]">
+                  <Card className="bg-card border-border">
                     <CardContent className="p-6 text-center">
-                      <Eye className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                      <p className="text-slate-400 text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
+                      <Eye className="w-8 h-8 text-muted-foreground/80 mx-auto mb-2" />
+                      <p className="text-muted-foreground text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
                     </CardContent>
                   </Card>
                 ) : null}
 
                 {/* 하단 CTA 영역 */}
                 <div className="space-y-4">
-                  {/* 프로젝트로 가기 + 새로운 분석 (구독자) */}
-                  {allowanceInfo?.plan && allowanceInfo.plan !== "free" && selectedProjectId && (
-                    <Card className="bg-gradient-to-r from-[#5B8DEF]/10 to-purple-500/10 border-[#5B8DEF]/30">
+                  {/* 저장 안내 + 다음 행동 (유료 사용자). 분석은 항상 프로젝트에 저장된다 */}
+                  {allowanceInfo?.plan && allowanceInfo.plan !== "free" && (
+                    <Card className="bg-card border-border">
                       <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div>
-                          <p className="text-white font-semibold mb-1">분석 결과가 저장되었습니다</p>
-                          <p className="text-sm text-slate-400">프로젝트에서 버전별 비교와 이전 분석을 확인하세요.</p>
+                        <div className="text-center sm:text-left">
+                          <p className="text-foreground font-semibold mb-1">분석 결과가 저장되었습니다</p>
+                          <p className="text-sm text-muted-foreground">프로젝트에서 버전별 비교와 이전 분석을 확인하세요.</p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                          <Button onClick={startOver} className="bg-primary hover:bg-primary/90 text-white">
+                            계속 분석하기
+                            <ArrowRight className="w-4 h-4 ml-1" />
+                          </Button>
+                          <Button asChild variant="outline" className="border-border text-foreground hover:bg-secondary bg-transparent">
                             <Link href="/projects">
                               <FolderOpen className="w-4 h-4 mr-1" /> 프로젝트로 가기
                             </Link>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => { setResults([]); setFiles([]); setCurrentIndex(0) }}
-                            className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent"
-                          >
-                            새로운 분석
                           </Button>
                         </div>
                       </CardContent>
@@ -1471,10 +1479,10 @@ export function AnalyzeDashboard() {
 
                   {/* 과외 상담 퍼널 (무료 사용자) — 점수를 확인한 직후가 상담 최적 타이밍 */}
                   {(!allowanceInfo?.plan || allowanceInfo.plan === "free") && (
-                    <Card className="bg-gradient-to-r from-amber-500/10 to-purple-500/10 border-amber-400/30">
+                    <Card className="bg-accent/50 border-primary/20">
                       <CardContent className="p-6">
-                        <p className="text-white font-semibold mb-1">점수보다 중요한 건, 다음 스텝입니다</p>
-                        <p className="text-sm text-slate-400 mb-4">
+                        <p className="text-foreground font-semibold mb-1">점수보다 중요한 건, 다음 스텝입니다</p>
+                        <p className="text-sm text-muted-foreground mb-4">
                           187개 합격 포트폴리오를 만든 11년차 현업 기획자가 1:1 과외로 합격까지 함께합니다.
                           방금 받은 분석 결과를 들고 오시면 상담이 더 정확해져요.
                         </p>
@@ -1483,12 +1491,12 @@ export function AnalyzeDashboard() {
                             href={TUTORING_KAKAO_URL}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-ink hover:bg-black/85 text-white font-semibold rounded-lg transition-colors text-sm"
                           >
                             1:1 과외 상담 (무료)
                             <ArrowRight className="w-4 h-4" />
                           </a>
-                          <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800 bg-transparent">
+                          <Button asChild variant="outline" className="border-border text-foreground/80 hover:bg-secondary bg-transparent">
                             <Link href="/payment/credits">크레딧 구매</Link>
                           </Button>
                         </div>
@@ -1496,26 +1504,6 @@ export function AnalyzeDashboard() {
                     </Card>
                   )}
 
-                  {/* 과외 상담 카드 (크레딧/수강생) */}
-                  {allowanceInfo?.plan && allowanceInfo.plan !== "free" && (
-                    <Card className="bg-slate-900/80 border-[#1e3a5f]">
-                      <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div>
-                          <p className="text-white font-semibold mb-1">AI 분석 결과에 대해 궁금한 점이 있으신가요?</p>
-                          <p className="text-sm text-slate-400">11년차 현업 기획자의 1:1 과외로 더 깊은 피드백을 받아보세요.</p>
-                        </div>
-                        <a
-                          href={TUTORING_KAKAO_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-semibold rounded-xl transition-colors text-sm"
-                        >
-                          1:1 과외 상담
-                          <ArrowRight className="w-4 h-4" />
-                        </a>
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
               </>
             )}
@@ -1526,14 +1514,14 @@ export function AnalyzeDashboard() {
       {/* 크레딧 차감 확인 모달 */}
       {showCreditConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+          <div className="bg-card border border-border rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
             {/* 헤더 */}
             <div className="text-center mb-6">
-              <div className="w-14 h-14 bg-[#5B8DEF]/15 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Coins className="w-7 h-7 text-[#5B8DEF]" />
+              <div className="w-14 h-14 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Coins className="w-7 h-7 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">크레딧 차감 안내</h3>
-              <p className="text-slate-400 text-sm">
+              <h3 className="text-lg font-bold text-foreground mb-1">크레딧 차감 안내</h3>
+              <p className="text-muted-foreground text-sm">
                 {allowanceInfo?.plan === "free"
                   ? "무료 체험 크레딧이 사용됩니다"
                   : "분석 시 보유 크레딧에서 차감됩니다"}
@@ -1542,54 +1530,54 @@ export function AnalyzeDashboard() {
 
             {/* 파일 정보 */}
             {pendingFiles.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-2 mb-5 bg-slate-800/60 rounded-lg border border-slate-700/50">
-                <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
-                <span className="text-sm text-white truncate">{pendingFiles[0].file.name}</span>
-                <span className="text-xs text-slate-500 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2 mb-5 bg-secondary rounded-lg border border-border">
+                <FileText className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm text-foreground truncate">{pendingFiles[0].file.name}</span>
+                <span className="text-xs text-muted-foreground shrink-0">
                   {(pendingFiles[0].file.size / 1024 / 1024).toFixed(1)} MB
                 </span>
               </div>
             )}
 
             {/* 크레딧 차감 내역 */}
-            <div className="bg-[#0d1b2a] rounded-xl p-5 mb-5 border border-[#1e3a5f]/50">
+            <div className="bg-secondary rounded-xl p-5 mb-5 border border-border/50">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">현재 보유</span>
-                  <span className="text-lg font-bold text-white">{allowanceInfo?.remaining ?? 0}크레딧</span>
+                  <span className="text-sm text-muted-foreground">현재 보유</span>
+                  <span className="text-lg font-bold text-foreground">{allowanceInfo?.remaining ?? 0}크레딧</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">이번 분석 (기본 분석 기준)</span>
-                  <span className="text-lg font-bold text-red-400">−{pendingFiles.length * MODEL_TIERS.basic.creditCost}크레딧</span>
+                  <span className="text-sm text-muted-foreground">이번 분석 (기본 분석 기준)</span>
+                  <span className="text-lg font-bold text-red-600">−{pendingFiles.length * MODEL_TIERS.basic.creditCost}크레딧</span>
                 </div>
-                <div className="border-t border-[#1e3a5f] pt-3">
+                <div className="border-t border-border pt-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-400">분석 후 잔여</span>
-                    <span className="text-lg font-bold text-[#5B8DEF]">
+                    <span className="text-sm text-muted-foreground">분석 후 잔여</span>
+                    <span className="text-lg font-bold text-primary">
                       {Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length * MODEL_TIERS.basic.creditCost, 0)}크레딧
                     </span>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-muted-foreground">
                   다음 단계에서 정밀 분석(상위 모델, {MODEL_TIERS.precision.creditCost}크레딧)으로 바꿀 수 있어요.
                 </p>
               </div>
 
               {/* 게이지 바 */}
               <div className="mt-4">
-                <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
                   <span>잔여 크레딧</span>
                   <span>{Math.max((allowanceInfo?.remaining ?? 0) - pendingFiles.length * MODEL_TIERS.basic.creditCost, 0)} / {allowanceInfo?.remaining ?? 0}</span>
                 </div>
-                <div className="h-3 bg-slate-800 rounded-full overflow-hidden relative">
+                <div className="h-3 bg-secondary rounded-full overflow-hidden relative">
                   {/* 현재 보유량 (흐린 배경) */}
                   <div
-                    className="absolute inset-y-0 left-0 bg-[#5B8DEF]/20 rounded-full"
+                    className="absolute inset-y-0 left-0 bg-primary/20 rounded-full"
                     style={{ width: "100%" }}
                   />
                   {/* 차감 후 잔여량 (밝은 게이지) */}
                   <div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#5B8DEF] to-[#4A7CE0] rounded-full transition-all duration-500"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/90 rounded-full transition-all duration-500"
                     style={{
                       width: `${((allowanceInfo?.remaining ?? 0) - pendingFiles.length) / (allowanceInfo?.remaining ?? 1) * 100}%`
                     }}
@@ -1601,10 +1589,10 @@ export function AnalyzeDashboard() {
             {/* 무료 플랜 안내 */}
             {allowanceInfo?.plan === "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 0 && (
               <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-xs text-amber-400">
+                <p className="text-xs text-amber-600">
                   <Zap className="w-3.5 h-3.5 inline mr-1" />
                   마지막 무료 크레딧입니다. 추가 분석이 필요하시면{" "}
-                  <Link href="/pricing" className="underline hover:text-amber-300">요금제를 확인</Link>해 주세요.
+                  <Link href="/pricing" className="underline hover:text-amber-700">요금제를 확인</Link>해 주세요.
                 </p>
               </div>
             )}
@@ -1612,12 +1600,12 @@ export function AnalyzeDashboard() {
             {/* 크레딧 유저 안내 (잔여 1크레딧 이하) — 결제 중단 시 숨김 */}
             {PAYMENTS_ENABLED && allowanceInfo?.plan !== "free" && (allowanceInfo?.remaining ?? 0) - pendingFiles.length <= 1 && (allowanceInfo?.remaining ?? 0) > 0 && (
               <div className="mb-5 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-xs text-amber-400">
+                <p className="text-xs text-amber-600">
                   <Zap className="w-3.5 h-3.5 inline mr-1" />
                   크레딧이 얼마 남지 않았습니다.{" "}
-                  <Link href="/payment/credits" className="underline hover:text-amber-300">크레딧 충전</Link>
+                  <Link href="/payment/credits" className="underline hover:text-amber-700">크레딧 충전</Link>
                   {" 또는 "}
-                  <Link href="/pricing" className="underline hover:text-amber-300">요금제</Link>를 확인해 보세요.
+                  <Link href="/pricing" className="underline hover:text-amber-700">요금제</Link>를 확인해 보세요.
                 </p>
               </div>
             )}
@@ -1626,13 +1614,13 @@ export function AnalyzeDashboard() {
             <div className="flex gap-3">
               <button
                 onClick={handleCreditCancel}
-                className="flex-1 py-3 border border-slate-600 text-slate-300 rounded-xl font-medium hover:bg-slate-800 transition-colors"
+                className="flex-1 py-3 border border-border text-foreground/80 rounded-xl font-medium hover:bg-secondary transition-colors"
               >
                 취소
               </button>
               <button
                 onClick={handleCreditConfirm}
-                className="flex-1 py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Zap className="w-4 h-4" />
                 분석하기
@@ -1645,10 +1633,10 @@ export function AnalyzeDashboard() {
       {/* 1단계: 키워드 추출 로딩 */}
       {isExtractingKeywords && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
-            <Loader2 className="w-10 h-10 text-[#5B8DEF] animate-spin mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-white mb-2">1단계: 문서 스캔</h3>
-            <p className="text-slate-400 text-sm">문서의 직군과 키워드를 파악하는 중...</p>
+          <div className="bg-card border border-border rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
+            <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-foreground mb-2">1단계: 문서 스캔</h3>
+            <p className="text-muted-foreground text-sm">문서의 직군과 키워드를 파악하는 중...</p>
           </div>
         </div>
       )}
@@ -1656,32 +1644,32 @@ export function AnalyzeDashboard() {
       {/* 2단계 전: 키워드 편집 모달 */}
       {showKeywordEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-6 max-w-lg mx-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-lg mx-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             {/* 헤더 */}
             <div className="text-center mb-5">
-              <div className="w-12 h-12 bg-[#5B8DEF]/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Plus className="w-6 h-6 text-[#5B8DEF]" />
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Plus className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">분석 설정을 확인해주세요</h3>
-              <p className="text-sm text-slate-400">
+              <h3 className="text-lg font-bold text-foreground mb-1">분석 설정을 확인해주세요</h3>
+              <p className="text-sm text-muted-foreground">
                 직군에 맞는 채점표와 같은 직군 합격작으로 비교합니다
               </p>
             </div>
 
             {/* 파일 정보 */}
             {pendingFiles.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-slate-800/60 rounded-lg border border-slate-700/50">
-                <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
-                <span className="text-sm text-white truncate">{pendingFiles[0].file.name}</span>
+              <div className="flex items-center gap-2 px-3 py-2 mb-4 bg-secondary rounded-lg border border-border">
+                <FileText className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm text-foreground truncate">{pendingFiles[0].file.name}</span>
               </div>
             )}
 
             {/* 직군 확인 */}
             <div className="mb-4">
-              <p className="text-xs text-slate-500 mb-2">
+              <p className="text-xs text-muted-foreground mb-2">
                 문서 직군
                 {detectedDomain && (
-                  <span className="ml-2 text-[#5B8DEF]">
+                  <span className="ml-2 text-primary">
                     AI 판단: {DOMAIN_LABELS[detectedDomain]}{scanConfidence > 0 ? ` (${Math.round(scanConfidence * 100)}%)` : ""}
                     {scanDocForm !== "unknown" ? ` · ${DOC_FORM_LABELS[scanDocForm]}` : ""}
                   </span>
@@ -1695,22 +1683,22 @@ export function AnalyzeDashboard() {
                     onClick={() => setSelectedDomain(d)}
                     className={`px-2 py-1.5 rounded-lg text-xs border transition-colors ${
                       selectedDomain === d
-                        ? "bg-[#5B8DEF] border-[#5B8DEF] text-white font-medium"
-                        : "bg-slate-800/60 border-slate-700 text-slate-300 hover:border-[#5B8DEF]/50"
+                        ? "bg-primary border-primary text-white font-medium"
+                        : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
                     }`}
                   >
                     {DOMAIN_LABELS[d]}
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5 px-1">
+              <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
                 직군이 다르면 바꿔주세요. 선택한 직군에서 평가하지 않는 항목(예: 레벨 문서의 재화 흐름)은 점수에서 제외돼요.
               </p>
             </div>
 
             {/* 분석 모드 */}
             <div className="mb-4">
-              <p className="text-xs text-slate-500 mb-2">분석 모드</p>
+              <p className="text-xs text-muted-foreground mb-2">분석 모드</p>
               <div className="grid grid-cols-2 gap-2">
                 {(Object.keys(MODEL_TIERS) as ModelTier[]).map((tier) => {
                   const info = MODEL_TIERS[tier]
@@ -1724,19 +1712,19 @@ export function AnalyzeDashboard() {
                       onClick={() => setSelectedTier(tier)}
                       className={`text-left p-3 rounded-xl border transition-colors ${
                         active
-                          ? "bg-[#5B8DEF]/15 border-[#5B8DEF] text-white"
-                          : "bg-slate-800/60 border-slate-700 text-slate-300 hover:border-[#5B8DEF]/50"
+                          ? "bg-primary/15 border-primary text-foreground"
+                          : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-semibold">{info.label}</span>
-                        <span className={`text-xs ${active ? "text-[#5B8DEF]" : "text-slate-500"}`}>
+                        <span className={`text-xs ${active ? "text-primary" : "text-muted-foreground"}`}>
                           {isUnlimitedUser ? "무제한" : `${info.creditCost}크레딧`}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400 leading-snug">{info.description}</p>
+                      <p className="text-[11px] text-muted-foreground leading-snug">{info.description}</p>
                       {!affordable && (
-                        <p className="text-[11px] text-amber-400 mt-1">크레딧 {info.creditCost}개 필요</p>
+                        <p className="text-[11px] text-amber-600 mt-1">크레딧 {info.creditCost}개 필요</p>
                       )}
                     </button>
                   )
@@ -1746,24 +1734,24 @@ export function AnalyzeDashboard() {
 
             {/* 키워드 칩 */}
             <div className="mb-4">
-              <p className="text-xs text-slate-500 mb-2">AI가 추출한 키워드 (원하면 삭제/추가 가능)</p>
+              <p className="text-xs text-muted-foreground mb-2">AI가 추출한 키워드 (원하면 삭제/추가 가능)</p>
               <div className="flex flex-wrap gap-2">
                 {extractedKeywords.map((kw) => (
                   <span
                     key={kw}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#5B8DEF]/15 border border-[#5B8DEF]/30 text-[#5B8DEF] rounded-full text-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/15 border border-primary/30 text-primary rounded-full text-sm"
                   >
                     {kw}
                     <button
                       onClick={() => handleRemoveKeyword(kw)}
-                      className="hover:text-red-400 transition-colors"
+                      className="hover:text-red-600 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
                 ))}
                 {extractedKeywords.length === 0 && (
-                  <span className="text-xs text-slate-500">키워드를 추가해주세요</span>
+                  <span className="text-xs text-muted-foreground">키워드를 추가해주세요</span>
                 )}
               </div>
             </div>
@@ -1776,35 +1764,35 @@ export function AnalyzeDashboard() {
                 onChange={(e) => setNewKeywordInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddKeyword() } }}
                 placeholder="키워드 입력 후 Enter 또는 + 버튼"
-                className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF]"
+                className="flex-1 px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder-slate-500 focus:outline-none focus:border-primary"
               />
               <button
                 onClick={handleAddKeyword}
                 disabled={!newKeywordInput.trim()}
-                className="px-3 py-2 bg-[#5B8DEF]/20 text-[#5B8DEF] rounded-lg text-sm hover:bg-[#5B8DEF]/30 disabled:opacity-30 transition-colors"
+                className="px-3 py-2 bg-primary/20 text-primary rounded-lg text-sm hover:bg-primary/30 disabled:opacity-30 transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-[11px] text-slate-500 mb-5 px-1">
-              💡 입력 후 <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-300">Enter</kbd> 키를 누르면 추가됩니다
+            <p className="text-[11px] text-muted-foreground mb-5 px-1">
+              💡 입력 후 <kbd className="px-1.5 py-0.5 bg-secondary border border-border rounded text-[10px] text-foreground/80">Enter</kbd> 키를 누르면 추가됩니다
             </p>
 
             {/* 키워드 부족 경고 (항목 8) */}
             {extractedKeywords.length < 3 && (
               <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-300 leading-relaxed">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700 leading-relaxed">
                   <strong>키워드가 {extractedKeywords.length}개뿐이에요.</strong> 키워드가 적으면 비교 대상 합격작이 적어져 분석 정확도가 떨어집니다. 3개 이상 추가해주세요.
                 </p>
               </div>
             )}
 
             {/* 안내 */}
-            <div className="mb-5 p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
-              <p className="text-xs text-slate-400">
+            <div className="mb-5 p-3 bg-secondary border border-border rounded-lg">
+              <p className="text-xs text-muted-foreground">
                 <Shield className="w-3.5 h-3.5 inline mr-1" />
-                합격 포트폴리오 중 <span className="text-slate-200">{DOMAIN_LABELS[selectedDomain]}</span> 직군 문서를 기준선으로 비교하고,
+                합격 포트폴리오 중 <span className="text-foreground">{DOMAIN_LABELS[selectedDomain]}</span> 직군 문서를 기준선으로 비교하고,
                 내용이 가장 비슷한 합격작의 실제 발췌를 함께 참고합니다.
               </p>
             </div>
@@ -1813,14 +1801,14 @@ export function AnalyzeDashboard() {
             <div className="flex gap-3">
               <button
                 onClick={handleKeywordCancel}
-                className="flex-1 py-3 border border-slate-600 text-slate-300 rounded-xl font-medium hover:bg-slate-800 transition-colors"
+                className="flex-1 py-3 border border-border text-foreground/80 rounded-xl font-medium hover:bg-secondary transition-colors"
               >
                 취소
               </button>
               <button
                 onClick={handleStartComparison}
                 disabled={extractedKeywords.length === 0 || !canAffordTier(selectedTier)}
-                className="flex-1 py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye className="w-4 h-4" />
                 {MODEL_TIERS[selectedTier].label} 시작{isUnlimitedUser ? "" : ` (${selectedTierCost}크레딧)`}
@@ -1833,18 +1821,18 @@ export function AnalyzeDashboard() {
       {/* 크레딧 한도 초과 팝업 */}
       {showCreditError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-[#1e3a5f] rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
+          <div className="bg-card border border-border rounded-2xl p-8 max-w-sm mx-4 text-center shadow-2xl">
             <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-7 h-7 text-amber-400" />
+              <AlertCircle className="w-7 h-7 text-amber-600" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">서비스 일시 점검 중</h3>
-            <p className="text-slate-400 text-sm mb-6">
+            <h3 className="text-lg font-bold text-foreground mb-2">서비스 일시 점검 중</h3>
+            <p className="text-muted-foreground text-sm mb-6">
               현재 AI 분석 서비스가 일시적으로 중단되었습니다.<br />
               관리자에게 문의해 주세요.
             </p>
             <button
               onClick={() => setShowCreditError(false)}
-              className="w-full py-3 bg-[#5B8DEF] hover:bg-[#4a7de0] text-white rounded-xl font-medium transition-colors"
+              className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors"
             >
               확인
             </button>

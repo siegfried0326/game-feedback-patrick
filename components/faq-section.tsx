@@ -47,16 +47,16 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section id="faq" className="py-20 px-6 bg-[#0d1f3c]">
+    <section id="faq" className="py-20 px-6 bg-card">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-[#5B8DEF] text-sm font-medium tracking-wide uppercase mb-4 block">
+          <span className="text-primary text-sm font-medium tracking-wide uppercase mb-4 block">
             FAQ
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 text-balance">
+          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4 text-balance">
             자주 묻는 질문
           </h2>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             궁금한 점이 있으시면 언제든지 문의해 주세요
           </p>
         </div>
@@ -66,12 +66,12 @@ export function FAQSection() {
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl px-6 data-[state=open]:border-[#5B8DEF]/30"
+              className="bg-card border border-border rounded-xl px-6 data-[state=open]:border-primary/30"
             >
-              <AccordionTrigger className="text-left text-white hover:no-underline py-5">
+              <AccordionTrigger className="text-left text-foreground hover:no-underline py-5">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-slate-400 pb-5 leading-relaxed">
+              <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

@@ -40,13 +40,15 @@
 - 합격 기준 카드: `data/standards/` (README에 규약). 사용자 피드백에 합격 문서의 파일명·게임명·작성자명을 절대 넣지 않음 — `anon_label`로만 지칭
 - DB 마이그레이션: `scripts/NNN_*.sql` (다음 번호 = 022)
 
-### 디자인 토큰
-- Background: `#0a1628`
-- Card: `#0d1f3c`
-- Primary: `#5B8DEF`
-- Border: `#1e3a5f`
-- 폰트: `Geist` / `Geist Mono`
+### 디자인 토큰 (문라이트 브랜드, 2026-10)
+- 서비스명: **문라이트 아카이브** (by 문라이트 커리어랩). 로고 `components/brand-logo.tsx` (M 심볼 + MOONLIGHT / ARCHIVE)
+- 라이트 테마. 색은 `app/globals.css` 토큰으로만 쓴다 (`bg-background`, `text-foreground`, `bg-primary` …) — hex 하드코딩 금지
+- Background `#FFFFFF` · Foreground `#0A0A0A` · Primary(코발트) `#0046AD` · Sky `#9BC8F8`(`brand-sky`) · Ink `#000000`(`brand-ink`) · Border `#E3E8EF` · Secondary `#F4F7FB`
+- 강조 배경: `bg-brand-gradient`(코발트→스카이), 블랙 띠 + 스카이 사선(`components/marketing-break.tsx`)
+- 폰트: **SUIT** (SIL OFL, `app/fonts/suit/*.otf`, `next/font/local`) — 제목 900(`font-black`) / 강조 700 / 본문 400·500 / 라벨 700 + 넓은 자간 대문자
+- CSP가 외부 스타일시트를 막는다 — 폰트·CSS는 자체 호스팅
 - 경로 별칭: `@/*` → repo root
+- 원천 자료: 브랜드 전략 `20260919_Moonlight_Strategy_02b.pdf`, 로고 시안 `20261002-Moonlight.pdf`, 폰트 README (`/Volumes/LaCie/문라이트커리어랩/브랜드/`)
 
 ### 커밋
 - 한글 메시지, prefix: `feat:` / `fix:` / `perf:` / `docs:` / `refactor:`

@@ -15,7 +15,7 @@ export default function GlobalError({
 }) {
   return (
     <html lang="ko">
-      <body style={{ backgroundColor: "#0d1b2a", margin: 0 }}>
+      <body style={{ backgroundColor: "#FFFFFF", margin: 0 }}>
         <main style={{
           minHeight: "100vh",
           display: "flex",
@@ -25,10 +25,10 @@ export default function GlobalError({
           fontFamily: "system-ui, sans-serif",
         }}>
           <div style={{ textAlign: "center", maxWidth: "400px" }}>
-            <h1 style={{ color: "white", fontSize: "24px", marginBottom: "12px" }}>
+            <h1 style={{ color: "#0A0A0A", fontSize: "24px", marginBottom: "12px" }}>
               문제가 발생했습니다
             </h1>
-            <p style={{ color: "#94a3b8", marginBottom: "24px", lineHeight: 1.6 }}>
+            <p style={{ color: "#5B6472", marginBottom: "24px", lineHeight: 1.6 }}>
               페이지를 불러오는 중 오류가 발생했습니다.
               <br />
               잠시 후 다시 시도해 주세요.
@@ -38,7 +38,7 @@ export default function GlobalError({
               style={{
                 padding: "10px 24px",
                 borderRadius: "12px",
-                backgroundColor: "#5B8DEF",
+                backgroundColor: "#0046AD",
                 color: "white",
                 border: "none",
                 fontSize: "14px",

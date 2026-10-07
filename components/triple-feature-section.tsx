@@ -29,7 +29,7 @@ export async function TripleFeatureSection() {
       sub: "187명 합격 데이터",
       href: "/analyze",
       cta: "분석하기",
-      accent: "#5B8DEF",
+      accent: "#0046AD",
     },
     {
       icon: <Mic className="w-7 h-7" />,
@@ -56,16 +56,16 @@ export async function TripleFeatureSection() {
   ]
 
   return (
-    <section className="bg-[#0a1628] py-16 md:py-24 border-t border-[#1e3a5f]">
+    <section className="bg-background py-16 md:py-24 border-t border-border">
       <div className="max-w-6xl mx-auto px-6 md:px-8">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/30 text-[#5B8DEF] mb-4">
+          <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary mb-4">
             한 사이트, 3가지 도구
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-balance mb-3">
+          <h2 className="text-3xl md:text-4xl font-black text-foreground text-balance mb-3">
             포트폴리오부터 면접, 디자인 원칙 학습까지
           </h2>
-          <p className="text-slate-400 text-lg">
+          <p className="text-muted-foreground text-lg">
             게임 기획자 지망생이 필요한 도구를 한 곳에.
           </p>
         </div>
@@ -75,7 +75,7 @@ export async function TripleFeatureSection() {
             <Link
               key={c.href}
               href={c.href}
-              className="group relative rounded-2xl border bg-slate-900/60 hover:bg-slate-900/80 p-6 md:p-7 transition-all overflow-hidden"
+              className="group relative rounded-2xl border bg-card hover:bg-card p-6 md:p-7 transition-all overflow-hidden"
               style={{ borderColor: c.accent + "33" }}
             >
               <div
@@ -96,13 +96,13 @@ export async function TripleFeatureSection() {
               >
                 {c.tag}
               </div>
-              <h3 className="relative text-xl font-bold text-white mb-3 leading-snug">{c.title}</h3>
-              <p className="relative text-sm text-slate-400 leading-relaxed mb-5">{c.desc}</p>
+              <h3 className="relative text-xl font-bold text-foreground mb-3 leading-snug">{c.title}</h3>
+              <p className="relative text-sm text-muted-foreground leading-relaxed mb-5">{c.desc}</p>
 
-              <div className="relative flex items-end justify-between pt-4 border-t border-[#1e3a5f]">
+              <div className="relative flex items-end justify-between pt-4 border-t border-border">
                 <div>
                   <div className="text-2xl font-bold" style={{ color: c.accent }}>{c.stat}</div>
-                  <div className="text-[11px] text-slate-500">{c.sub}</div>
+                  <div className="text-[11px] text-muted-foreground">{c.sub}</div>
                 </div>
                 <div
                   className="flex items-center gap-1 text-xs font-semibold group-hover:translate-x-0.5 transition-transform"

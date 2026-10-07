@@ -62,13 +62,13 @@ export function AllDocsClient({ documents }: { documents: LibrarySummary[] }) {
   return (
     <div className="space-y-5">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="제목·태그·디자이너·게임 검색"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setPage(0) }}
-          className="w-full bg-slate-900/80 border border-[#1e3a5f] rounded-xl pl-11 pr-4 py-3 text-slate-200 placeholder:text-slate-500 focus:border-[#5B8DEF] focus:outline-none"
+          className="w-full bg-card border border-border rounded-xl pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
         />
       </div>
 
@@ -99,7 +99,7 @@ export function AllDocsClient({ documents }: { documents: LibrarySummary[] }) {
         countKey={(d, v) => d.domain === v}
       />
 
-      <div className="flex items-center justify-between text-xs text-slate-500">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{filtered.length.toLocaleString()}건 / {documents.length.toLocaleString()}건</span>
         {totalPages > 1 && (
           <span>{page + 1} / {totalPages} 페이지</span>
@@ -113,17 +113,17 @@ export function AllDocsClient({ documents }: { documents: LibrarySummary[] }) {
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="text-xs px-3 py-1.5 rounded-lg border border-[#1e3a5f] text-slate-300 hover:text-white disabled:opacity-30"
+            className="text-xs px-3 py-1.5 rounded-lg border border-border text-foreground/80 hover:text-foreground disabled:opacity-30"
           >
             ← 이전
           </button>
-          <span className="text-xs text-slate-500 px-2">
+          <span className="text-xs text-muted-foreground px-2">
             {page + 1} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="text-xs px-3 py-1.5 rounded-lg border border-[#1e3a5f] text-slate-300 hover:text-white disabled:opacity-30"
+            className="text-xs px-3 py-1.5 rounded-lg border border-border text-foreground/80 hover:text-foreground disabled:opacity-30"
           >
             다음 →
           </button>
@@ -145,14 +145,14 @@ function FilterRow<V extends string>({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="text-[10px] uppercase tracking-wider text-slate-500 mr-1">{title}</span>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">{title}</span>
       <button
         onClick={() => onChange("all")}
         className={
           "text-xs px-3 py-1 rounded-full border " +
           (value === "all"
-            ? "bg-slate-700 border-slate-600 text-white"
-            : "bg-slate-900/60 border-[#1e3a5f] text-slate-500 hover:text-slate-300")
+            ? "bg-muted border-border text-foreground"
+            : "bg-card border-border text-muted-foreground hover:text-foreground/80")
         }
       >
         전체
@@ -169,7 +169,7 @@ function FilterRow<V extends string>({
             style={
               active
                 ? { background: it.color, borderColor: it.color, color: "#fff" }
-                : { background: "rgba(15,23,42,0.6)", borderColor: it.color + "55", color: it.color }
+                : { background: "#FFFFFF", borderColor: it.color + "55", color: it.color }
             }
           >
             {it.label} ({c})

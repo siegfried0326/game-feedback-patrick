@@ -165,9 +165,9 @@ export default function TrainingPage() {
 
   const importanceBadge = (importance: string) => {
     switch (importance) {
-      case "high": return "bg-red-500/20 text-red-300 border-red-500/30"
-      case "medium": return "bg-amber-500/20 text-amber-300 border-amber-500/30"
-      default: return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+      case "high": return "bg-red-500/20 text-red-700 border-red-500/30"
+      case "medium": return "bg-amber-500/20 text-amber-700 border-amber-500/30"
+      default: return "bg-slate-500/20 text-muted-foreground border-slate-500/30"
     }
   }
 
@@ -462,7 +462,7 @@ export default function TrainingPage() {
     "블리자드": "from-blue-600 to-indigo-600",
     "미호요": "from-cyan-500 to-teal-600",
     "일반게임회사": "from-slate-500 to-gray-600",
-    "전체 합격자": "from-[#5B8DEF] to-blue-600",
+    "전체 합격자": "from-primary to-blue-600",
   }
 
   return (
@@ -471,11 +471,11 @@ export default function TrainingPage() {
         {/* 헤더 */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <Brain className="w-8 h-8 text-[#5B8DEF]" />
+            <h1 className="text-3xl font-black text-foreground mb-2 flex items-center gap-3">
+              <Brain className="w-8 h-8 text-primary" />
               학습 데이터 관리
             </h1>
-            <p className="text-slate-400">
+            <p className="text-muted-foreground">
               합격 포트폴리오를 업로드하고, 학습된 데이터를 관리하세요.
             </p>
           </div>
@@ -483,7 +483,7 @@ export default function TrainingPage() {
             onClick={loadAll}
             disabled={isLoadingStats || isLoadingData}
             variant="outline"
-            className="border-[#1e3a5f] text-slate-300 hover:bg-slate-800"
+            className="border-border text-foreground/80 hover:bg-secondary"
           >
             {(isLoadingStats || isLoadingData) ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -495,24 +495,24 @@ export default function TrainingPage() {
         </div>
 
         {/* 회사별 학습 데이터 통계 (공통) */}
-        <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 mb-6">
+        <Card className="bg-gradient-to-br from-secondary to-secondary border-border mb-6">
           <CardHeader>
-            <CardTitle className="text-lg text-white flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#5B8DEF]" />
+            <CardTitle className="text-lg text-foreground flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
               회사별 학습 데이터 현황
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoadingStats ? (
               <div className="flex items-center justify-center py-6">
-                <Loader2 className="w-5 h-5 animate-spin text-[#5B8DEF]" />
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
               </div>
             ) : (
               <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                 {Object.entries(companyStats).map(([company, count]) => (
                   <div
                     key={company}
-                    className={`bg-gradient-to-br ${companyColors[company] || "from-slate-600 to-slate-700"} rounded-lg p-3 text-white shadow-md`}
+                    className={`bg-gradient-to-br ${companyColors[company] || "from-slate-600 to-secondary"} rounded-lg p-3 text-white shadow-md`}
                   >
                     <div className="text-xs font-medium mb-0.5 opacity-90">{company}</div>
                     <div className="text-2xl font-bold">{count}</div>
@@ -525,13 +525,13 @@ export default function TrainingPage() {
         </Card>
 
         {/* 탭 전환 */}
-        <div className="flex gap-1 mb-6 bg-slate-900/80 p-1 rounded-xl border border-[#1e3a5f]">
+        <div className="flex gap-1 mb-6 bg-card p-1 rounded-xl border border-border">
           <button
             onClick={() => setActiveTab("upload")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
               activeTab === "upload"
-                ? "bg-[#5B8DEF] text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800"
+                ? "bg-primary text-white shadow-lg"
+                : "text-muted-foreground hover:text-white hover:bg-secondary"
             }`}
           >
             <Upload className="w-4 h-4" />
@@ -541,8 +541,8 @@ export default function TrainingPage() {
             onClick={() => setActiveTab("data")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all ${
               activeTab === "data"
-                ? "bg-[#5B8DEF] text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800"
+                ? "bg-primary text-white shadow-lg"
+                : "text-muted-foreground hover:text-white hover:bg-secondary"
             }`}
           >
             <Database className="w-4 h-4" />
@@ -558,24 +558,24 @@ export default function TrainingPage() {
           <>
             {/* 업로드 통계 */}
             {files.length > 0 && (
-              <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+              <Card className="bg-card border-border mb-6">
                 <CardContent className="pt-6">
                   <div className="grid grid-cols-4 gap-4 text-center">
                     <div>
-                      <p className="text-3xl font-bold text-[#5B8DEF]">{files.length}</p>
-                      <p className="text-slate-400 text-sm mt-1">총 파일</p>
+                      <p className="text-3xl font-bold text-primary">{files.length}</p>
+                      <p className="text-muted-foreground text-sm mt-1">총 파일</p>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-emerald-400">{successCount}</p>
-                      <p className="text-slate-400 text-sm mt-1">성공</p>
+                      <p className="text-3xl font-bold text-emerald-600">{successCount}</p>
+                      <p className="text-muted-foreground text-sm mt-1">성공</p>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-amber-400">{skippedCount}</p>
-                      <p className="text-slate-400 text-sm mt-1">중복</p>
+                      <p className="text-3xl font-bold text-amber-600">{skippedCount}</p>
+                      <p className="text-muted-foreground text-sm mt-1">중복</p>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-red-400">{errorCount}</p>
-                      <p className="text-slate-400 text-sm mt-1">실패</p>
+                      <p className="text-3xl font-bold text-red-600">{errorCount}</p>
+                      <p className="text-muted-foreground text-sm mt-1">실패</p>
                     </div>
                   </div>
                 </CardContent>
@@ -583,13 +583,13 @@ export default function TrainingPage() {
             )}
 
             {/* 드롭존 */}
-            <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+            <Card className="bg-card border-border mb-6">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-[#5B8DEF]" />
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-primary" />
                   파일 선택
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-muted-foreground">
                   PDF, Excel, CSV, TXT, JPG, PNG 파일을 드래그하거나 클릭하여 선택하세요. (최대 200MB)
                 </CardDescription>
               </CardHeader>
@@ -598,23 +598,23 @@ export default function TrainingPage() {
                   {...getRootProps()}
                   className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
                     isDragActive
-                      ? "border-[#5B8DEF] bg-[#5B8DEF]/10 scale-[1.02]"
-                      : "border-[#1e3a5f] hover:border-[#5B8DEF]/50 hover:bg-slate-800/30"
+                      ? "border-primary bg-primary/10 scale-[1.02]"
+                      : "border-border hover:border-primary/50 hover:bg-secondary"
                   }`}
                 >
                   <input {...getInputProps()} />
-                  <Database className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                  <p className="text-slate-300 text-lg mb-1">
+                  <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-foreground/80 text-lg mb-1">
                     {isDragActive ? "여기에 놓으세요" : "파일을 여기에 드래그"}
                   </p>
-                  <p className="text-slate-500 text-sm">또는 클릭하여 선택</p>
+                  <p className="text-muted-foreground text-sm">또는 클릭하여 선택</p>
                 </div>
 
                 {/* 파일 목록 */}
                 {files.length > 0 && (
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[#5B8DEF] text-sm font-medium">
+                      <p className="text-primary text-sm font-medium">
                         {files.length}개 파일 선택됨
                       </p>
                       {!isProcessing && (
@@ -622,7 +622,7 @@ export default function TrainingPage() {
                           onClick={clearAll}
                           variant="ghost"
                           size="sm"
-                          className="text-slate-400 hover:text-white hover:bg-slate-800"
+                          className="text-muted-foreground hover:text-foreground hover:bg-secondary"
                         >
                           전체 삭제
                         </Button>
@@ -636,38 +636,38 @@ export default function TrainingPage() {
                             fileData.status === "success" ? "bg-emerald-500/10 border border-emerald-500/20" :
                             fileData.status === "error" ? "bg-red-500/10 border border-red-500/20" :
                             fileData.status === "skipped" ? "bg-amber-500/10 border border-amber-500/20" :
-                            fileData.status === "analyzing" ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/20" :
+                            fileData.status === "analyzing" ? "bg-primary/10 border border-primary/20" :
                             fileData.status === "uploading" ? "bg-amber-500/10 border border-amber-500/20" :
-                            "bg-slate-800/50 border border-transparent"
+                            "bg-secondary border border-transparent"
                           }`}
                         >
                           {fileData.status === "pending" && <div className="w-4 h-4 rounded-full border-2 border-slate-500" />}
-                          {fileData.status === "uploading" && <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />}
-                          {fileData.status === "analyzing" && <Loader2 className="w-4 h-4 text-[#5B8DEF] animate-spin" />}
-                          {fileData.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                          {fileData.status === "error" && <XCircle className="w-4 h-4 text-red-400" />}
-                          {fileData.status === "skipped" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
+                          {fileData.status === "uploading" && <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />}
+                          {fileData.status === "analyzing" && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
+                          {fileData.status === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                          {fileData.status === "error" && <XCircle className="w-4 h-4 text-red-600" />}
+                          {fileData.status === "skipped" && <AlertTriangle className="w-4 h-4 text-amber-600" />}
 
-                          <FileText className="w-4 h-4 text-[#5B8DEF] shrink-0" />
+                          <FileText className="w-4 h-4 text-primary shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-slate-300 text-sm truncate">{fileData.file.name}</p>
-                            <p className="text-slate-500 text-xs">{(fileData.file.size / 1024 / 1024).toFixed(2)}MB</p>
+                            <p className="text-foreground/80 text-sm truncate">{fileData.file.name}</p>
+                            <p className="text-muted-foreground text-xs">{(fileData.file.size / 1024 / 1024).toFixed(2)}MB</p>
                           </div>
 
                           {fileData.score && (
-                            <span className="text-[#5B8DEF] font-bold text-sm">{fileData.score}점</span>
+                            <span className="text-primary font-bold text-sm">{fileData.score}점</span>
                           )}
 
                           {fileData.message && (
                             <span className={`text-xs ${
-                              fileData.status === "error" ? "text-red-400" : "text-slate-400"
+                              fileData.status === "error" ? "text-red-600" : "text-muted-foreground"
                             }`}>{fileData.message}</span>
                           )}
 
                           {!isProcessing && fileData.status === "pending" && (
                             <button
                               onClick={() => removeFile(idx)}
-                              className="text-slate-400 hover:text-red-400 transition-colors"
+                              className="text-muted-foreground hover:text-red-600 transition-colors"
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
@@ -681,12 +681,12 @@ export default function TrainingPage() {
             </Card>
 
             {/* 실행 버튼 */}
-            <Card className="bg-slate-900/80 border-[#1e3a5f]">
+            <Card className="bg-card border-border">
               <CardContent className="pt-6">
                 <Button
                   onClick={startTraining}
                   disabled={isProcessing || files.length === 0 || pendingCount === 0}
-                  className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white h-14 text-lg disabled:opacity-50"
+                  className="w-full bg-primary hover:bg-primary/90 text-white h-14 text-lg disabled:opacity-50"
                 >
                   {isProcessing ? (
                     <>
@@ -703,7 +703,7 @@ export default function TrainingPage() {
 
                 {isProcessing && (
                   <div className="mt-4">
-                    <div className="flex justify-between text-sm text-slate-400 mb-2">
+                    <div className="flex justify-between text-sm text-muted-foreground mb-2">
                       <span>진행률</span>
                       <span>{Math.round(progress)}%</span>
                     </div>
@@ -713,7 +713,7 @@ export default function TrainingPage() {
 
                 {!isProcessing && completedCount > 0 && (
                   <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                    <p className="text-emerald-400 text-center font-medium">
+                    <p className="text-emerald-600 text-center font-medium">
                       총 {successCount}개 데이터 학습 완료!
                       {errorCount > 0 && ` (${errorCount}개 실패)`}
                     </p>
@@ -723,7 +723,7 @@ export default function TrainingPage() {
                 {!isProcessing && errorCount > 0 && (
                   <Button
                     onClick={retryFailed}
-                    className="w-full mt-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 h-12"
+                    className="w-full mt-3 bg-red-500/20 hover:bg-red-500/30 text-red-600 border border-red-500/30 h-12"
                     variant="outline"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
@@ -731,7 +731,7 @@ export default function TrainingPage() {
                   </Button>
                 )}
 
-                <p className="text-slate-500 text-xs text-center mt-4">
+                <p className="text-muted-foreground text-xs text-center mt-4">
                   * Gemini AI가 각 파일을 분석하여 점수, 태그, 요약을 추출하고 DB에 저장합니다.<br/>
                   * 큰 파일은 처리 시간이 오래 걸릴 수 있습니다. (최대 200MB)
                 </p>
@@ -739,13 +739,13 @@ export default function TrainingPage() {
             </Card>
 
             {/* AI 학습 강화 */}
-            <Card className="bg-slate-900/80 border-[#1e3a5f] mt-6">
+            <Card className="bg-card border-border mt-6">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-purple-400" />
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-purple-600" />
                   AI 학습 강화
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-muted-foreground">
                   업로드된 포트폴리오의 벡터 임베딩을 재생성하거나, Claude로 15개 카테고리 심층 분석을 실행합니다.
                 </CardDescription>
               </CardHeader>
@@ -753,11 +753,11 @@ export default function TrainingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* 전체 재임베딩 */}
                   <div className="p-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
-                    <h3 className="text-emerald-400 font-medium mb-2 flex items-center gap-2">
+                    <h3 className="text-emerald-600 font-medium mb-2 flex items-center gap-2">
                       <Database className="w-4 h-4" />
                       벡터 재임베딩
                     </h3>
-                    <p className="text-slate-400 text-xs mb-3">
+                    <p className="text-muted-foreground text-xs mb-3">
                       메타데이터 기반으로 청크를 재구성하고 OpenAI 임베딩을 재생성합니다.
                     </p>
                     <Button
@@ -791,7 +791,7 @@ export default function TrainingPage() {
                         setIsRebuilding(false)
                       }}
                       disabled={isRebuilding}
-                      className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
+                      className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 border border-emerald-500/30"
                       variant="outline"
                     >
                       {isRebuilding ? (
@@ -810,11 +810,11 @@ export default function TrainingPage() {
 
                   {/* 심층 분석 */}
                   <div className="p-4 rounded-lg border border-purple-500/20 bg-purple-500/5">
-                    <h3 className="text-purple-400 font-medium mb-2 flex items-center gap-2">
+                    <h3 className="text-purple-600 font-medium mb-2 flex items-center gap-2">
                       <Brain className="w-4 h-4" />
                       심층 분석 (Claude)
                     </h3>
-                    <p className="text-slate-400 text-xs mb-3">
+                    <p className="text-muted-foreground text-xs mb-3">
                       미분석 포트폴리오를 Claude로 15개 카테고리 심층 분석합니다. 5개씩 배치 처리.
                     </p>
                     <Button
@@ -847,7 +847,7 @@ export default function TrainingPage() {
                         setIsDeepAnalyzing(false)
                       }}
                       disabled={isDeepAnalyzing}
-                      className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
+                      className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 border border-purple-500/30"
                       variant="outline"
                     >
                       {isDeepAnalyzing ? (
@@ -875,32 +875,32 @@ export default function TrainingPage() {
         {activeTab === "data" && (
           <>
             {/* 전체 통계 */}
-            <Card className="bg-slate-900/80 border-[#1e3a5f] mb-6">
+            <Card className="bg-card border-border mb-6">
               <CardContent className="pt-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-3xl font-bold text-[#5B8DEF]">{portfolios.length}</p>
-                    <p className="text-slate-400 text-sm mt-1">총 학습 데이터</p>
+                    <p className="text-3xl font-bold text-primary">{portfolios.length}</p>
+                    <p className="text-muted-foreground text-sm mt-1">총 학습 데이터</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-emerald-400">{selectedIds.length}</p>
-                    <p className="text-slate-400 text-sm mt-1">선택됨</p>
+                    <p className="text-3xl font-bold text-emerald-600">{selectedIds.length}</p>
+                    <p className="text-muted-foreground text-sm mt-1">선택됨</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-slate-400">
+                    <p className="text-3xl font-bold text-muted-foreground">
                       {portfolios.length > 0 ? Math.round(portfolios.reduce((sum: number, p: any) => sum + (p.overall_score || 0), 0) / portfolios.length) : 0}
                     </p>
-                    <p className="text-slate-400 text-sm mt-1">평균 점수</p>
+                    <p className="text-muted-foreground text-sm mt-1">평균 점수</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* 데이터 목록 */}
-            <Card className="bg-slate-900/80 border-[#1e3a5f]">
+            <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">학습 데이터 목록</CardTitle>
+                  <CardTitle className="text-foreground">학습 데이터 목록</CardTitle>
                   <div className="flex gap-2">
                     <Button
                       onClick={async () => {
@@ -917,7 +917,7 @@ export default function TrainingPage() {
                       disabled={isReclassifying}
                       variant="outline"
                       size="sm"
-                      className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                      className="border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
                     >
                       {isReclassifying ? (
                         <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -932,7 +932,7 @@ export default function TrainingPage() {
                         disabled={isDeleting}
                         variant="destructive"
                         size="sm"
-                        className="bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                        className="bg-red-500/20 text-red-600 hover:bg-red-500/30 border border-red-500/30"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
                         선택 삭제 ({selectedIds.length})
@@ -944,36 +944,36 @@ export default function TrainingPage() {
               <CardContent>
                 {isLoadingData ? (
                   <div className="text-center py-12">
-                    <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin mx-auto mb-4" />
-                    <p className="text-slate-400">데이터 로딩 중...</p>
+                    <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+                    <p className="text-muted-foreground">데이터 로딩 중...</p>
                   </div>
                 ) : portfolios.length === 0 ? (
                   <div className="text-center py-12">
-                    <Database className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                    <p className="text-slate-400 mb-2">학습 데이터가 없습니다</p>
-                    <p className="text-slate-500 text-sm">
+                    <Database className="w-12 h-12 text-muted-foreground/80 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">학습 데이터가 없습니다</p>
+                    <p className="text-muted-foreground text-sm">
                       &ldquo;파일 업로드&rdquo; 탭에서 포트폴리오를 업로드하세요
                     </p>
                   </div>
                 ) : (
                   <>
                     {/* 전체 선택 */}
-                    <div className="flex items-center gap-3 pb-3 border-b border-[#1e3a5f] mb-3">
+                    <div className="flex items-center gap-3 pb-3 border-b border-border mb-3">
                       <input
                         type="checkbox"
                         checked={selectedIds.length === portfolios.length && portfolios.length > 0}
                         onChange={toggleSelectAll}
-                        className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#5B8DEF]"
+                        className="w-4 h-4 rounded border-border bg-secondary text-primary"
                       />
-                      <span className="text-slate-400 text-sm">전체 선택</span>
+                      <span className="text-muted-foreground text-sm">전체 선택</span>
                     </div>
 
                     {/* 심층분석 통계 요약 */}
                     {Object.keys(analysisMap).length > 0 && (
-                      <div className="flex items-center gap-2 pb-3 border-b border-[#1e3a5f] mb-3">
-                        <Brain className="w-4 h-4 text-purple-400" />
-                        <span className="text-slate-400 text-sm">
-                          심층 분석 완료: <span className="text-purple-400 font-medium">{Object.keys(analysisMap).length}</span> / {portfolios.length}개
+                      <div className="flex items-center gap-2 pb-3 border-b border-border mb-3">
+                        <Brain className="w-4 h-4 text-purple-600" />
+                        <span className="text-muted-foreground text-sm">
+                          심층 분석 완료: <span className="text-purple-600 font-medium">{Object.keys(analysisMap).length}</span> / {portfolios.length}개
                         </span>
                       </div>
                     )}
@@ -988,62 +988,62 @@ export default function TrainingPage() {
                             <div
                               className={`flex items-center gap-3 p-4 rounded-lg transition-colors ${
                                 selectedIds.includes(portfolio.id)
-                                  ? "bg-[#5B8DEF]/10 border border-[#5B8DEF]/30"
+                                  ? "bg-primary/10 border border-primary/30"
                                   : isExpanded
-                                    ? "bg-slate-800 border border-slate-700"
-                                    : "bg-slate-800/50 border border-transparent hover:bg-slate-800"
+                                    ? "bg-secondary border border-border"
+                                    : "bg-secondary border border-transparent hover:bg-secondary"
                               }`}
                             >
                               <input
                                 type="checkbox"
                                 checked={selectedIds.includes(portfolio.id)}
                                 onChange={() => toggleSelect(portfolio.id)}
-                                className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#5B8DEF]"
+                                className="w-4 h-4 rounded border-border bg-secondary text-primary"
                               />
 
                               {/* 펼치기 버튼 */}
                               <button
                                 onClick={() => setExpandedId(isExpanded ? null : portfolio.id)}
-                                className="text-slate-400 hover:text-white transition-colors p-1"
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1"
                                 title={analysis ? "심층 분석 결과 보기" : "미분석"}
                               >
                                 {isExpanded ? (
                                   <ChevronDown className="w-4 h-4" />
                                 ) : (
-                                  <ChevronRight className={`w-4 h-4 ${analysis ? "text-purple-400" : ""}`} />
+                                  <ChevronRight className={`w-4 h-4 ${analysis ? "text-purple-600" : ""}`} />
                                 )}
                               </button>
 
                               <div className="flex-1 min-w-0">
-                                <p className="text-slate-200 font-medium truncate">{portfolio.file_name}</p>
+                                <p className="text-foreground font-medium truncate">{portfolio.file_name}</p>
                                 <div className="flex items-center gap-3 mt-2">
                                   {portfolio.companies?.length > 0 ? (
                                     <div className="flex items-center gap-2">
                                       {portfolio.companies.map((company: string, idx: number) => (
-                                        <span key={idx} className="text-xs px-2 py-1 bg-[#5B8DEF]/10 text-[#5B8DEF] rounded">
+                                        <span key={idx} className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
                                           {company}
                                         </span>
                                       ))}
                                     </div>
                                   ) : (
-                                    <span className="text-xs text-slate-500">회사 미지정</span>
+                                    <span className="text-xs text-muted-foreground">회사 미지정</span>
                                   )}
-                                  <span className="text-xs text-slate-500">{portfolio.year}년</span>
-                                  <span className="text-xs text-slate-500">{portfolio.document_type}</span>
+                                  <span className="text-xs text-muted-foreground">{portfolio.year}년</span>
+                                  <span className="text-xs text-muted-foreground">{portfolio.document_type}</span>
                                   {analysis && (
-                                    <span className="text-xs px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded">심층분석</span>
+                                    <span className="text-xs px-2 py-0.5 bg-purple-500/10 text-purple-600 rounded">심층분석</span>
                                   )}
                                 </div>
                               </div>
 
                               <div className="text-right shrink-0">
-                                <p className="text-[#5B8DEF] font-bold text-lg">{portfolio.overall_score}점</p>
+                                <p className="text-primary font-bold text-lg">{portfolio.overall_score}점</p>
                                 <div className="flex gap-1 mt-1">
-                                  <span className="text-xs text-slate-500">논리 {portfolio.logic_score}</span>
-                                  <span className="text-xs text-slate-500">구체 {portfolio.specificity_score}</span>
-                                  <span className="text-xs text-slate-500">가독 {portfolio.readability_score}</span>
+                                  <span className="text-xs text-muted-foreground">논리 {portfolio.logic_score}</span>
+                                  <span className="text-xs text-muted-foreground">구체 {portfolio.specificity_score}</span>
+                                  <span className="text-xs text-muted-foreground">가독 {portfolio.readability_score}</span>
                                 </div>
-                                <p className="text-slate-500 text-xs mt-1">
+                                <p className="text-muted-foreground text-xs mt-1">
                                   {new Date(portfolio.created_at).toLocaleDateString('ko-KR')}
                                 </p>
                               </div>
@@ -1053,7 +1053,7 @@ export default function TrainingPage() {
                                   href={portfolio.file_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-slate-500 hover:text-[#5B8DEF] transition-colors p-2"
+                                  className="text-muted-foreground hover:text-primary transition-colors p-2"
                                   title="파일 보기"
                                 >
                                   <Eye className="w-4 h-4" />
@@ -1063,7 +1063,7 @@ export default function TrainingPage() {
                               <button
                                 onClick={() => handleDelete(portfolio.id)}
                                 disabled={isDeleting}
-                                className="text-slate-500 hover:text-red-400 transition-colors p-2"
+                                className="text-muted-foreground hover:text-red-600 transition-colors p-2"
                                 title="삭제"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -1072,23 +1072,23 @@ export default function TrainingPage() {
 
                             {/* 펼침: 심층 분석 결과 */}
                             {isExpanded && (
-                              <div className="ml-10 mr-4 mb-2 p-4 bg-slate-900/80 border border-slate-700 rounded-lg">
+                              <div className="ml-10 mr-4 mb-2 p-4 bg-card border border-border rounded-lg">
                                 {analysis ? (
                                   <>
                                     {/* 15개 카테고리 점수 그리드 */}
-                                    <h4 className="text-sm font-medium text-purple-400 mb-3 flex items-center gap-2">
+                                    <h4 className="text-sm font-medium text-purple-600 mb-3 flex items-center gap-2">
                                       <Brain className="w-4 h-4" />
                                       심층 분석 결과 (종합 {analysis.overall_score}점)
                                     </h4>
                                     <div className="grid grid-cols-5 gap-2 mb-4">
                                       {categoryLabels.map(({ key, label }) => (
-                                        <div key={key} className="text-center p-2 bg-slate-800 rounded">
-                                          <p className="text-slate-400 text-[10px] mb-1">{label}</p>
+                                        <div key={key} className="text-center p-2 bg-secondary rounded">
+                                          <p className="text-muted-foreground text-[10px] mb-1">{label}</p>
                                           <p className={`font-bold text-sm ${
-                                            (analysis[key] || 0) >= 80 ? "text-emerald-400" :
-                                            (analysis[key] || 0) >= 60 ? "text-[#5B8DEF]" :
-                                            (analysis[key] || 0) >= 40 ? "text-amber-400" :
-                                            "text-red-400"
+                                            (analysis[key] || 0) >= 80 ? "text-emerald-600" :
+                                            (analysis[key] || 0) >= 60 ? "text-primary" :
+                                            (analysis[key] || 0) >= 40 ? "text-amber-600" :
+                                            "text-red-600"
                                           }`}>
                                             {analysis[key] || 0}
                                           </p>
@@ -1099,8 +1099,8 @@ export default function TrainingPage() {
                                     {/* 요약 */}
                                     {analysis.summary && (
                                       <div className="mb-3">
-                                        <p className="text-slate-500 text-xs mb-1">요약</p>
-                                        <p className="text-slate-300 text-sm">{analysis.summary}</p>
+                                        <p className="text-muted-foreground text-xs mb-1">요약</p>
+                                        <p className="text-foreground/80 text-sm">{analysis.summary}</p>
                                       </div>
                                     )}
 
@@ -1108,20 +1108,20 @@ export default function TrainingPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                       {analysis.strengths?.length > 0 && (
                                         <div>
-                                          <p className="text-emerald-400 text-xs mb-1">강점</p>
+                                          <p className="text-emerald-600 text-xs mb-1">강점</p>
                                           <ul className="space-y-1">
                                             {analysis.strengths.map((s: string, i: number) => (
-                                              <li key={i} className="text-slate-300 text-xs">• {s}</li>
+                                              <li key={i} className="text-foreground/80 text-xs">• {s}</li>
                                             ))}
                                           </ul>
                                         </div>
                                       )}
                                       {analysis.weaknesses?.length > 0 && (
                                         <div>
-                                          <p className="text-amber-400 text-xs mb-1">약점</p>
+                                          <p className="text-amber-600 text-xs mb-1">약점</p>
                                           <ul className="space-y-1">
                                             {analysis.weaknesses.map((w: string, i: number) => (
-                                              <li key={i} className="text-slate-300 text-xs">• {w}</li>
+                                              <li key={i} className="text-foreground/80 text-xs">• {w}</li>
                                             ))}
                                           </ul>
                                         </div>
@@ -1132,7 +1132,7 @@ export default function TrainingPage() {
                                     {analysis.key_features?.length > 0 && (
                                       <div className="mt-3 flex flex-wrap gap-1">
                                         {analysis.key_features.map((f: string, i: number) => (
-                                          <span key={i} className="text-xs px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded">
+                                          <span key={i} className="text-xs px-2 py-0.5 bg-purple-500/10 text-purple-600 rounded">
                                             {f}
                                           </span>
                                         ))}
@@ -1141,9 +1141,9 @@ export default function TrainingPage() {
                                   </>
                                 ) : (
                                   <div className="text-center py-6">
-                                    <Brain className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                                    <p className="text-slate-400 text-sm">아직 심층 분석되지 않았습니다</p>
-                                    <p className="text-slate-500 text-xs mt-1">업로드 탭 → AI 학습 강화 → 심층 분석 실행</p>
+                                    <Brain className="w-8 h-8 text-muted-foreground/80 mx-auto mb-2" />
+                                    <p className="text-muted-foreground text-sm">아직 심층 분석되지 않았습니다</p>
+                                    <p className="text-muted-foreground text-xs mt-1">업로드 탭 → AI 학습 강화 → 심층 분석 실행</p>
                                   </div>
                                 )}
                               </div>
@@ -1156,7 +1156,7 @@ export default function TrainingPage() {
                 )}
 
                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <p className="text-amber-400 text-sm">
+                  <p className="text-amber-600 text-sm">
                     ⚠️ <strong>주의:</strong> 학습 데이터를 삭제하면 AI가 해당 데이터를 더 이상 참고하지 않습니다.
                   </p>
                 </div>
@@ -1166,14 +1166,14 @@ export default function TrainingPage() {
             {/* ═══════════════════════════════════ */}
             {/* 합격자 공통점 섹션 */}
             {/* ═══════════════════════════════════ */}
-            <Card className="bg-slate-900/80 border-[#1e3a5f] mt-6">
+            <Card className="bg-card border-border mt-6">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-amber-400" />
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-amber-600" />
                     합격자 공통점
                     {patternStats && (
-                      <span className="text-sm font-normal text-slate-400 ml-2">
+                      <span className="text-sm font-normal text-muted-foreground ml-2">
                         ({patternStats.total}개)
                       </span>
                     )}
@@ -1199,7 +1199,7 @@ export default function TrainingPage() {
                     </Button>
                   </div>
                 </div>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-muted-foreground">
                   전체 포트폴리오를 분석하여 추출한 합격자 공통 패턴
                 </CardDescription>
               </CardHeader>
@@ -1208,8 +1208,8 @@ export default function TrainingPage() {
                 {extractMessage && (
                   <div className={`mb-4 p-3 rounded-lg text-sm ${
                     extractMessage.startsWith("✅")
-                      ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
-                      : "bg-red-500/10 border border-red-500/20 text-red-300"
+                      ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-700"
+                      : "bg-red-500/10 border border-red-500/20 text-red-700"
                   }`}>
                     {extractMessage}
                   </div>
@@ -1217,9 +1217,9 @@ export default function TrainingPage() {
 
                 {patterns.length === 0 ? (
                   <div className="text-center py-12">
-                    <Lightbulb className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                    <p className="text-slate-400 mb-2">아직 추출된 공통점이 없습니다</p>
-                    <p className="text-slate-500 text-sm">위의 &quot;공통점 추출&quot; 버튼을 클릭하세요</p>
+                    <Lightbulb className="w-12 h-12 text-muted-foreground/80 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">아직 추출된 공통점이 없습니다</p>
+                    <p className="text-muted-foreground text-sm">위의 &quot;공통점 추출&quot; 버튼을 클릭하세요</p>
                   </div>
                 ) : (
                   <>
@@ -1229,8 +1229,8 @@ export default function TrainingPage() {
                         onClick={() => setActivePatternTab("general")}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
                           activePatternTab === "general"
-                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                            : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                            ? "bg-amber-500/20 text-amber-700 border border-amber-500/30"
+                            : "bg-secondary text-muted-foreground border border-border hover:border-border"
                         }`}
                       >
                         <Star className="w-3 h-3" />
@@ -1244,8 +1244,8 @@ export default function TrainingPage() {
                             onClick={() => setActivePatternTab(company)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
                               activePatternTab === company
-                                ? "bg-[#5B8DEF]/20 text-[#5B8DEF] border border-[#5B8DEF]/30"
-                                : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                                ? "bg-primary/20 text-primary border border-primary/30"
+                                : "bg-secondary text-muted-foreground border border-border hover:border-border"
                             }`}
                           >
                             <Building2 className="w-3 h-3" />
@@ -1260,29 +1260,29 @@ export default function TrainingPage() {
                       {filteredPatterns.map((pattern) => (
                         <div
                           key={pattern.id}
-                          className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-slate-600 transition-colors"
+                          className="p-3 bg-secondary border border-border rounded-lg hover:border-border transition-colors"
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
-                              <span className="text-[#5B8DEF] font-bold text-xs">{pattern.pattern_number}</span>
+                            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0 border border-border">
+                              <span className="text-primary font-bold text-xs">{pattern.pattern_number}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-white font-medium text-sm">{pattern.title}</h3>
+                                <h3 className="text-foreground font-medium text-sm">{pattern.title}</h3>
                                 <span className={`px-2 py-0.5 text-xs rounded-full border ${importanceBadge(pattern.importance)}`}>
                                   {importanceLabel(pattern.importance)}
                                 </span>
                               </div>
-                              <p className="text-slate-400 text-xs leading-relaxed">{pattern.description}</p>
+                              <p className="text-muted-foreground text-xs leading-relaxed">{pattern.description}</p>
                               {pattern.example_files?.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
                                   {pattern.example_files.slice(0, 3).map((file, idx) => (
-                                    <span key={idx} className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded">
+                                    <span key={idx} className="text-[10px] px-1.5 py-0.5 bg-secondary text-muted-foreground rounded">
                                       {file}
                                     </span>
                                   ))}
                                   {pattern.example_files.length > 3 && (
-                                    <span className="text-[10px] text-slate-500">+{pattern.example_files.length - 3}</span>
+                                    <span className="text-[10px] text-muted-foreground">+{pattern.example_files.length - 3}</span>
                                   )}
                                 </div>
                               )}
@@ -1293,7 +1293,7 @@ export default function TrainingPage() {
                     </div>
 
                     {/* 하단 통계 */}
-                    <div className="mt-4 text-center text-slate-500 text-xs">
+                    <div className="mt-4 text-center text-muted-foreground text-xs">
                       총 {patternStats?.total}개 | 일반 {patternStats?.general}개 | 회사별 {patternStats?.company}개
                     </div>
                   </>

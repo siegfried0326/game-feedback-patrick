@@ -72,11 +72,11 @@ type AnalysisItem = {
 }
 
 function getGrade(score: number) {
-  if (score >= 90) return { label: "S", color: "from-amber-400 to-yellow-500", border: "border-amber-400/60", glow: "shadow-amber-400/20", text: "text-amber-400", bg: "bg-amber-400/10" }
-  if (score >= 80) return { label: "A", color: "from-purple-400 to-violet-500", border: "border-purple-400/60", glow: "shadow-purple-400/20", text: "text-purple-400", bg: "bg-purple-400/10" }
-  if (score >= 70) return { label: "B", color: "from-blue-400 to-cyan-500", border: "border-blue-400/60", glow: "shadow-blue-400/20", text: "text-blue-400", bg: "bg-blue-400/10" }
-  if (score >= 60) return { label: "C", color: "from-green-400 to-emerald-500", border: "border-green-400/60", glow: "shadow-green-400/20", text: "text-green-400", bg: "bg-green-400/10" }
-  return { label: "D", color: "from-slate-400 to-gray-500", border: "border-slate-400/60", glow: "shadow-slate-400/20", text: "text-slate-400", bg: "bg-slate-400/10" }
+  if (score >= 90) return { label: "S", color: "from-amber-400 to-yellow-500", border: "border-amber-500/60", glow: "shadow-amber-400/20", text: "text-amber-600", bg: "bg-amber-400/10" }
+  if (score >= 80) return { label: "A", color: "from-purple-400 to-violet-500", border: "border-purple-500/60", glow: "shadow-purple-400/20", text: "text-purple-600", bg: "bg-purple-400/10" }
+  if (score >= 70) return { label: "B", color: "from-blue-400 to-cyan-500", border: "border-blue-500/60", glow: "shadow-blue-400/20", text: "text-blue-600", bg: "bg-blue-400/10" }
+  if (score >= 60) return { label: "C", color: "from-green-400 to-emerald-500", border: "border-green-500/60", glow: "shadow-green-400/20", text: "text-green-600", bg: "bg-green-400/10" }
+  return { label: "D", color: "from-slate-400 to-gray-500", border: "border-slate-400/60", glow: "shadow-slate-400/20", text: "text-muted-foreground", bg: "bg-slate-400/10" }
 }
 
 export default function ProjectsPage() {
@@ -248,45 +248,45 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a]">
+    <main className="min-h-screen bg-secondary">
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" /> 홈으로 돌아가기
           </Link>
-          <Link href="/mypage" className="text-sm text-slate-400 hover:text-white transition-colors">
+          <Link href="/mypage" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             구독·결제 →
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-white mb-2">프로젝트</h1>
-        <p className="text-sm text-slate-400 mb-8">분석 결과를 프로젝트 단위로 저장·관리하고 버전별로 비교해보세요.</p>
+        <h1 className="text-3xl font-black text-foreground mb-2">프로젝트</h1>
+        <p className="text-sm text-muted-foreground mb-8">분석 결과를 프로젝트 단위로 저장·관리하고 버전별로 비교해보세요.</p>
 
         {message && (
-          <div className={`mb-6 p-4 rounded-lg border ${message.type === "success" ? "bg-green-400/10 border-green-400/30 text-green-400" : "bg-red-400/10 border-red-400/30 text-red-400"}`}>
+          <div className={`mb-6 p-4 rounded-lg border ${message.type === "success" ? "bg-green-400/10 border-green-500/30 text-green-600" : "bg-red-400/10 border-red-500/30 text-red-600"}`}>
             {message.text}
           </div>
         )}
 
         {/* 프로젝트 인벤토리 */}
-        <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6">
+        <div className="bg-card rounded-2xl border border-border p-6">
           {!selectedProject ? (
             <>
               {/* Level 1: 프로젝트 목록 */}
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Swords className="w-5 h-5 text-[#5B8DEF]" /> 프로젝트 인벤토리
+                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Swords className="w-5 h-5 text-primary" /> 프로젝트 인벤토리
                 </h2>
-                <span className="text-xs text-slate-500">{projects.length}개 프로젝트</span>
+                <span className="text-xs text-muted-foreground">{projects.length}개 프로젝트</span>
               </div>
-              <div className="mb-5 flex items-center gap-2 text-xs text-slate-500">
+              <div className="mb-5 flex items-center gap-2 text-xs text-muted-foreground">
                 <Lock className="w-3 h-3" />
                 <span>본인만 열람 가능 | 관리자 접근 불가</span>
               </div>
@@ -294,11 +294,11 @@ export default function ProjectsPage() {
               {projects.some(p => p.best_score !== null) && (
                 <div className="mb-5 flex flex-wrap gap-3 text-xs">
                   {[
-                    { label: "S", range: "90+", color: "text-amber-400 border-amber-400/40" },
-                    { label: "A", range: "80-89", color: "text-purple-400 border-purple-400/40" },
-                    { label: "B", range: "70-79", color: "text-blue-400 border-blue-400/40" },
-                    { label: "C", range: "60-69", color: "text-green-400 border-green-400/40" },
-                    { label: "D", range: "~59", color: "text-slate-400 border-slate-400/40" },
+                    { label: "S", range: "90+", color: "text-amber-600 border-amber-500/40" },
+                    { label: "A", range: "80-89", color: "text-purple-600 border-purple-500/40" },
+                    { label: "B", range: "70-79", color: "text-blue-600 border-blue-500/40" },
+                    { label: "C", range: "60-69", color: "text-green-600 border-green-500/40" },
+                    { label: "D", range: "~59", color: "text-muted-foreground border-slate-400/40" },
                   ].map(g => (
                     <div key={g.label} className={`flex items-center gap-1.5 px-2 py-1 rounded border ${g.color}`}>
                       <span className="font-bold">{g.label}</span>
@@ -315,7 +315,7 @@ export default function ProjectsPage() {
                   return (
                     <div
                       key={project.id}
-                      className={`group relative bg-[#0d1b2a] rounded-xl border-2 ${grade ? grade.border : "border-[#1e3a5f]"} p-4 hover:shadow-lg ${grade ? grade.glow : ""} transition-all duration-200 text-left flex flex-col min-h-[160px]`}
+                      className={`group relative bg-secondary rounded-xl border-2 ${grade ? grade.border : "border-border"} p-4 hover:shadow-lg ${grade ? grade.glow : ""} transition-all duration-200 text-left flex flex-col min-h-[160px]`}
                     >
                       {grade && (
                         <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color} flex items-center justify-center text-white font-black text-sm shadow-lg`}>
@@ -325,47 +325,47 @@ export default function ProjectsPage() {
                       <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="p-1 rounded-md hover:bg-slate-800 text-slate-500 hover:text-white transition-colors" onClick={(e) => e.stopPropagation()}>
+                            <button className="p-1 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" onClick={(e) => e.stopPropagation()}>
                               <MoreVertical className="w-4 h-4" />
                             </button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-[#0f1d32] border-[#1e3a5f] text-white min-w-[140px]">
-                            <DropdownMenuItem className="text-slate-300 hover:text-white focus:text-white focus:bg-slate-800 cursor-pointer" onClick={(e) => { e.stopPropagation(); setRenamingProjectId(project.id); setRenameValue(project.name) }}>
+                          <DropdownMenuContent className="bg-secondary border-border text-foreground min-w-[140px]">
+                            <DropdownMenuItem className="text-foreground/80 hover:text-foreground focus:text-foreground focus:bg-secondary cursor-pointer" onClick={(e) => { e.stopPropagation(); setRenamingProjectId(project.id); setRenameValue(project.name) }}>
                               <Pencil className="w-3.5 h-3.5 mr-2" /> 이름 변경
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-[#1e3a5f]" />
-                            <DropdownMenuItem className="text-red-400 hover:text-red-300 focus:text-red-300 focus:bg-red-500/10 cursor-pointer" onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: "project", id: project.id, name: project.name }) }}>
+                            <DropdownMenuSeparator className="bg-border" />
+                            <DropdownMenuItem className="text-red-600 hover:text-red-700 focus:text-red-700 focus:bg-red-500/10 cursor-pointer" onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: "project", id: project.id, name: project.name }) }}>
                               <Trash2 className="w-3.5 h-3.5 mr-2" /> 삭제
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                       <button onClick={() => !isRenaming && handleOpenProject(project)} className="flex flex-col flex-1 text-left w-full" disabled={isRenaming}>
-                        <div className={`w-10 h-10 rounded-lg ${grade ? grade.bg : "bg-slate-800"} flex items-center justify-center mb-3`}>
-                          <FolderOpen className={`w-5 h-5 ${grade ? grade.text : "text-slate-500"}`} />
+                        <div className={`w-10 h-10 rounded-lg ${grade ? grade.bg : "bg-secondary"} flex items-center justify-center mb-3`}>
+                          <FolderOpen className={`w-5 h-5 ${grade ? grade.text : "text-muted-foreground"}`} />
                         </div>
                         {isRenaming ? (
                           <div className="flex items-center gap-1 mb-1 w-full" onClick={(e) => e.stopPropagation()}>
-                            <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleRename(project.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }} autoFocus className="bg-slate-800 text-white text-xs rounded px-2 py-1 border border-[#5B8DEF] outline-none w-full" />
-                            <button onClick={() => handleRename(project.id)} className="p-1 rounded hover:bg-slate-800 text-[#5B8DEF]">
+                            <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleRename(project.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }} autoFocus className="bg-secondary text-foreground text-xs rounded px-2 py-1 border border-primary outline-none w-full" />
+                            <button onClick={() => handleRename(project.id)} className="p-1 rounded hover:bg-secondary text-primary">
                               <Check className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ) : (
-                          <p className="text-white text-xs font-medium truncate w-full mb-1 pr-4">{project.name}</p>
+                          <p className="text-foreground text-xs font-medium truncate w-full mb-1 pr-4">{project.name}</p>
                         )}
                         <div className="flex items-center gap-1 mb-1">
-                          <FileText className="w-3 h-3 text-slate-500" />
-                          <span className="text-xs text-slate-500">{project.analysis_count}개 문서</span>
+                          <FileText className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{project.analysis_count}개 문서</span>
                         </div>
                         {project.best_score !== null && (
                           <div className="flex items-center gap-1 mb-1">
-                            <Star className={`w-3.5 h-3.5 ${grade ? grade.text : "text-slate-500"}`} />
-                            <span className={`font-bold text-sm ${grade ? grade.text : "text-slate-400"}`}>{project.best_score}</span>
-                            <span className="text-slate-600 text-xs">최고</span>
+                            <Star className={`w-3.5 h-3.5 ${grade ? grade.text : "text-muted-foreground"}`} />
+                            <span className={`font-bold text-sm ${grade ? grade.text : "text-muted-foreground"}`}>{project.best_score}</span>
+                            <span className="text-muted-foreground/80 text-xs">최고</span>
                           </div>
                         )}
-                        <div className="mt-auto flex items-center gap-1 text-[10px] text-slate-600 group-hover:text-[#5B8DEF] transition-colors">
+                        <div className="mt-auto flex items-center gap-1 text-[10px] text-muted-foreground/80 group-hover:text-primary transition-colors">
                           <span>열기</span>
                           <ChevronRight className="w-3 h-3" />
                         </div>
@@ -376,31 +376,31 @@ export default function ProjectsPage() {
 
                 {/* 잠긴 슬롯 (무료 플랜) */}
                 {!isPaidPlan && projects.length >= 1 && [1, 2].map(i => (
-                  <Link key={`locked-${i}`} href="/pricing" className="relative bg-[#0d1b2a]/30 rounded-xl border-2 border-dashed border-slate-700/50 p-4 flex flex-col items-center justify-center min-h-[160px] group hover:border-amber-400/30 transition-colors">
-                    <Lock className="w-8 h-8 text-slate-700 group-hover:text-amber-400/50 transition-colors mb-2" />
-                    <p className="text-xs text-slate-700 group-hover:text-amber-400/70 font-medium transition-colors">구독 필요</p>
-                    <p className="text-[10px] text-slate-800 group-hover:text-slate-600 mt-1 transition-colors">요금제 보기</p>
+                  <Link key={`locked-${i}`} href="/pricing" className="relative bg-secondary/30 rounded-xl border-2 border-dashed border-border p-4 flex flex-col items-center justify-center min-h-[160px] group hover:border-amber-500/30 transition-colors">
+                    <Lock className="w-8 h-8 text-muted-foreground/80 group-hover:text-amber-600/50 transition-colors mb-2" />
+                    <p className="text-xs text-muted-foreground/80 group-hover:text-amber-600/70 font-medium transition-colors">구독 필요</p>
+                    <p className="text-[10px] text-slate-800 group-hover:text-muted-foreground/80 mt-1 transition-colors">요금제 보기</p>
                   </Link>
                 ))}
 
                 {(isPaidPlan || projects.length === 0) && (
                   showNewProjectInput ? (
-                    <div className="relative bg-[#0d1b2a] rounded-xl border-2 border-[#5B8DEF] p-4 flex flex-col min-h-[160px]">
-                      <p className="text-xs text-slate-400 mb-3">프로젝트 이름</p>
-                      <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleCreateProject(); if (e.key === "Escape") { setShowNewProjectInput(false); setNewProjectName("") } }} placeholder="예: 넥슨 포트폴리오" autoFocus className="bg-slate-800 text-white text-xs rounded-lg px-3 py-2 border border-[#1e3a5f] focus:border-[#5B8DEF] outline-none mb-3 w-full" />
+                    <div className="relative bg-secondary rounded-xl border-2 border-primary p-4 flex flex-col min-h-[160px]">
+                      <p className="text-xs text-muted-foreground mb-3">프로젝트 이름</p>
+                      <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleCreateProject(); if (e.key === "Escape") { setShowNewProjectInput(false); setNewProjectName("") } }} placeholder="예: 넥슨 포트폴리오" autoFocus className="bg-secondary text-foreground text-xs rounded-lg px-3 py-2 border border-border focus:border-primary outline-none mb-3 w-full" />
                       <div className="flex gap-2 mt-auto">
-                        <Button onClick={handleCreateProject} disabled={creatingNewProject || !newProjectName.trim()} className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs px-3 py-1 h-7 flex-1">
+                        <Button onClick={handleCreateProject} disabled={creatingNewProject || !newProjectName.trim()} className="bg-primary hover:bg-primary/90 text-white text-xs px-3 py-1 h-7 flex-1">
                           {creatingNewProject ? <Loader2 className="w-3 h-3 animate-spin" /> : "생성"}
                         </Button>
-                        <Button onClick={() => { setShowNewProjectInput(false); setNewProjectName("") }} variant="outline" className="border-[#1e3a5f] text-slate-400 text-xs px-3 py-1 h-7">취소</Button>
+                        <Button onClick={() => { setShowNewProjectInput(false); setNewProjectName("") }} variant="outline" className="border-border text-muted-foreground text-xs px-3 py-1 h-7">취소</Button>
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => setShowNewProjectInput(true)} className="relative bg-[#0d1b2a]/50 rounded-xl border-2 border-dashed border-[#1e3a5f]/50 p-4 flex flex-col items-center justify-center min-h-[160px] hover:border-[#5B8DEF]/30 transition-colors group">
-                      <div className="w-10 h-10 rounded-lg bg-slate-800/50 flex items-center justify-center mb-2 group-hover:bg-[#5B8DEF]/10 transition-colors">
-                        <Plus className="w-5 h-5 text-slate-700 group-hover:text-[#5B8DEF] transition-colors" />
+                    <button onClick={() => setShowNewProjectInput(true)} className="relative bg-secondary/50 rounded-xl border-2 border-dashed border-border/50 p-4 flex flex-col items-center justify-center min-h-[160px] hover:border-primary/30 transition-colors group">
+                      <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-2 group-hover:bg-primary/10 transition-colors">
+                        <Plus className="w-5 h-5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
                       </div>
-                      <p className="text-[10px] text-slate-700 group-hover:text-slate-500 transition-colors">새 프로젝트</p>
+                      <p className="text-[10px] text-muted-foreground/80 group-hover:text-muted-foreground transition-colors">새 프로젝트</p>
                     </button>
                   )
                 )}
@@ -408,11 +408,11 @@ export default function ProjectsPage() {
 
               {projects.length === 0 && !showNewProjectInput && (
                 <div className="text-center py-12">
-                  <div className="w-20 h-20 rounded-2xl bg-[#162a4a] flex items-center justify-center mx-auto mb-4">
-                    <Swords className="w-10 h-10 text-slate-600" />
+                  <div className="w-20 h-20 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+                    <Swords className="w-10 h-10 text-muted-foreground/80" />
                   </div>
-                  <p className="text-slate-400 mb-1 font-medium">프로젝트가 비어있습니다</p>
-                  <p className="text-slate-500 text-sm mb-6">위의 + 버튼을 눌러 첫 프로젝트를 만드세요!</p>
+                  <p className="text-muted-foreground mb-1 font-medium">프로젝트가 비어있습니다</p>
+                  <p className="text-muted-foreground text-sm mb-6">위의 + 버튼을 눌러 첫 프로젝트를 만드세요!</p>
                 </div>
               )}
             </>
@@ -421,47 +421,47 @@ export default function ProjectsPage() {
               {/* Level 2: 프로젝트 상세 */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <button onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <button onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
                     <ArrowLeft className="w-5 h-5" />
                   </button>
                   <div className="flex items-center gap-2">
                     {renamingProjectId === selectedProject.id ? (
                       <div className="flex items-center gap-2">
-                        <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
-                        <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleRename(selectedProject.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }} autoFocus className="bg-slate-800 text-white text-lg font-semibold rounded px-2 py-1 border border-[#5B8DEF] outline-none" />
-                        <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded hover:bg-slate-800 text-[#5B8DEF]">
+                        <FolderOpen className="w-5 h-5 text-primary" />
+                        <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleRename(selectedProject.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }} autoFocus className="bg-secondary text-foreground text-lg font-semibold rounded px-2 py-1 border border-primary outline-none" />
+                        <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded hover:bg-secondary text-primary">
                           <Check className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded hover:bg-slate-800 text-slate-500">
+                        <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded hover:bg-secondary text-muted-foreground">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
                     ) : (
                       <div>
                         <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <FolderOpen className="w-5 h-5 text-[#5B8DEF]" />
+                          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <FolderOpen className="w-5 h-5 text-primary" />
                             {selectedProject.name}
                           </h2>
-                          <button onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }} className="p-1 rounded hover:bg-slate-800 text-slate-600 hover:text-slate-300 transition-colors" title="이름 변경">
+                          <button onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }} className="p-1 rounded hover:bg-secondary text-muted-foreground/80 hover:text-foreground/80 transition-colors" title="이름 변경">
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })} className="p-1 rounded hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-colors" title="프로젝트 삭제">
+                          <button onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })} className="p-1 rounded hover:bg-red-500/10 text-muted-foreground/80 hover:text-red-600 transition-colors" title="프로젝트 삭제">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <p className="text-xs text-slate-500">{projectAnalyses.length}개 문서</p>
+                        <p className="text-xs text-muted-foreground">{projectAnalyses.length}개 문서</p>
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {projectAnalyses.length >= 2 && (
-                    <Button size="sm" variant={showComparison ? "default" : "outline"} onClick={() => setShowComparison(!showComparison)} className={showComparison ? "bg-purple-500 hover:bg-purple-600 text-white text-xs" : "border-purple-500/30 text-purple-400 hover:bg-purple-500/10 text-xs"}>
+                    <Button size="sm" variant={showComparison ? "default" : "outline"} onClick={() => setShowComparison(!showComparison)} className={showComparison ? "bg-purple-500 hover:bg-purple-600 text-white text-xs" : "border-purple-500/30 text-purple-600 hover:bg-purple-500/10 text-xs"}>
                       <BarChart3 className="w-3.5 h-3.5 mr-1" /> 그래프뷰 {showComparison ? "숨기기" : "보기"}
                     </Button>
                   )}
-                  <Button asChild size="sm" className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white text-xs">
+                  <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs">
                     <Link href={`/analyze?projectId=${selectedProject.id}`}>
                       <Plus className="w-3.5 h-3.5 mr-1" /> 문서 분석하기
                     </Link>
@@ -473,26 +473,26 @@ export default function ProjectsPage() {
               {showComparison && projectAnalyses.length >= 2 && (
                 <div className="mb-6">
                   {isPaidPlan ? (
-                    <div className="bg-slate-900/80 border border-purple-500/20 rounded-xl p-6">
-                      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-purple-400" />
+                    <div className="bg-card border border-purple-500/20 rounded-xl p-6">
+                      <h3 className="text-foreground font-semibold mb-4 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-purple-600" />
                         버전별 점수 비교
                       </h3>
                       <VersionComparison analyses={projectAnalyses} />
                     </div>
                   ) : (
-                    <div className="relative bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-8 text-center">
-                      <div className="absolute inset-0 bg-[#0d1b2a]/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10">
-                        <Lock className="w-8 h-8 text-slate-500 mb-3" />
-                        <p className="text-white font-medium mb-1">구독 시 이용 가능</p>
-                        <p className="text-slate-400 text-sm mb-4">버전별 점수 비교 기능은 구독자 전용입니다.</p>
-                        <Button asChild size="sm" className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                    <div className="relative bg-card border border-border rounded-xl p-8 text-center">
+                      <div className="absolute inset-0 bg-secondary/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10">
+                        <Lock className="w-8 h-8 text-muted-foreground mb-3" />
+                        <p className="text-foreground font-medium mb-1">구독 시 이용 가능</p>
+                        <p className="text-muted-foreground text-sm mb-4">버전별 점수 비교 기능은 구독자 전용입니다.</p>
+                        <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white">
                           <Link href="/pricing">요금제 보기</Link>
                         </Button>
                       </div>
                       <div className="opacity-20">
-                        <div className="h-48 bg-slate-800 rounded-lg mb-4" />
-                        <div className="h-32 bg-slate-800 rounded-lg" />
+                        <div className="h-48 bg-secondary rounded-lg mb-4" />
+                        <div className="h-32 bg-secondary rounded-lg" />
                       </div>
                     </div>
                   )}
@@ -501,7 +501,7 @@ export default function ProjectsPage() {
 
               {loadingAnalyses ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 </div>
               ) : projectAnalyses.length > 0 ? (
                 <div className="space-y-4">
@@ -509,38 +509,38 @@ export default function ProjectsPage() {
                     <div key={groupName}>
                       {items.length >= 2 && (
                         <div className="flex items-center gap-2 mb-2 px-1">
-                          <FileText className="w-3.5 h-3.5 text-slate-500" />
-                          <span className="text-xs text-slate-400 font-medium">{groupName}</span>
-                          <span className="text-[10px] text-slate-600">(v1~v{items.length})</span>
+                          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground font-medium">{groupName}</span>
+                          <span className="text-[10px] text-muted-foreground/80">(v1~v{items.length})</span>
                         </div>
                       )}
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         {items.map((item, versionIdx) => {
                           const grade = getGrade(item.overall_score)
                           return (
-                            <div key={item.id} className={`group/card relative bg-[#0d1b2a] rounded-xl border-2 ${grade.border} p-4 hover:shadow-lg ${grade.glow} hover:scale-[1.03] transition-all duration-200 text-left flex flex-col`}>
+                            <div key={item.id} className={`group/card relative bg-secondary rounded-xl border-2 ${grade.border} p-4 hover:shadow-lg ${grade.glow} hover:scale-[1.03] transition-all duration-200 text-left flex flex-col`}>
                               <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color} flex items-center justify-center text-white font-black text-sm shadow-lg`}>
                                 {grade.label}
                               </div>
-                              <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name }) }} className="absolute top-2 left-2 opacity-0 group-hover/card:opacity-100 p-1 rounded-md hover:bg-red-500/10 text-slate-600 hover:text-red-400 transition-all z-10" title="삭제">
+                              <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name }) }} className="absolute top-2 left-2 opacity-0 group-hover/card:opacity-100 p-1 rounded-md hover:bg-red-500/10 text-muted-foreground/80 hover:text-red-600 transition-all z-10" title="삭제">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                               <button onClick={() => handleOpenAnalysis(item)} className="flex flex-col flex-1 text-left w-full">
                                 <div className={`w-10 h-10 rounded-lg ${grade.bg} flex items-center justify-center mb-3`}>
                                   <FileText className={`w-5 h-5 ${grade.text}`} />
                                 </div>
-                                <p className="text-white text-xs font-medium truncate w-full mb-2 pr-4">
+                                <p className="text-foreground text-xs font-medium truncate w-full mb-2 pr-4">
                                   {items.length >= 2 ? `v${versionIdx + 1}` : item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}
                                 </p>
                                 {items.length >= 2 && (
-                                  <p className="text-slate-500 text-[10px] truncate w-full mb-1">{item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}</p>
+                                  <p className="text-muted-foreground text-[10px] truncate w-full mb-1">{item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}</p>
                                 )}
                                 <div className="flex items-center gap-1 mb-1">
                                   <Star className={`w-3.5 h-3.5 ${grade.text}`} />
                                   <span className={`font-bold text-lg ${grade.text}`}>{item.overall_score}</span>
-                                  <span className="text-slate-600 text-xs">/100</span>
+                                  <span className="text-muted-foreground/80 text-xs">/100</span>
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-slate-600 mt-auto">
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 mt-auto">
                                   <Calendar className="w-2.5 h-2.5" />
                                   {formatShortDate(item.analyzed_at)}
                                 </div>
@@ -554,9 +554,9 @@ export default function ProjectsPage() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-400 mb-1">아직 분석한 문서가 없습니다</p>
-                  <Button asChild className="mt-4 bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                  <FileText className="w-12 h-12 text-muted-foreground/80 mx-auto mb-3" />
+                  <p className="text-muted-foreground mb-1">아직 분석한 문서가 없습니다</p>
+                  <Button asChild className="mt-4 bg-primary hover:bg-primary/90 text-white">
                     <Link href={`/analyze?projectId=${selectedProject.id}`}>문서 분석하기</Link>
                   </Button>
                 </div>
@@ -568,19 +568,19 @@ export default function ProjectsPage() {
 
       {/* 삭제 확인 다이얼로그 */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
-        <AlertDialogContent className="bg-[#0f1d32] border-[#1e3a5f] text-white max-w-md">
+        <AlertDialogContent className="bg-secondary border-border text-foreground max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
+            <AlertDialogTitle className="text-foreground">
               {deleteConfirm?.type === "project" ? "프로젝트를 삭제하시겠습니까?" : "분석 결과를 삭제하시겠습니까?"}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               {deleteConfirm?.type === "project"
                 ? `'${deleteConfirm?.name}' 프로젝트와 포함된 모든 분석 결과가 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`
                 : `'${deleteConfirm?.name}' 분석 결과가 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-[#1e3a5f] text-slate-400 hover:text-white hover:bg-slate-800">취소</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-border text-muted-foreground hover:text-foreground hover:bg-secondary">취소</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-red-500 hover:bg-red-600 text-white">
               {deleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               삭제
@@ -593,8 +593,8 @@ export default function ProjectsPage() {
       {selectedAnalysis && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedAnalysis(null)} />
-          <div className="relative w-full max-w-4xl mx-4 my-8 bg-[#0d1b2a] rounded-2xl border border-[#1e3a5f] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="sticky top-0 z-10 bg-[#0d1b2a] rounded-t-2xl border-b border-[#1e3a5f] p-6 flex items-center justify-between">
+          <div className="relative w-full max-w-4xl mx-4 my-8 bg-secondary rounded-2xl border border-border shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="sticky top-0 z-10 bg-secondary rounded-t-2xl border-b border-border p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {(() => {
                   const grade = getGrade(selectedAnalysis.overall_score)
@@ -604,8 +604,8 @@ export default function ProjectsPage() {
                         {grade.label}
                       </div>
                       <div>
-                        <h3 className="text-white font-semibold text-lg truncate max-w-[300px] sm:max-w-[500px]">{selectedAnalysis.file_name}</h3>
-                        <p className="text-slate-500 text-xs flex items-center gap-1">
+                        <h3 className="text-foreground font-semibold text-lg truncate max-w-[300px] sm:max-w-[500px]">{selectedAnalysis.file_name}</h3>
+                        <p className="text-muted-foreground text-xs flex items-center gap-1">
                           <Calendar className="w-3 h-3" /> {formatDate(selectedAnalysis.analyzed_at)}
                         </p>
                       </div>
@@ -613,13 +613,13 @@ export default function ProjectsPage() {
                   )
                 })()}
               </div>
-              <button onClick={() => setSelectedAnalysis(null)} className="p-2 rounded-lg hover:bg-slate-800 transition-colors text-slate-400 hover:text-white">
+              <button onClick={() => setSelectedAnalysis(null)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-6">
               {loadingDetail ? (
-                <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" /></div>
+                <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
               ) : detail ? (
                 <>
                   <div className="grid lg:grid-cols-2 gap-6">
@@ -629,41 +629,41 @@ export default function ProjectsPage() {
                   {detail.ranking && detail.ranking.total > 0 && (() => {
                     const userScore = detail.overall_score
                     const getRankGrade = (s: number) => {
-                      if (s >= 90) return { label: "합격 가능", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
-                      if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
-                      if (s >= 70) return { label: "보완 필요", color: "text-[#5B8DEF]", bg: "bg-[#5B8DEF]/10 border-[#5B8DEF]/20", emoji: "📝" }
-                      if (s >= 60) return { label: "개선 필요", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
-                      return { label: "재작성 권장", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
+                      if (s >= 90) return { label: "합격 가능", color: "text-purple-600", bg: "bg-purple-500/10 border-purple-500/20", emoji: "🏆" }
+                      if (s >= 80) return { label: "경쟁력 있음", color: "text-emerald-600", bg: "bg-emerald-500/10 border-emerald-500/20", emoji: "✅" }
+                      if (s >= 70) return { label: "보완 필요", color: "text-primary", bg: "bg-primary/10 border-primary/20", emoji: "📝" }
+                      if (s >= 60) return { label: "개선 필요", color: "text-amber-600", bg: "bg-amber-500/10 border-amber-500/20", emoji: "⚠️" }
+                      return { label: "재작성 권장", color: "text-red-600", bg: "bg-red-500/10 border-red-500/20", emoji: "🔄" }
                     }
                     const rankGrade = getRankGrade(userScore)
                     return (
-                      <div className="bg-gradient-to-br from-slate-900/80 to-[#0d1b2a] rounded-xl border border-[#5B8DEF]/30 p-6">
-                        <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                          <Trophy className="w-5 h-5 text-amber-400" /> 합격자 포트폴리오 {detail.ranking.total}개 중 내 위치
+                      <div className="bg-gradient-to-br from-secondary to-secondary rounded-xl border border-primary/30 p-6">
+                        <h4 className="text-foreground font-semibold mb-4 flex items-center gap-2">
+                          <Trophy className="w-5 h-5 text-amber-600" /> 합격자 포트폴리오 {detail.ranking.total}개 중 내 위치
                         </h4>
                         <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div className="text-center p-4 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl">
-                            <p className="text-xs text-slate-400 mb-2">내 점수</p>
-                            <p className="text-3xl font-bold text-[#5B8DEF]">
-                              {userScore}<span className="text-base text-slate-400">점</span>
+                          <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                            <p className="text-xs text-muted-foreground mb-2">내 점수</p>
+                            <p className="text-3xl font-bold text-primary">
+                              {userScore}<span className="text-base text-muted-foreground">점</span>
                             </p>
                           </div>
                           <div className={`text-center p-4 border rounded-xl ${rankGrade.bg}`}>
-                            <p className="text-xs text-slate-400 mb-2">{detail.ranking.total}개 기준 평가</p>
+                            <p className="text-xs text-muted-foreground mb-2">{detail.ranking.total}개 기준 평가</p>
                             <p className={`text-2xl font-bold ${rankGrade.color}`}>
                               {rankGrade.emoji} {rankGrade.label}
                             </p>
                           </div>
                         </div>
                         <div className="mb-6">
-                          <p className="text-slate-400 text-sm mb-3">합격 가능성 등급</p>
+                          <p className="text-muted-foreground text-sm mb-3">합격 가능성 등급</p>
                           <div className="flex gap-1">
                             {[
-                              { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-300", min: 0, max: 59 },
-                              { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-300", min: 60, max: 69 },
-                              { label: "보완 필요", range: "70~79", color: "bg-[#5B8DEF]/30", textColor: "text-blue-300", min: 70, max: 79 },
-                              { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-300", min: 80, max: 89 },
-                              { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-300", min: 90, max: 100 },
+                              { label: "재작성 권장", range: "~59", color: "bg-red-500/30", textColor: "text-red-700", min: 0, max: 59 },
+                              { label: "개선 필요", range: "60~69", color: "bg-amber-500/30", textColor: "text-amber-700", min: 60, max: 69 },
+                              { label: "보완 필요", range: "70~79", color: "bg-primary/30", textColor: "text-blue-700", min: 70, max: 79 },
+                              { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-700", min: 80, max: 89 },
+                              { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-700", min: 90, max: 100 },
                             ].map((g, i) => (
                               <div key={i} className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}>
                                 <span className="hidden sm:inline">{g.label}</span>
@@ -671,22 +671,22 @@ export default function ProjectsPage() {
                               </div>
                             ))}
                           </div>
-                          <p className="text-xs text-slate-500 mt-2 text-center">
+                          <p className="text-xs text-muted-foreground mt-2 text-center">
                             내 점수 {userScore}점 · 재작성 권장 &lt; 개선 필요 &lt; 보완 필요 &lt; 경쟁력 있음 &lt; 합격 가능
                           </p>
                         </div>
                         {detail.company_feedback && (
                           <div>
-                            <p className="text-white font-semibold text-sm mb-3">회사별 합격자 포트폴리오 특징 비교</p>
+                            <p className="text-foreground font-semibold text-sm mb-3">회사별 합격자 포트폴리오 특징 비교</p>
                             <div className="space-y-2">
                               {detail.company_feedback.split('\n\n').filter(Boolean).map((paragraph, idx) => {
                                 const parts = paragraph.split(/\*\*(.*?)\*\*/)
                                 return (
-                                  <div key={idx} className="p-3 bg-slate-800/50 border border-[#1e3a5f]/50 rounded-xl">
-                                    <p className="text-sm text-slate-300 leading-relaxed">
+                                  <div key={idx} className="p-3 bg-secondary border border-border/50 rounded-xl">
+                                    <p className="text-sm text-foreground/80 leading-relaxed">
                                       {parts.map((part, i) =>
                                         i % 2 === 1
-                                          ? <span key={i} className="text-[#5B8DEF] font-semibold">{part}</span>
+                                          ? <span key={i} className="text-primary font-semibold">{part}</span>
                                           : <span key={i}>{part}</span>
                                       )}
                                     </p>
@@ -694,7 +694,7 @@ export default function ProjectsPage() {
                                 )
                               })}
                             </div>
-                            <p className="text-xs text-slate-500 mt-3 text-center">
+                            <p className="text-xs text-muted-foreground mt-3 text-center">
                               * 실제 합격 포트폴리오와 비교 분석 · 데이터는 지속 업데이트됩니다
                             </p>
                           </div>
@@ -716,14 +716,14 @@ export default function ProjectsPage() {
                       )}
                     </>
                   ) : detail.analysis_source === "url" ? (
-                    <div className="p-4 bg-slate-900/80 border border-[#1e3a5f] rounded-xl text-center">
-                      <Eye className="w-6 h-6 text-slate-600 mx-auto mb-2" />
-                      <p className="text-slate-400 text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
+                    <div className="p-4 bg-card border border-border rounded-xl text-center">
+                      <Eye className="w-6 h-6 text-muted-foreground/80 mx-auto mb-2" />
+                      <p className="text-muted-foreground text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
                     </div>
                   ) : null}
                   {selectedProject && (
                     <div className="flex justify-center pt-4">
-                      <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+                      <Button asChild className="bg-primary hover:bg-primary/90 text-white">
                         <Link href={`/analyze?projectId=${selectedProject.id}`} onClick={() => setSelectedAnalysis(null)}>
                           수정본 다시 분석하기
                         </Link>
@@ -731,7 +731,7 @@ export default function ProjectsPage() {
                     </div>
                   )}
                 </>
-              ) : <p className="text-slate-400 text-center py-8">데이터를 불러올 수 없습니다.</p>}
+              ) : <p className="text-muted-foreground text-center py-8">데이터를 불러올 수 없습니다.</p>}
             </div>
           </div>
         </div>

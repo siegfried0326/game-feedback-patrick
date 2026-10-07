@@ -6,31 +6,31 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
-  title: "개인정보처리방침 | 아카이브 187(Archive187)",
-  description: "아카이브 187(Archive187) 서비스의 개인정보처리방침 안내",
+  title: "개인정보처리방침 | 문라이트 아카이브",
+  description: "문라이트 아카이브 서비스의 개인정보처리방침 안내",
 }
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-[#0d1b2a] text-slate-300">
+    <main className="min-h-screen bg-secondary text-foreground/80">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           홈으로 돌아가기
         </Link>
 
-        <h1 className="text-3xl font-bold text-white mb-2">개인정보처리방침</h1>
-        <p className="text-sm text-slate-500 mb-10">최종 수정일: 2026년 3월 27일</p>
+        <h1 className="text-3xl font-black text-foreground mb-2">개인정보처리방침</h1>
+        <p className="text-sm text-muted-foreground mb-10">최종 수정일: 2026년 3월 27일</p>
 
         <div className="space-y-8 leading-relaxed">
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제1조 (개인정보의 처리 목적)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제1조 (개인정보의 처리 목적)</h2>
             <p>
-              문라이트커리어랩(이하 &quot;회사&quot;)은 아카이브 187(Archive187) 서비스 제공을 위해 다음과 같은 목적으로 개인정보를 처리합니다.
+              문라이트커리어랩(이하 &quot;회사&quot;)은 문라이트 아카이브 서비스 제공을 위해 다음과 같은 목적으로 개인정보를 처리합니다.
               처리한 개인정보는 다음의 목적 이외의 용도로는 사용되지 않으며, 목적이 변경될 경우 사전 동의를 받겠습니다.
             </p>
             <ul className="list-disc list-inside space-y-1 mt-3">
@@ -43,18 +43,18 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제2조 (수집하는 개인정보 항목 및 수집 방법)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제2조 (수집하는 개인정보 항목 및 수집 방법)</h2>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-2">1. 수집 항목</h3>
+                <h3 className="font-medium text-foreground mb-2">1. 수집 항목</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li><span className="text-slate-400">Google 소셜 로그인:</span> 이메일 주소, 이름, 프로필 사진</li>
-                  <li><span className="text-slate-400">결제 시:</span> 이메일 주소 (나이스페이먼츠 결제창 입력 항목에 한함)</li>
-                  <li><span className="text-slate-400">서비스 이용 시:</span> 업로드한 문서 파일, 서비스 이용 기록, 접속 로그</li>
+                  <li><span className="text-muted-foreground">Google 소셜 로그인:</span> 이메일 주소, 이름, 프로필 사진</li>
+                  <li><span className="text-muted-foreground">결제 시:</span> 이메일 주소 (나이스페이먼츠 결제창 입력 항목에 한함)</li>
+                  <li><span className="text-muted-foreground">서비스 이용 시:</span> 업로드한 문서 파일, 서비스 이용 기록, 접속 로그</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-2">2. 수집 방법</h3>
+                <h3 className="font-medium text-foreground mb-2">2. 수집 방법</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Google OAuth를 통한 소셜 로그인</li>
                   <li>서비스 이용 과정에서 자동 생성·수집</li>
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제3조 (개인정보의 처리 및 보유 기간)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제3조 (개인정보의 처리 및 보유 기간)</h2>
             <ul className="list-disc list-inside space-y-1">
               <li>회원 정보: 회원 탈퇴 시까지</li>
               <li>결제 정보: 전자상거래법에 따라 5년 보관</li>
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제4조 (개인정보의 제3자 제공)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제4조 (개인정보의 제3자 제공)</h2>
             <p>
               회사는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.
             </p>
@@ -86,17 +86,17 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제5조 (개인정보 처리 위탁)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제5조 (개인정보 처리 위탁)</h2>
             <p>회사는 서비스 제공을 위해 아래와 같이 개인정보 처리를 위탁하고 있습니다.</p>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-left py-2 pr-4 text-slate-400 font-medium">수탁업체</th>
-                    <th className="text-left py-2 pr-4 text-slate-400 font-medium">위탁 업무</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 text-muted-foreground font-medium">수탁업체</th>
+                    <th className="text-left py-2 pr-4 text-muted-foreground font-medium">위탁 업무</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-border">
                   <tr>
                     <td className="py-2 pr-4">Supabase Inc.</td>
                     <td className="py-2">회원 인증, 데이터베이스 운영, 파일 저장</td>
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제6조 (이용자의 권리 및 행사 방법)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제6조 (이용자의 권리 및 행사 방법)</h2>
             <p>이용자는 언제든지 다음의 권리를 행사할 수 있습니다.</p>
             <ul className="list-disc list-inside space-y-1 mt-3">
               <li>개인정보 처리 현황 조회 및 열람 요청</li>
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
                 href="http://pf.kakao.com/_bXgIX"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#5B8DEF] hover:underline"
+                className="text-primary hover:underline"
               >
                 카카오톡 채널
               </a>
@@ -142,7 +142,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제7조 (개인정보의 안전성 확보 조치)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제7조 (개인정보의 안전성 확보 조치)</h2>
             <ul className="list-disc list-inside space-y-1">
               <li>HTTPS 암호화 통신을 통한 데이터 전송 보호</li>
               <li>Supabase Row Level Security(RLS)를 통한 데이터 접근 통제</li>
@@ -152,7 +152,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제8조 (쿠키의 사용)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제8조 (쿠키의 사용)</h2>
             <p>
               서비스는 이용자의 로그인 상태 유지를 위해 쿠키(Cookie)를 사용합니다.
               이용자는 브라우저 설정을 통해 쿠키 저장을 거부할 수 있으나,
@@ -161,7 +161,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제9조 (개인정보 보호책임자)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제9조 (개인정보 보호책임자)</h2>
             <ul className="list-disc list-inside space-y-1">
               <li>성명: 이준규</li>
               <li>소속: 문라이트커리어랩</li>
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
                   href="http://pf.kakao.com/_bXgIX"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#5B8DEF] hover:underline"
+                  className="text-primary hover:underline"
                 >
                   카카오톡 채널
                 </a>
@@ -181,7 +181,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제10조 (방침 변경)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제10조 (방침 변경)</h2>
             <p>
               이 개인정보처리방침은 법령 또는 서비스 변경에 따라 수정될 수 있으며,
               변경 시 서비스 공지 또는 이 페이지를 통해 안내드립니다.

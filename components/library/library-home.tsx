@@ -45,7 +45,7 @@ import { getDocumentUrl } from "@/lib/library/routes"
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center text-slate-500">
+    <div className="h-full w-full flex items-center justify-center text-muted-foreground">
       <Loader2 className="w-6 h-6 animate-spin" />
     </div>
   ),
@@ -173,22 +173,22 @@ export function LibraryHome({ summaries, stats }: Props) {
   return (
     <div className="space-y-4">
       {/* 상단 검색 + 통계 헤더 */}
-      <div className="rounded-2xl border border-[#1e3a5f] bg-gradient-to-br from-[#0d1f3c] via-[#0a1628] to-[#0d1f3c] p-6">
+      <div className="rounded-2xl border border-border bg-gradient-to-br from-card via-background to-card p-6">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Network className="w-5 h-5 text-[#5B8DEF]" />
-              <span className="text-xs uppercase tracking-wider text-[#5B8DEF]">GameDesignLibrary</span>
+              <Network className="w-5 h-5 text-primary" />
+              <span className="text-xs uppercase tracking-wider text-primary">GameDesignLibrary</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
+            <h1 className="text-2xl md:text-3xl font-black text-foreground">
               {stats.totalDocuments.toLocaleString()}편의 게임 디자인 자료
             </h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               80+ 디자이너 · {stats.totalEdges.toLocaleString()}개 위키링크 · 주제·계보·장르별 큐레이션
             </p>
           </div>
           <div className="flex flex-wrap gap-3 text-xs">
-            <Stat label="원칙" value={stats.byType.principle} color="#5B8DEF" />
+            <Stat label="원칙" value={stats.byType.principle} color="#0046AD" />
             <Stat label="디자이너" value={stats.byType.designer} color="#facc15" />
             <Stat label="패턴" value={stats.byType.pattern} color="#06b6d4" />
             <Stat label="안티" value={stats.byType.antipattern} color="#f87171" />
@@ -198,7 +198,7 @@ export function LibraryHome({ summaries, stats }: Props) {
 
         {/* 인스턴트 검색 */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="원칙·디자이너·게임명·태그 검색"
@@ -208,7 +208,7 @@ export function LibraryHome({ summaries, stats }: Props) {
               setSearchOpen(true)
             }}
             onFocus={() => setSearchOpen(true)}
-            className="w-full bg-slate-950/60 border border-[#1e3a5f] rounded-xl pl-11 pr-10 py-3 text-slate-200 placeholder:text-slate-500 focus:border-[#5B8DEF] focus:outline-none"
+            className="w-full bg-background border border-border rounded-xl pl-11 pr-10 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
           />
           {searchQuery && (
             <button
@@ -216,32 +216,32 @@ export function LibraryHome({ summaries, stats }: Props) {
                 setSearchQuery("")
                 setSearchOpen(false)
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/80"
             >
               <X className="w-4 h-4" />
             </button>
           )}
           {searchOpen && searchResults.length > 0 && (
-            <div className="absolute left-0 right-0 mt-2 z-50 rounded-xl border border-[#1e3a5f] bg-slate-950/95 backdrop-blur-md shadow-2xl overflow-hidden">
+            <div className="absolute left-0 right-0 mt-2 z-50 rounded-xl border border-border bg-background backdrop-blur-md shadow-2xl overflow-hidden">
               {searchResults.map((d) => (
                 <Link
                   key={d.id}
                   href={getDocumentUrl(d.type, d.slug)}
-                  className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-900 border-b border-[#1e3a5f]/50 last:border-0"
+                  className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-card border-b border-border/50 last:border-0"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm text-slate-200 truncate">{d.title}</div>
-                    <div className="text-[10px] text-slate-500 flex items-center gap-2">
+                    <div className="text-sm text-foreground truncate">{d.title}</div>
+                    <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                       <span style={{ color: TYPE_COLORS[d.type] }}>{TYPE_LABELS[d.type]}</span>
                       {d.domain && <span>· {d.domain}</span>}
                       {d.designers?.[0] && <span>· {d.designers[0]}</span>}
                     </div>
                   </div>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/80 shrink-0" />
                 </Link>
               ))}
-              <div className="px-4 py-2 text-[11px] text-slate-500 bg-slate-900/50">
-                ↵ Enter · 더 보려면 <Link href={`/library/search?q=${encodeURIComponent(searchQuery)}`} className="text-[#5B8DEF] hover:underline">전체 검색 결과 →</Link>
+              <div className="px-4 py-2 text-[11px] text-muted-foreground bg-card">
+                ↵ Enter · 더 보려면 <Link href={`/library/search?q=${encodeURIComponent(searchQuery)}`} className="text-primary hover:underline">전체 검색 결과 →</Link>
               </div>
             </div>
           )}
@@ -251,7 +251,7 @@ export function LibraryHome({ summaries, stats }: Props) {
       {/* 메인: 좌(필터) + 가운데(그래프) + 우(사이드) */}
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_280px] gap-4 h-[calc(100vh-280px)] min-h-[600px]">
         {/* 좌측 필터 */}
-        <aside className="overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-slate-900/60 p-4 space-y-5">
+        <aside className="overflow-y-auto rounded-2xl border border-border bg-card p-4 space-y-5">
           <FilterBlock title="주제별">
             {TOPIC_ORDER.map((t) => {
               const count = stats.byTopic?.[t] || 0
@@ -270,7 +270,7 @@ export function LibraryHome({ summaries, stats }: Props) {
             })}
             <Link
               href="/library/topics"
-              className="block text-[11px] text-slate-500 hover:text-[#5B8DEF] pt-2 border-t border-[#1e3a5f]"
+              className="block text-[11px] text-muted-foreground hover:text-primary pt-2 border-t border-border"
             >
               모든 주제 보기 →
             </Link>
@@ -310,7 +310,7 @@ export function LibraryHome({ summaries, stats }: Props) {
             })}
           </FilterBlock>
 
-          <div className="pt-2 border-t border-[#1e3a5f] text-[11px] text-slate-500 space-y-0.5">
+          <div className="pt-2 border-t border-border text-[11px] text-muted-foreground space-y-0.5">
             <div>표시: 노드 {filteredGraph.nodes.length}</div>
             <div>엣지: {filteredGraph.links.length}</div>
             <div>전체: {graph?.nodes.length || 0} 노드</div>
@@ -320,10 +320,10 @@ export function LibraryHome({ summaries, stats }: Props) {
         {/* 그래프 캔버스 */}
         <div
           ref={canvasRef}
-          className="rounded-2xl border border-[#1e3a5f] bg-[#050d1f] overflow-hidden relative"
+          className="rounded-2xl border border-border bg-background overflow-hidden relative"
         >
           {graphLoading ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin" />
               <p className="text-xs">그래프 로드 중…</p>
             </div>
@@ -332,12 +332,12 @@ export function LibraryHome({ summaries, stats }: Props) {
               graphData={filteredGraph}
               width={dimensions.width}
               height={dimensions.height}
-              backgroundColor="#050d1f"
+              backgroundColor="#F4F7FB"
               nodeRelSize={3}
               nodeVal={(n) => 1 + (linkCount[(n as LibraryGraphNode).id] || 0) * 0.5}
               nodeColor={(n) => (n as LibraryGraphNode).color}
               nodeLabel={(n) => (n as LibraryGraphNode).title}
-              linkColor={() => "rgba(91,141,239,0.16)"}
+              linkColor={() => "rgba(0,70,173,0.16)"}
               linkWidth={0.5}
               cooldownTime={4000}
               warmupTicks={50}
@@ -351,7 +351,7 @@ export function LibraryHome({ summaries, stats }: Props) {
                 ctx.font = `${fontSize}px sans-serif`
                 ctx.textAlign = "center"
                 ctx.textBaseline = "middle"
-                ctx.fillStyle = "rgba(226,232,240,0.85)"
+                ctx.fillStyle = "rgba(10,10,10,0.75)"
                 ctx.fillText(n.label, n.x, n.y + 4 + (linkCount[n.id] || 0) * 0.2)
               }}
             />
@@ -359,7 +359,7 @@ export function LibraryHome({ summaries, stats }: Props) {
         </div>
 
         {/* 우측 사이드 */}
-        <aside className="overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-slate-900/60 p-4 space-y-5">
+        <aside className="overflow-y-auto rounded-2xl border border-border bg-card p-4 space-y-5">
           {selected ? (
             <div className="space-y-3 text-sm">
               <div className="flex items-start justify-between gap-2">
@@ -375,29 +375,29 @@ export function LibraryHome({ summaries, stats }: Props) {
                 </span>
                 <button
                   onClick={() => setSelected(null)}
-                  className="text-slate-500 hover:text-slate-300"
+                  className="text-muted-foreground hover:text-foreground/80"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <h3 className="text-base font-semibold text-white leading-snug">
+              <h3 className="text-base font-semibold text-foreground leading-snug">
                 {selected.title}
               </h3>
-              <div className="text-xs text-slate-500 space-y-0.5">
+              <div className="text-xs text-muted-foreground space-y-0.5">
                 <div>연결: {linkCount[selected.id] || 0}개</div>
-                {selected.preview && <div className="text-emerald-400">공개 (preview: true)</div>}
+                {selected.preview && <div className="text-emerald-600">공개 (preview: true)</div>}
               </div>
               <Link
                 href={getDocumentUrl(selected.type, selected.slug)}
-                className="inline-flex items-center gap-1.5 text-xs bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-3 py-1.5 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg transition-colors"
               >
                 상세 보기 <ArrowUpRight className="w-3 h-3" />
               </Link>
             </div>
           ) : (
             <>
-              <div className="text-xs text-slate-500 leading-relaxed border-b border-[#1e3a5f] pb-3">
-                <p className="font-medium text-slate-300 mb-1">사용법</p>
+              <div className="text-xs text-muted-foreground leading-relaxed border-b border-border pb-3">
+                <p className="font-medium text-foreground/80 mb-1">사용법</p>
                 · 좌측 필터로 주제/도메인/타입 토글<br />
                 · 위 검색바에 입력하면 그래프도 축소<br />
                 · 노드 클릭 → 상세 패널<br />
@@ -405,9 +405,9 @@ export function LibraryHome({ summaries, stats }: Props) {
               </div>
 
               <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2 flex justify-between">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 flex justify-between">
                   <span>디자이너 TOP 15</span>
-                  <Link href="/library/by-designer" className="text-slate-600 hover:text-[#5B8DEF]">
+                  <Link href="/library/by-designer" className="text-muted-foreground/80 hover:text-primary">
                     전체 →
                   </Link>
                 </div>
@@ -416,17 +416,17 @@ export function LibraryHome({ summaries, stats }: Props) {
                     <Link
                       key={name}
                       href={`/library/designers/${encodeURIComponent(name)}`}
-                      className="flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-slate-800/60 transition-colors"
+                      className="flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-secondary transition-colors"
                     >
-                      <span className="text-slate-300 truncate">{name}</span>
-                      <span className="text-slate-600 text-[10px]">{count}편</span>
+                      <span className="text-foreground/80 truncate">{name}</span>
+                      <span className="text-muted-foreground/80 text-[10px]">{count}편</span>
                     </Link>
                   ))}
                 </div>
               </div>
 
               <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">바로가기</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">바로가기</div>
                 <div className="space-y-1.5">
                   <SideLink href="/library/topics" icon={<Sparkles className="w-3 h-3" />} label="주제별 모음" />
                   <SideLink href="/library/by-designer" label="디자이너별 모음" />
@@ -447,8 +447,8 @@ export function LibraryHome({ summaries, stats }: Props) {
 
 function Stat({ label, value, color }: { label: string; value: number | undefined; color: string }) {
   return (
-    <div className="px-3 py-1.5 rounded-lg border bg-slate-950/60" style={{ borderColor: color + "33" }}>
-      <div className="text-[10px] uppercase tracking-wider text-slate-500">{label}</div>
+    <div className="px-3 py-1.5 rounded-lg border bg-background" style={{ borderColor: color + "33" }}>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="text-base font-bold" style={{ color }}>{(value || 0).toLocaleString()}</div>
     </div>
   )
@@ -457,7 +457,7 @@ function Stat({ label, value, color }: { label: string; value: number | undefine
 function FilterBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">{title}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">{title}</div>
       <div className="space-y-0.5">{children}</div>
     </div>
   )
@@ -472,15 +472,15 @@ function FilterChip({
       className={
         "w-full flex items-center justify-between gap-2 text-xs px-2 py-1 rounded border transition-colors " +
         (active
-          ? "bg-slate-800/60 border-[#1e3a5f] text-slate-200"
-          : "bg-transparent border-transparent text-slate-500 hover:text-slate-300")
+          ? "bg-secondary border-border text-foreground"
+          : "bg-transparent border-transparent text-muted-foreground hover:text-foreground/80")
       }
     >
       <span className="flex items-center gap-1.5">
         <span className="w-2 h-2 rounded-full" style={{ background: color }} />
         {label}
       </span>
-      <span className="text-slate-600 text-[10px]">{count}</span>
+      <span className="text-muted-foreground/80 text-[10px]">{count}</span>
     </button>
   )
 }
@@ -489,7 +489,7 @@ function SideLink({ href, label, icon }: { href: string; label: string; icon?: R
   return (
     <Link
       href={href}
-      className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-[#5B8DEF] hover:bg-slate-800/40 px-2 py-1 rounded transition-colors"
+      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary hover:bg-secondary px-2 py-1 rounded transition-colors"
     >
       {icon}
       {label}

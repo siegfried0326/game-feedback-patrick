@@ -8,7 +8,7 @@ import { getAllSummaries, getLibraryStats } from "@/lib/library/loader"
 import { LibraryHome } from "@/components/library/library-home"
 
 export const metadata: Metadata = {
-  title: "게임 디자인 라이브러리 | Archive187",
+  title: "게임 디자인 라이브러리 | 문라이트 아카이브",
   description:
     "사쿠라이·팀 케인·미야자키 등 100+ 디자이너의 강연·인터뷰에서 추출한 1,200+ 게임 디자인 자료. 주제·계보·장르별로 큐레이션된 통합 라이브러리.",
 }

@@ -20,7 +20,7 @@ export function DocumentGrid({
 }: DocumentGridProps) {
   if (documents.length === 0) {
     return (
-      <div className="text-center text-slate-500 py-12 border border-dashed border-[#1e3a5f] rounded-2xl">
+      <div className="text-center text-muted-foreground py-12 border border-dashed border-border rounded-2xl">
         {emptyMessage}
       </div>
     )

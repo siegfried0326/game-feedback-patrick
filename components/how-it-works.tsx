@@ -36,16 +36,16 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 px-6 bg-[#0d1f3c]">
+    <section id="how-it-works" className="py-20 px-6 bg-card">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-[#5B8DEF] text-sm font-medium tracking-wide uppercase mb-4 block">
+          <span className="text-primary text-sm font-medium tracking-wide uppercase mb-4 block">
             How it works
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 text-balance">
+          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4 text-balance">
             이용 방법
           </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             업로드하면 AI가 즉시 분석합니다. 간단한 4단계로 시작하세요
           </p>
         </div>
@@ -54,21 +54,21 @@ export function HowItWorks() {
           {steps.map((step, index) => (
             <div key={index} className="relative">
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] h-px border-t-2 border-dashed border-[#1e3a5f]" />
+                <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] h-px border-t-2 border-dashed border-border" />
               )}
-              <div className="relative bg-slate-900/80 rounded-2xl p-6 border border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-colors">
+              <div className="relative bg-card rounded-2xl p-6 border border-border hover:border-primary/30 transition-colors">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-xl bg-[#5B8DEF] flex items-center justify-center shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center shrink-0">
                     <step.icon className="w-6 h-6 text-white" />
                   </div>
-                  <span className="text-4xl font-bold text-[#5B8DEF]/20">
+                  <span className="text-4xl font-bold text-primary/20">
                     {step.step}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   {step.title}
                 </h3>
-                <p className="text-sm text-slate-400 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -77,8 +77,8 @@ export function HowItWorks() {
         </div>
 
         <div className="mt-16 text-center">
-          <p className="text-slate-400 mb-4">
-            무료 플랜은 <span className="text-white font-medium">프로젝트 1개</span>, 구독하면 <span className="text-white font-medium">무제한</span>으로 프로젝트를 생성할 수 있습니다.
+          <p className="text-muted-foreground mb-4">
+            무료 플랜은 <span className="text-foreground font-medium">프로젝트 1개</span>, 구독하면 <span className="text-foreground font-medium">무제한</span>으로 프로젝트를 생성할 수 있습니다.
           </p>
         </div>
       </div>

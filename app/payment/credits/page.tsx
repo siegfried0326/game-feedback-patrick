@@ -48,8 +48,8 @@ const PACKAGES = CREDIT_PACKAGES.map(p => ({
 export default function CreditsPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     }>
       <CreditsContent />
@@ -123,7 +123,7 @@ function CreditsContent() {
         method: "cardAndEasyPay",
         orderId: orderResult.orderId!,
         amount: orderResult.amount!,
-        goodsName: `아카이브 187 분석 ${pkg.name}`,
+        goodsName: `문라이트 아카이브 분석 ${pkg.name}`,
         returnUrl: `${window.location.origin}/api/nicepay/callback`,
         mallReserved: JSON.stringify({ type: "credits" }),
         fnError: (result: { errorCode?: string; errorMsg?: string }) => {
@@ -142,16 +142,16 @@ function CreditsContent() {
   // 결제 일시 중단 — 크레딧 구매 진입 자체를 차단
   if (!PAYMENTS_ENABLED) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
-          <Lock className="w-16 h-16 text-slate-500 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-3">결제 서비스 준비 중</h1>
-          <p className="text-slate-400 mb-8 leading-relaxed">{PAYMENTS_DISABLED_MESSAGE}</p>
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
+          <h1 className="text-2xl font-black text-foreground mb-3">결제 서비스 준비 중</h1>
+          <p className="text-muted-foreground mb-8 leading-relaxed">{PAYMENTS_DISABLED_MESSAGE}</p>
           <div className="flex gap-3 justify-center">
-            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
+            <Button asChild variant="outline" className="border-border text-foreground/80 hover:text-foreground">
               <Link href="/">홈으로</Link>
             </Button>
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
               <Link href="/analyze">분석하러 가기</Link>
             </Button>
           </div>
@@ -162,20 +162,20 @@ function CreditsContent() {
 
   if (isLoggedIn === null) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     )
   }
 
   if (!isLoggedIn) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
-          <Lock className="w-16 h-16 text-slate-500 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-2">로그인이 필요합니다</h1>
-          <p className="text-slate-400 mb-6">크레딧 구매를 위해 로그인해 주세요.</p>
-          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
+          <h1 className="text-2xl font-black text-foreground mb-2">로그인이 필요합니다</h1>
+          <p className="text-muted-foreground mb-6">크레딧 구매를 위해 로그인해 주세요.</p>
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white">
             <Link href="/login?redirect=/payment/credits">로그인하기</Link>
           </Button>
         </div>
@@ -184,14 +184,14 @@ function CreditsContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a]">
+    <main className="min-h-screen bg-secondary">
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <Link href="/pricing" className="inline-flex items-center text-slate-400 hover:text-white mb-8 transition-colors">
+        <Link href="/pricing" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" /> 가격표로 돌아가기
         </Link>
 
-        <h1 className="text-3xl font-bold text-white mb-2">분석 크레딧 구매</h1>
-        <p className="text-slate-400 mb-8">필요한 만큼만 구매하세요. 크레딧은 만료되지 않습니다.</p>
+        <h1 className="text-3xl font-black text-foreground mb-2">분석 크레딧 구매</h1>
+        <p className="text-muted-foreground mb-8">필요한 만큼만 구매하세요. 크레딧은 만료되지 않습니다.</p>
 
         <div className="space-y-3 mb-8">
           {PACKAGES.map((p) => (
@@ -200,34 +200,34 @@ function CreditsContent() {
               onClick={() => setSelectedPackage(p.key)}
               className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                 selectedPackage === p.key
-                  ? "border-[#5B8DEF] bg-[#5B8DEF]/10"
-                  : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-secondary hover:border-border"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-white font-bold text-lg">{p.name}</span>
+                    <span className="text-foreground font-bold text-lg">{p.name}</span>
                     {p.badge && (
-                      <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">{p.badge}</span>
+                      <span className="text-xs bg-accent text-accent-foreground font-semibold px-2 py-0.5 rounded-full">{p.badge}</span>
                     )}
                   </div>
-                  <p className="text-slate-400 text-sm mt-1">크레딧당 {p.perCredit}원</p>
+                  <p className="text-muted-foreground text-sm mt-1">크레딧당 {p.perCredit}원</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-bold text-xl">{p.price.toLocaleString()}원</p>
-                  <p className="text-slate-500 text-sm">{p.credits}크레딧</p>
+                  <p className="text-foreground font-bold text-xl">{p.price.toLocaleString()}원</p>
+                  <p className="text-muted-foreground text-sm">{p.credits}크레딧</p>
                 </div>
               </div>
             </button>
           ))}
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 mb-8">
-          <p className="text-slate-400 text-sm">
-            <Zap className="w-4 h-4 inline text-amber-400 mr-1" />
+        <div className="p-4 rounded-xl bg-secondary border border-border mb-8">
+          <p className="text-muted-foreground text-sm">
+            <Zap className="w-4 h-4 inline text-primary mr-1" />
             10회 이상 사용한다면?{" "}
-            <Link href="/payment/billing?plan=monthly" className="text-[#5B8DEF] hover:underline">
+            <Link href="/payment/billing?plan=monthly" className="text-primary hover:underline">
               월 13,800원 무제한 구독
             </Link>
             이 더 합리적이에요.
@@ -235,7 +235,7 @@ function CreditsContent() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm mb-4">
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-600 text-sm mb-4">
             {error}
           </div>
         )}
@@ -243,7 +243,7 @@ function CreditsContent() {
         <Button
           onClick={handlePayment}
           disabled={loading || !sdkReady}
-          className="w-full py-6 text-lg bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+          className="w-full py-6 text-lg bg-primary hover:bg-primary/90 text-white"
         >
           {loading ? (
             <><Loader2 className="w-5 h-5 animate-spin mr-2" /> 결제 준비 중...</>

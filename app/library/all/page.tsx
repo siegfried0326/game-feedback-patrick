@@ -9,7 +9,7 @@ import { getAllSummaries, getLibraryStats } from "@/lib/library/loader"
 import { AllDocsClient } from "@/components/library/all-docs-client"
 
 export const metadata: Metadata = {
-  title: "전체 문서 | 라이브러리 | Archive187",
+  title: "전체 문서 | 라이브러리 | 문라이트 아카이브",
 }
 
 export default async function AllDocsPage() {
@@ -20,9 +20,9 @@ export default async function AllDocsPage() {
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <div className="text-xs text-slate-500">라이브러리</div>
-        <h1 className="text-3xl font-bold text-white">전체 문서</h1>
-        <p className="text-sm text-slate-400">{stats.totalDocuments.toLocaleString()}편 · 검색·필터로 좁히기</p>
+        <div className="text-xs text-muted-foreground">라이브러리</div>
+        <h1 className="text-3xl font-black text-foreground">전체 문서</h1>
+        <p className="text-sm text-muted-foreground">{stats.totalDocuments.toLocaleString()}편 · 검색·필터로 좁히기</p>
       </header>
       <AllDocsClient documents={summaries} />
     </div>

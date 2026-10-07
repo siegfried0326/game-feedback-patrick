@@ -17,7 +17,7 @@ const components: Components = {
   a({ href, children, ...rest }) {
     if (href && href.startsWith("/library")) {
       return (
-        <Link href={href} className="text-[#5B8DEF] hover:underline">
+        <Link href={href} className="text-primary hover:underline">
           {children}
         </Link>
       )
@@ -27,7 +27,7 @@ const components: Components = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#5B8DEF] hover:underline"
+        className="text-primary hover:underline"
         {...rest}
       >
         {children}
@@ -36,49 +36,49 @@ const components: Components = {
   },
   h1({ children, ...rest }) {
     return (
-      <h1 className="text-3xl font-bold text-white mt-10 mb-4" {...rest}>
+      <h1 className="text-3xl font-black text-foreground mt-10 mb-4" {...rest}>
         {children}
       </h1>
     )
   },
   h2({ children, ...rest }) {
     return (
-      <h2 className="text-2xl font-bold text-white mt-10 mb-3 pb-2 border-b border-[#1e3a5f]" {...rest}>
+      <h2 className="text-2xl font-black text-foreground mt-10 mb-3 pb-2 border-b border-border" {...rest}>
         {children}
       </h2>
     )
   },
   h3({ children, ...rest }) {
     return (
-      <h3 className="text-xl font-semibold text-white mt-8 mb-2" {...rest}>
+      <h3 className="text-xl font-semibold text-foreground mt-8 mb-2" {...rest}>
         {children}
       </h3>
     )
   },
   h4({ children, ...rest }) {
     return (
-      <h4 className="text-lg font-semibold text-slate-100 mt-6 mb-2" {...rest}>
+      <h4 className="text-lg font-semibold text-foreground mt-6 mb-2" {...rest}>
         {children}
       </h4>
     )
   },
   p({ children, ...rest }) {
     return (
-      <p className="text-slate-300 leading-relaxed my-4" {...rest}>
+      <p className="text-foreground/80 leading-relaxed my-4" {...rest}>
         {children}
       </p>
     )
   },
   ul({ children, ...rest }) {
     return (
-      <ul className="list-disc list-outside ml-6 my-4 space-y-1 text-slate-300" {...rest}>
+      <ul className="list-disc list-outside ml-6 my-4 space-y-1 text-foreground/80" {...rest}>
         {children}
       </ul>
     )
   },
   ol({ children, ...rest }) {
     return (
-      <ol className="list-decimal list-outside ml-6 my-4 space-y-1 text-slate-300" {...rest}>
+      <ol className="list-decimal list-outside ml-6 my-4 space-y-1 text-foreground/80" {...rest}>
         {children}
       </ol>
     )
@@ -93,7 +93,7 @@ const components: Components = {
   blockquote({ children, ...rest }) {
     return (
       <blockquote
-        className="border-l-4 border-[#5B8DEF] bg-slate-900/50 px-4 py-2 my-4 text-slate-300 italic"
+        className="border-l-4 border-primary bg-card px-4 py-2 my-4 text-foreground/80 italic"
         {...rest}
       >
         {children}
@@ -104,7 +104,7 @@ const components: Components = {
     const isInline = !className
     if (isInline) {
       return (
-        <code className="bg-slate-800 text-[#5B8DEF] px-1.5 py-0.5 rounded text-[0.9em] font-mono" {...rest}>
+        <code className="bg-secondary text-primary px-1.5 py-0.5 rounded text-[0.9em] font-mono" {...rest}>
           {children}
         </code>
       )
@@ -117,7 +117,7 @@ const components: Components = {
   },
   pre({ children, ...rest }) {
     return (
-      <pre className="bg-slate-900 border border-[#1e3a5f] rounded-lg p-4 my-4 overflow-x-auto text-sm" {...rest}>
+      <pre className="bg-card border border-border rounded-lg p-4 my-4 overflow-x-auto text-sm" {...rest}>
         {children}
       </pre>
     )
@@ -133,24 +133,24 @@ const components: Components = {
   },
   th({ children, ...rest }) {
     return (
-      <th className="border border-[#1e3a5f] px-3 py-2 text-left text-slate-200 bg-slate-900/60 font-semibold" {...rest}>
+      <th className="border border-border px-3 py-2 text-left text-foreground bg-card font-semibold" {...rest}>
         {children}
       </th>
     )
   },
   td({ children, ...rest }) {
     return (
-      <td className="border border-[#1e3a5f] px-3 py-2 text-slate-300" {...rest}>
+      <td className="border border-border px-3 py-2 text-foreground/80" {...rest}>
         {children}
       </td>
     )
   },
   hr({ ...rest }) {
-    return <hr className="border-[#1e3a5f] my-8" {...rest} />
+    return <hr className="border-border my-8" {...rest} />
   },
   strong({ children, ...rest }) {
     return (
-      <strong className="text-white font-semibold" {...rest}>
+      <strong className="text-foreground font-semibold" {...rest}>
         {children}
       </strong>
     )

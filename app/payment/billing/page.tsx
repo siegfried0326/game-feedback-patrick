@@ -156,16 +156,16 @@ function BillingContent() {
   // 구독 판매 종료 (BM 개편) — 크레딧 구매 또는 과외 상담으로 안내
   if (!SUBSCRIPTION_SALES_ENABLED) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
-          <Lock className="w-16 h-16 text-slate-500 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-3">구독 상품 판매 종료</h1>
-          <p className="text-slate-400 mb-8 leading-relaxed">{SUBSCRIPTION_ENDED_MESSAGE}</p>
+          <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
+          <h1 className="text-2xl font-black text-foreground mb-3">구독 상품 판매 종료</h1>
+          <p className="text-muted-foreground mb-8 leading-relaxed">{SUBSCRIPTION_ENDED_MESSAGE}</p>
           <div className="flex gap-3 justify-center">
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
               <Link href="/payment/credits">크레딧 구매</Link>
             </Button>
-            <Button asChild variant="outline" className="border-amber-500/40 text-amber-400 hover:text-amber-300">
+            <Button asChild variant="outline" className="border-amber-500/40 text-amber-600 hover:text-amber-700">
               <a href={TUTORING_KAKAO_URL} target="_blank" rel="noopener noreferrer">1:1 과외 상담</a>
             </Button>
           </div>
@@ -176,18 +176,18 @@ function BillingContent() {
 
   if (success) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
-          <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-2">구독이 시작되었습니다!</h1>
-          <p className="text-slate-400 mb-6">
+          <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto mb-6" />
+          <h1 className="text-2xl font-black text-foreground mb-2">구독이 시작되었습니다!</h1>
+          <p className="text-muted-foreground mb-6">
             {selectedPlan === "three_month"
               ? "이제 3개월 동안 무제한 분석과 모든 기능을 이용하실 수 있습니다."
               : "이제 무제한 분석과 버전 비교 기능을 이용하실 수 있습니다."}
             <br />
             매월 자동으로 갱신됩니다. 잠시 후 분석 페이지로 이동합니다.
           </p>
-          <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white">
             <Link href="/analyze">분석하러 가기</Link>
           </Button>
         </div>
@@ -198,14 +198,14 @@ function BillingContent() {
   // 결제 진행 중인 경우 안내 (새로고침/재진입 시 중복 결제 방지)
   if (paymentInFlight) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
-          <Loader2 className="w-16 h-16 text-[#5B8DEF] animate-spin mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-2">결제가 처리 중입니다</h1>
-          <p className="text-slate-400 mb-2">방금 시작한 결제가 아직 처리 중이에요.</p>
-          <p className="text-sm text-slate-500 mb-6">중복 결제를 방지하기 위해 잠시 차단됩니다.<br />몇 분 뒤 마이페이지에서 결과를 확인해주세요.</p>
+          <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto mb-6" />
+          <h1 className="text-2xl font-black text-foreground mb-2">결제가 처리 중입니다</h1>
+          <p className="text-muted-foreground mb-2">방금 시작한 결제가 아직 처리 중이에요.</p>
+          <p className="text-sm text-muted-foreground mb-6">중복 결제를 방지하기 위해 잠시 차단됩니다.<br />몇 분 뒤 마이페이지에서 결과를 확인해주세요.</p>
           <div className="flex gap-3 justify-center">
-            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
+            <Button asChild variant="outline" className="border-border text-foreground/80 hover:text-foreground">
               <Link href="/mypage">마이페이지로 이동</Link>
             </Button>
             <Button
@@ -215,7 +215,7 @@ function BillingContent() {
                 setPaymentInFlight(false)
               }}
               variant="outline"
-              className="border-slate-600 text-slate-400 hover:text-white"
+              className="border-border text-muted-foreground hover:text-foreground"
             >
               결제가 안 됐다면 다시 시도
             </Button>
@@ -232,25 +232,25 @@ function BillingContent() {
       ? new Date(activeSubInfo.expiresAt).toLocaleDateString("ko-KR")
       : "무기한"
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
-          <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-white mb-2">이미 활성 구독이 있습니다</h1>
-          <p className="text-slate-400 mb-2">
-            현재 <span className="text-white font-medium">{planLabel}</span> 플랜을 이용 중입니다.
+          <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto mb-6" />
+          <h1 className="text-2xl font-black text-foreground mb-2">이미 활성 구독이 있습니다</h1>
+          <p className="text-muted-foreground mb-2">
+            현재 <span className="text-foreground font-medium">{planLabel}</span> 플랜을 이용 중입니다.
           </p>
-          <p className="text-slate-400 mb-6">
-            만료일: <span className="text-white">{expireStr}</span>
+          <p className="text-muted-foreground mb-6">
+            만료일: <span className="text-foreground">{expireStr}</span>
           </p>
-          <p className="text-sm text-amber-400/80 mb-6">
+          <p className="text-sm text-amber-600/80 mb-6">
             중복 결제를 방지하기 위해 결제 페이지가 차단되었습니다.<br />
             플랜 변경이나 해지는 마이페이지에서 가능합니다.
           </p>
           <div className="flex gap-3 justify-center">
-            <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white">
+            <Button asChild variant="outline" className="border-border text-foreground/80 hover:text-foreground">
               <Link href="/mypage">마이페이지로 이동</Link>
             </Button>
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
               <Link href="/analyze">분석하러 가기</Link>
             </Button>
           </div>
@@ -260,18 +260,18 @@ function BillingContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a]">
+    <main className="min-h-screen bg-secondary">
       <div className="max-w-lg mx-auto px-6 py-16">
         <Link
           href="/pricing"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           요금제로 돌아가기
         </Link>
 
-        <h1 className="text-2xl font-bold text-white mb-2">구독 결제</h1>
-        <p className="text-slate-400 mb-8">카드를 등록하면 매월 자동으로 갱신됩니다.</p>
+        <h1 className="text-2xl font-black text-foreground mb-2">구독 결제</h1>
+        <p className="text-muted-foreground mb-8">카드를 등록하면 매월 자동으로 갱신됩니다.</p>
 
         {/* 플랜 선택 */}
         <div className="space-y-3 mb-6">
@@ -284,23 +284,23 @@ function BillingContent() {
                 selectedPlan === key
                   ? key === "three_month"
                     ? "border-amber-500 bg-amber-500/10"
-                    : "border-[#5B8DEF] bg-[#5B8DEF]/10"
-                  : "border-slate-700 bg-slate-800/50 hover:border-slate-600"
+                    : "border-primary bg-primary/10"
+                  : "border-border bg-secondary hover:border-border"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white font-medium">{p.name}</p>
-                  <p className="text-sm text-slate-400">{p.amount.toLocaleString()}원 / {p.period}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{p.description}</p>
+                  <p className="text-foreground font-medium">{p.name}</p>
+                  <p className="text-sm text-muted-foreground">{p.amount.toLocaleString()}원 / {p.period}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{p.description}</p>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                   selectedPlan === key
-                    ? key === "three_month" ? "border-amber-500" : "border-[#5B8DEF]"
-                    : "border-slate-600"
+                    ? key === "three_month" ? "border-amber-500" : "border-primary"
+                    : "border-border"
                 }`}>
                   {selectedPlan === key && (
-                    <div className={`w-2.5 h-2.5 rounded-full ${key === "three_month" ? "bg-amber-500" : "bg-[#5B8DEF]"}`} />
+                    <div className={`w-2.5 h-2.5 rounded-full ${key === "three_month" ? "bg-amber-500" : "bg-primary"}`} />
                   )}
                 </div>
               </div>
@@ -310,7 +310,7 @@ function BillingContent() {
 
         {currentCredits > 0 && (
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-6">
-            <p className="text-sm text-amber-400">
+            <p className="text-sm text-amber-600">
               현재 {currentCredits}회의 크레딧을 보유하고 있습니다.
               구독 시작 후에도 보유 크레딧을 먼저 소모한 뒤 구독이 적용됩니다.
             </p>
@@ -319,15 +319,15 @@ function BillingContent() {
 
         {/* 카드 정보 입력 */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-6 space-y-4">
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
-              <CreditCard className="w-4 h-4 text-slate-400" />
-              <span className="text-sm font-medium text-slate-300">카드 정보 입력</span>
+              <CreditCard className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground/80">카드 정보 입력</span>
             </div>
 
             {/* 카드번호 */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1.5">카드번호</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">카드번호</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -336,14 +336,14 @@ function BillingContent() {
                 onChange={e => setCardNo(formatCardNumber(e.target.value))}
                 required
                 maxLength={19}
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm tracking-widest"
+                className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-foreground placeholder-slate-500 focus:outline-none focus:border-primary text-sm tracking-widest"
               />
             </div>
 
             {/* 유효기간 */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1.5">유효기간 (월)</label>
+                <label className="block text-xs text-muted-foreground mb-1.5">유효기간 (월)</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -352,11 +352,11 @@ function BillingContent() {
                   onChange={e => setExpMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
                   required
                   maxLength={2}
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm text-center"
+                  className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-foreground placeholder-slate-500 focus:outline-none focus:border-primary text-sm text-center"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1.5">유효기간 (년)</label>
+                <label className="block text-xs text-muted-foreground mb-1.5">유효기간 (년)</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -365,14 +365,14 @@ function BillingContent() {
                   onChange={e => setExpYear(e.target.value.replace(/\D/g, "").slice(0, 2))}
                   required
                   maxLength={2}
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm text-center"
+                  className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-foreground placeholder-slate-500 focus:outline-none focus:border-primary text-sm text-center"
                 />
               </div>
             </div>
 
             {/* 비밀번호 앞 2자리 */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1.5">비밀번호 앞 2자리</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">비밀번호 앞 2자리</label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
@@ -382,12 +382,12 @@ function BillingContent() {
                   onChange={e => setCardPw(e.target.value.replace(/\D/g, "").slice(0, 2))}
                   required
                   maxLength={2}
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm"
+                  className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-foreground placeholder-slate-500 focus:outline-none focus:border-primary text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -396,7 +396,7 @@ function BillingContent() {
 
             {/* 생년월일 / 사업자번호 */}
             <div>
-              <label className="block text-xs text-slate-400 mb-1.5">생년월일 6자리 (개인) 또는 사업자번호 10자리</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">생년월일 6자리 (개인) 또는 사업자번호 10자리</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -404,29 +404,29 @@ function BillingContent() {
                 value={idNo}
                 onChange={e => setIdNo(e.target.value.replace(/\D/g, "").slice(0, 10))}
                 required
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF] text-sm"
+                className="w-full bg-secondary border border-border rounded-lg px-4 py-3 text-foreground placeholder-slate-500 focus:outline-none focus:border-primary text-sm"
               />
             </div>
           </div>
 
           {/* 결제 요약 */}
-          <div className="bg-slate-900/80 border border-[#1e3a5f] rounded-xl p-4">
+          <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400 text-sm">플랜</span>
-              <span className="text-white text-sm font-medium">{plan.name}</span>
+              <span className="text-muted-foreground text-sm">플랜</span>
+              <span className="text-foreground text-sm font-medium">{plan.name}</span>
             </div>
-            <div className="flex items-center justify-between border-t border-slate-700 pt-3">
-              <span className="text-white font-semibold">결제 금액</span>
-              <span className="text-xl font-bold text-white">{plan.price}원</span>
+            <div className="flex items-center justify-between border-t border-border pt-3">
+              <span className="text-foreground font-semibold">결제 금액</span>
+              <span className="text-xl font-bold text-foreground">{plan.price}원</span>
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               {selectedPlan === "monthly" ? "매월 자동 갱신됩니다." : "3개월 후 자동 갱신됩니다."}
               언제든지 마이페이지에서 해지할 수 있습니다.
             </p>
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 text-sm">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl p-4 text-sm">
               {error}
             </div>
           )}
@@ -434,7 +434,7 @@ function BillingContent() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#5B8DEF] hover:bg-[#4A7CE0] active:scale-95 text-white py-6 text-lg font-semibold"
+            className="w-full bg-primary hover:bg-primary/90 active:scale-95 text-white py-6 text-lg font-semibold"
           >
             {loading ? (
               <><Loader2 className="w-5 h-5 animate-spin mr-2" /> 결제 처리 중...</>
@@ -443,7 +443,7 @@ function BillingContent() {
             )}
           </Button>
 
-          <p className="text-xs text-slate-500 text-center">
+          <p className="text-xs text-muted-foreground text-center">
             카드 정보는 나이스페이먼츠를 통해 안전하게 처리되며, 서버에 저장되지 않습니다.
           </p>
         </form>
@@ -455,8 +455,8 @@ function BillingContent() {
 export default function BillingPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     }>
       <BillingContent />

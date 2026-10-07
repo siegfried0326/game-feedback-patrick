@@ -4,7 +4,7 @@
  * Gemini 2.5-flash로 면접 답변을 4개 기준(전문성/논리성/구체성/창의성)으로 평가.
  *
  * 보안: 관리자 전용 테스트 단계 (출시 전 검증용).
- *      archive187 크레딧 시스템 통합 후 공개 예정.
+ *      문라이트 아카이브 크레딧 시스템 통합 후 공개 예정.
  */
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { hasPremiumAccess } from "@/lib/student-access"

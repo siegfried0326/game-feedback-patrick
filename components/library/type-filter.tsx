@@ -53,14 +53,14 @@ export function TypeFilter({ documents }: TypeFilterProps) {
           placeholder="제목·태그·디자이너·게임 검색"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 min-w-[200px] bg-slate-900/80 border border-[#1e3a5f] rounded-lg px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-[#5B8DEF] focus:outline-none"
+          className="flex-1 min-w-[200px] bg-card border border-border rounded-lg px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
         />
-        <label className="flex items-center gap-2 text-xs text-slate-400 px-3 py-2 rounded-lg bg-slate-900/60 border border-[#1e3a5f] cursor-pointer">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground px-3 py-2 rounded-lg bg-card border border-border cursor-pointer">
           <input
             type="checkbox"
             checked={previewOnly}
             onChange={(e) => setPreviewOnly(e.target.checked)}
-            className="accent-[#5B8DEF]"
+            className="accent-[#0046AD]"
           />
           공개 전용
         </label>
@@ -72,8 +72,8 @@ export function TypeFilter({ documents }: TypeFilterProps) {
           className={
             "text-xs px-3 py-1 rounded-full border transition-colors " +
             (domain === "all"
-              ? "bg-[#5B8DEF] border-[#5B8DEF] text-white"
-              : "bg-slate-900/60 border-[#1e3a5f] text-slate-400 hover:text-white")
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border text-muted-foreground hover:text-foreground")
           }
         >
           전체 ({documents.length})
@@ -91,7 +91,7 @@ export function TypeFilter({ documents }: TypeFilterProps) {
                 active
                   ? { background: DOMAIN_COLORS[d], borderColor: DOMAIN_COLORS[d], color: "#fff" }
                   : {
-                      background: "rgba(15,23,42,0.6)",
+                      background: "#FFFFFF",
                       borderColor: DOMAIN_COLORS[d] + "55",
                       color: DOMAIN_COLORS[d],
                     }
@@ -103,11 +103,11 @@ export function TypeFilter({ documents }: TypeFilterProps) {
         })}
       </div>
 
-      <div className="text-xs text-slate-500">{filtered.length}개 문서</div>
+      <div className="text-xs text-muted-foreground">{filtered.length}개 문서</div>
 
       <DocumentGrid documents={filtered.slice(0, 60)} />
       {filtered.length > 60 && (
-        <p className="text-center text-xs text-slate-500 mt-4">
+        <p className="text-center text-xs text-muted-foreground mt-4">
           처음 60개 표시. 더 좁히려면 검색어를 입력하세요.
         </p>
       )}

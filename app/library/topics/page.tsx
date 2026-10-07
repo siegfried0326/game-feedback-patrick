@@ -9,7 +9,7 @@ import { getLibraryStats } from "@/lib/library/loader"
 import { Topic, TOPIC_COLORS, TOPIC_LABELS, TOPIC_ORDER } from "@/lib/library/types"
 
 export const metadata: Metadata = {
-  title: "주제별 분류 | 라이브러리 | Archive187",
+  title: "주제별 분류 | 라이브러리 | 문라이트 아카이브",
 }
 
 const TOPIC_BLURBS: Record<Topic, string> = {
@@ -31,9 +31,9 @@ export default async function TopicsIndexPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <div className="text-xs text-slate-500">라이브러리</div>
-        <h1 className="text-3xl font-bold text-white">주제별 분류</h1>
-        <p className="text-sm text-slate-400">
+        <div className="text-xs text-muted-foreground">라이브러리</div>
+        <h1 className="text-3xl font-black text-foreground">주제별 분류</h1>
+        <p className="text-sm text-muted-foreground">
           5개 도메인을 넘어 실제 직무 영역으로 재분류. 한 원칙은 여러 주제에 속할 수 있다.
         </p>
       </header>
@@ -45,17 +45,17 @@ export default async function TopicsIndexPage() {
             <Link
               key={t}
               href={`/library/topics/${t}`}
-              className="group rounded-2xl border bg-slate-900/60 hover:bg-slate-900/80 p-5 transition-all"
+              className="group rounded-2xl border bg-card hover:bg-card p-5 transition-all"
               style={{ borderColor: TOPIC_COLORS[t] + "33" }}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="text-3xl font-bold" style={{ color: TOPIC_COLORS[t] }}>
                   {count}
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-[#5B8DEF] transition-colors" />
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-1">{TOPIC_LABELS[t]}</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">{TOPIC_BLURBS[t]}</p>
+              <h3 className="text-lg font-semibold text-foreground mb-1">{TOPIC_LABELS[t]}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{TOPIC_BLURBS[t]}</p>
             </Link>
           )
         })}

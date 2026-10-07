@@ -123,7 +123,7 @@ export default function MyPage() {
     switch (status) { case "active": return "이용중"; case "cancelled": return "해지됨"; case "expired": return "만료됨"; default: return status }
   }
   const getStatusColor = (status: string) => {
-    switch (status) { case "active": return "text-green-400 bg-green-400/10"; case "cancelled": return "text-yellow-400 bg-yellow-400/10"; case "expired": return "text-red-400 bg-red-400/10"; default: return "text-slate-400 bg-slate-400/10" }
+    switch (status) { case "active": return "text-green-600 bg-green-400/10"; case "cancelled": return "text-yellow-600 bg-yellow-400/10"; case "expired": return "text-red-600 bg-red-400/10"; default: return "text-muted-foreground bg-slate-400/10" }
   }
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
 
@@ -131,39 +131,39 @@ export default function MyPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a]">
+    <main className="min-h-screen bg-secondary">
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" /> 홈으로 돌아가기
           </Link>
-          <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-[#5B8DEF] hover:text-[#4A7CE0] transition-colors">
+          <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/90 transition-colors">
             <FolderOpen className="w-4 h-4" /> 프로젝트 관리
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-white mb-2">마이페이지</h1>
-        <p className="text-sm text-slate-400 mb-8">구독과 결제 내역을 관리합니다. 프로젝트·분석 결과는 <Link href="/projects" className="text-[#5B8DEF] hover:underline">프로젝트 페이지</Link>에서 확인하세요.</p>
+        <h1 className="text-3xl font-black text-foreground mb-2">마이페이지</h1>
+        <p className="text-sm text-muted-foreground mb-8">구독과 결제 내역을 관리합니다. 프로젝트·분석 결과는 <Link href="/projects" className="text-primary hover:underline">프로젝트 페이지</Link>에서 확인하세요.</p>
 
         {message && (
-          <div className={`mb-6 p-4 rounded-lg border ${message.type === "success" ? "bg-green-400/10 border-green-400/30 text-green-400" : "bg-red-400/10 border-red-400/30 text-red-400"}`}>
+          <div className={`mb-6 p-4 rounded-lg border ${message.type === "success" ? "bg-green-400/10 border-green-500/30 text-green-600" : "bg-red-400/10 border-red-500/30 text-red-600"}`}>
             {message.text}
           </div>
         )}
 
         {/* 데이터 보호 안내 */}
         <div className="mb-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-start gap-3">
-          <Shield className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <Shield className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-emerald-400 font-medium">당신의 데이터는 안전합니다</p>
-            <p className="text-xs text-emerald-400/70 mt-1">
+            <p className="text-sm text-emerald-600 font-medium">당신의 데이터는 안전합니다</p>
+            <p className="text-xs text-emerald-600/70 mt-1">
               업로드된 문서는 분석 즉시 서버에서 완전히 삭제됩니다. 분석 결과는 암호화되어 저장되며,
               본인만 조회할 수 있습니다. 서비스 관리자를 포함한 그 누구도 회원님의 분석 결과를 열람할 수 없습니다.
             </p>
@@ -171,28 +171,28 @@ export default function MyPage() {
         </div>
 
         {/* 프로필 */}
-        <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">프로필</h2>
+        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">프로필</h2>
           <div className="flex items-center gap-4">
             {user?.avatar ? (
-              <img src={user.avatar} alt="프로필" referrerPolicy="no-referrer" className="w-16 h-16 rounded-full border-2 border-[#1e3a5f] object-cover" />
+              <img src={user.avatar} alt="프로필" referrerPolicy="no-referrer" className="w-16 h-16 rounded-full border-2 border-border object-cover" />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-[#162a4a] flex items-center justify-center border-2 border-[#1e3a5f]">
-                <span className="text-2xl text-[#5B8DEF]">{(user?.name || user?.email || "U")[0].toUpperCase()}</span>
+              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center border-2 border-border">
+                <span className="text-2xl text-primary">{(user?.name || user?.email || "U")[0].toUpperCase()}</span>
               </div>
             )}
             <div>
-              <p className="text-white font-medium text-lg">{user?.name || "사용자"}</p>
-              <p className="text-slate-400 text-sm">{user?.email}</p>
+              <p className="text-foreground font-medium text-lg">{user?.name || "사용자"}</p>
+              <p className="text-muted-foreground text-sm">{user?.email}</p>
             </div>
           </div>
         </div>
 
         {/* 구독 상태 */}
-        <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 mb-6">
+        <div className="bg-card rounded-2xl border border-border p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Crown className="w-5 h-5 text-[#5B8DEF]" /> 구독 상태
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Crown className="w-5 h-5 text-primary" /> 구독 상태
             </h2>
             {subscription && (
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(subscription.status)}`}>
@@ -203,19 +203,19 @@ export default function MyPage() {
           {subscription ? (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-slate-400 mb-1">현재 플랜</p>
-                <p className="text-white font-medium">{getPlanLabel(subscription.plan)}</p>
+                <p className="text-sm text-muted-foreground mb-1">현재 플랜</p>
+                <p className="text-foreground font-medium">{getPlanLabel(subscription.plan)}</p>
               </div>
 
               {(subscription.analysis_credits ?? 0) > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-slate-400">남은 크레딧</p>
-                    <p className="text-sm font-semibold text-white">{subscription.analysis_credits}회</p>
+                    <p className="text-sm text-muted-foreground">남은 크레딧</p>
+                    <p className="text-sm font-semibold text-foreground">{subscription.analysis_credits}회</p>
                   </div>
                   <Progress
                     value={Math.min(((subscription.analysis_credits ?? 0) / 10) * 100, 100)}
-                    className="h-3 bg-slate-700 [&>[data-slot=progress-indicator]]:bg-[#5B8DEF]"
+                    className="h-3 bg-muted [&>[data-slot=progress-indicator]]:bg-primary"
                   />
                 </div>
               )}
@@ -233,75 +233,75 @@ export default function MyPage() {
                 return (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm text-slate-400">구독 기간</p>
-                      <p className="text-sm font-semibold text-emerald-400">D-{remainingDays}</p>
+                      <p className="text-sm text-muted-foreground">구독 기간</p>
+                      <p className="text-sm font-semibold text-emerald-600">D-{remainingDays}</p>
                     </div>
-                    <Progress value={progressPct} className="h-3 bg-slate-700 [&>[data-slot=progress-indicator]]:bg-emerald-400" />
-                    <p className="text-xs text-slate-500 mt-1">{startStr} ~ {endStr}</p>
+                    <Progress value={progressPct} className="h-3 bg-muted [&>[data-slot=progress-indicator]]:bg-emerald-400" />
+                    <p className="text-xs text-muted-foreground mt-1">{startStr} ~ {endStr}</p>
                   </div>
                 )
               })()}
 
               {(subscription.analysis_credits ?? 0) === 0 && isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-slate-400">분석 크레딧</p>
-                  <p className="text-sm font-semibold text-emerald-400">무제한</p>
+                  <p className="text-sm text-muted-foreground">분석 크레딧</p>
+                  <p className="text-sm font-semibold text-emerald-600">무제한</p>
                 </div>
               )}
 
               {isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (subscription.analysis_credits ?? 0) > 0 && (
-                <div className="bg-[#5B8DEF]/5 rounded-lg p-3 border border-[#5B8DEF]/20">
-                  <p className="text-xs text-[#5B8DEF]">
+                <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+                  <p className="text-xs text-primary">
                     보유 크레딧({subscription.analysis_credits}크레딧)을 먼저 소모한 뒤 구독이 적용됩니다.
                   </p>
                 </div>
               )}
 
               {subscription.cancelled_at && (
-                <div><p className="text-sm text-slate-400 mb-1">해지일</p><p className="text-yellow-400 font-medium">{formatDate(subscription.cancelled_at)}</p></div>
+                <div><p className="text-sm text-muted-foreground mb-1">해지일</p><p className="text-yellow-600 font-medium">{formatDate(subscription.cancelled_at)}</p></div>
               )}
 
               {(!isPaidPlan || subscription.status !== "active") && (subscription.analysis_credits ?? 0) === 0 && (
-                <div className="bg-[#162a4a] rounded-lg p-4 border border-[#1e3a5f]">
+                <div className="bg-secondary rounded-lg p-4 border border-border">
                   {PAYMENTS_ENABLED ? (
                     <>
-                      <p className="text-sm text-slate-300">크레딧이 없습니다. 크레딧을 구매해 주세요. 과외 수강생은 매월 크레딧이 지급됩니다.</p>
+                      <p className="text-sm text-foreground/80">크레딧이 없습니다. 크레딧을 구매해 주세요. 과외 수강생은 매월 크레딧이 지급됩니다.</p>
                       <div className="flex gap-2 mt-3">
-                        <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"><Link href="/payment/credits">크레딧 구매</Link></Button>
-                        <Button asChild variant="outline" className="border-[#1e3a5f] text-slate-300 hover:text-white"><Link href="/pricing">요금제 보기</Link></Button>
+                        <Button asChild className="bg-primary hover:bg-primary/90 text-white"><Link href="/payment/credits">크레딧 구매</Link></Button>
+                        <Button asChild variant="outline" className="border-border text-foreground/80 hover:text-foreground"><Link href="/pricing">요금제 보기</Link></Button>
                       </div>
                     </>
                   ) : (
-                    <p className="text-sm text-amber-400">현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.</p>
+                    <p className="text-sm text-amber-600">현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다.</p>
                   )}
                 </div>
               )}
               {subscription.plan === "monthly" && subscription.status === "active" && (
-                <div className="bg-[#5B8DEF]/5 rounded-lg p-3 border border-[#5B8DEF]/20">
-                  <p className="text-xs text-[#5B8DEF]">🤖 Claude AI 사용 중</p>
+                <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+                  <p className="text-xs text-primary">🤖 Claude AI 사용 중</p>
                 </div>
               )}
               {subscription.plan === "three_month" && subscription.status === "active" && (
                 <div className="bg-purple-500/5 rounded-lg p-3 border border-purple-500/20">
-                  <p className="text-xs text-purple-400">✨ Claude AI 사용 중 · 3개월 무제한</p>
+                  <p className="text-xs text-purple-600">✨ Claude AI 사용 중 · 3개월 무제한</p>
                 </div>
               )}
               {subscription.plan !== "free" && subscription.status === "active" && (
                 <>
                   {!showCancelConfirm ? (
-                    <button onClick={() => setShowCancelConfirm(true)} className="text-sm text-slate-500 hover:text-red-400 transition-colors underline">구독 해지하기</button>
+                    <button onClick={() => setShowCancelConfirm(true)} className="text-sm text-muted-foreground hover:text-red-600 transition-colors underline">구독 해지하기</button>
                   ) : (
-                    <div className="bg-red-400/5 border border-red-400/20 rounded-lg p-4">
+                    <div className="bg-red-400/5 border border-red-500/20 rounded-lg p-4">
                       <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                        <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-sm text-white font-medium mb-1">정말 해지하시겠습니까?</p>
-                          <p className="text-sm text-slate-400 mb-3">해지 후에도 만료일까지는 계속 이용 가능합니다.</p>
+                          <p className="text-sm text-foreground font-medium mb-1">정말 해지하시겠습니까?</p>
+                          <p className="text-sm text-muted-foreground mb-3">해지 후에도 만료일까지는 계속 이용 가능합니다.</p>
                           <div className="flex gap-3">
                             <Button onClick={handleCancel} disabled={cancelling} className="bg-red-500 hover:bg-red-600 text-white text-sm">
                               {cancelling && <Loader2 className="w-4 h-4 animate-spin mr-2" />} 해지 확인
                             </Button>
-                            <Button onClick={() => setShowCancelConfirm(false)} variant="outline" className="border-[#1e3a5f] text-slate-400 hover:text-white text-sm">취소</Button>
+                            <Button onClick={() => setShowCancelConfirm(false)} variant="outline" className="border-border text-muted-foreground hover:text-foreground text-sm">취소</Button>
                           </div>
                         </div>
                       </div>
@@ -310,14 +310,14 @@ export default function MyPage() {
                 </>
               )}
             </div>
-          ) : <p className="text-slate-400">구독 정보를 불러올 수 없습니다.</p>}
+          ) : <p className="text-muted-foreground">구독 정보를 불러올 수 없습니다.</p>}
         </div>
 
         {/* 크레딧 구매 내역 */}
         {creditOrders.length > 0 && (
-          <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 mb-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#5B8DEF]" /> 크레딧 구매 내역
+          <div className="bg-card rounded-2xl border border-border p-6 mb-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" /> 크레딧 구매 내역
             </h2>
             <div className="space-y-3">
               {creditOrders.map((order: {
@@ -326,32 +326,32 @@ export default function MyPage() {
                 refundAmount: number; usedCredits: number; isWithin7Days: boolean;
                 refundableCredits: number; refunded_at: string | null;
               }) => (
-                <div key={order.order_id} className="flex items-center justify-between p-4 bg-[#0d1b2a] rounded-xl border border-[#1e3a5f]">
+                <div key={order.order_id} className="flex items-center justify-between p-4 bg-secondary rounded-xl border border-border">
                   <div>
-                    <p className="text-white text-sm font-medium">{order.packageLabel}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-foreground text-sm font-medium">{order.packageLabel}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {order.paidAtFormatted} · {order.amount.toLocaleString()}원
                     </p>
                   </div>
                   {order.refunded_at ? (
-                    <span className="text-xs text-yellow-400">환불됨</span>
+                    <span className="text-xs text-yellow-600">환불됨</span>
                   ) : !order.isWithin7Days ? (
-                    <span className="text-xs text-slate-600">만료됨</span>
+                    <span className="text-xs text-muted-foreground/80">만료됨</span>
                   ) : null}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-600 mt-3 flex items-center gap-1.5">
-              <Link href="/refund-policy" className="text-[#5B8DEF] hover:underline">환불정책 보기</Link>
+            <p className="text-xs text-muted-foreground/80 mt-3 flex items-center gap-1.5">
+              <Link href="/refund-policy" className="text-primary hover:underline">환불정책 보기</Link>
               {creditOrders.some((o: { canRefund: boolean }) => o.canRefund) && (
                 <>
-                  <span className="text-slate-700">·</span>
+                  <span className="text-muted-foreground/80">·</span>
                   <button
                     onClick={() => {
                       const refundable = creditOrders.find((o: { canRefund: boolean }) => o.canRefund)
                       if (refundable) setShowRefundConfirm(refundable.order_id)
                     }}
-                    className="text-slate-500 hover:text-slate-300 transition-colors"
+                    className="text-muted-foreground hover:text-foreground/80 transition-colors"
                     disabled={refunding}
                   >
                     환불하기
@@ -363,18 +363,18 @@ export default function MyPage() {
         )}
 
         {/* 프로젝트 관리로 가기 CTA */}
-        <div className="bg-gradient-to-r from-[#5B8DEF]/10 to-purple-500/10 rounded-2xl border border-[#5B8DEF]/30 p-6">
+        <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-2xl border border-primary/30 p-6">
           <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-[#5B8DEF]/20 flex items-center justify-center shrink-0">
-                <FolderOpen className="w-6 h-6 text-[#5B8DEF]" />
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                <FolderOpen className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-white font-semibold mb-1">분석 결과는 프로젝트 페이지에서</p>
-                <p className="text-sm text-slate-400">프로젝트 인벤토리와 버전별 점수 비교는 별도 페이지에서 확인하세요.</p>
+                <p className="text-foreground font-semibold mb-1">분석 결과는 프로젝트 페이지에서</p>
+                <p className="text-sm text-muted-foreground">프로젝트 인벤토리와 버전별 점수 비교는 별도 페이지에서 확인하세요.</p>
               </div>
             </div>
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white shrink-0">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
               <Link href="/projects">프로젝트 열기</Link>
             </Button>
           </div>
@@ -383,10 +383,10 @@ export default function MyPage() {
 
       {/* 환불 확인 다이얼로그 */}
       <AlertDialog open={!!showRefundConfirm} onOpenChange={() => setShowRefundConfirm(null)}>
-        <AlertDialogContent className="bg-[#0f1d32] border-[#1e3a5f] text-white">
+        <AlertDialogContent className="bg-secondary border-border text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle>환불 확인</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               {(() => {
                 const order = creditOrders.find((o: { order_id: string }) => o.order_id === showRefundConfirm)
                 if (!order) return ""
@@ -395,7 +395,7 @@ export default function MyPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-[#1e3a5f] text-slate-400 hover:text-white" disabled={refunding}>취소</AlertDialogCancel>
+            <AlertDialogCancel className="border-border text-muted-foreground hover:text-foreground" disabled={refunding}>취소</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => showRefundConfirm && handleRefund(showRefundConfirm)}
               className="bg-red-500 hover:bg-red-600 text-white"

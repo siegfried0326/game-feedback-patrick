@@ -1,8 +1,8 @@
 /**
  * AI 비교 섹션 — 랜딩 페이지 (235줄)
  *
- * "일반 AI vs 아카이브 187" 비교 표 + 연도별 학습 데이터 시각화.
- * 일반 AI의 한계(추상적, 기준 없음 등)와 아카이브 187의 장점(학습 데이터 기반, 정량 분석 등) 대비.
+ * "일반 AI vs 문라이트 아카이브" 비교 표 + 연도별 학습 데이터 시각화.
+ * 일반 AI의 한계(추상적, 기준 없음 등)와 문라이트 아카이브의 장점(학습 데이터 기반, 정량 분석 등) 대비.
  * 사용: app/(landing)/page.tsx
  */
 "use client"
@@ -21,19 +21,19 @@ export function AIComparison() {
   const totalCount = yearlyData.reduce((sum, item) => sum + item.count, 0)
 
   return (
-    <section className="py-24 bg-gradient-to-b from-[#0a1628] to-[#0d1f3c]">
+    <section className="py-24 bg-gradient-to-b from-background to-card">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 text-[#5B8DEF] text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
             <Brain className="w-4 h-4" />
             AI 학습의 비밀
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
-            <span className="text-red-400">AI가 부족한 게 아닙니다.</span><br />
-            <span className="text-[#5B8DEF]">당신의 자료가 부족한 겁니다.</span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground leading-tight mb-6">
+            <span className="text-foreground">AI가 부족한 게 아닙니다.</span><br />
+            <span className="text-primary">당신의 자료가 부족한 겁니다.</span>
           </h2>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             같은 AI도 어떤 데이터로 학습했느냐에 따라 결과가 완전히 달라집니다.
           </p>
         </div>
@@ -43,90 +43,90 @@ export function AIComparison() {
 
           {/* LEFT: Generic AI (Bad) */}
           <div className="relative flex flex-col">
-            <div className="absolute -top-3 left-6 px-4 py-1 bg-red-500/20 border border-red-500/30 rounded-full text-red-400 text-sm font-medium z-10">
+            <div className="absolute -top-3 left-6 px-4 py-1 bg-red-500/20 border border-red-500/30 rounded-full text-red-600 text-sm font-medium z-10">
               일반적인 AI 첨삭
             </div>
-            <div className="bg-slate-900/80 border border-red-500/30 rounded-2xl p-8 pt-12 flex-1 flex flex-col">
+            <div className="bg-card border border-red-500/30 rounded-2xl p-8 pt-12 flex-1 flex flex-col">
 
               {/* Data Input Section */}
               <div className="mb-8">
-                <p className="text-slate-400 text-sm mb-4 text-center">학습 데이터</p>
+                <p className="text-muted-foreground text-sm mb-4 text-center">학습 데이터</p>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-center">
-                    <FileWarning className="w-6 h-6 text-red-400/60 mx-auto mb-2" />
-                    <p className="text-xs text-slate-500">10년 전<br/>취업 자료</p>
+                  <div className="bg-secondary border border-border rounded-lg p-3 text-center">
+                    <FileWarning className="w-6 h-6 text-red-600/60 mx-auto mb-2" />
+                    <p className="text-xs text-muted-foreground">10년 전<br/>취업 자료</p>
                   </div>
-                  <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-center">
-                    <FileWarning className="w-6 h-6 text-red-400/60 mx-auto mb-2" />
-                    <p className="text-xs text-slate-500">인터넷<br/>검색 결과</p>
+                  <div className="bg-secondary border border-border rounded-lg p-3 text-center">
+                    <FileWarning className="w-6 h-6 text-red-600/60 mx-auto mb-2" />
+                    <p className="text-xs text-muted-foreground">인터넷<br/>검색 결과</p>
                   </div>
-                  <div className="bg-slate-800 border border-dashed border-slate-600 rounded-lg p-3 text-center">
+                  <div className="bg-secondary border border-dashed border-border rounded-lg p-3 text-center">
                     <div className="w-6 h-6 border-2 border-dashed border-slate-500 rounded mx-auto mb-2" />
-                    <p className="text-xs text-slate-400">자료 없음</p>
+                    <p className="text-xs text-muted-foreground">자료 없음</p>
                   </div>
                 </div>
-                <p className="text-center text-slate-500 text-sm mt-3">겨우 2~3개의 검증되지 않은 자료</p>
+                <p className="text-center text-muted-foreground text-sm mt-3">겨우 2~3개의 검증되지 않은 자료</p>
 
                 {/* 빈 공간 채우기 — 오른쪽 연도별 데이터와 높이 맞춤 */}
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-3 opacity-30">
-                    <span className="text-sm font-mono w-12 text-slate-600">—</span>
-                    <div className="flex-1 bg-slate-800 rounded-full h-6" />
-                    <span className="text-xs w-20 text-slate-700 text-right">데이터 없음</span>
+                    <span className="text-sm font-mono w-12 text-muted-foreground/80">—</span>
+                    <div className="flex-1 bg-secondary rounded-full h-6" />
+                    <span className="text-xs w-20 text-muted-foreground/80 text-right">데이터 없음</span>
                   </div>
                   <div className="flex items-center gap-3 opacity-20">
-                    <span className="text-sm font-mono w-12 text-slate-600">—</span>
-                    <div className="flex-1 bg-slate-800 rounded-full h-6" />
-                    <span className="text-xs w-20 text-slate-700 text-right">데이터 없음</span>
+                    <span className="text-sm font-mono w-12 text-muted-foreground/80">—</span>
+                    <div className="flex-1 bg-secondary rounded-full h-6" />
+                    <span className="text-xs w-20 text-muted-foreground/80 text-right">데이터 없음</span>
                   </div>
                   <div className="flex items-center gap-3 opacity-10">
-                    <span className="text-sm font-mono w-12 text-slate-600">—</span>
-                    <div className="flex-1 bg-slate-800 rounded-full h-6" />
-                    <span className="text-xs w-20 text-slate-700 text-right">데이터 없음</span>
+                    <span className="text-sm font-mono w-12 text-muted-foreground/80">—</span>
+                    <div className="flex-1 bg-secondary rounded-full h-6" />
+                    <span className="text-xs w-20 text-muted-foreground/80 text-right">데이터 없음</span>
                   </div>
                 </div>
               </div>
 
               {/* Arrow */}
               <div className="flex justify-center mb-6">
-                <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
-                  <ArrowDown className="w-5 h-5 text-slate-500" />
+                <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center">
+                  <ArrowDown className="w-5 h-5 text-muted-foreground" />
                 </div>
               </div>
 
               {/* Generic AI Brain */}
-              <div className="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 mb-8">
+              <div className="bg-gradient-to-b from-secondary to-secondary border border-border rounded-xl p-6 mb-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-slate-500" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary to-secondary flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold">일반 AI</p>
-                    <p className="text-xs text-red-400">부족한 데이터로 학습</p>
+                    <p className="text-foreground font-semibold">일반 AI</p>
+                    <p className="text-xs text-red-600">부족한 데이터로 학습</p>
                   </div>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div className="bg-red-500/60 h-2 rounded-full" style={{ width: '25%' }} />
                 </div>
-                <p className="text-xs text-slate-500 mt-2 text-center">학습 품질: 25%</p>
+                <p className="text-xs text-muted-foreground mt-2 text-center">학습 품질: 25%</p>
               </div>
 
               {/* Output */}
               <div className="space-y-3 mt-auto">
-                <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
-                <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
-                  <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">&quot;핵심 반복 루프가 잘 설계되어 있습니다&quot;</p>
+                <p className="text-muted-foreground text-sm text-center mb-4">AI 피드백 결과</p>
+                <div className="flex items-start gap-3 bg-secondary rounded-lg p-3">
+                  <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-muted-foreground">&quot;핵심 반복 루프가 잘 설계되어 있습니다&quot;</p>
                 </div>
-                <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
-                  <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">&quot;난이도 밸런싱을 더 고려해보세요&quot;</p>
+                <div className="flex items-start gap-3 bg-secondary rounded-lg p-3">
+                  <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-muted-foreground">&quot;난이도 밸런싱을 더 고려해보세요&quot;</p>
                 </div>
-                <div className="flex items-start gap-3 bg-slate-800/50 rounded-lg p-3">
-                  <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-400">&quot;유저 리텐션을 위한 보상 설계가 필요합니다&quot;</p>
+                <div className="flex items-start gap-3 bg-secondary rounded-lg p-3">
+                  <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-muted-foreground">&quot;유저 리텐션을 위한 보상 설계가 필요합니다&quot;</p>
                 </div>
-                <p className="text-xs text-red-400/60 text-center pt-2">
+                <p className="text-xs text-red-600/60 text-center pt-2">
                   ↑ 어떤 문서를 넣어도 똑같은 말 — 교과서 복붙
                 </p>
               </div>
@@ -135,35 +135,35 @@ export function AIComparison() {
 
           {/* RIGHT: Our AI (Good) */}
           <div className="relative flex flex-col">
-            <div className="absolute -top-3 left-6 px-4 py-1 bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 rounded-full text-[#5B8DEF] text-sm font-medium z-10">
+            <div className="absolute -top-3 left-6 px-4 py-1 bg-primary/20 border border-primary/30 rounded-full text-primary text-sm font-medium z-10">
               이 서비스의 AI 첨삭
             </div>
-            <div className="bg-slate-900/80 border border-[#5B8DEF]/30 rounded-2xl p-8 pt-12 flex-1 flex flex-col">
+            <div className="bg-card border border-primary/30 rounded-2xl p-8 pt-12 flex-1 flex flex-col">
 
               {/* Data Input Section - Yearly Stats */}
               <div className="mb-8">
-                <p className="text-slate-400 text-sm mb-4 text-center">연도별 학습 데이터</p>
+                <p className="text-muted-foreground text-sm mb-4 text-center">연도별 학습 데이터</p>
 
                 {/* Year by Year Data Visualization */}
                 <div className="space-y-3">
                   {yearlyData.map((item) => (
                     <div key={item.year} className="flex items-center gap-3">
-                      <span className={`text-sm font-mono w-12 ${item.isOngoing ? 'text-[#5B8DEF]' : 'text-slate-400'}`}>
+                      <span className={`text-sm font-mono w-12 ${item.isOngoing ? 'text-primary' : 'text-muted-foreground'}`}>
                         {item.year}
                       </span>
-                      <div className="flex-1 bg-slate-800 rounded-full h-6 overflow-hidden">
+                      <div className="flex-1 bg-secondary rounded-full h-6 overflow-hidden">
                         <div
                           className={`h-full rounded-full flex items-center justify-end pr-3 transition-all ${
                             item.isOngoing
-                              ? 'bg-gradient-to-r from-[#5B8DEF]/60 to-[#5B8DEF] animate-pulse'
-                              : 'bg-gradient-to-r from-[#5B8DEF]/80 to-[#5B8DEF]'
+                              ? 'bg-gradient-to-r from-primary/60 to-primary animate-pulse'
+                              : 'bg-gradient-to-r from-primary/80 to-primary'
                           }`}
                           style={{ width: `${Math.min((item.count / 70) * 100, 100)}%` }}
                         >
-                          <span className="text-xs font-bold text-white">{item.count}개</span>
+                          <span className="text-xs font-bold text-foreground">{item.count}개</span>
                         </div>
                       </div>
-                      <span className={`text-xs w-20 text-right ${item.isOngoing ? 'text-[#5B8DEF]' : 'text-slate-500'}`}>
+                      <span className={`text-xs w-20 text-right ${item.isOngoing ? 'text-primary' : 'text-muted-foreground'}`}>
                         {item.label}
                       </span>
                     </div>
@@ -171,55 +171,55 @@ export function AIComparison() {
                 </div>
 
                 {/* Total Count */}
-                <div className="mt-6 p-4 bg-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-xl text-center">
+                <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-xl text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[#5B8DEF]" />
-                    <span className="text-[#5B8DEF] font-bold text-2xl">{totalCount}</span>
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    <span className="text-primary font-bold text-2xl">{totalCount}</span>
                   </div>
-                  <p className="text-slate-400 text-sm mt-1">검증된 합격 포트폴리오 학습 완료</p>
+                  <p className="text-muted-foreground text-sm mt-1">검증된 합격 포트폴리오 학습 완료</p>
                 </div>
               </div>
 
               {/* Arrow */}
               <div className="flex justify-center mb-6">
-                <div className="w-10 h-10 rounded-full bg-[#5B8DEF]/20 border border-[#5B8DEF]/30 flex items-center justify-center">
-                  <ArrowDown className="w-5 h-5 text-[#5B8DEF]" />
+                <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+                  <ArrowDown className="w-5 h-5 text-primary" />
                 </div>
               </div>
 
               {/* Claude AI Brain */}
-              <div className="bg-gradient-to-b from-[#5B8DEF]/10 to-slate-900 border border-[#5B8DEF]/30 rounded-xl p-6 mb-8">
+              <div className="bg-gradient-to-b from-primary/10 to-secondary border border-primary/30 rounded-xl p-6 mb-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5B8DEF]/30 to-blue-500/20 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-[#5B8DEF]" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 to-blue-500/20 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold">Claude AI</p>
-                    <p className="text-xs text-[#5B8DEF]">검증된 데이터로 학습</p>
+                    <p className="text-foreground font-semibold">Claude AI</p>
+                    <p className="text-xs text-primary">검증된 데이터로 학습</p>
                   </div>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-[#5B8DEF] to-blue-400 h-2 rounded-full" style={{ width: '95%' }} />
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-gradient-to-r from-primary to-blue-400 h-2 rounded-full" style={{ width: '95%' }} />
                 </div>
-                <p className="text-xs text-[#5B8DEF] mt-2 text-center">학습 품질: 95%</p>
+                <p className="text-xs text-primary mt-2 text-center">학습 품질: 95%</p>
               </div>
 
               {/* Output */}
               <div className="space-y-3 mt-auto">
-                <p className="text-slate-400 text-sm text-center mb-4">AI 피드백 결과</p>
-                <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">&quot;자동사냥권→전투 루프의 연결고리가 불분명. 넥슨 합격자는 전투-보상-성장 순환을 수치로 설계함&quot;</p>
+                <p className="text-muted-foreground text-sm text-center mb-4">AI 피드백 결과</p>
+                <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-lg p-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-foreground/80">&quot;자동사냥권→전투 루프의 연결고리가 불분명. 넥슨 합격자는 전투-보상-성장 순환을 수치로 설계함&quot;</p>
                 </div>
-                <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">&quot;재화 흐름 테이블 누락 — 크래프톤 합격자 대비 구체성 25점 하락 요인&quot;</p>
+                <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-lg p-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-foreground/80">&quot;재화 흐름 테이블 누락 — 크래프톤 합격자 대비 구체성 25점 하락 요인&quot;</p>
                 </div>
-                <div className="flex items-start gap-3 bg-[#5B8DEF]/5 border border-[#5B8DEF]/20 rounded-lg p-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300">&quot;현재 58점 → 넥슨 합격 평균 92점. 재화 흐름과 수치 설계 보완 시 +15점 예상&quot;</p>
+                <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-lg p-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-foreground/80">&quot;현재 58점 → 넥슨 합격 평균 92점. 재화 흐름과 수치 설계 보완 시 +15점 예상&quot;</p>
                 </div>
-                <p className="text-xs text-[#5B8DEF]/60 text-center pt-2">
+                <p className="text-xs text-primary/60 text-center pt-2">
                   ↑ 당신의 문서만을 위한 맞춤 피드백
                 </p>
               </div>
@@ -229,10 +229,10 @@ export function AIComparison() {
 
         {/* Bottom Message */}
         <div className="mt-16 text-center">
-          <div className="inline-block bg-gradient-to-r from-[#5B8DEF]/10 via-[#5B8DEF]/5 to-[#5B8DEF]/10 border border-[#5B8DEF]/20 rounded-2xl px-8 py-6">
-            <p className="text-xl md:text-2xl text-white font-medium">
+          <div className="inline-block bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20 rounded-2xl px-8 py-6">
+            <p className="text-xl md:text-2xl text-foreground font-medium">
               똑같은 AI도,<br className="sm:hidden" />
-              <span className="text-[#5B8DEF] font-bold"> 어떤 데이터로 학습했느냐</span>가 전부입니다.
+              <span className="text-primary font-bold"> 어떤 데이터로 학습했느냐</span>가 전부입니다.
             </p>
           </div>
         </div>

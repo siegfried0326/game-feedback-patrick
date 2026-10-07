@@ -84,16 +84,16 @@ export function PricingModal() {
               key={index}
               className={`relative bg-card rounded-xl p-6 border transition-all duration-300 flex flex-col ${
                 plan.highlighted
-                  ? "border-[#5B8DEF] shadow-lg shadow-[#5B8DEF]/10"
+                  ? "border-primary shadow-lg shadow-primary/10"
                   : plan.amber
-                  ? "border-amber-500/40 shadow-lg shadow-amber-500/5 hover:border-amber-500/70"
-                  : "border-border hover:border-[#5B8DEF]/30"
+                  ? "border-foreground/80 shadow-lg shadow-black/5 hover:border-foreground"
+                  : "border-border hover:border-primary/30"
               }`}
             >
               {plan.badge && (
                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-xs font-medium ${
-                    plan.amber ? "bg-amber-500" : "bg-[#5B8DEF]"
+                    plan.amber ? "bg-brand-ink" : "bg-primary"
                   }`}>
                     <Sparkles className="w-3 h-3" />
                     {plan.badge}
@@ -124,7 +124,7 @@ export function PricingModal() {
               <ul className="space-y-2 mb-6 flex-1">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start gap-2 text-xs">
-                    <Check className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${plan.amber ? "text-amber-400" : "text-[#5B8DEF]"}`} />
+                    <Check className={`w-3.5 h-3.5 mt-0.5 shrink-0 text-primary`} />
                     <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}
@@ -138,7 +138,7 @@ export function PricingModal() {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full mt-auto bg-amber-500 hover:bg-amber-600 text-white"
+                  className="w-full mt-auto bg-brand-ink hover:bg-black/85 text-white"
                 >
                   <a href={plan.href} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
@@ -149,7 +149,7 @@ export function PricingModal() {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full mt-auto bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+                  className="w-full mt-auto bg-primary hover:bg-primary/90 text-white"
                 >
                   <Link href={plan.href}>
                     {plan.cta}

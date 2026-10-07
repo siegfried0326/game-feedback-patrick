@@ -29,7 +29,7 @@ import {
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center text-slate-500">
+    <div className="h-full w-full flex items-center justify-center text-muted-foreground">
       <Loader2 className="w-6 h-6 animate-spin" />
     </div>
   ),
@@ -138,20 +138,20 @@ export function GraphView() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_280px] gap-4 h-[calc(100vh-180px)]">
       {/* 좌측 필터 */}
-      <aside className="overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-slate-900/60 p-4 space-y-4">
+      <aside className="overflow-y-auto rounded-2xl border border-border bg-card p-4 space-y-4">
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">검색</label>
+          <label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">검색</label>
           <input
             type="text"
             placeholder="노드 제목 필터"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-slate-950/60 border border-[#1e3a5f] rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-600 focus:border-[#5B8DEF] focus:outline-none"
+            className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">타입</label>
+          <label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">타입</label>
           <div className="space-y-1">
             {TYPE_OPTIONS.map((t) => {
               const active = typeFilter.has(t)
@@ -163,8 +163,8 @@ export function GraphView() {
                   className={
                     "w-full flex items-center justify-between gap-2 text-xs px-2 py-1 rounded border transition-colors " +
                     (active
-                      ? "bg-slate-800/60 border-[#1e3a5f] text-slate-200"
-                      : "bg-transparent border-transparent text-slate-600 hover:text-slate-400")
+                      ? "bg-secondary border-border text-foreground"
+                      : "bg-transparent border-transparent text-muted-foreground/80 hover:text-muted-foreground")
                   }
                 >
                   <span className="flex items-center gap-1.5">
@@ -174,7 +174,7 @@ export function GraphView() {
                     />
                     {TYPE_LABELS[t]}
                   </span>
-                  <span className="text-slate-600 text-[10px]">{count}</span>
+                  <span className="text-muted-foreground/80 text-[10px]">{count}</span>
                 </button>
               )
             })}
@@ -182,7 +182,7 @@ export function GraphView() {
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5 block">도메인 (원칙)</label>
+          <label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 block">도메인 (원칙)</label>
           <div className="space-y-1">
             {DOMAIN_OPTIONS.map((d) => {
               const active = domainFilter.has(d)
@@ -194,8 +194,8 @@ export function GraphView() {
                   className={
                     "w-full flex items-center justify-between gap-2 text-xs px-2 py-1 rounded border transition-colors " +
                     (active
-                      ? "bg-slate-800/60 border-[#1e3a5f] text-slate-200"
-                      : "bg-transparent border-transparent text-slate-600 hover:text-slate-400")
+                      ? "bg-secondary border-border text-foreground"
+                      : "bg-transparent border-transparent text-muted-foreground/80 hover:text-muted-foreground")
                   }
                 >
                   <span className="flex items-center gap-1.5">
@@ -205,14 +205,14 @@ export function GraphView() {
                     />
                     {d}
                   </span>
-                  <span className="text-slate-600 text-[10px]">{count}</span>
+                  <span className="text-muted-foreground/80 text-[10px]">{count}</span>
                 </button>
               )
             })}
           </div>
         </div>
 
-        <div className="pt-2 border-t border-[#1e3a5f] text-[11px] text-slate-500 space-y-0.5">
+        <div className="pt-2 border-t border-border text-[11px] text-muted-foreground space-y-0.5">
           <div>표시: 노드 {filtered.nodes.length} · 엣지 {filtered.links.length}</div>
           <div>전체: 노드 {graph?.nodes.length || 0} · 엣지 {graph?.links.length || 0}</div>
         </div>
@@ -221,10 +221,10 @@ export function GraphView() {
       {/* 그래프 캔버스 */}
       <div
         ref={containerRef}
-        className="rounded-2xl border border-[#1e3a5f] bg-[#050d1f] overflow-hidden relative"
+        className="rounded-2xl border border-border bg-background overflow-hidden relative"
       >
         {loading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
             <Loader2 className="w-6 h-6 animate-spin" />
             <p className="text-xs">{graph ? "필터 적용 중" : "그래프 로드 중"}</p>
           </div>
@@ -233,7 +233,7 @@ export function GraphView() {
             graphData={filtered}
             width={dimensions.width}
             height={dimensions.height}
-            backgroundColor="#050d1f"
+            backgroundColor="#F4F7FB"
             nodeRelSize={3}
             nodeVal={(n) => {
               const id = (n as LibraryGraphNode).id
@@ -241,7 +241,7 @@ export function GraphView() {
             }}
             nodeColor={(n) => (n as LibraryGraphNode).color}
             nodeLabel={(n) => (n as LibraryGraphNode).title}
-            linkColor={() => "rgba(91,141,239,0.18)"}
+            linkColor={() => "rgba(0,70,173,0.16)"}
             linkWidth={0.6}
             linkDirectionalParticles={0}
             cooldownTime={4000}
@@ -256,7 +256,7 @@ export function GraphView() {
               ctx.font = `${fontSize}px sans-serif`
               ctx.textAlign = "center"
               ctx.textBaseline = "middle"
-              ctx.fillStyle = "rgba(226,232,240,0.85)"
+              ctx.fillStyle = "rgba(10,10,10,0.75)"
               const label = n.label
               const yOffset = 4 + (linkCount[n.id] || 0) * 0.2
               ctx.fillText(label, n.x, n.y + yOffset)
@@ -266,7 +266,7 @@ export function GraphView() {
       </div>
 
       {/* 우측 상세 */}
-      <aside className="rounded-2xl border border-[#1e3a5f] bg-slate-900/60 p-4 overflow-y-auto">
+      <aside className="rounded-2xl border border-border bg-card p-4 overflow-y-auto">
         {selected ? (
           <div className="space-y-3 text-sm">
             <div className="flex items-start justify-between gap-2">
@@ -283,30 +283,30 @@ export function GraphView() {
               </span>
               <button
                 onClick={() => setSelected(null)}
-                className="text-slate-500 hover:text-slate-300"
+                className="text-muted-foreground hover:text-foreground/80"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-            <h3 className="text-base font-semibold text-white leading-snug">
+            <h3 className="text-base font-semibold text-foreground leading-snug">
               {selected.title}
             </h3>
-            <div className="text-xs text-slate-500 space-y-0.5">
+            <div className="text-xs text-muted-foreground space-y-0.5">
               <div>연결: {linkCount[selected.id] || 0}개</div>
               {selected.status && <div>상태: {selected.status}</div>}
-              {selected.preview && <div className="text-emerald-400">공개 (preview: true)</div>}
+              {selected.preview && <div className="text-emerald-600">공개 (preview: true)</div>}
             </div>
             <Link
               href={`/library/${typeToRouteUrl(selected.type)}/${encodeURIComponent(selected.slug)}`}
-              className="inline-flex items-center gap-1.5 text-xs bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white px-3 py-1.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg transition-colors"
             >
               상세 보기 →
             </Link>
           </div>
         ) : (
-          <div className="text-xs text-slate-500 space-y-2">
+          <div className="text-xs text-muted-foreground space-y-2">
             <p>노드를 클릭해 상세 정보를 보세요.</p>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-muted-foreground/80 leading-relaxed">
               · 마우스 휠: 확대/축소<br />
               · 드래그: 이동<br />
               · 좌측 필터: 타입·도메인 토글

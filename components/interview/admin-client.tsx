@@ -109,7 +109,7 @@ export function InterviewAdminClient({ byCategory: initialByCategory }: Props) {
                 "text-sm px-4 py-2 rounded-lg border transition-colors " +
                 (active
                   ? "bg-amber-500 border-amber-500 text-slate-900 font-semibold"
-                  : "bg-slate-900/60 border-[#1e3a5f] text-slate-400 hover:text-white")
+                  : "bg-card border-border text-muted-foreground hover:text-foreground")
               }
             >
               {c} <span className="text-xs opacity-70">({count})</span>
@@ -121,18 +121,18 @@ export function InterviewAdminClient({ byCategory: initialByCategory }: Props) {
       {/* 검색 + 일괄 액션 */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder={`${category} 안에서 검색`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-slate-900/80 border border-[#1e3a5f] rounded-lg pl-10 pr-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none"
+            className="w-full bg-card border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-none"
           />
         </div>
         <button
           onClick={selectAllVisible}
-          className="text-xs px-3 py-2 rounded-lg border border-[#1e3a5f] bg-slate-900/60 text-slate-300 hover:text-white flex items-center gap-1.5"
+          className="text-xs px-3 py-2 rounded-lg border border-border bg-card text-foreground/80 hover:text-foreground flex items-center gap-1.5"
         >
           <CheckSquare className="w-3.5 h-3.5" />
           현재 보이는 것 모두 선택
@@ -140,7 +140,7 @@ export function InterviewAdminClient({ byCategory: initialByCategory }: Props) {
         <button
           onClick={clearSelection}
           disabled={selected.size === 0}
-          className="text-xs px-3 py-2 rounded-lg border border-[#1e3a5f] bg-slate-900/60 text-slate-300 hover:text-white flex items-center gap-1.5 disabled:opacity-40"
+          className="text-xs px-3 py-2 rounded-lg border border-border bg-card text-foreground/80 hover:text-foreground flex items-center gap-1.5 disabled:opacity-40"
         >
           <Square className="w-3.5 h-3.5" />
           선택 해제
@@ -156,20 +156,20 @@ export function InterviewAdminClient({ byCategory: initialByCategory }: Props) {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-sm flex items-start gap-2">
+        <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-700 text-sm flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="text-xs text-slate-500">
+      <div className="text-xs text-muted-foreground">
         {filtered.length}개 표시 / 카테고리 전체 {rows.length}개
       </div>
 
       {/* 질문 행 */}
-      <div className="rounded-2xl border border-[#1e3a5f] overflow-hidden divide-y divide-[#1e3a5f]">
+      <div className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
         {filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">표시할 질문이 없습니다.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">표시할 질문이 없습니다.</div>
         ) : (
           filtered.map((r) => {
             const isSelected = selected.has(r.id)
@@ -177,26 +177,26 @@ export function InterviewAdminClient({ byCategory: initialByCategory }: Props) {
               <div
                 key={r.id}
                 className={
-                  "flex items-start gap-3 p-3 hover:bg-slate-900/40 transition-colors " +
-                  (isSelected ? "bg-amber-500/5" : "bg-slate-900/20")
+                  "flex items-start gap-3 p-3 hover:bg-card transition-colors " +
+                  (isSelected ? "bg-amber-500/5" : "bg-card")
                 }
               >
                 <button
                   onClick={() => toggleSelect(r.id)}
-                  className="mt-0.5 shrink-0 text-slate-500 hover:text-amber-400"
+                  className="mt-0.5 shrink-0 text-muted-foreground hover:text-amber-600"
                 >
-                  {isSelected ? <CheckSquare className="w-4 h-4 text-amber-400" /> : <Square className="w-4 h-4" />}
+                  {isSelected ? <CheckSquare className="w-4 h-4 text-amber-600" /> : <Square className="w-4 h-4" />}
                 </button>
-                <div className="text-xs text-slate-600 font-mono w-12 mt-0.5 shrink-0">#{r.id}</div>
+                <div className="text-xs text-muted-foreground/80 font-mono w-12 mt-0.5 shrink-0">#{r.id}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-200 leading-relaxed">{r.question}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{r.question}</p>
                 </div>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full border shrink-0 mt-0.5"
                   style={{
-                    borderColor: (DIFFICULTY_COLOR[r.difficulty] || "#94a3b8") + "55",
-                    color: DIFFICULTY_COLOR[r.difficulty] || "#94a3b8",
-                    background: (DIFFICULTY_COLOR[r.difficulty] || "#94a3b8") + "11",
+                    borderColor: (DIFFICULTY_COLOR[r.difficulty] || "#5B6472") + "55",
+                    color: DIFFICULTY_COLOR[r.difficulty] || "#5B6472",
+                    background: (DIFFICULTY_COLOR[r.difficulty] || "#5B6472") + "11",
                   }}
                 >
                   {r.difficulty}
@@ -204,7 +204,7 @@ export function InterviewAdminClient({ byCategory: initialByCategory }: Props) {
                 <button
                   onClick={() => handleDelete(r.id)}
                   disabled={pending}
-                  className="shrink-0 text-slate-500 hover:text-red-400 disabled:opacity-30 mt-0.5"
+                  className="shrink-0 text-muted-foreground hover:text-red-600 disabled:opacity-30 mt-0.5"
                   title="삭제"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

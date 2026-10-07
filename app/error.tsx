@@ -24,16 +24,16 @@ export default function Error({
   }, [error])
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center px-6">
+    <main className="min-h-screen bg-secondary flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
-          <FileText className="w-8 h-8 text-red-400" />
+          <FileText className="w-8 h-8 text-red-600" />
         </div>
 
-        <h1 className="text-2xl font-bold text-white mb-3">
+        <h1 className="text-2xl font-black text-foreground mb-3">
           문제가 발생했습니다
         </h1>
-        <p className="text-slate-400 mb-8 leading-relaxed">
+        <p className="text-muted-foreground mb-8 leading-relaxed">
           일시적인 오류가 발생했습니다.<br />
           잠시 후 다시 시도해 주세요.
         </p>
@@ -41,14 +41,14 @@ export default function Error({
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-medium transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
             다시 시도
           </button>
           <Link
             href="/"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors border border-[#1e3a5f]"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary hover:bg-muted text-foreground/80 font-medium transition-colors border border-border"
           >
             <Home className="w-4 h-4" />
             홈으로
@@ -56,7 +56,7 @@ export default function Error({
         </div>
 
         {error.digest && (
-          <p className="text-xs text-slate-600 mt-6">
+          <p className="text-xs text-muted-foreground/80 mt-6">
             오류 코드: {error.digest}
           </p>
         )}

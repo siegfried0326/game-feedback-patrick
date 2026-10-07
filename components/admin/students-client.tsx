@@ -74,30 +74,30 @@ export function StudentsAdminClient() {
       {/* 검색 */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") refresh() }}
             placeholder="이메일 검색 (비워두면 수강생 전체)"
-            className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#5B8DEF]"
+            className="w-full bg-card border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground placeholder-slate-500 focus:outline-none focus:border-primary"
           />
         </div>
-        <Button onClick={() => refresh()} disabled={isPending} className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+        <Button onClick={() => refresh()} disabled={isPending} className="bg-primary hover:bg-primary/90 text-white">
           {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "검색"}
         </Button>
       </div>
 
       {message && (
-        <div className="text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-2.5">
+        <div className="text-sm text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-2.5">
           {message}
         </div>
       )}
 
       {/* 사용자 목록 */}
-      <div className="rounded-xl border border-[#1e3a5f] overflow-hidden">
+      <div className="rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-[#0d1f3c] text-slate-400 text-xs">
+          <thead className="bg-card text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-4 py-3 font-medium">이메일</th>
               <th className="text-center px-2 py-3 font-medium">수강생</th>
@@ -106,25 +106,25 @@ export function StudentsAdminClient() {
               <th className="text-right px-4 py-3 font-medium">지급</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#1e3a5f]">
+          <tbody className="divide-y divide-border">
             {users.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                   {isPending ? "불러오는 중..." : "결과 없음 — 이메일로 검색하거나, 수강생을 지정하세요."}
                 </td>
               </tr>
             )}
             {users.map(u => (
-              <tr key={u.userId} className="bg-slate-900/40">
-                <td className="px-4 py-3 text-white">{u.email}</td>
+              <tr key={u.userId} className="bg-card">
+                <td className="px-4 py-3 text-foreground">{u.email}</td>
                 <td className="px-2 py-3 text-center">
                   <button
                     onClick={() => handleToggleStudent(u.userId, !u.isStudent)}
                     disabled={isPending}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors ${
                       u.isStudent
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25"
-                        : "bg-slate-800 text-slate-500 border border-slate-700 hover:text-slate-300"
+                        ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/25"
+                        : "bg-secondary text-muted-foreground border border-border hover:text-foreground/80"
                     }`}
                     title={u.isStudent ? "클릭하여 수강생 해제" : "클릭하여 수강생 지정"}
                   >
@@ -132,26 +132,26 @@ export function StudentsAdminClient() {
                     {u.isStudent ? "수강생" : "일반"}
                   </button>
                 </td>
-                <td className="px-2 py-3 text-right text-white font-medium">{u.credits}</td>
-                <td className="px-2 py-3 text-center text-slate-400 text-xs">{formatDate(u.lastGrantAt)}</td>
+                <td className="px-2 py-3 text-right text-foreground font-medium">{u.credits}</td>
+                <td className="px-2 py-3 text-center text-muted-foreground text-xs">{formatDate(u.lastGrantAt)}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1.5">
                     <input
                       value={amounts[u.userId] ?? String(STUDENT_MONTHLY_CREDITS)}
                       onChange={e => setAmounts(prev => ({ ...prev, [u.userId]: e.target.value.replace(/\D/g, "") }))}
-                      className="w-14 bg-[#0d1f3c] border border-[#1e3a5f] rounded px-2 py-1 text-right text-white text-xs focus:outline-none focus:border-[#5B8DEF]"
+                      className="w-14 bg-card border border-border rounded px-2 py-1 text-right text-foreground text-xs focus:outline-none focus:border-primary"
                     />
                     <input
                       value={notes[u.userId] ?? ""}
                       onChange={e => setNotes(prev => ({ ...prev, [u.userId]: e.target.value }))}
                       placeholder="메모"
-                      className="w-24 bg-[#0d1f3c] border border-[#1e3a5f] rounded px-2 py-1 text-white text-xs placeholder-slate-600 focus:outline-none focus:border-[#5B8DEF]"
+                      className="w-24 bg-card border border-border rounded px-2 py-1 text-foreground text-xs placeholder-slate-600 focus:outline-none focus:border-primary"
                     />
                     <Button
                       size="sm"
                       onClick={() => handleGrant(u.userId, 1)}
                       disabled={isPending}
-                      className="h-7 px-2.5 text-xs bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white"
+                      className="h-7 px-2.5 text-xs bg-primary hover:bg-primary/90 text-white"
                     >
                       지급
                     </Button>
@@ -160,7 +160,7 @@ export function StudentsAdminClient() {
                       variant="outline"
                       onClick={() => handleGrant(u.userId, -1)}
                       disabled={isPending}
-                      className="h-7 px-2 text-xs border-[#1e3a5f] text-slate-400 hover:text-red-400"
+                      className="h-7 px-2 text-xs border-border text-muted-foreground hover:text-red-600"
                     >
                       회수
                     </Button>
@@ -175,14 +175,14 @@ export function StudentsAdminClient() {
       {/* 지급 이력 */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-white">최근 지급 이력</h2>
-          <button onClick={() => refresh()} className="text-xs text-slate-500 hover:text-slate-300 inline-flex items-center gap-1">
+          <h2 className="text-lg font-semibold text-foreground">최근 지급 이력</h2>
+          <button onClick={() => refresh()} className="text-xs text-muted-foreground hover:text-foreground/80 inline-flex items-center gap-1">
             <RefreshCw className="w-3 h-3" /> 새로고침
           </button>
         </div>
-        <div className="rounded-xl border border-[#1e3a5f] overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#0d1f3c] text-slate-400 text-xs">
+            <thead className="bg-card text-muted-foreground text-xs">
               <tr>
                 <th className="text-left px-4 py-2.5 font-medium">일시</th>
                 <th className="text-left px-2 py-2.5 font-medium">이메일</th>
@@ -190,18 +190,18 @@ export function StudentsAdminClient() {
                 <th className="text-left px-4 py-2.5 font-medium">메모</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1e3a5f]">
+            <tbody className="divide-y divide-border">
               {grants.length === 0 && (
-                <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-500">지급 이력이 없습니다.</td></tr>
+                <tr><td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">지급 이력이 없습니다.</td></tr>
               )}
               {grants.map(g => (
-                <tr key={g.id} className="bg-slate-900/40">
-                  <td className="px-4 py-2.5 text-slate-400 text-xs">{new Date(g.createdAt).toLocaleString("ko-KR")}</td>
-                  <td className="px-2 py-2.5 text-white">{g.email}</td>
-                  <td className={`px-2 py-2.5 text-right font-medium ${g.credits > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <tr key={g.id} className="bg-card">
+                  <td className="px-4 py-2.5 text-muted-foreground text-xs">{new Date(g.createdAt).toLocaleString("ko-KR")}</td>
+                  <td className="px-2 py-2.5 text-foreground">{g.email}</td>
+                  <td className={`px-2 py-2.5 text-right font-medium ${g.credits > 0 ? "text-emerald-600" : "text-red-600"}`}>
                     {g.credits > 0 ? `+${g.credits}` : g.credits}
                   </td>
-                  <td className="px-4 py-2.5 text-slate-400 text-xs">{g.note || "-"}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground text-xs">{g.note || "-"}</td>
                 </tr>
               ))}
             </tbody>

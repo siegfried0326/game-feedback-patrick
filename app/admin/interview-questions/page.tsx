@@ -20,21 +20,21 @@ export default async function InterviewQuestionsAdminPage() {
   const result = await listInterviewQuestions()
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-slate-200 p-6 md:p-10">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-10">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="space-y-1">
-          <div className="text-xs text-amber-400">관리자</div>
-          <h1 className="text-3xl font-bold text-white">면접 질문 관리</h1>
-          <p className="text-sm text-slate-400">
+          <div className="text-xs text-amber-600">관리자</div>
+          <h1 className="text-3xl font-black text-foreground">면접 질문 관리</h1>
+          <p className="text-sm text-muted-foreground">
             interview_questions 테이블 — {result.total}문항. 이상한 질문은 행 끝의 삭제 버튼으로.
           </p>
-          <div className="text-xs text-slate-500 mt-2 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5">
-            ⚠️ 삭제는 즉시 DB에서 제거됨. 복원하려면 <code className="text-amber-300">scripts/017_seed_interview_questions.sql</code>을 다시 실행.
+          <div className="text-xs text-muted-foreground mt-2 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5">
+            ⚠️ 삭제는 즉시 DB에서 제거됨. 복원하려면 <code className="text-amber-700">scripts/017_seed_interview_questions.sql</code>을 다시 실행.
           </div>
         </header>
 
         {result.error ? (
-          <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
+          <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-700 text-sm">
             {result.error}
           </div>
         ) : (

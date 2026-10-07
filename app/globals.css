@@ -9,39 +9,42 @@
 }
 
 :root {
-  --background: #0a1628;
-  --foreground: #f1f5f9;
-  --card: #0d1f3c;
-  --card-foreground: #f1f5f9;
-  --popover: #0d1f3c;
-  --popover-foreground: #f1f5f9;
-  --primary: #5B8DEF;
-  --primary-foreground: #ffffff;
-  --secondary: #162a4a;
-  --secondary-foreground: #e2e8f0;
-  --muted: #1e3a5f;
-  --muted-foreground: #94a3b8;
-  --accent: #5B8DEF;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #fecaca;
-  --border: #1e3a5f;
-  --input: #1e3a5f;
-  --ring: #5B8DEF;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: #0d1f3c;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #5B8DEF;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #162a4a;
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: #1e3a5f;
-  --sidebar-ring: #5B8DEF;
+  /* 문라이트 브랜드 (2026-10 로고 시안): 화이트 바탕 · 블랙 타이포 · 코발트 블루 + 스카이 블루 */
+  --background: #FFFFFF;
+  --foreground: #0A0A0A;
+  --card: #FFFFFF;
+  --card-foreground: #0A0A0A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0A0A0A;
+  --primary: #0046AD;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F4F7FB;
+  --secondary-foreground: #0A0A0A;
+  --muted: #EEF2F7;
+  --muted-foreground: #5B6472;
+  --accent: #E8F1FD;
+  --accent-foreground: #0046AD;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E3E8EF;
+  --input: #D5DCE6;
+  --ring: #0046AD;
+  --brand-sky: #9BC8F8;
+  --brand-ink: #000000;
+  --chart-1: #0046AD;
+  --chart-2: #9BC8F8;
+  --chart-3: #3B78D1;
+  --chart-4: #0A0A0A;
+  --chart-5: #8A94A3;
+  --radius: 0.5rem;
+  --sidebar: #F4F7FB;
+  --sidebar-foreground: #0A0A0A;
+  --sidebar-primary: #0046AD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8F1FD;
+  --sidebar-accent-foreground: #0046AD;
+  --sidebar-border: #E3E8EF;
+  --sidebar-ring: #0046AD;
 }
 
 .dark {
@@ -80,7 +83,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
+  /* 브랜드 폰트 SUIT — app/layout.tsx localFont(--font-suit) */
+  --font-sans: var(--font-suit), -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --color-brand-sky: var(--brand-sky);
+  --color-brand-ink: var(--brand-ink);
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -118,6 +124,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* 브랜드 그라디언트 (코발트 → 스카이) */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(120deg, #0046AD 0%, #2F6CC8 45%, #9BC8F8 100%);
 }
 
 @layer base {

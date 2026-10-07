@@ -13,8 +13,8 @@ import { approveBillingPayment, deleteBillingKey } from "@/lib/nice-api"
 import { SUBSCRIPTION_SALES_ENABLED } from "@/lib/payments-config"
 
 const PLAN_CONFIG = {
-  monthly:     { amount: 13800, name: "아카이브 187 월 무제한",    months: 1 },
-  three_month: { amount: 39000, name: "아카이브 187 3개월 무제한", months: 3 },
+  monthly:     { amount: 13800, name: "문라이트 아카이브 월 무제한",    months: 1 },
+  three_month: { amount: 39000, name: "문라이트 아카이브 3개월 무제한", months: 3 },
 } as const
 
 const MAX_FAIL_COUNT = 3 // 3회 실패 시 구독 만료 처리

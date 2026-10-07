@@ -18,7 +18,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="min-h-screen bg-background">
       {/* 관리자 페이지 공통 내비게이션 */}
       <AdminNav />
       {/* 각 관리자 페이지 콘텐츠 */}

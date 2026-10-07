@@ -6,39 +6,39 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
-  title: "환불정책 | 아카이브 187(Archive187)",
-  description: "아카이브 187(Archive187) 서비스의 환불정책 안내",
+  title: "환불정책 | 문라이트 아카이브",
+  description: "문라이트 아카이브 서비스의 환불정책 안내",
 }
 
 export default function RefundPolicyPage() {
   return (
-    <main className="min-h-screen bg-[#0d1b2a] text-slate-300">
+    <main className="min-h-screen bg-secondary text-foreground/80">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           홈으로 돌아가기
         </Link>
 
-        <h1 className="text-3xl font-bold text-white mb-2">환불정책</h1>
-        <p className="text-sm text-slate-500 mb-10">최종 수정일: 2026년 3월 6일</p>
+        <h1 className="text-3xl font-black text-foreground mb-2">환불정책</h1>
+        <p className="text-sm text-muted-foreground mb-10">최종 수정일: 2026년 3월 6일</p>
 
         <div className="space-y-8 leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제1조 (목적)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제1조 (목적)</h2>
             <p>
-              본 환불정책은 문라이트커리어랩(이하 &quot;회사&quot;)이 제공하는 아카이브 187(Archive187) 서비스(이하 &quot;서비스&quot;)의
+              본 환불정책은 문라이트커리어랩(이하 &quot;회사&quot;)이 제공하는 문라이트 아카이브 서비스(이하 &quot;서비스&quot;)의
               구독 결제 및 크레딧 결제에 대한 환불 기준을 규정합니다.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제2조 (서비스 안내)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제2조 (서비스 안내)</h2>
             <div className="space-y-3">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 구독 서비스 (AI 문서 분석)</h3>
+                <h3 className="font-medium text-foreground mb-1">1. 구독 서비스 (AI 문서 분석)</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>무료 체험: 1회 무료 분석 (결제 불필요)</li>
                   <li>월 무제한: 월 13,800원 - 결제일부터 1개월간 무제한 문서 분석</li>
@@ -47,7 +47,7 @@ export default function RefundPolicyPage() {
               </div>
             </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 크레딧</h3>
+                <h3 className="font-medium text-foreground mb-1">2. 크레딧</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>1크레딧: 3,900원</li>
                   <li>5크레딧: 12,900원 (크레딧당 2,580원)</li>
@@ -58,20 +58,20 @@ export default function RefundPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제3조 (구독 해지)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제3조 (구독 해지)</h2>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 해지 방법</h3>
+                <h3 className="font-medium text-foreground mb-1">1. 해지 방법</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>
-                    <Link href="/mypage" className="text-[#5B8DEF] hover:underline">마이페이지</Link>에서
+                    <Link href="/mypage" className="text-primary hover:underline">마이페이지</Link>에서
                     &quot;구독 해지하기&quot; 버튼을 클릭하여 즉시 해지할 수 있습니다.
                   </li>
                   <li>별도의 문의 없이 직접 해지가 가능합니다.</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 해지 후 이용</h3>
+                <h3 className="font-medium text-foreground mb-1">2. 해지 후 이용</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>해지 후에도 남은 구독 기간(만료일)까지 서비스를 계속 이용할 수 있습니다.</li>
                   <li>만료일 이후에는 서비스 이용이 중단됩니다.</li>
@@ -81,24 +81,24 @@ export default function RefundPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제4조 (구독 서비스 환불 기준)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제4조 (구독 서비스 환불 기준)</h2>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 월 무제한</h3>
+                <h3 className="font-medium text-foreground mb-1">1. 월 무제한</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>월 무제한은 해지만 가능하며, 부분 환불은 제공되지 않습니다.</li>
                   <li>해지 시 잔여 기간까지 서비스를 이용할 수 있습니다.</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 3개월 무제한</h3>
+                <h3 className="font-medium text-foreground mb-1">2. 3개월 무제한</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>결제일로부터 7일 이내에 서비스를 1회도 이용하지 않은 경우 전액 환불이 가능합니다.</li>
                   <li>결제일로부터 7일 경과 또는 서비스 이용 이력이 있는 경우 환불이 불가합니다.</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">3. 환불 불가 사유</h3>
+                <h3 className="font-medium text-foreground mb-1">3. 환불 불가 사유</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>구독 기간이 모두 경과한 경우</li>
                   <li>이용약관 위반으로 서비스 이용이 제한된 경우</li>
@@ -110,16 +110,16 @@ export default function RefundPolicyPage() {
 
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제5조 (크레딧 환불 기준)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제5조 (크레딧 환불 기준)</h2>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 미사용 전체 환불</h3>
+                <h3 className="font-medium text-foreground mb-1">1. 미사용 전체 환불</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>구매한 크레딧을 1회도 사용하지 않은 경우, 결제일로부터 7일 이내 전액 환불이 가능합니다.</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 부분 사용 환불</h3>
+                <h3 className="font-medium text-foreground mb-1">2. 부분 사용 환불</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>일부 크레딧을 사용한 경우, 사용한 크레딧 수 &times; 결제 당시 정가(1크레딧 3,900원)를 차감한 잔여 금액을 환불합니다.</li>
                   <li>예시: 5크레딧(12,900원) 구매 후 2크레딧 사용 → 12,900원 - (3,900원 &times; 2) = 5,100원 환불</li>
@@ -128,7 +128,7 @@ export default function RefundPolicyPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">3. 환불 불가 사유</h3>
+                <h3 className="font-medium text-foreground mb-1">3. 환불 불가 사유</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>구매한 크레딧을 모두 사용한 경우</li>
                   <li>결제일로부터 7일이 경과한 경우</li>
@@ -138,18 +138,18 @@ export default function RefundPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">제6조 (환불 절차)</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-3">제6조 (환불 절차)</h2>
             <p className="mb-3">
               모든 환불은{" "}
-              <Link href="/mypage" className="text-[#5B8DEF] hover:underline">마이페이지</Link>에서
+              <Link href="/mypage" className="text-primary hover:underline">마이페이지</Link>에서
               직접 처리할 수 있습니다. 별도의 문의가 필요하지 않습니다.
             </p>
-            <p className="mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-300 text-sm">
+            <p className="mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-700 text-sm">
               카드결제를 통한 구매 건의 환불은 원칙적으로 카드 매출 취소 환불을 통해서만 가능합니다.
             </p>
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-white mb-1">1. 크레딧 환불</h3>
+                <h3 className="font-medium text-foreground mb-1">1. 크레딧 환불</h3>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>마이페이지 → 크레딧 구매 내역에서 &quot;환불하기&quot; 버튼 클릭</li>
                   <li>환불 금액 확인 후 즉시 환불 처리</li>
@@ -157,7 +157,7 @@ export default function RefundPolicyPage() {
                 </ol>
               </div>
               <div>
-                <h3 className="font-medium text-white mb-1">2. 구독 해지</h3>
+                <h3 className="font-medium text-foreground mb-1">2. 구독 해지</h3>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>마이페이지 → 구독 상태에서 &quot;구독 해지하기&quot; 클릭</li>
                   <li>해지 후 만료일까지 계속 이용 가능</li>
@@ -167,30 +167,30 @@ export default function RefundPolicyPage() {
           </section>
 
           {/* 요약 박스 */}
-          <section className="bg-slate-900/80 rounded-xl border border-[#1e3a5f] p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">환불정책 요약</h2>
+          <section className="bg-card rounded-xl border border-border p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">환불정책 요약</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e3a5f]">
-                    <th className="text-left py-2 pr-4 text-slate-400 font-medium">구분</th>
-                    <th className="text-left py-2 pr-4 text-slate-400 font-medium">해지</th>
-                    <th className="text-left py-2 text-slate-400 font-medium">환불</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 text-muted-foreground font-medium">구분</th>
+                    <th className="text-left py-2 pr-4 text-muted-foreground font-medium">해지</th>
+                    <th className="text-left py-2 text-muted-foreground font-medium">환불</th>
                   </tr>
                 </thead>
-                <tbody className="text-slate-300">
-                  <tr className="border-b border-[#1e3a5f]/50">
-                    <td className="py-3 pr-4 font-medium text-white">월 무제한</td>
+                <tbody className="text-foreground/80">
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 font-medium text-foreground">월 무제한</td>
                     <td className="py-3 pr-4">마이페이지에서 즉시 해지<br />(잔여 기간까지 이용 가능)</td>
                     <td className="py-3">환불 불가<br />(해지로 대체)</td>
                   </tr>
-                  <tr className="border-b border-[#1e3a5f]/50">
-                    <td className="py-3 pr-4 font-medium text-white">3개월 무제한</td>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 font-medium text-foreground">3개월 무제한</td>
                     <td className="py-3 pr-4">마이페이지에서 즉시 해지<br />(잔여 기간까지 이용 가능)</td>
                     <td className="py-3">7일 이내 미이용 시 전액 환불<br />그 외 환불 불가</td>
                   </tr>
-                  <tr className="border-b border-[#1e3a5f]/50">
-                    <td className="py-3 pr-4 font-medium text-white">크레딧</td>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 font-medium text-foreground">크레딧</td>
                     <td className="py-3 pr-4">해당 없음<br />(만료 없음)</td>
                     <td className="py-3">마이페이지에서 직접 환불<br />7일 이내 · 미사용 시 전액<br />부분 사용 시 정가 차감 후 환불</td>
                   </tr>

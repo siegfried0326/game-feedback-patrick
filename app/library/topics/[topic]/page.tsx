@@ -21,7 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { topic } = await params
   if (!TOPIC_ORDER.includes(topic as Topic)) return { title: "Not found" }
-  return { title: `${TOPIC_LABELS[topic as Topic]} | 주제 | 라이브러리 | Archive187` }
+  return { title: `${TOPIC_LABELS[topic as Topic]} | 주제 | 라이브러리 | 문라이트 아카이브` }
 }
 
 export default async function TopicDetailPage({ params }: Props) {
@@ -35,7 +35,7 @@ export default async function TopicDetailPage({ params }: Props) {
     <div className="space-y-6">
       <Link
         href="/library/topics"
-        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#5B8DEF]"
+        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary"
       >
         <ChevronLeft className="w-3.5 h-3.5" />
         주제별 분류
@@ -47,12 +47,12 @@ export default async function TopicDetailPage({ params }: Props) {
             className="w-3 h-3 rounded-full"
             style={{ background: TOPIC_COLORS[t] }}
           />
-          <span className="text-xs text-slate-500">주제</span>
+          <span className="text-xs text-muted-foreground">주제</span>
         </div>
-        <h1 className="text-3xl font-bold" style={{ color: TOPIC_COLORS[t] }}>
+        <h1 className="text-3xl font-black" style={{ color: TOPIC_COLORS[t] }}>
           {TOPIC_LABELS[t]}
         </h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted-foreground">
           이 주제에 속한 문서 {docs.length}편
         </p>
       </header>

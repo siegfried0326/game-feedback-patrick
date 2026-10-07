@@ -39,7 +39,7 @@ function clamp(v: number, min: number, max: number) {
 
 function LayoutPreview({ sections }: { sections: LayoutSection[] }) {
   return (
-    <div className="relative bg-slate-950 border border-slate-700 rounded-lg overflow-hidden" style={{ aspectRatio: "210/297", width: "100%" }}>
+    <div className="relative bg-background border border-border rounded-lg overflow-hidden" style={{ aspectRatio: "210/297", width: "100%" }}>
       {sections.map((section, i) => {
         // 좌표 보정: 영역 밖으로 나가지 않게
         const x = clamp(section.x, 0, 95)
@@ -49,7 +49,7 @@ function LayoutPreview({ sections }: { sections: LayoutSection[] }) {
         return (
           <div
             key={i}
-            className="absolute flex items-center justify-center text-[10px] font-medium text-white/90 rounded-sm overflow-hidden"
+            className="absolute flex items-center justify-center text-[10px] font-medium text-foreground/90 rounded-sm overflow-hidden"
             style={{
               left: `${x}%`,
               top: `${y}%`,
@@ -73,36 +73,36 @@ export function LayoutRecommendations({ data }: LayoutRecommendationsProps) {
   if (!data || data.length === 0) return null
 
   return (
-    <Card className="bg-slate-900/80 border-[#1e3a5f]">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Layout className="w-5 h-5 text-orange-400" />
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <Layout className="w-5 h-5 text-orange-600" />
           레이아웃 개선 제안
         </CardTitle>
-        <p className="text-xs text-slate-500">개선이 가장 필요한 페이지 {data.length}곳의 수정 전후 비교입니다</p>
+        <p className="text-xs text-muted-foreground">개선이 가장 필요한 페이지 {data.length}곳의 수정 전후 비교입니다</p>
       </CardHeader>
       <CardContent className="space-y-3">
         {data.map((item, index) => (
-          <div key={index} className="border border-[#1e3a5f]/50 rounded-lg overflow-hidden">
+          <div key={index} className="border border-border/50 rounded-lg overflow-hidden">
             <button
               type="button"
-              className="w-full text-left p-3 hover:bg-slate-800/50 transition-colors flex items-center justify-between"
+              className="w-full text-left p-3 hover:bg-secondary transition-colors flex items-center justify-between"
               onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
             >
-              <span className="text-sm text-white font-medium">{item.pageOrSection}</span>
-              <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${expandedIndex === index ? 'rotate-180' : ''}`} />
+              <span className="text-sm text-foreground font-medium">{item.pageOrSection}</span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedIndex === index ? 'rotate-180' : ''}`} />
             </button>
             {expandedIndex === index && (
               <div className="px-3 pb-4 space-y-4">
                 {/* 텍스트 설명 */}
                 <div className="grid md:grid-cols-2 gap-3">
                   <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-lg">
-                    <p className="text-xs text-red-400 font-semibold mb-1">현재 상태</p>
-                    <p className="text-sm text-slate-300 leading-relaxed">{item.currentDescription}</p>
+                    <p className="text-xs text-red-600 font-semibold mb-1">현재 상태</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">{item.currentDescription}</p>
                   </div>
                   <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
-                    <p className="text-xs text-emerald-400 font-semibold mb-1">개선 제안</p>
-                    <p className="text-sm text-slate-300 leading-relaxed">{item.recommendedDescription}</p>
+                    <p className="text-xs text-emerald-600 font-semibold mb-1">개선 제안</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">{item.recommendedDescription}</p>
                   </div>
                 </div>
 
@@ -110,12 +110,12 @@ export function LayoutRecommendations({ data }: LayoutRecommendationsProps) {
                 {item.currentLayout?.sections && item.recommendedLayout?.sections && (
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
-                      <p className="text-xs text-red-400 text-center mb-2">수정 전</p>
+                      <p className="text-xs text-red-600 text-center mb-2">수정 전</p>
                       <LayoutPreview sections={item.currentLayout.sections} />
                     </div>
-                    <ArrowRight className="w-6 h-6 text-slate-500 shrink-0" />
+                    <ArrowRight className="w-6 h-6 text-muted-foreground shrink-0" />
                     <div className="flex-1">
-                      <p className="text-xs text-emerald-400 text-center mb-2">수정 후</p>
+                      <p className="text-xs text-emerald-600 text-center mb-2">수정 후</p>
                       <LayoutPreview sections={item.recommendedLayout.sections} />
                     </div>
                   </div>

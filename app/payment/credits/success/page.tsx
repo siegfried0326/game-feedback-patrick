@@ -47,8 +47,8 @@ function CreditSlot({ index, total, filled }: { index: number; total: number; fi
     <div
       className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all duration-500 ${
         filled
-          ? "border-[#5B8DEF] bg-[#5B8DEF]/20 text-[#5B8DEF] scale-110"
-          : "border-slate-700 bg-slate-800/50 text-slate-600"
+          ? "border-primary bg-primary/20 text-primary scale-110"
+          : "border-border bg-secondary text-muted-foreground/80"
       }`}
       style={{ transitionDelay: `${index * 150}ms` }}
     >
@@ -107,22 +107,22 @@ function CreditSuccessContent() {
   }, [searchParams, router])
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+    <main className="min-h-screen bg-secondary flex items-center justify-center">
       <div className="max-w-md mx-auto px-6 text-center">
         {/* 처리 중 */}
         {status === "processing" && (
           <>
             <div className="relative w-20 h-20 mx-auto mb-6">
-              <Loader2 className="w-20 h-20 text-[#5B8DEF] animate-spin" />
-              <Zap className="w-8 h-8 text-[#5B8DEF] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              <Loader2 className="w-20 h-20 text-primary animate-spin" />
+              <Zap className="w-8 h-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">결제 확인 중...</h1>
-            <p className="text-slate-400">크레딧을 충전하고 있습니다.</p>
+            <h1 className="text-2xl font-black text-foreground mb-2">결제 확인 중...</h1>
+            <p className="text-muted-foreground">크레딧을 충전하고 있습니다.</p>
             <div className="mt-6 flex justify-center gap-2">
               {[0, 1, 2].map(i => (
                 <div
                   key={i}
-                  className="w-2 h-2 rounded-full bg-[#5B8DEF] animate-bounce"
+                  className="w-2 h-2 rounded-full bg-primary animate-bounce"
                   style={{ animationDelay: `${i * 200}ms` }}
                 />
               ))}
@@ -135,10 +135,10 @@ function CreditSuccessContent() {
           <div className="space-y-6">
             {/* 체크마크 */}
             <div className={`transition-all duration-700 ${showComplete ? "scale-100 opacity-100" : "scale-50 opacity-0"}`}>
-              <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto" />
+              <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto" />
             </div>
 
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-black text-foreground">
               {showComplete ? "충전 완료!" : "크레딧 충전 중..."}
             </h1>
 
@@ -157,36 +157,36 @@ function CreditSuccessContent() {
             )}
 
             {/* 충전량 + 보유량 */}
-            <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-6 space-y-4">
+            <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-sm">충전한 크레딧</span>
-                <span className="text-[#5B8DEF] font-bold text-lg">
+                <span className="text-muted-foreground text-sm">충전한 크레딧</span>
+                <span className="text-primary font-bold text-lg">
                   +<AnimatedCounter target={purchasedCredits} />회
                 </span>
               </div>
-              <div className="h-px bg-[#1e3a5f]" />
+              <div className="h-px bg-border" />
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-sm">현재 보유 크레딧</span>
-                <span className="text-white font-bold text-2xl">
+                <span className="text-muted-foreground text-sm">현재 보유 크레딧</span>
+                <span className="text-foreground font-bold text-2xl">
                   <AnimatedCounter target={credits} duration={1800} />회
                 </span>
               </div>
               {/* 게이지 바 */}
-              <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#5B8DEF] to-[#7BA4F7] rounded-full transition-all duration-1500 ease-out"
+                  className="h-full bg-gradient-to-r from-primary to-brand-sky rounded-full transition-all duration-1500 ease-out"
                   style={{ width: `${Math.min((credits / Math.max(credits, 10)) * 100, 100)}%`, transitionDuration: "1.5s" }}
                 />
               </div>
             </div>
 
             {/* 안내 텍스트 */}
-            <p className="text-slate-500 text-sm">
+            <p className="text-muted-foreground text-sm">
               잠시 후 분석 페이지로 이동합니다.
             </p>
 
             {/* CTA 버튼 */}
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white w-full">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white w-full">
               <Link href="/analyze" className="flex items-center justify-center gap-2">
                 바로 분석하러 가기 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -197,11 +197,11 @@ function CreditSuccessContent() {
         {/* 에러 */}
         {status === "error" && (
           <>
-            <XCircle className="w-16 h-16 text-red-400 mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-white mb-2">결제 확인에 실패했습니다</h1>
-            <p className="text-slate-400 mb-2">{errorMessage}</p>
-            <p className="text-sm text-slate-500 mb-6">문제가 지속되면 고객센터에 문의해주세요.</p>
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <XCircle className="w-16 h-16 text-red-600 mx-auto mb-6" />
+            <h1 className="text-2xl font-black text-foreground mb-2">결제 확인에 실패했습니다</h1>
+            <p className="text-muted-foreground mb-2">{errorMessage}</p>
+            <p className="text-sm text-muted-foreground mb-6">문제가 지속되면 고객센터에 문의해주세요.</p>
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
               <Link href="/payment/credits">다시 시도</Link>
             </Button>
           </>
@@ -214,8 +214,8 @@ function CreditSuccessContent() {
 export default function CreditSuccessPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     }>
       <CreditSuccessContent />

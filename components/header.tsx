@@ -9,8 +9,9 @@
 "use client"
 
 import Link from "next/link"
-import { FileText, LogOut, User, Shield, FolderOpen, Mic, Library } from "lucide-react"
+import { LogOut, User, Shield, FolderOpen, Mic, Library } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { BrandLogo } from "@/components/brand-logo"
 import { PricingModal } from "@/components/pricing-modal"
 import { signOut } from "@/app/actions/auth"
 
@@ -25,33 +26,30 @@ type HeaderProps = {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a1628]/95 backdrop-blur-md border-b border-[#1e3a5f]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#5B8DEF] flex items-center justify-center">
-            <FileText className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-semibold text-white">Archive187</span>
+        <Link href="/" aria-label="문라이트 아카이브 홈">
+          <BrandLogo />
         </Link>
 
         <nav className="hidden md:flex items-center gap-7">
-          <Link href="/analyze" className="text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors font-medium">
+          <Link href="/analyze" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
             분석하기
           </Link>
           {(user?.isAdmin || user?.isStudent) && (
             <Link
               href="/library"
-              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors font-medium"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
             >
               <Library className="w-3.5 h-3.5" />
               라이브러리
             </Link>
           )}
-          <a href="#service" className="text-sm text-slate-400 hover:text-white transition-colors">
+          <a href="#service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             서비스 소개
           </a>
           <PricingModal />
-          <a href="#faq" className="text-sm text-slate-400 hover:text-white transition-colors">
+          <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             FAQ
           </a>
         </nav>
@@ -63,14 +61,14 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <Link
                     href="/admin/training"
-                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-colors"
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 hover:bg-amber-500/20 transition-colors"
                   >
                     <Shield className="w-3 h-3" />
                     관리자
                   </Link>
                   <Link
                     href="/interview"
-                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-colors"
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 hover:bg-purple-500/20 transition-colors"
                     title="면접 연습 (관리자 테스트)"
                   >
                     <Mic className="w-3 h-3" />
@@ -80,14 +78,14 @@ export function Header({ user }: HeaderProps) {
               )}
               <Link
                 href="/projects"
-                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-[#5B8DEF] transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 <FolderOpen className="w-4 h-4" />
                 <span className="hidden sm:inline">프로젝트</span>
               </Link>
               <Link
                 href="/mypage"
-                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">
@@ -97,7 +95,7 @@ export function Header({ user }: HeaderProps) {
               <form action={signOut}>
                 <button
                   type="submit"
-                  className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">로그아웃</span>
@@ -105,7 +103,7 @@ export function Header({ user }: HeaderProps) {
               </form>
             </>
           ) : (
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
               <Link href="/login">로그인</Link>
             </Button>
           )}

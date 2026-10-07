@@ -10,7 +10,7 @@ import { ArrowRight } from "lucide-react"
 import { getAllSummaries, getLibraryStats } from "@/lib/library/loader"
 
 export const metadata: Metadata = {
-  title: "디자이너별 분류 | 라이브러리 | Archive187",
+  title: "디자이너별 분류 | 라이브러리 | 문라이트 아카이브",
 }
 
 export default async function ByDesignerPage() {
@@ -36,14 +36,14 @@ export default async function ByDesignerPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <div className="text-xs text-slate-500">라이브러리</div>
-        <h1 className="text-3xl font-bold text-white">디자이너별 분류</h1>
-        <p className="text-sm text-slate-400">
+        <div className="text-xs text-muted-foreground">라이브러리</div>
+        <h1 className="text-3xl font-black text-foreground">디자이너별 분류</h1>
+        <p className="text-sm text-muted-foreground">
           {sorted.length}명 디자이너 · 작품 수 내림차순. 한 원칙·패턴이 여러 디자이너에게 연결될 수 있음.
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           전체 디자이너 인물 문서 {stats.byType.designer || 0}편 별도. {" "}
-          <Link href="/library/designers" className="text-[#5B8DEF] hover:underline">인물 문서 목록 →</Link>
+          <Link href="/library/designers" className="text-primary hover:underline">인물 문서 목록 →</Link>
         </p>
       </header>
 
@@ -52,21 +52,21 @@ export default async function ByDesignerPage() {
           <Link
             key={name}
             href={`/library/designers/${encodeURIComponent(name)}`}
-            className="group flex items-start justify-between gap-2 rounded-xl border border-[#1e3a5f] bg-slate-900/60 hover:bg-slate-900/80 hover:border-[#5B8DEF]/40 p-4 transition-all"
+            className="group flex items-start justify-between gap-2 rounded-xl border border-border bg-card hover:bg-card hover:border-primary/40 p-4 transition-all"
           >
             <div className="min-w-0">
-              <h3 className="text-base font-semibold text-white truncate">{name}</h3>
-              <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-1.5">
+              <h3 className="text-base font-semibold text-foreground truncate">{name}</h3>
+              <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap gap-1.5">
                 {Object.entries(meta.types).map(([t, c]) => (
-                  <span key={t} className="px-1.5 py-0.5 rounded bg-slate-800/60">
+                  <span key={t} className="px-1.5 py-0.5 rounded bg-secondary">
                     {t} {c}
                   </span>
                 ))}
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-xl font-bold text-[#5B8DEF]">{meta.count}</div>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#5B8DEF] ml-auto mt-1" />
+              <div className="text-xl font-bold text-primary">{meta.count}</div>
+              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary ml-auto mt-1" />
             </div>
           </Link>
         ))}

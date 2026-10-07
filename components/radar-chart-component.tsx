@@ -25,10 +25,10 @@ type RadarChartProps = {
 const BASIC_SUBJECTS = ["논리력", "구체성", "가독성", "기술이해", "창의성"]
 
 function getScoreColor(value: number): string {
-  if (value >= 80) return "text-emerald-400"
-  if (value >= 60) return "text-[#5B8DEF]"
-  if (value >= 40) return "text-amber-400"
-  return "text-red-400"
+  if (value >= 80) return "text-emerald-600"
+  if (value >= 60) return "text-primary"
+  if (value >= 40) return "text-amber-600"
+  return "text-red-600"
 }
 
 export function RadarChartComponent({ data }: RadarChartProps) {
@@ -38,25 +38,25 @@ export function RadarChartComponent({ data }: RadarChartProps) {
   const chartData = basicData.length > 0 ? basicData : numeric.slice(0, 5)
 
   return (
-    <Card className="bg-slate-900/80 border-[#1e3a5f] h-full flex flex-col">
+    <Card className="bg-card border-border h-full flex flex-col">
       <CardHeader>
-        <CardTitle className="text-white">기본 역량 분석</CardTitle>
+        <CardTitle className="text-foreground">기본 역량 분석</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-              <PolarGrid stroke="#1e3a5f" />
+              <PolarGrid stroke="#E3E8EF" />
               <PolarAngleAxis
                 dataKey="subject"
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tick={{ fill: "#5B6472", fontSize: 12 }}
                 tickLine={false}
               />
               <Radar
                 name="역량"
                 dataKey="value"
-                stroke="#5B8DEF"
-                fill="#5B8DEF"
+                stroke="#0046AD"
+                fill="#0046AD"
                 fillOpacity={0.3}
                 strokeWidth={2}
               />
@@ -66,7 +66,7 @@ export function RadarChartComponent({ data }: RadarChartProps) {
         <div className="mt-4 grid grid-cols-2 gap-2">
           {chartData.map((item, index) => (
             <div key={index} className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">{item.subject}</span>
+              <span className="text-muted-foreground">{item.subject}</span>
               <span className={`font-medium ${getScoreColor(item.value)}`}>{item.value}점</span>
             </div>
           ))}

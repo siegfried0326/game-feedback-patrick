@@ -65,14 +65,14 @@ export function SearchClient({ documents }: { documents: LibrarySummary[] }) {
   return (
     <div className="space-y-5">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           autoFocus
           type="text"
           placeholder="검색어 입력…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full bg-slate-900/80 border border-[#1e3a5f] rounded-xl pl-11 pr-4 py-3 text-slate-200 placeholder:text-slate-500 focus:border-[#5B8DEF] focus:outline-none"
+          className="w-full bg-card border border-border rounded-xl pl-11 pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
         />
       </div>
 
@@ -82,8 +82,8 @@ export function SearchClient({ documents }: { documents: LibrarySummary[] }) {
           className={
             "text-xs px-3 py-1 rounded-full border transition-colors " +
             (type === "all"
-              ? "bg-[#5B8DEF] border-[#5B8DEF] text-white"
-              : "bg-slate-900/60 border-[#1e3a5f] text-slate-400 hover:text-white")
+              ? "bg-primary border-primary text-white"
+              : "bg-card border-border text-muted-foreground hover:text-foreground")
           }
         >
           전체 ({documents.length})
@@ -101,7 +101,7 @@ export function SearchClient({ documents }: { documents: LibrarySummary[] }) {
                 active
                   ? { background: TYPE_COLORS[t], borderColor: TYPE_COLORS[t], color: "#fff" }
                   : {
-                      background: "rgba(15,23,42,0.6)",
+                      background: "#FFFFFF",
                       borderColor: TYPE_COLORS[t] + "55",
                       color: TYPE_COLORS[t],
                     }
@@ -114,14 +114,14 @@ export function SearchClient({ documents }: { documents: LibrarySummary[] }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[10px] uppercase tracking-wider text-slate-500 mr-2">도메인</span>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-2">도메인</span>
         <button
           onClick={() => setDomain("all")}
           className={
             "text-xs px-3 py-1 rounded-full border " +
             (domain === "all"
-              ? "bg-slate-700 border-slate-600 text-white"
-              : "bg-slate-900/60 border-[#1e3a5f] text-slate-500 hover:text-slate-300")
+              ? "bg-muted border-border text-foreground"
+              : "bg-card border-border text-muted-foreground hover:text-foreground/80")
           }
         >
           전체
@@ -139,7 +139,7 @@ export function SearchClient({ documents }: { documents: LibrarySummary[] }) {
                 active
                   ? { background: DOMAIN_COLORS[d], borderColor: DOMAIN_COLORS[d], color: "#fff" }
                   : {
-                      background: "rgba(15,23,42,0.6)",
+                      background: "#FFFFFF",
                       borderColor: DOMAIN_COLORS[d] + "55",
                       color: DOMAIN_COLORS[d],
                     }
@@ -149,24 +149,24 @@ export function SearchClient({ documents }: { documents: LibrarySummary[] }) {
             </button>
           )
         })}
-        <label className="ml-auto flex items-center gap-2 text-xs text-slate-400 px-3 py-1 rounded-full bg-slate-900/60 border border-[#1e3a5f] cursor-pointer">
+        <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground px-3 py-1 rounded-full bg-card border border-border cursor-pointer">
           <input
             type="checkbox"
             checked={previewOnly}
             onChange={(e) => setPreviewOnly(e.target.checked)}
-            className="accent-[#5B8DEF]"
+            className="accent-[#0046AD]"
           />
           공개 전용
         </label>
       </div>
 
-      <div className="text-xs text-slate-500">
+      <div className="text-xs text-muted-foreground">
         {filtered.length}건 / {documents.length}건
       </div>
 
       <DocumentGrid documents={filtered.slice(0, 80)} compact />
       {filtered.length > 80 && (
-        <p className="text-center text-xs text-slate-500">처음 80개 표시.</p>
+        <p className="text-center text-xs text-muted-foreground">처음 80개 표시.</p>
       )}
     </div>
   )

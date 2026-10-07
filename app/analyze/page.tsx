@@ -13,7 +13,7 @@ import { AuthAnalyzeHeader } from "@/components/auth-analyze-header"
 export const maxDuration = 300
 
 export const metadata = {
-  title: "문서 분석하기 | 아카이브 187(Archive187)",
+  title: "문서 분석하기 | 문라이트 아카이브",
   description: "게임 기획 문서를 업로드하고 AI 분석 결과를 확인하세요.",
 }
 

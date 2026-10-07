@@ -57,21 +57,21 @@ function BillingSuccessContent() {
   }, [searchParams, router])
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
+    <main className="min-h-screen bg-secondary flex items-center justify-center">
       <div className="max-w-md mx-auto px-6 text-center">
         {status === "processing" && (
           <>
-            <Loader2 className="w-16 h-16 text-[#5B8DEF] animate-spin mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-white mb-2">결제 처리 중...</h1>
-            <p className="text-slate-400">잠시만 기다려주세요.</p>
+            <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto mb-6" />
+            <h1 className="text-2xl font-black text-foreground mb-2">결제 처리 중...</h1>
+            <p className="text-muted-foreground">잠시만 기다려주세요.</p>
           </>
         )}
 
         {status === "success" && (
           <>
-            <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-white mb-2">구독이 시작되었습니다!</h1>
-            <p className="text-slate-400 mb-6">
+            <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto mb-6" />
+            <h1 className="text-2xl font-black text-foreground mb-2">구독이 시작되었습니다!</h1>
+            <p className="text-muted-foreground mb-6">
               {searchParams.get("plan") === "three_month"
                 ? "이제 3개월 동안 무제한 분석과 모든 기능을 이용하실 수 있습니다."
                 : "이제 무제한 분석과 버전 비교 기능을 이용하실 수 있습니다."
@@ -79,7 +79,7 @@ function BillingSuccessContent() {
               <br />
               잠시 후 분석 페이지로 이동합니다.
             </p>
-            <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
               <Link href="/analyze">분석하러 가기</Link>
             </Button>
           </>
@@ -87,15 +87,15 @@ function BillingSuccessContent() {
 
         {status === "error" && (
           <>
-            <XCircle className="w-16 h-16 text-red-400 mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-white mb-2">결제에 실패했습니다</h1>
-            <p className="text-slate-400 mb-2">{errorMessage}</p>
-            <p className="text-sm text-slate-500 mb-6">문제가 지속되면 고객센터에 문의해주세요.</p>
+            <XCircle className="w-16 h-16 text-red-600 mx-auto mb-6" />
+            <h1 className="text-2xl font-black text-foreground mb-2">결제에 실패했습니다</h1>
+            <p className="text-muted-foreground mb-2">{errorMessage}</p>
+            <p className="text-sm text-muted-foreground mb-6">문제가 지속되면 고객센터에 문의해주세요.</p>
             <div className="flex gap-3 justify-center">
-              <Button asChild variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+              <Button asChild variant="outline" className="border-border text-foreground/80 hover:bg-secondary">
                 <Link href="/pricing">요금제 보기</Link>
               </Button>
-              <Button asChild className="bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-white">
                 <Link href="/payment/billing">다시 시도</Link>
               </Button>
             </div>
@@ -109,8 +109,8 @@ function BillingSuccessContent() {
 export default function BillingSuccessPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     }>
       <BillingSuccessContent />

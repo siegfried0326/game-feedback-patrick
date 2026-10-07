@@ -102,13 +102,13 @@ export default function SuccessPatternsPage() {
   const importanceBadge = (importance: string) => {
     switch (importance) {
       case "high":
-        return "bg-red-500/20 text-red-300 border-red-500/30"
+        return "bg-red-500/20 text-red-700 border-red-500/30"
       case "medium":
-        return "bg-amber-500/20 text-amber-300 border-amber-500/30"
+        return "bg-amber-500/20 text-amber-700 border-amber-500/30"
       case "low":
-        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+        return "bg-slate-500/20 text-muted-foreground border-slate-500/30"
       default:
-        return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+        return "bg-slate-500/20 text-muted-foreground border-slate-500/30"
     }
   }
 
@@ -127,15 +127,15 @@ export default function SuccessPatternsPage() {
       <div className="max-w-4xl mx-auto">
         {/* 헤더 */}
         <div className="mb-8">
-          <Link href="/admin" className="text-slate-400 hover:text-white text-sm flex items-center gap-1 mb-4">
+          <Link href="/admin" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 mb-4">
             <ArrowLeft className="w-4 h-4" />
             관리자 대시보드로 돌아가기
           </Link>
-          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-            <Lightbulb className="w-8 h-8 text-amber-400" />
+          <h1 className="text-3xl font-black text-foreground mb-2 flex items-center gap-3">
+            <Lightbulb className="w-8 h-8 text-amber-600" />
             합격자 공통점 50가지
           </h1>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             {stats ? `${stats.total}개 패턴 (일반 ${stats.general}개 + 회사별 ${stats.company}개) — 전체 문서 배치 분할 분석` : "데이터 로딩 중..."}
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function SuccessPatternsPage() {
             onClick={loadPatterns}
             disabled={isLoading || isExtracting}
             variant="outline"
-            className="border-slate-600 text-slate-300 hover:bg-slate-800"
+            className="border-border text-foreground/80 hover:bg-secondary"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             새로고침
@@ -172,14 +172,14 @@ export default function SuccessPatternsPage() {
 
         {/* 추출 결과 메시지 */}
         {extractMessage && (
-          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-300 text-sm">
+          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-700 text-sm">
             {extractMessage}
           </div>
         )}
 
         {/* 에러 표시 */}
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-300 text-sm">
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -187,18 +187,18 @@ export default function SuccessPatternsPage() {
         {/* 로딩 */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#5B8DEF] animate-spin" />
-            <span className="text-slate-400 ml-3">데이터 불러오는 중...</span>
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <span className="text-muted-foreground ml-3">데이터 불러오는 중...</span>
           </div>
         )}
 
         {/* 데이터 없음 */}
         {!isLoading && patterns.length === 0 && !error && (
-          <Card className="bg-slate-900/80 border-[#1e3a5f]">
+          <Card className="bg-card border-border">
             <CardContent className="py-16 text-center">
-              <Lightbulb className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400 text-lg mb-2">아직 추출된 공통점이 없습니다</p>
-              <p className="text-slate-500 text-sm mb-6">위의 &quot;공통점 새로 추출하기&quot; 버튼을 클릭하세요</p>
+              <Lightbulb className="w-16 h-16 text-muted-foreground/80 mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg mb-2">아직 추출된 공통점이 없습니다</p>
+              <p className="text-muted-foreground text-sm mb-6">위의 &quot;공통점 새로 추출하기&quot; 버튼을 클릭하세요</p>
             </CardContent>
           </Card>
         )}
@@ -213,8 +213,8 @@ export default function SuccessPatternsPage() {
                 onClick={() => setActiveTab("general")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                   activeTab === "general"
-                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                    ? "bg-amber-500/20 text-amber-700 border border-amber-500/30"
+                    : "bg-secondary text-muted-foreground border border-border hover:border-border"
                 }`}
               >
                 <Star className="w-4 h-4" />
@@ -230,8 +230,8 @@ export default function SuccessPatternsPage() {
                     onClick={() => setActiveTab(company)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                       activeTab === company
-                        ? "bg-[#5B8DEF]/20 text-[#5B8DEF] border border-[#5B8DEF]/30"
-                        : "bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600"
+                        ? "bg-primary/20 text-primary border border-primary/30"
+                        : "bg-secondary text-muted-foreground border border-border hover:border-border"
                     }`}
                   >
                     <Building2 className="w-4 h-4" />
@@ -246,30 +246,30 @@ export default function SuccessPatternsPage() {
               {filteredPatterns.map((pattern) => (
                 <Card
                   key={pattern.id}
-                  className={`bg-slate-900/80 border-[#1e3a5f] hover:border-[#5B8DEF]/30 transition-colors`}
+                  className={`bg-card border-border hover:border-primary/30 transition-colors`}
                 >
                   <CardContent className="py-4 px-5">
                     <div className="flex items-start gap-4">
                       {/* 번호 */}
-                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
-                        <span className="text-[#5B8DEF] font-bold text-sm">{pattern.pattern_number}</span>
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0 border border-border">
+                        <span className="text-primary font-bold text-sm">{pattern.pattern_number}</span>
                       </div>
 
                       {/* 내용 */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-white font-medium text-sm">{pattern.title}</h3>
+                          <h3 className="text-foreground font-medium text-sm">{pattern.title}</h3>
                           <span className={`px-2 py-0.5 text-xs rounded-full border ${importanceBadge(pattern.importance)}`}>
                             {importanceLabel(pattern.importance)}
                           </span>
                         </div>
-                        <p className="text-slate-400 text-sm leading-relaxed">{pattern.description}</p>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{pattern.description}</p>
 
                         {/* 예시 파일 */}
                         {pattern.example_files && pattern.example_files.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {pattern.example_files.map((file, idx) => (
-                              <span key={idx} className="text-xs px-2 py-0.5 bg-slate-800 text-slate-500 rounded">
+                              <span key={idx} className="text-xs px-2 py-0.5 bg-secondary text-muted-foreground rounded">
                                 📄 {file}
                               </span>
                             ))}
@@ -283,7 +283,7 @@ export default function SuccessPatternsPage() {
             </div>
 
             {/* 하단 통계 */}
-            <div className="mt-8 text-center text-slate-500 text-sm">
+            <div className="mt-8 text-center text-muted-foreground text-sm">
               총 {stats?.total}개 패턴 | 일반 {stats?.general}개 | 회사별 {stats?.company}개 ({stats?.companies.join(", ")})
             </div>
           </>

@@ -29,15 +29,15 @@ type DesignScoresProps = {
 const BASIC_SUBJECTS = ["논리력", "구체성", "가독성", "기술이해", "창의성"]
 
 function getScoreColor(value: number): string {
-  if (value >= 80) return "text-emerald-400"
-  if (value >= 60) return "text-[#5B8DEF]"
-  if (value >= 40) return "text-amber-400"
-  return "text-red-400"
+  if (value >= 80) return "text-emerald-600"
+  if (value >= 60) return "text-primary"
+  if (value >= 40) return "text-amber-600"
+  return "text-red-600"
 }
 
 function getBarColor(value: number): string {
   if (value >= 80) return "bg-emerald-500"
-  if (value >= 60) return "bg-[#5B8DEF]"
+  if (value >= 60) return "bg-primary"
   if (value >= 40) return "bg-amber-500"
   return "bg-red-500"
 }
@@ -59,17 +59,17 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
     : 0
 
   return (
-    <Card className="bg-slate-900/80 border-[#1e3a5f]">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between text-white">
+        <CardTitle className="flex items-center justify-between text-foreground">
           <span className="flex items-center gap-2">
-            <Gamepad2 className="w-5 h-5 text-purple-400" />
+            <Gamepad2 className="w-5 h-5 text-purple-600" />
             게임 디자인 역량
           </span>
           <span className={`text-lg ${getScoreColor(avg)}`}>평균 {avg}점</span>
         </CardTitle>
         {naCount > 0 && (
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {domainLabel ? `${domainLabel} 문서 기준으로 ` : ""}{naCount}개 항목은 평가 대상이 아니라 점수에서 제외했어요.
           </p>
         )}
@@ -80,11 +80,11 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
             if (!isApplicable(item)) {
               return (
                 <div key={index} className="flex items-center justify-between p-2 -m-2 mb-0 rounded-lg opacity-60">
-                  <span className="text-sm text-slate-500 flex items-center gap-1.5">
+                  <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                     <MinusCircle className="w-3.5 h-3.5" />
                     {item.subject}
                   </span>
-                  <span className="text-xs text-slate-500 border border-slate-700 rounded-full px-2 py-0.5">해당 없음</span>
+                  <span className="text-xs text-muted-foreground border border-border rounded-full px-2 py-0.5">해당 없음</span>
                 </div>
               )
             }
@@ -92,17 +92,17 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
               <div key={index}>
                 <button
                   type="button"
-                  className="w-full text-left cursor-pointer hover:bg-slate-800/50 rounded-lg p-2 -m-2 transition-colors"
+                  className="w-full text-left cursor-pointer hover:bg-secondary rounded-lg p-2 -m-2 transition-colors"
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-slate-300 flex items-center gap-1">
+                    <span className="text-sm text-foreground/80 flex items-center gap-1">
                       {item.subject}
-                      <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${expandedIndex === index ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${expandedIndex === index ? "rotate-180" : ""}`} />
                     </span>
                     <span className={`text-sm font-semibold ${getScoreColor(item.value)}`}>{item.value}점</span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${getBarColor(item.value)}`}
                       style={{ width: `${item.value}%` }}
@@ -110,17 +110,17 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
                   </div>
                 </button>
                 {expandedIndex === index && item.feedback && (
-                  <div className="mt-2 ml-2 p-3 bg-slate-800/60 border border-[#1e3a5f]/50 rounded-lg space-y-2">
+                  <div className="mt-2 ml-2 p-3 bg-secondary border border-border/50 rounded-lg space-y-2">
                     {item.feedback.split("\n").map((line, i) => {
                       const trimmed = line.trim()
                       if (!trimmed) return null
                       if (trimmed.startsWith("[강점]")) {
-                        return <p key={i} className="text-sm leading-relaxed text-emerald-400">{trimmed}</p>
+                        return <p key={i} className="text-sm leading-relaxed text-emerald-600">{trimmed}</p>
                       }
                       if (trimmed.startsWith("[보완]")) {
-                        return <p key={i} className="text-sm leading-relaxed text-amber-400">{trimmed}</p>
+                        return <p key={i} className="text-sm leading-relaxed text-amber-600">{trimmed}</p>
                       }
-                      return <p key={i} className="text-sm text-slate-300 leading-relaxed">{trimmed}</p>
+                      return <p key={i} className="text-sm text-foreground/80 leading-relaxed">{trimmed}</p>
                     })}
                   </div>
                 )}
@@ -128,7 +128,7 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
             )
           })}
         </div>
-        <p className="text-xs text-slate-500 mt-4 text-center">각 항목을 눌러 세부 피드백을 확인하세요</p>
+        <p className="text-xs text-muted-foreground mt-4 text-center">각 항목을 눌러 세부 피드백을 확인하세요</p>
       </CardContent>
     </Card>
   )

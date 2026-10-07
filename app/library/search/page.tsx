@@ -7,7 +7,7 @@ import { getAllSummaries } from "@/lib/library/loader"
 import { SearchClient } from "@/components/library/search-client"
 
 export const metadata: Metadata = {
-  title: "검색 | 라이브러리 | Archive187",
+  title: "검색 | 라이브러리 | 문라이트 아카이브",
 }
 
 export default async function SearchPage() {
@@ -16,9 +16,9 @@ export default async function SearchPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <div className="text-xs text-slate-500">라이브러리</div>
-        <h1 className="text-2xl font-bold text-white">검색</h1>
-        <p className="text-sm text-slate-400">
+        <div className="text-xs text-muted-foreground">라이브러리</div>
+        <h1 className="text-2xl font-black text-foreground">검색</h1>
+        <p className="text-sm text-muted-foreground">
           제목·태그·디자이너·게임명·원칙 ID로 라이브러리 전체 문서 {all.length}편을 탐색.
         </p>
       </header>

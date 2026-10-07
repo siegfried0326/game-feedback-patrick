@@ -8,10 +8,11 @@
 "use client"
 
 import { useState } from "react"
+import { BrandLogo } from "@/components/brand-logo"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Link from "next/link"
-import { FileText, Mail, Loader2 } from "lucide-react"
+import { Mail, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 // 보안: 오픈 리다이렉트 방지 — 내부 경로만 허용
@@ -75,30 +76,25 @@ function LoginContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center px-6">
+    <main className="min-h-screen bg-secondary flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         {/* 로고 */}
-        <Link href="/" className="flex items-center justify-center gap-3 mb-10">
-          <div className="w-10 h-10 rounded-xl bg-[#5B8DEF] flex items-center justify-center">
-            <FileText className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-lg font-bold text-white">Archive187</span>
-            <p className="text-xs text-slate-400">by 문라이트커리어랩</p>
-          </div>
+        <Link href="/" className="flex flex-col items-center gap-3 mb-10" aria-label="문라이트 아카이브 홈">
+          <BrandLogo size="lg" />
+          <p className="text-xs text-muted-foreground">by 문라이트 커리어랩</p>
         </Link>
 
         {/* 카드 */}
-        <div className="bg-slate-900/80 rounded-2xl border border-[#1e3a5f] p-8">
-          <h1 className="text-xl font-bold text-white text-center mb-2">
+        <div className="bg-card rounded-2xl border border-border p-8">
+          <h1 className="text-xl font-black text-foreground text-center mb-2">
             로그인
           </h1>
-          <p className="text-sm text-slate-400 text-center mb-8">
+          <p className="text-sm text-muted-foreground text-center mb-8">
             소셜 계정으로 간편하게 시작하세요
           </p>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+            <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 text-sm text-center">
               로그인에 실패했습니다. 다시 시도해주세요.
             </div>
           )}
@@ -127,33 +123,33 @@ function LoginContent() {
                 <path d="M12 3C6.48 3 2 6.36 2 10.44c0 2.63 1.76 4.95 4.41 6.26-.19.71-.7 2.58-.8 2.98-.13.49.18.48.37.35.16-.1 2.46-1.67 3.44-2.35.84.12 1.71.18 2.58.18 5.52 0 10-3.36 10-7.42C22 6.36 17.52 3 12 3z" />
               </svg>
               카카오로 계속하기
-              <span className="absolute right-3 text-xs text-slate-500">준비 중</span>
+              <span className="absolute right-3 text-xs text-muted-foreground">준비 중</span>
             </button>
 
             {/* Apple 로그인 (준비 중) */}
             <button
               disabled
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-black/40 text-white/40 font-medium cursor-not-allowed border border-gray-700/50 relative"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-black/40 text-foreground/40 font-medium cursor-not-allowed border border-border relative"
             >
               <svg className="w-5 h-5 opacity-50" viewBox="0 0 24 24" fill="white">
                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.52-3.23 0-1.44.64-2.2.52-3.06-.4C3.79 16.17 4.36 9.53 8.82 9.28c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.3 4.11zM12.03 9.2C11.88 7.15 13.5 5.45 15.4 5.3c.27 2.32-2.1 4.06-3.37 3.9z" />
               </svg>
               Apple로 계속하기
-              <span className="absolute right-3 text-xs text-slate-500">준비 중</span>
+              <span className="absolute right-3 text-xs text-muted-foreground">준비 중</span>
             </button>
 
             {/* 구분선 */}
             <div className="flex items-center gap-3 py-2">
-              <div className="flex-1 h-px bg-[#1e3a5f]" />
-              <span className="text-xs text-slate-500">또는</span>
-              <div className="flex-1 h-px bg-[#1e3a5f]" />
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">또는</span>
+              <div className="flex-1 h-px bg-border" />
             </div>
 
             {/* 이메일 로그인 토글 */}
             {!showEmailLogin ? (
               <button
                 onClick={() => setShowEmailLogin(true)}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 active:bg-slate-600 text-slate-300 font-medium transition-all border border-[#1e3a5f]"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-secondary hover:bg-muted active:scale-95 active:bg-slate-600 text-foreground/80 font-medium transition-all border border-border"
               >
                 <Mail className="w-5 h-5" />
                 이메일로 로그인
@@ -166,7 +162,7 @@ function LoginContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-[#1e3a5f] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-[#5B8DEF]"
+                  className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder-slate-500 text-sm focus:outline-none focus:border-primary"
                 />
                 <input
                   type="password"
@@ -174,15 +170,15 @@ function LoginContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-[#1e3a5f] text-white placeholder-slate-500 text-sm focus:outline-none focus:border-[#5B8DEF]"
+                  className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder-slate-500 text-sm focus:outline-none focus:border-primary"
                 />
                 {emailError && (
-                  <p className="text-red-400 text-xs text-center">{emailError}</p>
+                  <p className="text-red-600 text-xs text-center">{emailError}</p>
                 )}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#5B8DEF] hover:bg-[#4A7CE0] text-white font-medium transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-colors disabled:opacity-50"
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -196,13 +192,13 @@ function LoginContent() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
+        <p className="text-center text-xs text-muted-foreground mt-6">
           로그인 시{" "}
-          <Link href="/terms" className="text-[#5B8DEF] hover:underline">
+          <Link href="/terms" className="text-primary hover:underline">
             이용약관
           </Link>
           {" "}및{" "}
-          <Link href="/refund-policy" className="text-[#5B8DEF] hover:underline">
+          <Link href="/refund-policy" className="text-primary hover:underline">
             환불정책
           </Link>
           에 동의하게 됩니다.
@@ -215,8 +211,8 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#0d1b2a] flex items-center justify-center">
-        <div className="text-slate-400">로딩 중...</div>
+      <main className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="text-muted-foreground">로딩 중...</div>
       </main>
     }>
       <LoginContent />

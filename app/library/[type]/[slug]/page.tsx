@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const doc = await getDocument(type, decodeURIComponent(slug))
   if (!doc) return { title: "Not found" }
   return {
-    title: `${doc.title} | 라이브러리 | Archive187`,
+    title: `${doc.title} | 라이브러리 | 문라이트 아카이브`,
     description: doc.body.slice(0, 160).replace(/\n+/g, " "),
   }
 }
@@ -54,13 +54,13 @@ export default async function DocumentDetailPage({ params }: Props) {
     <div className="space-y-6">
       <Link
         href={`/library/${route}`}
-        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#5B8DEF] transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
       >
         <ChevronLeft className="w-3.5 h-3.5" />
         {TYPE_LABELS[type]} 목록
       </Link>
 
-      <header className="space-y-3 pb-6 border-b border-[#1e3a5f]">
+      <header className="space-y-3 pb-6 border-b border-border">
         <div className="flex flex-wrap items-center gap-1.5">
           <span
             className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border"
@@ -85,19 +85,19 @@ export default async function DocumentDetailPage({ params }: Props) {
             </span>
           )}
           {doc.preview && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600">
               공개
             </span>
           )}
           {doc.status && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
               {doc.status}
             </span>
           )}
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-white text-balance">{doc.title}</h1>
+        <h1 className="text-3xl md:text-4xl font-black text-foreground text-balance">{doc.title}</h1>
         {doc.titleEn && (
-          <p className="text-sm text-slate-500 font-mono">{doc.titleEn}</p>
+          <p className="text-sm text-muted-foreground font-mono">{doc.titleEn}</p>
         )}
       </header>
 

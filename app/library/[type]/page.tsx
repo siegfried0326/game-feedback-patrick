@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const type = routeToType(route)
   if (!type) return { title: "Not found" }
   return {
-    title: `${TYPE_LABELS[type]} | 라이브러리 | Archive187`,
+    title: `${TYPE_LABELS[type]} | 라이브러리 | 문라이트 아카이브`,
   }
 }
 
@@ -41,9 +41,9 @@ export default async function TypeIndexPage({ params }: Props) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <div className="text-xs text-slate-500">라이브러리</div>
-        <h1 className="text-3xl font-bold text-white">{TYPE_LABELS[type as LibraryType]}</h1>
-        <p className="text-sm text-slate-400">
+        <div className="text-xs text-muted-foreground">라이브러리</div>
+        <h1 className="text-3xl font-black text-foreground">{TYPE_LABELS[type as LibraryType]}</h1>
+        <p className="text-sm text-muted-foreground">
           총 {docs.length}편 · 전체 라이브러리 {stats.totalDocuments}편 중
         </p>
       </header>

@@ -47,18 +47,18 @@ export function AdminNav() {
   const pathname = usePathname()
 
   return (
-    <div className="bg-[#0a1628] border-b border-[#1e3a5f]">
+    <div className="bg-background border-b border-border">
       <div className="max-w-4xl mx-auto px-6">
         {/* 상단: 홈으로 돌아가기 + 제목 */}
         <div className="flex items-center justify-between py-3">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground/80 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             사이트로 돌아가기
           </Link>
-          <span className="text-xs text-amber-400/60 font-medium">관리자 모드</span>
+          <span className="text-xs text-amber-600/60 font-medium">관리자 모드</span>
         </div>
 
         {/* 탭 내비게이션 */}
@@ -74,8 +74,8 @@ export function AdminNav() {
                   flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors
                   ${
                     active
-                      ? "bg-slate-800/80 text-[#5B8DEF] border-b-2 border-[#5B8DEF]"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                      ? "bg-secondary text-primary border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }
                 `}
               >

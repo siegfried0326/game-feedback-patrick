@@ -32,7 +32,7 @@ export function AnalyzeHeader({ user }: AnalyzeHeaderProps) {
           <BrandLogo />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-8">
           <Link href="/analyze" className="text-sm text-primary font-medium transition-colors">
             분석하기
           </Link>

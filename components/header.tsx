@@ -35,7 +35,7 @@ export function Header({ user }: HeaderProps) {
           <BrandLogo />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7">
+        <nav className="hidden lg:flex items-center gap-7">
           <Link href="/analyze" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
             분석하기
           </Link>

@@ -113,6 +113,8 @@ export interface AnalysisResultData {
 export interface AnalyzeOptions {
   /** 지원 회사 — 결과의 회사별 분석을 그 회사 중심으로 (없으면 회사 무관) */
   targetCompany?: string | null
+  /** 사용자가 직접 적은 주제 — 다음 버전 분석 설정의 기본값으로 저장한다 */
+  customTopics?: string[]
   tier?: ModelTier
   domain?: DesignDomain
   secondaryDomains?: DesignDomain[]
@@ -576,6 +578,7 @@ async function runAnalysis(params: {
   const model = resolveModelId(tier)
   const keywords = (options.keywords ?? []).filter(k => typeof k === "string" && k.trim()).map(k => k.trim()).slice(0, 12)
   const targetCompany = isTargetCompany(options.targetCompany) ? options.targetCompany : null
+  const customTopics = (options.customTopics ?? []).filter(t => typeof t === "string" && t.trim()).map(t => t.trim().slice(0, 40)).slice(0, 10)
 
   // 검색·분류에 쓸 텍스트
   const searchText = params.extractedText && params.extractedText.length >= 100
@@ -783,8 +786,9 @@ async function runAnalysis(params: {
     categories: categories as unknown as Record<string, unknown>[],
     strengths,
     weaknesses,
-    // 지원 회사는 별도 컬럼 없이 ranking JSON에 함께 저장 (프로젝트 화면에서 같은 순서로 보여주기 위해)
-    ranking: targetCompany ? { ...ranking, targetCompany } : ranking,
+    // 분석 설정은 별도 컬럼 없이 ranking JSON에 함께 저장 — 프로젝트 화면 표시 + 다음 분석의 기본값
+    //   targetCompany: 프로젝트 단위 기본값 / settings.domains·topics: 문서 단위 기본값 (분석 모드는 비용 때문에 저장 안 함)
+    ranking: { ...ranking, targetCompany, settings: { domains: [domain, ...secondary], topics: customTopics } },
     companyFeedback: result.companyFeedback,
     analysisSource: result.analysisSource,
     readabilityCategories,

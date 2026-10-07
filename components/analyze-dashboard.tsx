@@ -41,7 +41,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
-import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
+import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, isDesignDomain, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
 import { getProjects, createProject, assignAnalysisToProject, getProjectAnalyses } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -82,6 +82,14 @@ type LayoutRecommendation = {
   recommendedDescription: string
   currentLayout: { sections: LayoutSection[] }
   recommendedLayout: { sections: LayoutSection[] }
+}
+
+/** 지난 분석 설정을 읽을 때 쓰는 이력 행 (ranking JSON에 설정이 들어 있다) */
+type SavedSettingsRow = {
+  file_name: string
+  document_name?: string | null
+  design_domain?: string | null
+  ranking?: { targetCompany?: string | null; settings?: { domains?: string[]; topics?: string[] } } | null
 }
 
 type AnalysisResult = {
@@ -173,6 +181,9 @@ export function AnalyzeDashboard() {
   const selectedDomain: DesignDomain = pickedDomains[0] ?? "general"
   // 지원 회사 — null이면 회사 무관
   const [targetCompany, setTargetCompany] = useState<string | null>(null)
+  // 프로젝트에서 들어온 경우 그 프로젝트의 분석 이력 — 지난 분석 설정을 기본값으로 불러온다
+  const [projectHistory, setProjectHistory] = useState<SavedSettingsRow[]>([])
+  const [settingsNote, setSettingsNote] = useState("")
   // 사용자가 직접 적은 주제 (AI 키워드와 함께 비교 검색에 쓰인다)
   const [customTopics, setCustomTopics] = useState<string[]>([])
   const [scanDocForm, setScanDocForm] = useState<DocForm>("unknown")
@@ -296,6 +307,10 @@ export function AnalyzeDashboard() {
         // 프로젝트 페이지에서 "이 프로젝트로 새 분석"으로 들어온 경우(?projectId=)에만 바로 그 프로젝트에 저장
         const projectsResult = await getProjects()
         if (projectsResult.data) setProjects(projectsResult.data as Project[])
+        if (preselectedProjectId) {
+          const hist = await getProjectAnalyses(preselectedProjectId)
+          if ("data" in hist && hist.data) setProjectHistory(hist.data as SavedSettingsRow[])
+        }
       } catch {
         setAllowanceInfo({ allowed: true })
       } finally {
@@ -306,6 +321,33 @@ export function AnalyzeDashboard() {
   }, [preselectedProjectId])
 
   // 분석 결과 저장 — 기존 프로젝트를 고르거나 새로 만들고, 저장 뒤 프로젝트 화면으로 이동
+  // 저장된 분석 설정 — 회사는 프로젝트 단위, 분야·주제는 문서 단위 (분석 모드는 비용 때문에 저장 안 함)
+  const applySavedSettings = () => {
+    if (!preselectedProjectId || projectHistory.length === 0) { setSettingsNote(""); return }
+    const notes: string[] = []
+    // 이력은 최신순 — 지원 회사를 기록한 가장 최근 분석
+    const withCompany = projectHistory.find(r => r.ranking && "targetCompany" in r.ranking)
+    if (withCompany) {
+      const c = withCompany.ranking!.targetCompany
+      setTargetCompany(typeof c === "string" ? c : null)
+      notes.push("지원 회사")
+    }
+    if (preselectedDocument) {
+      const docRow = projectHistory.find(r => (r.document_name?.trim() || fileBaseName(r.file_name)) === preselectedDocument)
+      if (docRow) {
+        const saved = (docRow.ranking?.settings?.domains ?? []).filter(isDesignDomain)
+        const domains = saved.length > 0 ? saved : isDesignDomain(docRow.design_domain) ? [docRow.design_domain] : []
+        if (domains.length > 0) {
+          setPickedDomains(pickThreeDomains(domains[0], domains.slice(1)))
+          notes.push("문서 분야")
+        }
+        const topics = docRow.ranking?.settings?.topics ?? []
+        if (topics.length > 0) { setCustomTopics(topics); notes.push("주제") }
+      }
+    }
+    setSettingsNote(notes.length ? `지난 분석의 ${notes.join("·")} 설정을 불러왔어요` : "")
+  }
+
   const fileBaseName = (name?: string) => (name || "").replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
 
   // 저장 대상 프로젝트의 기존 문서명 목록 (같은 문서의 새 버전으로 넣을 수 있게)
@@ -366,6 +408,7 @@ export function AnalyzeDashboard() {
       docForm: runOptions?.docForm ?? scanDocForm,
       keywords,
       targetCompany,
+      customTopics,
     }
     setIsAnalyzing(true)
     setError(null)
@@ -772,6 +815,7 @@ export function AnalyzeDashboard() {
       }
       setSelectedTier(DEFAULT_TIER)
       setCustomTopics([])
+      applySavedSettings()
 
       setShowKeywordEditor(true)
     } catch (err) {
@@ -781,6 +825,7 @@ export function AnalyzeDashboard() {
       setScanDocForm("unknown")
       setSelectedTier(DEFAULT_TIER)
       setCustomTopics([])
+      applySavedSettings()
       setExtractedKeywords(extractFallbackKeywords(filesToProcess[0]?.file.name || ""))
       setShowKeywordEditor(true)
     } finally {
@@ -1643,6 +1688,10 @@ export function AnalyzeDashboard() {
                 <FileText className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-sm text-foreground truncate">{pendingFiles[0].file.name}</span>
               </div>
+            )}
+
+            {settingsNote && (
+              <p className="mb-4 text-xs text-primary bg-accent/60 rounded-lg px-3 py-2">{settingsNote}. 바꾸면 다음 분석부터 바뀐 값이 기본이 돼요.</p>
             )}
 
             {/* 문서 분야 — AI가 3개를 미리 고르고, 사용자가 바꾸거나 주제를 직접 적는다 */}

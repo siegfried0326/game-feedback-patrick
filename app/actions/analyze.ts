@@ -101,6 +101,10 @@ export interface AnalysisResultData {
   creditCost?: number
   /** 서버가 판정한 쪽수 (모르면 null) */
   pageCount?: number | null
+  /** analysis_history id — 프로젝트에 저장할 때 쓴다 */
+  historyId?: string | null
+  /** 저장된 프로젝트 (없으면 저장 안 한 분석) */
+  projectId?: string | null
 }
 
 export interface AnalyzeOptions {
@@ -322,7 +326,8 @@ export async function scanDocument(input: {
 // ───────────────────────────────────────────
 
 export async function analyzeUrlDirect(input: {
-  projectId: string
+  /** 없으면 '저장 안 한 분석'으로 저장 — 결과 화면에서 프로젝트에 넣는다 */
+  projectId?: string | null
   url?: string
   extractedText?: string
   fileName?: string
@@ -437,7 +442,8 @@ const CLAUDE_DOCUMENT_TYPES = ["application/pdf"]
 const CLAUDE_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
 export async function analyzeDocumentDirect(input: {
-  projectId: string
+  /** 없으면 '저장 안 한 분석'으로 저장 — 결과 화면에서 프로젝트에 넣는다 */
+  projectId?: string | null
   fileName: string
   fileUrl: string
   mimeType: string
@@ -538,7 +544,8 @@ function isRequestTooLarge(message: string): boolean {
 }
 
 async function runAnalysis(params: {
-  projectId: string
+  /** 없으면 '저장 안 한 분석'으로 저장 — 결과 화면에서 프로젝트에 넣는다 */
+  projectId?: string | null
   fileName: string
   content: ContentInput
   extractedText?: string
@@ -751,8 +758,8 @@ async function runAnalysis(params: {
     pageCount: params.pageCount ?? null,
   }
 
-  // 분석 이력 저장 + 크레딧 차감 (실패해도 결과는 돌려준다)
-  saveAnalysisHistory({
+  // 분석 이력 저장 + 크레딧 차감 (실패해도 결과는 돌려준다). 저장 id는 결과 화면의 '저장하기'에 쓴다
+  const saved = await saveAnalysisHistory({
     projectId: params.projectId,
     fileName: params.fileName,
     score,
@@ -767,7 +774,9 @@ async function runAnalysis(params: {
     designDomain: domain,
     modelTier: tier,
     tokenUsage: usage as unknown as Record<string, unknown>,
-  }).catch(() => {})
+  }).catch(() => null)
+  result.historyId = saved && "id" in saved ? saved.id ?? null : null
+  result.projectId = params.projectId ?? null
 
   deductCredit(params.creditCost ?? tierInfo.creditCost).catch(() => {})
 

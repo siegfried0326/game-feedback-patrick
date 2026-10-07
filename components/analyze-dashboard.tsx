@@ -39,7 +39,7 @@ import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
 import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
-import { getProjects, createProject, checkProjectAllowance } from "@/app/actions/subscription"
+import { getProjects, createProject, assignAnalysisToProject } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 import { TUTORING_KAKAO_URL } from "@/lib/tutoring-config"
@@ -83,6 +83,10 @@ type LayoutRecommendation = {
 
 type AnalysisResult = {
   fileName: string
+  /** analysis_history id — '저장하기'로 프로젝트에 넣을 때 쓴다 */
+  historyId?: string | null
+  /** 저장된 프로젝트 (없으면 아직 저장 안 함) */
+  projectId?: string | null
   score: number
   categories: {
     subject: string
@@ -182,10 +186,11 @@ export function AnalyzeDashboard() {
   // 프로젝트 관련 상태
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(preselectedProjectId)
-  const [showNewProject, setShowNewProject] = useState(false)
-  const [newProjectName, setNewProjectName] = useState("")
-  const [creatingProject, setCreatingProject] = useState(false)
-  const [canCreateProject, setCanCreateProject] = useState(true)
+  // 분석 뒤 '저장하기' 다이얼로그
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [saveTarget, setSaveTarget] = useState<string>("new")
+  const [saveName, setSaveName] = useState("")
+  const [savingProject, setSavingProject] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
   // 로그인 판별: allowanceInfo가 로드된 후에만 판단 (초기 null 상태에서는 false로 취급)
   const isLoggedIn = allowanceInfo !== null && allowanceInfo.reason !== "login_required" && allowanceInfo.plan !== "none"
@@ -272,28 +277,10 @@ export function AnalyzeDashboard() {
 
         setAllowanceInfo(allowanceResult)
 
-        const [projectsResult, projectAllowance] = await Promise.all([
-          getProjects(),
-          checkProjectAllowance(),
-        ])
-
-        if (projectsResult.data) {
-          setProjects(projectsResult.data as Project[])
-          // preselected가 없으면 가장 최근(첫 번째) 프로젝트 자동 선택
-          if (!preselectedProjectId && projectsResult.data.length > 0) {
-            setSelectedProjectId(projectsResult.data[0].id)
-          }
-          // 프로젝트가 하나도 없으면 기본 프로젝트를 만들어 바로 올릴 수 있게 한다 (로그인 직후 첫 화면 = 업로드 창)
-          if (projectsResult.data.length === 0 && projectAllowance.allowed) {
-            const created = await createProject("내 포트폴리오")
-            if (created.data) {
-              setProjects([{ ...created.data, analysis_count: 0, best_score: null } as Project])
-              setSelectedProjectId(created.data.id)
-            }
-          }
-        }
-
-        setCanCreateProject(projectAllowance.allowed)
+        // 프로젝트는 분석 뒤 '저장하기'에서 고른다 — 분석 전에는 고르지 않는다.
+        // 프로젝트 페이지에서 "이 프로젝트로 새 분석"으로 들어온 경우(?projectId=)에만 바로 그 프로젝트에 저장
+        const projectsResult = await getProjects()
+        if (projectsResult.data) setProjects(projectsResult.data as Project[])
       } catch {
         setAllowanceInfo({ allowed: true })
       } finally {
@@ -303,25 +290,40 @@ export function AnalyzeDashboard() {
     init()
   }, [preselectedProjectId])
 
-  const handleCreateProject = async () => {
-    if (!newProjectName.trim()) return
-    setCreatingProject(true)
+  // 분석 결과 저장 — 기존 프로젝트를 고르거나 새로 만들고, 저장 뒤 프로젝트 화면으로 이동
+  const openSaveDialog = () => {
+    const base = results[currentIndex]?.fileName?.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "") || "내 포트폴리오"
+    setSaveName(base.slice(0, 40))
+    setSaveTarget(projects.length > 0 ? projects[0].id : "new")
+    setShowSaveDialog(true)
+  }
+
+  const handleSaveToProject = async () => {
+    const historyIds = results.map(r => r.historyId).filter((id): id is string => !!id)
+    if (historyIds.length === 0) {
+      setError("저장할 분석 기록을 찾지 못했어요. 프로젝트 페이지의 '저장 안 한 분석'에서 다시 시도해 주세요.")
+      setShowSaveDialog(false)
+      return
+    }
+    setSavingProject(true)
     try {
-      const result = await createProject(newProjectName.trim())
-      if (result.data) {
-        const newProject = { ...result.data, analysis_count: 0, best_score: null } as Project
-        setProjects(prev => [newProject, ...prev])
-        setSelectedProjectId(result.data.id)
-        setShowNewProject(false)
-        setNewProjectName("")
-        setCanCreateProject(false) // 무료 플랜이면 더 이상 생성 불가
-      } else if (result.error) {
-        setError(result.error)
+      let projectId = saveTarget
+      if (saveTarget === "new") {
+        const created = await createProject(saveName.trim() || "내 포트폴리오")
+        if (!created.data) { setError(created.error || "프로젝트를 만들지 못했어요."); return }
+        projectId = created.data.id
       }
+      for (const id of historyIds) {
+        const res = await assignAnalysisToProject(id, projectId)
+        if (res.error) { setError(res.error); return }
+      }
+      setResults(prev => prev.map(r => ({ ...r, projectId })))
+      setShowSaveDialog(false)
+      router.push(`/projects?project=${projectId}`)
     } catch {
-      setError("프로젝트 생성에 실패했어요. 잠시 후 다시 시도해주세요.")
+      setError("저장에 실패했어요. 잠시 후 다시 시도해주세요.")
     } finally {
-      setCreatingProject(false)
+      setSavingProject(false)
     }
   }
 
@@ -336,11 +338,6 @@ export function AnalyzeDashboard() {
       docForm: runOptions?.docForm ?? scanDocForm,
       keywords,
     }
-    if (!selectedProjectId) {
-      setError("먼저 프로젝트를 선택해주세요.")
-      return
-    }
-
     setIsAnalyzing(true)
     setError(null)
     setResults([])
@@ -650,11 +647,6 @@ export function AnalyzeDashboard() {
       router.push("/login?redirect=/analyze")
       return
     }
-    if (!selectedProjectId) {
-      setError("먼저 프로젝트를 선택해주세요.")
-      return
-    }
-
     // 다중 파일 업로드 안내 — MAX_FILES 초과 시 사용자에게 명확히 알림
     if (acceptedFiles.length > MAX_FILES) {
       setError(`한 번에 ${MAX_FILES}개의 파일만 분석할 수 있어요. 첫 번째 파일(${acceptedFiles[0].name})만 진행됩니다. 다른 파일은 분석 후 따로 올려주세요.`)
@@ -871,16 +863,14 @@ export function AnalyzeDashboard() {
     getFilesFromEvent: getDroppedFiles,
     maxFiles: MAX_FILES,
     maxSize: UPLOAD_MAX_SIZE,
-    disabled: isLoggedIn && !selectedProjectId,
   })
 
   // 홈 업로드 창에서 넘어온 파일 — 로그인·프로젝트 확인이 끝나면 바로 분석 흐름으로 넣는다
   useEffect(() => {
     if (checkingAllowance || isAnalyzing || !hasPendingUpload()) return
-    if (isLoggedIn && !selectedProjectId) return
     const handed = takePendingUpload()
     if (handed) onDrop(handed)
-  }, [checkingAllowance, isAnalyzing, isLoggedIn, selectedProjectId, onDrop])
+  }, [checkingAllowance, isAnalyzing, isLoggedIn, onDrop])
 
   return (
     <div className="pt-24 pb-16 px-6 bg-background min-h-screen">
@@ -955,9 +945,7 @@ export function AnalyzeDashboard() {
                 {...getRootProps()}
                 className={`group w-full min-h-[360px] sm:min-h-0 sm:aspect-[16/9] lg:aspect-[2.35/1] rounded-[2rem] border-2 border-dashed
                   flex flex-col items-center justify-center gap-6 px-6 text-center transition-all ${
-                  isLoggedIn && !selectedProjectId
-                    ? "border-border bg-secondary/50 cursor-not-allowed opacity-60"
-                    : isDragActive
+                  isDragActive
                     ? "border-primary bg-accent/60 shadow-[0_24px_70px_-20px_rgba(0,70,173,0.45)] cursor-pointer"
                     : "border-primary/25 bg-card shadow-[0_12px_50px_-24px_rgba(0,70,173,0.35)] hover:border-primary/60 hover:bg-accent/25 cursor-pointer"
                 }`}
@@ -970,9 +958,7 @@ export function AnalyzeDashboard() {
                 </span>
                 <div className="flex flex-col items-center gap-1.5">
                   <p className="text-lg md:text-xl font-extrabold text-primary">
-                    {isLoggedIn && !selectedProjectId
-                      ? "아래에서 저장할 프로젝트를 먼저 골라주세요"
-                      : isDragActive ? "놓으면 바로 분석을 시작합니다" : "여기에 문서를 드래그해 주세요"}
+                    {isDragActive ? "놓으면 바로 분석을 시작합니다" : "여기에 문서를 드래그해 주세요"}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {!isLoggedIn ? "파일을 올리면 로그인 후 바로 분석이 시작됩니다" : "또는 클릭해서 파일 선택"}
@@ -982,71 +968,26 @@ export function AnalyzeDashboard() {
               </div>
             )}
 
-            {/* 저장할 프로젝트 · 남은 크레딧 — 한 줄 */}
+            {/* 남은 크레딧 (+ 프로젝트 화면에서 들어온 경우 저장될 프로젝트) — 한 줄 */}
             {isLoggedIn && allowanceInfo?.allowed && (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1 text-sm">
-                <div className="flex items-center gap-2 min-w-0">
-                  <FolderOpen className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-muted-foreground shrink-0">저장할 프로젝트</span>
-                  {projects.length > 0 ? (
-                    <select
-                      value={selectedProjectId ?? ""}
-                      onChange={(e) => { setSelectedProjectId(e.target.value || null); setShowNewProject(false) }}
-                      disabled={isAnalyzing}
-                      className="min-w-0 max-w-[220px] truncate bg-secondary border border-border rounded-md px-2 py-1 text-sm text-foreground focus:outline-none focus:border-primary"
-                    >
-                      {!selectedProjectId && <option value="">선택해 주세요</option>}
-                      {projects.map(project => (
-                        <option key={project.id} value={project.id}>
-                          {project.name} ({project.analysis_count}개 분석)
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className="text-foreground/80">없음</span>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5 min-w-0">
+                  {selectedProjectId && projects.find(p => p.id === selectedProjectId) && (
+                    <>
+                      <FolderOpen className="w-4 h-4 text-primary shrink-0" />
+                      <span className="truncate">
+                        <span className="text-foreground font-medium">{projects.find(p => p.id === selectedProjectId)!.name}</span>에 저장돼요
+                      </span>
+                    </>
                   )}
-                  {canCreateProject && !showNewProject && !isAnalyzing && (
-                    <button type="button" onClick={() => setShowNewProject(true)} className="shrink-0 text-primary hover:underline">
-                      + 새 프로젝트
-                    </button>
-                  )}
-                </div>
+                </span>
                 {!allowanceInfo.unlimited && allowanceInfo.remaining !== undefined && (
-                  <div className="text-muted-foreground">
+                  <span>
                     남은 크레딧 <span className="font-bold text-foreground">{allowanceInfo.remaining}</span>
                     <span className="mx-1.5 text-border">|</span>
                     <Link href="/payment/credits" className="text-primary hover:underline">충전</Link>
-                  </div>
+                  </span>
                 )}
-              </div>
-            )}
-
-            {/* 새 프로젝트 이름 입력 */}
-            {showNewProject && (
-              <div className="mt-2 p-3 rounded-lg border border-primary/40 bg-accent/30 flex gap-2">
-                <input
-                  type="text"
-                  value={newProjectName}
-                  onChange={e => setNewProjectName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && !e.nativeEvent.isComposing && handleCreateProject()}
-                  placeholder="새 프로젝트 이름 (예: 넥슨 지원용 포트폴리오)"
-                  className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
-                  autoFocus
-                />
-                <Button
-                  onClick={handleCreateProject}
-                  disabled={creatingProject || !newProjectName.trim()}
-                  className="bg-primary hover:bg-primary/90 text-white text-sm px-4"
-                >
-                  {creatingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : "만들기"}
-                </Button>
-                <Button
-                  onClick={() => { setShowNewProject(false); setNewProjectName("") }}
-                  variant="outline"
-                  className="border-border text-muted-foreground text-sm px-3"
-                >
-                  취소
-                </Button>
               </div>
             )}
 
@@ -1143,15 +1084,19 @@ export function AnalyzeDashboard() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {selectedProjectId && (
+                {results[currentIndex]?.projectId ? (
                   <Button
                     variant="outline"
                     asChild
                     className="border-primary/30 text-primary hover:bg-primary/10 bg-transparent"
                   >
-                    <Link href="/projects">
-                      <FolderOpen className="w-3.5 h-3.5 mr-1" /> 프로젝트로 가기
+                    <Link href={`/projects?project=${results[currentIndex].projectId}`}>
+                      <FolderOpen className="w-3.5 h-3.5 mr-1" /> 프로젝트 보기
                     </Link>
+                  </Button>
+                ) : isLoggedIn && (
+                  <Button onClick={openSaveDialog} className="bg-primary hover:bg-primary/90 text-white">
+                    <FolderOpen className="w-3.5 h-3.5 mr-1" /> 저장하기
                   </Button>
                 )}
                 <Button
@@ -1355,23 +1300,38 @@ export function AnalyzeDashboard() {
 
                 {/* 하단 CTA 영역 */}
                 <div className="space-y-4">
-                  {/* 저장 안내 + 다음 행동 (유료 사용자). 분석은 항상 프로젝트에 저장된다 */}
-                  {allowanceInfo?.plan && allowanceInfo.plan !== "free" && (
+                  {/* 저장 + 다음 행동 — 분석은 일단 '저장 안 한 분석'으로 남고, 여기서 프로젝트에 넣는다 */}
+                  {isLoggedIn && (
                     <Card className="bg-card border-border">
                       <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="text-center sm:text-left">
-                          <p className="text-foreground font-semibold mb-1">분석 결과가 저장되었습니다</p>
-                          <p className="text-sm text-muted-foreground">프로젝트에서 버전별 비교와 이전 분석을 확인하세요.</p>
-                        </div>
+                        {results[currentIndex]?.projectId ? (
+                          <div className="text-center sm:text-left">
+                            <p className="text-foreground font-semibold mb-1">
+                              <span className="text-primary">{projects.find(p => p.id === results[currentIndex].projectId)?.name ?? "프로젝트"}</span>에 저장됐어요
+                            </p>
+                            <p className="text-sm text-muted-foreground">수정본을 다시 분석하면 같은 프로젝트에서 점수 변화를 비교할 수 있어요.</p>
+                          </div>
+                        ) : (
+                          <div className="text-center sm:text-left">
+                            <p className="text-foreground font-semibold mb-1">분석 결과를 저장할까요?</p>
+                            <p className="text-sm text-muted-foreground">프로젝트에 저장해 두면 수정본을 다시 분석했을 때 점수 변화를 비교할 수 있어요.</p>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 shrink-0">
-                          <Button onClick={startOver} className="bg-primary hover:bg-primary/90 text-white">
+                          {results[currentIndex]?.projectId ? (
+                            <Button asChild className="bg-primary hover:bg-primary/90 text-white">
+                              <Link href={`/projects?project=${results[currentIndex].projectId}`}>
+                                <FolderOpen className="w-4 h-4 mr-1" /> 프로젝트 보기
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button onClick={openSaveDialog} className="bg-primary hover:bg-primary/90 text-white">
+                              <FolderOpen className="w-4 h-4 mr-1" /> 저장하기
+                            </Button>
+                          )}
+                          <Button onClick={startOver} variant="outline" className="border-border text-foreground hover:bg-secondary bg-transparent">
                             계속 분석하기
                             <ArrowRight className="w-4 h-4 ml-1" />
-                          </Button>
-                          <Button asChild variant="outline" className="border-border text-foreground hover:bg-secondary bg-transparent">
-                            <Link href="/projects">
-                              <FolderOpen className="w-4 h-4 mr-1" /> 프로젝트로 가기
-                            </Link>
                           </Button>
                         </div>
                       </CardContent>
@@ -1411,6 +1371,73 @@ export function AnalyzeDashboard() {
           </div>
         )}
       </div>
+
+      {/* 프로젝트에 저장 다이얼로그 */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => !savingProject && setShowSaveDialog(false)}>
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-black text-foreground mb-1">
+              {projects.length === 0 ? "프로젝트를 만드세요" : "어느 프로젝트에 저장할까요?"}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-5">
+              지원하는 회사나 포트폴리오 단위로 만들면 좋아요. 같은 문서의 수정본을 모아 점수 변화를 볼 수 있어요.
+            </p>
+
+            <div className="space-y-2 max-h-64 overflow-y-auto mb-5">
+              {projects.map(project => (
+                <label
+                  key={project.id}
+                  className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    saveTarget === project.id ? "border-primary bg-accent/50" : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 min-w-0">
+                    <input type="radio" name="save-target" checked={saveTarget === project.id} onChange={() => setSaveTarget(project.id)} className="accent-[#0046AD]" />
+                    <span className="text-sm text-foreground font-medium truncate">{project.name}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground shrink-0">{project.analysis_count}개 분석</span>
+                </label>
+              ))}
+
+              <label
+                className={`block p-3 rounded-lg border cursor-pointer transition-colors ${
+                  saveTarget === "new" ? "border-primary bg-accent/50" : "border-dashed border-border hover:border-primary/40"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <input type="radio" name="save-target" checked={saveTarget === "new"} onChange={() => setSaveTarget("new")} className="accent-[#0046AD]" />
+                  <span className="text-sm text-foreground font-medium">새 프로젝트</span>
+                </span>
+                {saveTarget === "new" && (
+                  <input
+                    type="text"
+                    value={saveName}
+                    onChange={e => setSaveName(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing && saveName.trim()) handleSaveToProject() }}
+                    placeholder="예: 넥슨 지원용 포트폴리오"
+                    maxLength={40}
+                    autoFocus
+                    className="mt-2 w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
+                  />
+                )}
+              </label>
+            </div>
+
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowSaveDialog(false)} disabled={savingProject} className="flex-1 border-border text-muted-foreground">
+                취소
+              </Button>
+              <Button
+                onClick={handleSaveToProject}
+                disabled={savingProject || (saveTarget === "new" && !saveName.trim())}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                {savingProject ? <Loader2 className="w-4 h-4 animate-spin" /> : saveTarget === "new" ? "만들고 저장" : "저장하기"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 크레딧 차감 확인 모달 */}
       {showCreditConfirm && (

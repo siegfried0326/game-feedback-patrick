@@ -1,21 +1,20 @@
 /**
  * 프로젝트 페이지 (/projects)
  *
- * 기능:
- * - 프로젝트 인벤토리 (목록/생성/이름변경/삭제)
- * - 프로젝트별 분석 이력 조회
- * - 분석 결과 상세 보기 (ScoreCard, RadarChart, FeedbackCards 등)
- * - 버전 비교 차트 (2개 이상 분석이 있으면 자동 노출)
- *
- * /mypage는 구독/결제만 담당 (분리됨)
+ * 2026-10-07 개편 — 분석은 프로젝트 없이 먼저 하고, 결과 화면의 '저장하기'로 프로젝트에 넣는다.
+ * - 목록: 저장 안 한 분석(있으면) + 프로젝트 한 줄 목록 (이름·문서 수·최고점·최근일)
+ * - 상세: 버전별 점수 그래프(2개 이상) + 분석 목록 → 분석 상세 모달
+ * - ?project=<id> 로 들어오면 그 프로젝트를 바로 연다 (저장 직후 이동)
+ * 프로젝트는 무료 — 구독 시절의 잠금(슬롯·그래프) 제거
  */
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
-import { ArrowLeft, FileText, Calendar, Star, Loader2, Lock, X, Trophy, Swords, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check } from "lucide-react"
+import { ArrowLeft, FileText, Calendar, Loader2, X, Trophy, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getSubscription, getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject } from "@/app/actions/subscription"
+import { getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject, getUnsavedAnalyses, assignAnalysisToProject } from "@/app/actions/subscription"
+import { BrandLogo } from "@/components/brand-logo"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
@@ -79,21 +78,27 @@ function getGrade(score: number) {
   return { label: "D", color: "from-slate-400 to-gray-500", border: "border-slate-400/60", glow: "shadow-slate-400/20", text: "text-muted-foreground", bg: "bg-slate-400/10" }
 }
 
+type UnsavedItem = { id: string; file_name: string; overall_score: number; analyzed_at: string }
+
+function scoreColor(score: number) {
+  if (score >= 85) return "text-primary"
+  if (score >= 70) return "text-foreground"
+  if (score >= 60) return "text-amber-600"
+  return "text-red-600"
+}
+
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectWithStats[]>([])
-  const [isPaidPlan, setIsPaidPlan] = useState(false)
+  const [unsaved, setUnsaved] = useState<UnsavedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
-  // Level 2: 프로젝트 상세
+  // 프로젝트 상세
   const [selectedProject, setSelectedProject] = useState<ProjectWithStats | null>(null)
   const [projectAnalyses, setProjectAnalyses] = useState<AnalysisItem[]>([])
   const [loadingAnalyses, setLoadingAnalyses] = useState(false)
 
-  // 그래프뷰: 2개 이상 분석이 있으면 기본 표시 (즉시 노출)
-  const [showComparison, setShowComparison] = useState(true)
-
-  // Level 3: 분석 상세 모달
+  // 분석 상세 모달
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisItem | null>(null)
   const [detailData, setDetailData] = useState<Record<string, AnalysisItem>>({})
   const [loadingDetail, setLoadingDetail] = useState(false)
@@ -104,23 +109,33 @@ export default function ProjectsPage() {
   const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
 
-  // 프로젝트 생성
+  // 새 프로젝트
   const [showNewProjectInput, setShowNewProjectInput] = useState(false)
   const [newProjectName, setNewProjectName] = useState("")
   const [creatingNewProject, setCreatingNewProject] = useState(false)
 
+  // 저장 안 한 분석 → 프로젝트에 넣기
+  const [assigning, setAssigning] = useState<UnsavedItem | null>(null)
+  const [assignTarget, setAssignTarget] = useState<string>("new")
+  const [assignName, setAssignName] = useState("")
+  const [assignBusy, setAssignBusy] = useState(false)
+
+  const reloadLists = async () => {
+    const [projectsResult, unsavedResult] = await Promise.all([getProjects(), getUnsavedAnalyses()])
+    const list = (projectsResult.data ?? []) as ProjectWithStats[]
+    setProjects(list)
+    if (unsavedResult.data) setUnsaved(unsavedResult.data as UnsavedItem[])
+    return list
+  }
+
   useEffect(() => {
     async function loadData() {
       try {
-        const [subResult, projectsResult] = await Promise.all([
-          getSubscription(),
-          getProjects(),
-        ])
-        if (subResult.data) {
-          const sub = subResult.data as { plan: string }
-          setIsPaidPlan(sub.plan !== "free")
-        }
-        if (projectsResult.data) setProjects(projectsResult.data as ProjectWithStats[])
+        const list = await reloadLists()
+        // 저장 직후 이동(?project=<id>) — 그 프로젝트를 바로 연다
+        const wanted = new URLSearchParams(window.location.search).get("project")
+        const target = wanted ? list.find(p => p.id === wanted) : null
+        if (target) await handleOpenProject(target)
       } catch {
         console.error("데이터 로딩 실패")
       } finally {
@@ -128,13 +143,12 @@ export default function ProjectsPage() {
       }
     }
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleOpenProject = async (project: ProjectWithStats) => {
     setSelectedProject(project)
     setLoadingAnalyses(true)
-    // 2개 이상 분석이 있으면 그래프뷰 기본 표시
-    setShowComparison(true)
     try {
       const result = await getProjectAnalyses(project.id)
       if (result.data) setProjectAnalyses(result.data as AnalysisItem[])
@@ -145,8 +159,8 @@ export default function ProjectsPage() {
     }
   }
 
-  const handleOpenAnalysis = async (item: AnalysisItem) => {
-    setSelectedAnalysis(item)
+  const handleOpenAnalysis = async (item: AnalysisItem | UnsavedItem) => {
+    setSelectedAnalysis(item as AnalysisItem)
     if (detailData[item.id]) return
     setLoadingDetail(true)
     try {
@@ -167,15 +181,13 @@ export default function ProjectsPage() {
       if (result.error) setMessage({ type: "error", text: result.error })
       else {
         setProjectAnalyses(prev => prev.filter(a => a.id !== deleteConfirm.id))
-        const projectsResult = await getProjects()
-        if (projectsResult.data) {
-          setProjects(projectsResult.data as ProjectWithStats[])
-          if (selectedProject) {
-            const updated = (projectsResult.data as ProjectWithStats[]).find(p => p.id === selectedProject.id)
-            if (updated) setSelectedProject(updated)
-          }
+        setUnsaved(prev => prev.filter(a => a.id !== deleteConfirm.id))
+        const list = await reloadLists()
+        if (selectedProject) {
+          const updated = list.find(p => p.id === selectedProject.id)
+          if (updated) setSelectedProject(updated)
         }
-        setMessage({ type: "success", text: "분석 결과가 삭제되었습니다." })
+        setMessage({ type: "success", text: "분석 결과를 삭제했어요." })
       }
     } else {
       const result = await deleteProject(deleteConfirm.id)
@@ -184,7 +196,7 @@ export default function ProjectsPage() {
         setProjects(prev => prev.filter(p => p.id !== deleteConfirm.id))
         setSelectedProject(null)
         setProjectAnalyses([])
-        setMessage({ type: "success", text: "프로젝트가 삭제되었습니다." })
+        setMessage({ type: "success", text: "프로젝트를 삭제했어요." })
       }
     }
     setDeleting(false)
@@ -215,19 +227,45 @@ export default function ProjectsPage() {
         setProjects(prev => [newProject, ...prev])
         setShowNewProjectInput(false)
         setNewProjectName("")
-        setMessage({ type: "success", text: "프로젝트가 생성되었습니다." })
       } else if (result.error) setMessage({ type: "error", text: result.error })
     } catch {
-      setMessage({ type: "error", text: "프로젝트 생성에 실패했습니다." })
+      setMessage({ type: "error", text: "프로젝트를 만들지 못했어요." })
     } finally {
       setCreatingNewProject(false)
+    }
+  }
+
+  const openAssign = (item: UnsavedItem) => {
+    setAssigning(item)
+    setAssignTarget(projects.length > 0 ? projects[0].id : "new")
+    setAssignName(item.file_name.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").slice(0, 40))
+  }
+
+  const handleAssign = async () => {
+    if (!assigning) return
+    setAssignBusy(true)
+    try {
+      let projectId = assignTarget
+      if (assignTarget === "new") {
+        const created = await createProject(assignName.trim() || "내 포트폴리오")
+        if (!created.data) { setMessage({ type: "error", text: created.error || "프로젝트를 만들지 못했어요." }); return }
+        projectId = created.data.id
+      }
+      const res = await assignAnalysisToProject(assigning.id, projectId)
+      if (res.error) { setMessage({ type: "error", text: res.error }); return }
+      setAssigning(null)
+      const list = await reloadLists()
+      const target = list.find(p => p.id === projectId)
+      if (target) await handleOpenProject(target)
+    } finally {
+      setAssignBusy(false)
     }
   }
 
   const groupedAnalyses = useMemo(() => {
     const groups: Record<string, AnalysisItem[]> = {}
     projectAnalyses.forEach(item => {
-      const baseName = item.file_name.replace(/\.(pdf|docx|txt)$/i, "")
+      const baseName = item.file_name.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "")
       if (!groups[baseName]) groups[baseName] = []
       groups[baseName].push(item)
     })
@@ -248,323 +286,285 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-secondary flex items-center justify-center">
+      <main className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-secondary">
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> 홈으로 돌아가기
-          </Link>
-          <Link href="/mypage" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            구독·결제 →
-          </Link>
+    <main className="min-h-screen bg-background">
+      <header className="border-b border-border">
+        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" aria-label="문라이트 아카이브 홈"><BrandLogo /></Link>
+          <Link href="/mypage" className="text-sm text-muted-foreground hover:text-foreground transition-colors">마이페이지</Link>
         </div>
+      </header>
 
-        <h1 className="text-3xl font-black text-foreground mb-2">프로젝트</h1>
-        <p className="text-sm text-muted-foreground mb-8">분석 결과를 프로젝트 단위로 저장·관리하고 버전별로 비교해보세요.</p>
-
+      <div className="max-w-3xl mx-auto px-6 pt-10 pb-16">
         {message && (
-          <div className={`mb-6 p-4 rounded-lg border ${message.type === "success" ? "bg-green-400/10 border-green-500/30 text-green-600" : "bg-red-400/10 border-red-500/30 text-red-600"}`}>
+          <div className={`mb-6 p-3 rounded-lg border text-sm ${message.type === "success" ? "bg-accent/50 border-primary/20 text-primary" : "bg-red-500/10 border-red-500/30 text-red-600"}`}>
             {message.text}
           </div>
         )}
 
-        {/* 프로젝트 인벤토리 */}
-        <div className="bg-card rounded-2xl border border-border p-6">
-          {!selectedProject ? (
-            <>
-              {/* Level 1: 프로젝트 목록 */}
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                  <Swords className="w-5 h-5 text-primary" /> 프로젝트 인벤토리
-                </h2>
-                <span className="text-xs text-muted-foreground">{projects.length}개 프로젝트</span>
+        {!selectedProject ? (
+          <>
+            {/* ── 목록 ── */}
+            <div className="flex items-end justify-between gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-black text-foreground">내 프로젝트</h1>
+                <p className="text-sm text-muted-foreground mt-1">같은 문서의 수정본을 모아 점수 변화를 비교해요. 본인만 볼 수 있어요.</p>
               </div>
-              <div className="mb-5 flex items-center gap-2 text-xs text-muted-foreground">
-                <Lock className="w-3 h-3" />
-                <span>본인만 열람 가능 | 관리자 접근 불가</span>
-              </div>
+              <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
+                <Link href="/"><Plus className="w-4 h-4 mr-1" /> 새 분석</Link>
+              </Button>
+            </div>
 
-              {projects.some(p => p.best_score !== null) && (
-                <div className="mb-5 flex flex-wrap gap-3 text-xs">
-                  {[
-                    { label: "S", range: "90+", color: "text-amber-600 border-amber-500/40" },
-                    { label: "A", range: "80-89", color: "text-purple-600 border-purple-500/40" },
-                    { label: "B", range: "70-79", color: "text-blue-600 border-blue-500/40" },
-                    { label: "C", range: "60-69", color: "text-green-600 border-green-500/40" },
-                    { label: "D", range: "~59", color: "text-muted-foreground border-slate-400/40" },
-                  ].map(g => (
-                    <div key={g.label} className={`flex items-center gap-1.5 px-2 py-1 rounded border ${g.color}`}>
-                      <span className="font-bold">{g.label}</span>
-                      <span className="opacity-70">{g.range}</span>
+            {/* 저장 안 한 분석 */}
+            {unsaved.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
+                  <Inbox className="w-4 h-4 text-primary" /> 저장 안 한 분석 <span className="text-muted-foreground font-medium">{unsaved.length}</span>
+                </h2>
+                <div className="rounded-xl border border-border divide-y divide-border">
+                  {unsaved.map(item => (
+                    <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                      <button onClick={() => handleOpenAnalysis(item)} className="flex-1 min-w-0 text-left">
+                        <p className="text-sm text-foreground font-medium truncate">{item.file_name}</p>
+                        <p className="text-xs text-muted-foreground">{formatShortDate(item.analyzed_at)}</p>
+                      </button>
+                      <span className={`text-lg font-black ${scoreColor(item.overall_score)}`}>{item.overall_score}</span>
+                      <Button size="sm" variant="outline" onClick={() => openAssign(item)} className="border-primary/40 text-primary hover:bg-accent/50 bg-transparent">
+                        저장
+                      </Button>
                     </div>
                   ))}
                 </div>
-              )}
+              </section>
+            )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {/* 프로젝트 목록 */}
+            {projects.length > 0 ? (
+              <div className="rounded-xl border border-border divide-y divide-border">
                 {projects.map(project => {
-                  const grade = project.best_score !== null ? getGrade(project.best_score) : null
                   const isRenaming = renamingProjectId === project.id
                   return (
-                    <div
-                      key={project.id}
-                      className={`group relative bg-secondary rounded-xl border-2 ${grade ? grade.border : "border-border"} p-4 hover:shadow-lg ${grade ? grade.glow : ""} transition-all duration-200 text-left flex flex-col min-h-[160px]`}
-                    >
-                      {grade && (
-                        <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color} flex items-center justify-center text-white font-black text-sm shadow-lg`}>
-                          {grade.label}
+                    <div key={project.id} className="group flex items-center gap-3 px-4 py-4 hover:bg-secondary/60 transition-colors">
+                      <FolderOpen className="w-5 h-5 text-primary shrink-0" />
+                      {isRenaming ? (
+                        <div className="flex-1 flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleRename(project.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }}
+                            autoFocus
+                            className="flex-1 bg-card text-foreground text-sm rounded-md px-2 py-1 border border-primary outline-none"
+                          />
+                          <button onClick={() => handleRename(project.id)} className="p-1 rounded text-primary"><Check className="w-4 h-4" /></button>
                         </div>
+                      ) : (
+                        <button onClick={() => handleOpenProject(project)} className="flex-1 min-w-0 text-left">
+                          <p className="text-sm font-bold text-foreground truncate">{project.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            문서 {project.analysis_count}개
+                            {project.best_score !== null && <> · 최고 <span className="font-semibold text-foreground">{project.best_score}점</span></>}
+                            {project.latest_analyzed_at && <> · {formatShortDate(project.latest_analyzed_at)}</>}
+                          </p>
+                        </button>
                       )}
-                      <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button className="p-1 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" onClick={(e) => e.stopPropagation()}>
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-secondary border-border text-foreground min-w-[140px]">
-                            <DropdownMenuItem className="text-foreground/80 hover:text-foreground focus:text-foreground focus:bg-secondary cursor-pointer" onClick={(e) => { e.stopPropagation(); setRenamingProjectId(project.id); setRenameValue(project.name) }}>
-                              <Pencil className="w-3.5 h-3.5 mr-2" /> 이름 변경
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-border" />
-                            <DropdownMenuItem className="text-red-600 hover:text-red-700 focus:text-red-700 focus:bg-red-500/10 cursor-pointer" onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: "project", id: project.id, name: project.name }) }}>
-                              <Trash2 className="w-3.5 h-3.5 mr-2" /> 삭제
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <button onClick={() => !isRenaming && handleOpenProject(project)} className="flex flex-col flex-1 text-left w-full" disabled={isRenaming}>
-                        <div className={`w-10 h-10 rounded-lg ${grade ? grade.bg : "bg-secondary"} flex items-center justify-center mb-3`}>
-                          <FolderOpen className={`w-5 h-5 ${grade ? grade.text : "text-muted-foreground"}`} />
-                        </div>
-                        {isRenaming ? (
-                          <div className="flex items-center gap-1 mb-1 w-full" onClick={(e) => e.stopPropagation()}>
-                            <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleRename(project.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }} autoFocus className="bg-secondary text-foreground text-xs rounded px-2 py-1 border border-primary outline-none w-full" />
-                            <button onClick={() => handleRename(project.id)} className="p-1 rounded hover:bg-secondary text-primary">
-                              <Check className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="text-foreground text-xs font-medium truncate w-full mb-1 pr-4">{project.name}</p>
-                        )}
-                        <div className="flex items-center gap-1 mb-1">
-                          <FileText className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{project.analysis_count}개 문서</span>
-                        </div>
-                        {project.best_score !== null && (
-                          <div className="flex items-center gap-1 mb-1">
-                            <Star className={`w-3.5 h-3.5 ${grade ? grade.text : "text-muted-foreground"}`} />
-                            <span className={`font-bold text-sm ${grade ? grade.text : "text-muted-foreground"}`}>{project.best_score}</span>
-                            <span className="text-muted-foreground/80 text-xs">최고</span>
-                          </div>
-                        )}
-                        <div className="mt-auto flex items-center gap-1 text-[10px] text-muted-foreground/80 group-hover:text-primary transition-colors">
-                          <span>열기</span>
-                          <ChevronRight className="w-3 h-3" />
-                        </div>
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary" aria-label="프로젝트 메뉴">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[140px]">
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => { setRenamingProjectId(project.id); setRenameValue(project.name) }}>
+                            <Pencil className="w-3.5 h-3.5 mr-2" /> 이름 변경
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-700" onClick={() => setDeleteConfirm({ type: "project", id: project.id, name: project.name })}>
+                            <Trash2 className="w-3.5 h-3.5 mr-2" /> 삭제
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {!isRenaming && <ChevronRight className="w-4 h-4 text-muted-foreground/60 shrink-0" />}
                     </div>
                   )
                 })}
-
-                {/* 잠긴 슬롯 (무료 플랜) */}
-                {!isPaidPlan && projects.length >= 1 && [1, 2].map(i => (
-                  <Link key={`locked-${i}`} href="/pricing" className="relative bg-secondary/30 rounded-xl border-2 border-dashed border-border p-4 flex flex-col items-center justify-center min-h-[160px] group hover:border-amber-500/30 transition-colors">
-                    <Lock className="w-8 h-8 text-muted-foreground/80 group-hover:text-amber-600/50 transition-colors mb-2" />
-                    <p className="text-xs text-muted-foreground/80 group-hover:text-amber-600/70 font-medium transition-colors">구독 필요</p>
-                    <p className="text-[10px] text-slate-800 group-hover:text-muted-foreground/80 mt-1 transition-colors">요금제 보기</p>
-                  </Link>
-                ))}
-
-                {(isPaidPlan || projects.length === 0) && (
-                  showNewProjectInput ? (
-                    <div className="relative bg-secondary rounded-xl border-2 border-primary p-4 flex flex-col min-h-[160px]">
-                      <p className="text-xs text-muted-foreground mb-3">프로젝트 이름</p>
-                      <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleCreateProject(); if (e.key === "Escape") { setShowNewProjectInput(false); setNewProjectName("") } }} placeholder="예: 넥슨 포트폴리오" autoFocus className="bg-secondary text-foreground text-xs rounded-lg px-3 py-2 border border-border focus:border-primary outline-none mb-3 w-full" />
-                      <div className="flex gap-2 mt-auto">
-                        <Button onClick={handleCreateProject} disabled={creatingNewProject || !newProjectName.trim()} className="bg-primary hover:bg-primary/90 text-white text-xs px-3 py-1 h-7 flex-1">
-                          {creatingNewProject ? <Loader2 className="w-3 h-3 animate-spin" /> : "생성"}
-                        </Button>
-                        <Button onClick={() => { setShowNewProjectInput(false); setNewProjectName("") }} variant="outline" className="border-border text-muted-foreground text-xs px-3 py-1 h-7">취소</Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button onClick={() => setShowNewProjectInput(true)} className="relative bg-secondary/50 rounded-xl border-2 border-dashed border-border/50 p-4 flex flex-col items-center justify-center min-h-[160px] hover:border-primary/30 transition-colors group">
-                      <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center mb-2 group-hover:bg-primary/10 transition-colors">
-                        <Plus className="w-5 h-5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
-                      </div>
-                      <p className="text-[10px] text-muted-foreground/80 group-hover:text-muted-foreground transition-colors">새 프로젝트</p>
-                    </button>
-                  )
-                )}
               </div>
+            ) : unsaved.length === 0 && (
+              <div className="rounded-xl border border-dashed border-border text-center py-14 px-6">
+                <FolderOpen className="w-10 h-10 text-primary/40 mx-auto mb-3" />
+                <p className="text-foreground font-semibold mb-1">아직 저장한 프로젝트가 없어요</p>
+                <p className="text-sm text-muted-foreground mb-5">문서를 분석한 뒤 결과 화면에서 &apos;저장하기&apos;를 누르면 여기에 모여요.</p>
+                <Button asChild className="bg-primary hover:bg-primary/90 text-white">
+                  <Link href="/">문서 분석하러 가기</Link>
+                </Button>
+              </div>
+            )}
 
-              {projects.length === 0 && !showNewProjectInput && (
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
-                    <Swords className="w-10 h-10 text-muted-foreground/80" />
-                  </div>
-                  <p className="text-muted-foreground mb-1 font-medium">프로젝트가 비어있습니다</p>
-                  <p className="text-muted-foreground text-sm mb-6">위의 + 버튼을 눌러 첫 프로젝트를 만드세요!</p>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Level 2: 프로젝트 상세 */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <button onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div className="flex items-center gap-2">
-                    {renamingProjectId === selectedProject.id ? (
-                      <div className="flex items-center gap-2">
-                        <FolderOpen className="w-5 h-5 text-primary" />
-                        <input type="text" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleRename(selectedProject.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }} autoFocus className="bg-secondary text-foreground text-lg font-semibold rounded px-2 py-1 border border-primary outline-none" />
-                        <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded hover:bg-secondary text-primary">
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded hover:bg-secondary text-muted-foreground">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                            <FolderOpen className="w-5 h-5 text-primary" />
-                            {selectedProject.name}
-                          </h2>
-                          <button onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }} className="p-1 rounded hover:bg-secondary text-muted-foreground/80 hover:text-foreground/80 transition-colors" title="이름 변경">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })} className="p-1 rounded hover:bg-red-500/10 text-muted-foreground/80 hover:text-red-600 transition-colors" title="프로젝트 삭제">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{projectAnalyses.length}개 문서</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {projectAnalyses.length >= 2 && (
-                    <Button size="sm" variant={showComparison ? "default" : "outline"} onClick={() => setShowComparison(!showComparison)} className={showComparison ? "bg-purple-500 hover:bg-purple-600 text-white text-xs" : "border-purple-500/30 text-purple-600 hover:bg-purple-500/10 text-xs"}>
-                      <BarChart3 className="w-3.5 h-3.5 mr-1" /> 그래프뷰 {showComparison ? "숨기기" : "보기"}
-                    </Button>
-                  )}
-                  <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs">
-                    <Link href={`/analyze?projectId=${selectedProject.id}`}>
-                      <Plus className="w-3.5 h-3.5 mr-1" /> 문서 분석하기
-                    </Link>
+            {/* 새 프로젝트 */}
+            {projects.length > 0 && (
+              showNewProjectInput ? (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="text"
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleCreateProject(); if (e.key === "Escape") { setShowNewProjectInput(false); setNewProjectName("") } }}
+                    placeholder="새 프로젝트 이름"
+                    maxLength={40}
+                    autoFocus
+                    className="flex-1 bg-card text-foreground text-sm rounded-lg px-3 py-2 border border-border focus:border-primary outline-none"
+                  />
+                  <Button onClick={handleCreateProject} disabled={creatingNewProject || !newProjectName.trim()} className="bg-primary hover:bg-primary/90 text-white">
+                    {creatingNewProject ? <Loader2 className="w-4 h-4 animate-spin" /> : "만들기"}
                   </Button>
-                </div>
-              </div>
-
-              {/* 그래프뷰 (2개 이상일 때 즉시 표시) */}
-              {showComparison && projectAnalyses.length >= 2 && (
-                <div className="mb-6">
-                  {isPaidPlan ? (
-                    <div className="bg-card border border-purple-500/20 rounded-xl p-6">
-                      <h3 className="text-foreground font-semibold mb-4 flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-purple-600" />
-                        버전별 점수 비교
-                      </h3>
-                      <VersionComparison analyses={projectAnalyses} />
-                    </div>
-                  ) : (
-                    <div className="relative bg-card border border-border rounded-xl p-8 text-center">
-                      <div className="absolute inset-0 bg-secondary/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10">
-                        <Lock className="w-8 h-8 text-muted-foreground mb-3" />
-                        <p className="text-foreground font-medium mb-1">구독 시 이용 가능</p>
-                        <p className="text-muted-foreground text-sm mb-4">버전별 점수 비교 기능은 구독자 전용입니다.</p>
-                        <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white">
-                          <Link href="/pricing">요금제 보기</Link>
-                        </Button>
-                      </div>
-                      <div className="opacity-20">
-                        <div className="h-48 bg-secondary rounded-lg mb-4" />
-                        <div className="h-32 bg-secondary rounded-lg" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {loadingAnalyses ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                </div>
-              ) : projectAnalyses.length > 0 ? (
-                <div className="space-y-4">
-                  {groupedAnalyses.map(([groupName, items]) => (
-                    <div key={groupName}>
-                      {items.length >= 2 && (
-                        <div className="flex items-center gap-2 mb-2 px-1">
-                          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground font-medium">{groupName}</span>
-                          <span className="text-[10px] text-muted-foreground/80">(v1~v{items.length})</span>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        {items.map((item, versionIdx) => {
-                          const grade = getGrade(item.overall_score)
-                          return (
-                            <div key={item.id} className={`group/card relative bg-secondary rounded-xl border-2 ${grade.border} p-4 hover:shadow-lg ${grade.glow} hover:scale-[1.03] transition-all duration-200 text-left flex flex-col`}>
-                              <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br ${grade.color} flex items-center justify-center text-white font-black text-sm shadow-lg`}>
-                                {grade.label}
-                              </div>
-                              <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name }) }} className="absolute top-2 left-2 opacity-0 group-hover/card:opacity-100 p-1 rounded-md hover:bg-red-500/10 text-muted-foreground/80 hover:text-red-600 transition-all z-10" title="삭제">
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button onClick={() => handleOpenAnalysis(item)} className="flex flex-col flex-1 text-left w-full">
-                                <div className={`w-10 h-10 rounded-lg ${grade.bg} flex items-center justify-center mb-3`}>
-                                  <FileText className={`w-5 h-5 ${grade.text}`} />
-                                </div>
-                                <p className="text-foreground text-xs font-medium truncate w-full mb-2 pr-4">
-                                  {items.length >= 2 ? `v${versionIdx + 1}` : item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}
-                                </p>
-                                {items.length >= 2 && (
-                                  <p className="text-muted-foreground text-[10px] truncate w-full mb-1">{item.file_name.replace(/\.(pdf|docx|txt)$/i, "")}</p>
-                                )}
-                                <div className="flex items-center gap-1 mb-1">
-                                  <Star className={`w-3.5 h-3.5 ${grade.text}`} />
-                                  <span className={`font-bold text-lg ${grade.text}`}>{item.overall_score}</span>
-                                  <span className="text-muted-foreground/80 text-xs">/100</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 mt-auto">
-                                  <Calendar className="w-2.5 h-2.5" />
-                                  {formatShortDate(item.analyzed_at)}
-                                </div>
-                              </button>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
+                  <Button variant="outline" onClick={() => { setShowNewProjectInput(false); setNewProjectName("") }} className="border-border text-muted-foreground">취소</Button>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-muted-foreground/80 mx-auto mb-3" />
-                  <p className="text-muted-foreground mb-1">아직 분석한 문서가 없습니다</p>
-                  <Button asChild className="mt-4 bg-primary hover:bg-primary/90 text-white">
-                    <Link href={`/analyze?projectId=${selectedProject.id}`}>문서 분석하기</Link>
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                <button onClick={() => setShowNewProjectInput(true)} className="mt-3 text-sm text-primary hover:underline flex items-center gap-1">
+                  <Plus className="w-4 h-4" /> 새 프로젝트
+                </button>
+              )
+            )}
+          </>
+        ) : (
+          <>
+            {/* ── 프로젝트 상세 ── */}
+            <button onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4">
+              <ArrowLeft className="w-4 h-4" /> 내 프로젝트
+            </button>
+
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div className="min-w-0">
+                {renamingProjectId === selectedProject.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleRename(selectedProject.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }}
+                      autoFocus
+                      className="bg-card text-foreground text-xl font-bold rounded-md px-2 py-1 border border-primary outline-none"
+                    />
+                    <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded text-primary"><Check className="w-5 h-5" /></button>
+                    <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded text-muted-foreground"><X className="w-5 h-5" /></button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <h1 className="text-2xl md:text-3xl font-black text-foreground truncate">{selectedProject.name}</h1>
+                    <button onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }} className="p-1 rounded text-muted-foreground/70 hover:text-foreground" title="이름 변경">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })} className="p-1 rounded text-muted-foreground/70 hover:text-red-600" title="프로젝트 삭제">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-1">문서 {projectAnalyses.length}개{selectedProject.best_score !== null && ` · 최고 ${selectedProject.best_score}점`}</p>
+              </div>
+              <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
+                <Link href={`/analyze?projectId=${selectedProject.id}`}><Plus className="w-4 h-4 mr-1" /> 수정본 분석</Link>
+              </Button>
+            </div>
+
+            {/* 버전별 점수 (2개 이상) */}
+            {projectAnalyses.length >= 2 && (
+              <div className="mb-6 rounded-xl border border-border p-5">
+                <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-1.5">
+                  <BarChart3 className="w-4 h-4 text-primary" /> 버전별 점수 변화
+                </h2>
+                <VersionComparison analyses={projectAnalyses} />
+              </div>
+            )}
+
+            {loadingAnalyses ? (
+              <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+            ) : projectAnalyses.length > 0 ? (
+              <div className="space-y-5">
+                {groupedAnalyses.map(([groupName, items]) => (
+                  <div key={groupName}>
+                    {items.length >= 2 && (
+                      <p className="text-xs text-muted-foreground font-medium mb-1.5 px-1">{groupName} · 수정본 {items.length}개</p>
+                    )}
+                    <div className="rounded-xl border border-border divide-y divide-border">
+                      {[...items].reverse().map((item) => {
+                        const versionIdx = items.indexOf(item)
+                        return (
+                          <div key={item.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors">
+                            <button onClick={() => handleOpenAnalysis(item)} className="flex-1 min-w-0 text-left flex items-center gap-3">
+                              {items.length >= 2 && (
+                                <span className="text-[11px] font-bold text-primary bg-accent rounded px-1.5 py-0.5 shrink-0">v{versionIdx + 1}</span>
+                              )}
+                              <span className="min-w-0">
+                                <span className="block text-sm text-foreground font-medium truncate">{item.file_name}</span>
+                                <span className="block text-xs text-muted-foreground">{formatShortDate(item.analyzed_at)}</span>
+                              </span>
+                            </button>
+                            <span className={`text-lg font-black ${scoreColor(item.overall_score)}`}>{item.overall_score}</span>
+                            <button onClick={() => setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name })} className="p-1 rounded text-muted-foreground/50 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity" title="삭제">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border text-center py-12">
+                <FileText className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
+                <p className="text-muted-foreground mb-4">아직 이 프로젝트에 분석한 문서가 없어요</p>
+                <Button asChild className="bg-primary hover:bg-primary/90 text-white">
+                  <Link href={`/analyze?projectId=${selectedProject.id}`}>문서 분석하기</Link>
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* 저장 안 한 분석 → 프로젝트에 저장 */}
+      {assigning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" onClick={() => !assignBusy && setAssigning(null)}>
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-black text-foreground mb-1">{projects.length === 0 ? "프로젝트를 만드세요" : "어느 프로젝트에 저장할까요?"}</h3>
+            <p className="text-sm text-muted-foreground mb-4 truncate">{assigning.file_name}</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto mb-5">
+              {projects.map(project => (
+                <label key={project.id} className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer ${assignTarget === project.id ? "border-primary bg-accent/50" : "border-border hover:border-primary/40"}`}>
+                  <span className="flex items-center gap-2 min-w-0">
+                    <input type="radio" name="assign-target" checked={assignTarget === project.id} onChange={() => setAssignTarget(project.id)} className="accent-[#0046AD]" />
+                    <span className="text-sm text-foreground font-medium truncate">{project.name}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground shrink-0">{project.analysis_count}개 분석</span>
+                </label>
+              ))}
+              <label className={`block p-3 rounded-lg border cursor-pointer ${assignTarget === "new" ? "border-primary bg-accent/50" : "border-dashed border-border hover:border-primary/40"}`}>
+                <span className="flex items-center gap-2">
+                  <input type="radio" name="assign-target" checked={assignTarget === "new"} onChange={() => setAssignTarget("new")} className="accent-[#0046AD]" />
+                  <span className="text-sm text-foreground font-medium">새 프로젝트</span>
+                </span>
+                {assignTarget === "new" && (
+                  <input type="text" value={assignName} onChange={e => setAssignName(e.target.value)} maxLength={40} autoFocus placeholder="예: 넥슨 지원용 포트폴리오"
+                    className="mt-2 w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary" />
+                )}
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAssigning(null)} disabled={assignBusy} className="flex-1 border-border text-muted-foreground">취소</Button>
+              <Button onClick={handleAssign} disabled={assignBusy || (assignTarget === "new" && !assignName.trim())} className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                {assignBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : assignTarget === "new" ? "만들고 저장" : "저장하기"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 삭제 확인 다이얼로그 */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>

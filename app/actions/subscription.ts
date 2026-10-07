@@ -127,16 +127,21 @@ export async function getProjects() {
   return { data: projectsWithStats }
 }
 
+const PROJECT_LIMIT = 50
+
 export async function createProject(name: string, description?: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: "로그인이 필요합니다." }
 
-  // 프로젝트 생성 가능 여부 확인
-  const allowance = await checkProjectAllowance()
-  if (!allowance.allowed) {
-    return { error: allowance.reason || "프로젝트를 더 생성할 수 없습니다." }
+  // 프로젝트는 무료 (구독 시절의 크레딧·플랜 제한 제거, 2026-10-07). 남용 방지 상한만 둔다
+  const { count } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+  if ((count ?? 0) >= PROJECT_LIMIT) {
+    return { error: `프로젝트는 ${PROJECT_LIMIT}개까지 만들 수 있어요. 안 쓰는 프로젝트를 정리해 주세요.` }
   }
 
   const { data, error } = await supabase
@@ -153,34 +158,12 @@ export async function createProject(name: string, description?: string) {
   return { data }
 }
 
+/** 프로젝트 생성 가능 여부 — 2026-10-07부터 로그인만 하면 가능 (createProject의 상한은 별도) */
 export async function checkProjectAllowance() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) return { allowed: false, reason: "로그인이 필요합니다." }
-
-  // 구독 확인
-  const { data: subscription } = await supabase
-    .from("users_subscription")
-    .select("*")
-    .eq("user_id", user.id)
-    .single()
-
-  // 유료 구독 활성 상태: 무제한
-  if (subscription && subscription.plan !== "free") {
-    const isExpired = subscription.expires_at && new Date(subscription.expires_at) < new Date()
-    if (!isExpired && subscription.status !== "expired") {
-      return { allowed: true, plan: subscription.plan, unlimited: true }
-    }
-  }
-
-  // 크레딧이 있으면 프로젝트 생성 허용
-  if (subscription && (subscription.analysis_credits || 0) > 0) {
-    return { allowed: true, plan: subscription?.plan || "free" }
-  }
-
-  // 크레딧도 구독도 없음
-  return { allowed: false, plan: "free" as const, reason: "분석 크레딧이 없습니다. 크레딧을 구매하거나 구독해 주세요." }
+  return { allowed: true }
 }
 
 export async function checkAnalysisAllowance() {
@@ -322,7 +305,8 @@ export async function getAnalysisDetail(id: string) {
 }
 
 export async function saveAnalysisHistory(result: {
-  projectId: string
+  /** 없으면 '저장 안 한 분석'으로 남고, 나중에 assignAnalysisToProject로 프로젝트에 넣는다 */
+  projectId?: string | null
   fileName: string
   score: number
   categories: Record<string, unknown>[]
@@ -345,7 +329,7 @@ export async function saveAnalysisHistory(result: {
 
   const baseRow = {
     user_id: user.id,
-    project_id: result.projectId,
+    project_id: result.projectId ?? null,
     file_name: result.fileName,
     overall_score: result.score,
     categories: result.categories,
@@ -364,22 +348,71 @@ export async function saveAnalysisHistory(result: {
     token_usage: result.tokenUsage ?? null,
   }
 
-  let { error } = await supabase.from("analysis_history").insert(extendedRow)
+  let { data: inserted, error } = await supabase.from("analysis_history").insert(extendedRow).select("id").single()
   if (error && /design_domain|model_tier|token_usage/.test(error.message)) {
     console.warn("[subscription] analysis_history에 020 컬럼이 없어 기본 컬럼으로만 저장합니다. scripts/020을 실행하세요.")
-    ;({ error } = await supabase.from("analysis_history").insert(baseRow))
+    ;({ data: inserted, error } = await supabase.from("analysis_history").insert(baseRow).select("id").single())
   }
 
   if (error) return dbError("분석 결과 저장에 실패했습니다.", error)
 
   // 프로젝트 updated_at 갱신
+  if (result.projectId) {
+    await supabase
+      .from("projects")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", result.projectId)
+      .eq("user_id", user.id)
+  }
+
+  return { success: true, id: (inserted as { id: string } | null)?.id ?? null }
+}
+
+/** 저장 안 한 분석을 프로젝트에 넣는다 (분석 결과 화면의 '저장하기') */
+export async function assignAnalysisToProject(analysisId: string, projectId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("id", projectId)
+    .eq("user_id", user.id)
+    .single()
+  if (!project) return { error: "프로젝트를 찾을 수 없어요." }
+
+  const { error } = await supabase
+    .from("analysis_history")
+    .update({ project_id: projectId })
+    .eq("id", analysisId)
+    .eq("user_id", user.id)
+  if (error) return dbError("프로젝트에 저장하지 못했어요.", error)
+
   await supabase
     .from("projects")
     .update({ updated_at: new Date().toISOString() })
-    .eq("id", result.projectId)
+    .eq("id", projectId)
     .eq("user_id", user.id)
 
   return { success: true }
+}
+
+/** 프로젝트에 넣지 않은 분석 목록 (프로젝트 페이지 상단에 노출) */
+export async function getUnsavedAnalyses() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "로그인이 필요합니다." }
+
+  const { data, error } = await supabase
+    .from("analysis_history")
+    .select("id, file_name, overall_score, analyzed_at")
+    .eq("user_id", user.id)
+    .is("project_id", null)
+    .order("analyzed_at", { ascending: false })
+    .limit(30)
+  if (error) return dbError("분석 목록 조회에 실패했습니다.", error)
+  return { data: data ?? [] }
 }
 
 // ========== 프로젝트/분석 관리 (삭제, 이름변경) ==========

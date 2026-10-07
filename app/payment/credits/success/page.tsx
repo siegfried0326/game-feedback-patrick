@@ -98,7 +98,7 @@ function CreditSuccessContent() {
         setTimeout(() => setFilledCount(purchased), 800)
         setTimeout(() => setShowComplete(true), 800 + purchased * 150 + 500)
         setTimeout(() => {
-          window.location.href = "/analyze"
+          window.location.replace("/analyze")
         }, 5000)
       }
     }

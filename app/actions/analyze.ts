@@ -50,6 +50,7 @@ import { summarizeUsage, logUsage, type TokenUsage } from "@/lib/analysis/usage"
 import { maskForPrompt, scrubOutput } from "@/lib/analysis/anonymize"
 import { countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
 import { isTargetCompany } from "@/lib/analysis/companies"
+import { fileBaseName, isSameDocument } from "@/lib/analysis/doc-key"
 import pdfParse from "pdf-parse"
 
 // ───────────────────────────────────────────
@@ -547,7 +548,7 @@ const FILES_API_BETA = "files-api-2025-04-14"
 const INLINE_BASE64_LIMIT_MB = 20
 /** 텍스트 모드 상한 — 1M 컨텍스트 모델 기준 (약 15만 토큰) */
 const TEXT_MODE_MAX_CHARS = 400_000
-const RANKING_COMPANIES = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "웹젠", "스마일게이트", "네오위즈", "펄어비스"]
+const RANKING_COMPANIES = ["넥슨", "엔씨소프트", "넷마블", "크래프톤", "웹젠", "스마일게이트", "네오위즈", "펄어비스", "시프트업"]
 
 function supportsEffort(model: string): boolean {
   return /claude-(opus|sonnet)-(4-[5-9]|[5-9])|fable|mythos/.test(model)
@@ -578,6 +579,7 @@ async function runAnalysis(params: {
   const model = resolveModelId(tier)
   const keywords = (options.keywords ?? []).filter(k => typeof k === "string" && k.trim()).map(k => k.trim()).slice(0, 12)
   const targetCompany = isTargetCompany(options.targetCompany) ? options.targetCompany : null
+  const previousVersion = await findPreviousVersion(params.fileName, params.documentName)
   const customTopics = (options.customTopics ?? []).filter(t => typeof t === "string" && t.trim()).map(t => t.trim().slice(0, 40)).slice(0, 10)
 
   // 검색·분류에 쓸 텍스트
@@ -599,6 +601,10 @@ async function runAnalysis(params: {
     domain = h.domain
     secondary = h.secondary
     docForm = h.docForm
+  }
+  // 사용자가 적은 주제·키워드나 파일명에 "포스트모템/회고"가 있으면 형식을 그쪽으로 (스캔이 놓쳐도 사용자의 표기를 따른다)
+  if (docForm !== "postmortem" && /포스트 ?모템|post ?-?mortem|회고/i.test([params.fileName, ...keywords, ...(options.customTopics ?? [])].join(" "))) {
+    docForm = "postmortem"
   }
   console.log(`[분석] 직군=${domain} (${DOMAIN_LABELS[domain]}) 형식=${docForm} 티어=${tier} 모델=${model}`)
 
@@ -630,7 +636,7 @@ async function runAnalysis(params: {
 
   const callText = async (text: string, textMode: AnalysisMode) => {
     const clipped = text.length > TEXT_MODE_MAX_CHARS ? text.substring(0, TEXT_MODE_MAX_CHARS) : text
-    const system = buildSystemBlocks({ domain, secondary, docForm, mode: textMode, reference, benchmarkSection: formatBenchmarkForPrompt(false), vectorSection, librarySection, keywords, targetCompany })
+    const system = buildSystemBlocks({ domain, secondary, docForm, mode: textMode, reference, benchmarkSection: formatBenchmarkForPrompt(false), vectorSection, librarySection, keywords, targetCompany, previousVersion })
     return client.beta.messages.stream({
       model,
       max_tokens: 20000,
@@ -643,7 +649,7 @@ async function runAnalysis(params: {
   if (params.content.kind === "file") {
     const { buffer, mimeType, sizeMB } = params.content
     const isImage = CLAUDE_IMAGE_TYPES.includes(mimeType)
-    const system = buildSystemBlocks({ domain, secondary, docForm, mode: "pdf", reference, benchmarkSection: formatBenchmarkForPrompt(true), vectorSection, librarySection, keywords, targetCompany })
+    const system = buildSystemBlocks({ domain, secondary, docForm, mode: "pdf", reference, benchmarkSection: formatBenchmarkForPrompt(true), vectorSection, librarySection, keywords, targetCompany, previousVersion })
     const instruction = buildUserInstruction("pdf", params.fileName, `${sizeMB.toFixed(1)}MB`)
 
     let uploadedFileId: string | null = null
@@ -788,7 +794,7 @@ async function runAnalysis(params: {
     weaknesses,
     // 분석 설정은 별도 컬럼 없이 ranking JSON에 함께 저장 — 프로젝트 화면 표시 + 다음 분석의 기본값
     //   targetCompany: 프로젝트 단위 기본값 / settings.domains·topics: 문서 단위 기본값 (분석 모드는 비용 때문에 저장 안 함)
-    ranking: { ...ranking, targetCompany, settings: { domains: [domain, ...secondary], topics: customTopics } },
+    ranking: { ...ranking, targetCompany, settings: { domains: [domain, ...secondary], topics: customTopics, docForm } },
     companyFeedback: result.companyFeedback,
     analysisSource: result.analysisSource,
     readabilityCategories,
@@ -877,6 +883,32 @@ function computeRanking(score: number, reference: ReferenceSet): AnalysisResultD
   companyComparison.push({ company: "전체 합격자", avgScore: reference.avgOverall, userScore: score, sampleCount: total })
 
   return { total, percentile, rank, companyComparison }
+}
+
+type PreviousVersion = { score: number; categories: { subject: string; value: number | null }[]; analyzedAt: string }
+
+/**
+ * 같은 사용자의 같은 문서 직전 분석 — 다시 분석할 때 점수가 크게 출렁이지 않도록 기준점으로 쓴다
+ * 문서명이 있으면 문서명, 없으면 파일명(버전 번호·날짜 등 무시)으로 찾는다.
+ */
+async function findPreviousVersion(fileName: string, documentName?: string | null): Promise<PreviousVersion | null> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const { data } = await supabase
+      .from("analysis_history")
+      .select("file_name, document_name, overall_score, categories, analyzed_at")
+      .eq("user_id", user.id)
+      .order("analyzed_at", { ascending: false })
+      .limit(60)
+    const rows = (data ?? []) as { file_name: string; document_name?: string | null; overall_score: number; categories: PreviousVersion["categories"] | null; analyzed_at: string }[]
+    const key = documentName?.trim() || fileBaseName(fileName)
+    const hit = rows.find(r => isSameDocument(r, key))
+    return hit ? { score: hit.overall_score, categories: hit.categories ?? [], analyzedAt: hit.analyzed_at } : null
+  } catch {
+    return null
+  }
 }
 
 /** PDF 원본의 쪽수 (첫 쪽만 파싱해 빠르게). 읽지 못하면 null */

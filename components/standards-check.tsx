@@ -8,6 +8,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { GlossaryText } from "@/components/glossary-text"
 import { ClipboardCheck, ListOrdered } from "lucide-react"
 
 type StandardsCheckItem = {
@@ -53,8 +54,8 @@ export function StandardsCheck({ items, nextSteps, domainLabel }: StandardsCheck
                   {item.status}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm text-foreground">{item.element}</p>
-                  {item.note && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.note}</p>}
+                  <p className="text-sm text-foreground"><GlossaryText text={item.element} /></p>
+                  {item.note && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed"><GlossaryText text={item.note} /></p>}
                 </div>
               </div>
             ))}
@@ -73,7 +74,7 @@ export function StandardsCheck({ items, nextSteps, domainLabel }: StandardsCheck
               {nextSteps.map((step, i) => (
                 <li key={i} className="flex gap-2.5 text-sm text-foreground/80 leading-relaxed">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-amber-500/20 text-amber-600 text-xs flex items-center justify-center">{i + 1}</span>
-                  <span>{step}</span>
+                  <span><GlossaryText text={step} /></span>
                 </li>
               ))}
             </ol>

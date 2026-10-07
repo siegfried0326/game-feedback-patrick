@@ -9,6 +9,7 @@
 "use client"
 
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from "recharts"
+import { GlossaryText, Term } from "@/components/glossary-text"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type CategoryData = {
@@ -68,7 +69,7 @@ export function RadarChartComponent({ data }: RadarChartProps) {
         <div className="mt-4 grid grid-cols-2 gap-2">
           {chartData.map((item, index) => (
             <div key={index} className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{item.subject}</span>
+              <span className="text-muted-foreground"><Term term={item.subject} /></span>
               <span className={`font-medium ${getScoreColor(item.value)}`}>{item.value}점</span>
             </div>
           ))}

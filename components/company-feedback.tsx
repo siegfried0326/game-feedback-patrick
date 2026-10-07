@@ -5,15 +5,17 @@
 "use client"
 
 import { useState } from "react"
+import { usePrinting } from "@/lib/use-printing"
 import { ChevronDown, Target } from "lucide-react"
 import { splitCompanyFeedback } from "@/lib/analysis/companies"
+import { GlossaryText } from "@/components/glossary-text"
 
 function Emphasized({ text }: { text: string }) {
   const parts = text.split(/\*\*(.*?)\*\*/)
   return (
     <>
       {parts.map((part, i) =>
-        i % 2 === 1 ? <span key={i} className="text-primary font-semibold">{part}</span> : <span key={i}>{part}</span>
+        i % 2 === 1 ? <span key={i} className="text-primary font-semibold">{part}</span> : <span key={i}><GlossaryText text={part} /></span>
       )}
     </>
   )
@@ -21,6 +23,7 @@ function Emphasized({ text }: { text: string }) {
 
 export function CompanyFeedback({ feedback, targetCompany }: { feedback: string; targetCompany?: string | null }) {
   const [showOthers, setShowOthers] = useState(false)
+  const printing = usePrinting()
   const paragraphs = splitCompanyFeedback(feedback)
   if (paragraphs.length === 0) return null
 
@@ -50,7 +53,7 @@ export function CompanyFeedback({ feedback, targetCompany }: { feedback: string;
                 <span>다른 회사 참고 <span className="text-muted-foreground font-medium">{others.length}곳</span></span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showOthers ? "rotate-180" : ""}`} />
               </button>
-              {showOthers && (
+              {(showOthers || printing) && (
                 <div className="space-y-2">
                   {others.map((p, i) => (
                     <div key={i} className="p-3 bg-secondary border border-border/50 rounded-xl">

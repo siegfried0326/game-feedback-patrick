@@ -84,7 +84,9 @@ export async function middleware(request: NextRequest) {
   // 로그인된 유저 → 로그인 페이지 접근 시 홈으로
   if (user && authPaths.some(path => pathname.startsWith(path))) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    const back = request.nextUrl.searchParams.get('redirect')
+    url.pathname = back && back.startsWith('/') && !back.startsWith('//') ? back.split('?')[0] : '/analyze'
+    url.search = ''
     return NextResponse.redirect(url)
   }
 

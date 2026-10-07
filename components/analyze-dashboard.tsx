@@ -22,15 +22,18 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
+import { GlossaryText } from "@/components/glossary-text"
 import { useDropzone } from "react-dropzone"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload, getDroppedFiles } from "@/lib/pending-upload"
 import { notifyCreditsChanged } from "@/components/credit-chip"
 import { CompanyFeedback } from "@/components/company-feedback"
 import { GradeScale } from "@/components/grade-scale"
+import { docKeyLoose, fileBaseName } from "@/lib/analysis/doc-key"
 import { VersionDelta } from "@/components/version-delta"
+import { AnalysisProgress } from "@/components/analysis-progress"
 import { TARGET_COMPANIES } from "@/lib/analysis/companies"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
-import { FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, Download, AlertCircle, X, Lock, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -91,7 +94,7 @@ type SavedSettingsRow = {
   file_name: string
   document_name?: string | null
   design_domain?: string | null
-  ranking?: { targetCompany?: string | null; settings?: { domains?: string[]; topics?: string[] } } | null
+  ranking?: { targetCompany?: string | null; settings?: { domains?: string[]; topics?: string[]; docForm?: string } } | null
 }
 
 type AnalysisResult = {
@@ -232,6 +235,7 @@ export function AnalyzeDashboard() {
     "크래프톤 합격자 포트폴리오와 비교하는 중...",
     "펄어비스 합격자 포트폴리오와 비교하는 중...",
     "스마일게이트 합격자 포트폴리오와 비교하는 중...",
+    "시프트업 합격자 포트폴리오와 비교하는 중...",
     "강점과 보완점을 정리하는 중...",
     "최종 점수를 계산하는 중...",
   ]
@@ -274,6 +278,43 @@ export function AnalyzeDashboard() {
   }, [isAnalyzing])
 
   // 계속 분석하기 — 결과를 닫고 첫 업로드 화면으로 돌아간다 (남은 크레딧도 다시 읽음)
+  // 분석 결과 PDF 저장 — 브라우저 인쇄 창에서 "PDF로 저장". 파일 이름은 문서명·점수로
+  const exportPdf = () => {
+    const r = results[currentIndex]
+    const prevTitle = document.title
+    if (r) document.title = `문라이트아카이브_${fileBaseName(r.fileName)}_${r.score}점`
+    const restore = () => { document.title = prevTitle; window.removeEventListener("afterprint", restore) }
+    window.addEventListener("afterprint", restore)
+    // 접힌 피드백이 펼쳐질 시간을 준다 (beforeprint에서 펼침)
+    setTimeout(() => window.print(), 50)
+  }
+
+  // 뒤로가기: 결과 화면이나 분석 설정 창에서 누르면 다른 페이지가 아니라 업로드 화면으로 돌아온다
+  const historyStepRef = useRef<"none" | "modal" | "result">("none")
+  // 우리가 넣은 기록 칸이 하나 살아 있는지 — 있으면 새로 쌓지 않고 바꿔 쓴다 (뒤로가기 한 번 = 한 단계)
+  const historyPushedRef = useRef(false)
+  const startOverRef = useRef<() => void>(() => {})
+  const cancelModalRef = useRef<() => void>(() => {})
+  useEffect(() => {
+    const step = results.length > 0 ? "result" : showKeywordEditor ? "modal" : "none"
+    if (step !== "none" && historyStepRef.current !== step) {
+      if (historyPushedRef.current) window.history.replaceState({ moonlight: step }, "")
+      else { window.history.pushState({ moonlight: step }, ""); historyPushedRef.current = true }
+    }
+    if (step !== "none" || !isAnalyzing) historyStepRef.current = step
+  }, [results.length, showKeywordEditor, isAnalyzing])
+  useEffect(() => {
+    const onPop = () => {
+      const step = historyStepRef.current
+      historyStepRef.current = "none"
+      historyPushedRef.current = false
+      if (step === "result") startOverRef.current()
+      else if (step === "modal") cancelModalRef.current()
+    }
+    window.addEventListener("popstate", onPop)
+    return () => window.removeEventListener("popstate", onPop)
+  }, [])
+
   const startOver = () => {
     setResults([])
     setFiles([])
@@ -344,6 +385,8 @@ export function AnalyzeDashboard() {
           setPickedDomains(pickThreeDomains(domains[0], domains.slice(1)))
           notes.push("문서 분야")
         }
+        const savedForm = docRow.ranking?.settings?.docForm
+        if (savedForm && savedForm in DOC_FORM_LABELS) setScanDocForm(savedForm as DocForm)
         const topics = docRow.ranking?.settings?.topics ?? []
         if (topics.length > 0) { setCustomTopics(topics); notes.push("주제") }
       }
@@ -353,25 +396,29 @@ export function AnalyzeDashboard() {
 
   // 결과가 프로젝트에 저장돼 있으면 같은 문서의 직전 버전을 찾아 비교한다
   const currentHistoryId = results[currentIndex]?.historyId ?? null
-  const currentProjectId = results[currentIndex]?.projectId ?? null
+  const currentProjectId = results[currentIndex]?.projectId ?? selectedProjectId ?? null
+  const currentFileName = results[currentIndex]?.fileName ?? ""
   useEffect(() => {
     setPrevVersion(null)
-    if (!currentHistoryId || !currentProjectId) return
+    if (!currentProjectId || !currentFileName) return
     let cancelled = false
     getProjectAnalyses(currentProjectId).then(res => {
       if (cancelled || !("data" in res) || !res.data) return
       type Row = { id: string; file_name: string; document_name?: string | null; analyzed_at: string; overall_score: number; categories?: { subject: string; value: number | null }[] }
       const rows = res.data as Row[]
-      const me = rows.find(r => r.id === currentHistoryId)
-      if (!me) return
       const key = (r: Row) => r.document_name?.trim() || fileBaseName(r.file_name)
-      const same = rows.filter(r => key(r) === key(me)).sort((a, b) => a.analyzed_at.localeCompare(b.analyzed_at))
-      const idx = same.findIndex(r => r.id === me.id)
+      const me = currentHistoryId ? rows.find(r => r.id === currentHistoryId) : undefined
+      // 저장 전이면 들어온 문서명(또는 파일명이 비슷한 기존 문서)으로 찾는다
+      const myKey = me ? key(me) : (preselectedDocument || fileBaseName(currentFileName))
+      const same = rows
+        .filter(r => key(r) === myKey || docKeyLoose(key(r)) === docKeyLoose(myKey) || docKeyLoose(fileBaseName(r.file_name)) === docKeyLoose(myKey))
+        .sort((a, b) => a.analyzed_at.localeCompare(b.analyzed_at))
+      const idx = me ? same.findIndex(r => r.id === me.id) : same.length
       if (idx > 0) setPrevVersion({ score: same[idx - 1].overall_score, categories: same[idx - 1].categories ?? [], version: idx + 1 })
     }).catch(() => {})
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentHistoryId, currentProjectId])
+  }, [currentHistoryId, currentProjectId, currentFileName])
 
   const resolveDocName = (fileName: string): string | null => {
     if (preselectedDocument) return preselectedDocument
@@ -381,19 +428,8 @@ export function AnalyzeDashboard() {
     return match ? (match.document_name?.trim() || fileBaseName(match.file_name)) : null
   }
 
-  const fileBaseName = (name?: string) => (name || "").replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
 
   // 저장 대상 프로젝트의 기존 문서명 목록 (같은 문서의 새 버전으로 넣을 수 있게)
-  // 파일명이 조금 달라도(버전 번호·날짜·"최종"·"수정" 등) 같은 문서로 보고 기존 문서를 미리 고른다
-  const docKeyLoose = (name: string) => name
-    .toLowerCase()
-    .replace(/\(\d+\)|\[\d+\]/g, "")
-    .replace(/(_|\s|-)?(v|ver|버전)\s*\d+(\.\d+)*/g, "")
-    .replace(/최종|수정본?|복사본|copy|final|ver/g, "")
-    .replace(/\d+\s*차/g, "")
-    .replace(/\d{4,8}/g, "")
-    .replace(/[\s_\-.()[\]]/g, "")
-    .replace(/\d+$/, "")
 
   const loadDocOptions = async (projectId: string, fileName?: string) => {
     if (projectId === "new") { setSaveDocOptions([]); return }
@@ -409,12 +445,14 @@ export function AnalyzeDashboard() {
   }
 
   const openSaveDialog = () => {
-    const base = fileBaseName(results[currentIndex]?.fileName) || "내 포트폴리오"
+    const base = preselectedDocument || fileBaseName(results[currentIndex]?.fileName) || "내 포트폴리오"
     setSaveName("내 포트폴리오")
     setSaveDocName(base.slice(0, 60))
-    const target = projects.length > 0 ? projects[0].id : "new"
+    const target = selectedProjectId && projects.some(p => p.id === selectedProjectId)
+      ? selectedProjectId
+      : projects.length > 0 ? projects[0].id : "new"
     setSaveTarget(target)
-    loadDocOptions(target, results[currentIndex]?.fileName)
+    loadDocOptions(target, preselectedDocument ? undefined : results[currentIndex]?.fileName)
     setShowSaveDialog(true)
   }
 
@@ -542,7 +580,9 @@ export function AnalyzeDashboard() {
           }
           setStatusMessage("AI 분석 중...")
           const textResult = await analyzeUrlDirect({
-            projectId: selectedProjectId,
+            // 항상 '저장 안 한 분석'으로 남기고, 결과 화면의 '저장하기'에서 프로젝트·문서를 고른다 (매번)
+            projectId: null,
+            // 저장은 안 하지만, 같은 문서의 직전 분석을 점수 기준점으로 찾을 때 쓴다
             documentName: selectedProjectId ? resolveDocName(fileStatus.file.name) : null,
             extractedText,
             fileName: fileStatus.file.name,
@@ -705,7 +745,9 @@ export function AnalyzeDashboard() {
           setStatusMessage("AI 분석 중...")
 
           analysisResult = await analyzeDocumentDirect({
-            projectId: selectedProjectId,
+            // 항상 '저장 안 한 분석'으로 남기고, 결과 화면의 '저장하기'에서 프로젝트·문서를 고른다 (매번)
+            projectId: null,
+            // 저장은 안 하지만, 같은 문서의 직전 분석을 점수 기준점으로 찾을 때 쓴다
             documentName: selectedProjectId ? resolveDocName(fileStatus.file.name) : null,
             fileName: fileStatus.file.name,
             fileUrl: urlData.publicUrl,
@@ -893,6 +935,7 @@ export function AnalyzeDashboard() {
     const trimmed = newKeywordInput.trim()
     if (trimmed && !customTopics.includes(trimmed)) {
       setCustomTopics(prev => [...prev, trimmed].slice(0, 10))
+      if (/포스트 ?모템|post ?-?mortem|회고/i.test(trimmed)) setScanDocForm("postmortem")
     }
     setNewKeywordInput("")
   }
@@ -935,6 +978,8 @@ export function AnalyzeDashboard() {
     setPendingFiles([])
     setFiles([])
   }
+  cancelModalRef.current = handleKeywordCancel
+  startOverRef.current = () => startOver()
 
   // 크레딧 사용자가 정밀 분석(2크레딧)을 고를 수 있는지
   const remainingCredits = allowanceInfo?.remaining ?? 0
@@ -1049,7 +1094,7 @@ export function AnalyzeDashboard() {
                   <p className="font-semibold text-foreground text-lg">
                     {statusMessage || "AI가 문서를 직접 읽고 분석 중..."}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-2">보통 30초~1분 정도 소요됩니다</p>
+                  <p className="text-sm text-muted-foreground mt-2">보통 1~2분 정도 걸려요</p>
                 </div>
                 <Progress value={fakeProgress} className="h-2 w-full max-w-sm" />
               </div>
@@ -1082,6 +1127,8 @@ export function AnalyzeDashboard() {
               </div>
             )}
 
+            {isAnalyzing && <AnalysisProgress progress={fakeProgress} targetCompany={targetCompany} />}
+
             {/* 남은 크레딧 (+ 프로젝트 화면에서 들어온 경우 저장될 프로젝트) — 한 줄 */}
             {isLoggedIn && allowanceInfo?.allowed && (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 text-sm text-muted-foreground">
@@ -1091,7 +1138,7 @@ export function AnalyzeDashboard() {
                       <FolderOpen className="w-4 h-4 text-primary shrink-0" />
                       <span className="truncate">
                         <span className="text-foreground font-medium">{projects.find(p => p.id === selectedProjectId)!.name}</span>
-                        {preselectedDocument ? <> · <span className="text-foreground font-medium">{preselectedDocument}</span>의 새 버전으로</> : "에"} 저장돼요
+                        {preselectedDocument ? <> · <span className="text-foreground font-medium">{preselectedDocument}</span></> : null} 기준으로 이전 버전과 비교해요
                       </span>
                     </>
                   )}
@@ -1191,7 +1238,13 @@ export function AnalyzeDashboard() {
         {/* Analysis Results */}
         {results.length > 0 && (
           <div ref={resultsRef} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between flex-wrap gap-3">
+            {/* 인쇄용 머리글 (PDF에만 보인다) */}
+            <div className="hidden print:block border-b border-border pb-3 mb-2">
+              <p className="text-xs text-muted-foreground">문라이트 아카이브 · 게임 기획 문서 분석 결과</p>
+              <p className="text-lg font-black text-foreground">{results[currentIndex]?.fileName}</p>
+            </div>
+
+            <div className="flex items-center justify-between flex-wrap gap-3" data-print-hide>
               <div className="flex items-center gap-2 text-primary">
                 <CheckCircle2 className="w-5 h-5" />
                 <span className="font-medium">
@@ -1214,6 +1267,9 @@ export function AnalyzeDashboard() {
                     <FolderOpen className="w-3.5 h-3.5 mr-1" /> 저장하기
                   </Button>
                 )}
+                <Button variant="outline" onClick={exportPdf} className="border-border text-foreground/80 hover:bg-secondary bg-transparent">
+                  <Download className="w-3.5 h-3.5 mr-1" /> PDF로 저장
+                </Button>
                 <Button
                   variant="outline"
                   onClick={startOver}
@@ -1280,7 +1336,7 @@ export function AnalyzeDashboard() {
                       </span>
                     )}
                     {results[currentIndex].domainFit && (
-                      <p className="w-full text-muted-foreground mt-1">{results[currentIndex].domainFit}</p>
+                      <p className="w-full text-muted-foreground mt-1"><GlossaryText text={results[currentIndex].domainFit!} /></p>
                     )}
                   </div>
                 )}
@@ -1295,7 +1351,7 @@ export function AnalyzeDashboard() {
                   />
                 )}
 
-                <div className="grid lg:grid-cols-2 gap-8">
+                <div className="grid lg:grid-cols-2 print:grid-cols-2 gap-8 print:gap-4">
                   <ScoreCard score={results[currentIndex].score} ranking={results[currentIndex].ranking} />
                   <RadarChartComponent data={results[currentIndex].categories} />
                 </div>
@@ -1355,7 +1411,7 @@ export function AnalyzeDashboard() {
                 ) : null}
 
                 {/* 하단 CTA 영역 */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-print-hide>
                   {/* 저장 + 다음 행동 — 분석은 일단 '저장 안 한 분석'으로 남고, 여기서 프로젝트에 넣는다 */}
                   {isLoggedIn && (
                     <Card className="bg-card border-border">
@@ -1572,7 +1628,6 @@ export function AnalyzeDashboard() {
                 문서 분야
                 <span className="ml-2 text-primary">
                   {detectedDomain ? "AI가 3개를 골랐어요" : "분야를 골라주세요"}
-                  {scanDocForm !== "unknown" && DOC_FORM_LABELS[scanDocForm] ? ` · ${DOC_FORM_LABELS[scanDocForm]}` : ""}
                 </span>
               </p>
               <div className="grid grid-cols-4 gap-1.5">
@@ -1599,6 +1654,23 @@ export function AnalyzeDashboard() {
                     </button>
                   )
                 })}
+              </div>
+
+              {/* 문서 형식 — 포스트모템·역기획 등 형식에 따라 평가 기준이 달라진다 */}
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-muted-foreground mr-1">문서 형식</span>
+                {(["original", "reverse", "proposal", "postmortem", "analysis", "table", "pr"] as DocForm[]).map(f => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setScanDocForm(f)}
+                    className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+                      scanDocForm === f ? "bg-primary border-primary text-white font-semibold" : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                    }`}
+                  >
+                    {DOC_FORM_LABELS[f]}
+                  </button>
+                ))}
               </div>
 
               {/* 직접 적은 주제 */}

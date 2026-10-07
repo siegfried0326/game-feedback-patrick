@@ -9,6 +9,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePrinting } from "@/lib/use-printing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Layout, ChevronDown, ArrowRight } from "lucide-react"
 
@@ -69,6 +70,7 @@ function LayoutPreview({ sections }: { sections: LayoutSection[] }) {
 
 export function LayoutRecommendations({ data }: LayoutRecommendationsProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0)
+  const printing = usePrinting()
 
   if (!data || data.length === 0) return null
 
@@ -92,7 +94,7 @@ export function LayoutRecommendations({ data }: LayoutRecommendationsProps) {
               <span className="text-sm text-foreground font-medium">{item.pageOrSection}</span>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedIndex === index ? 'rotate-180' : ''}`} />
             </button>
-            {expandedIndex === index && (
+            {(expandedIndex === index || printing) && (
               <div className="px-3 pb-4 space-y-4">
                 {/* 텍스트 설명 */}
                 <div className="grid md:grid-cols-2 gap-3">

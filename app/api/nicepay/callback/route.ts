@@ -26,14 +26,14 @@ function redirectTop(url: string, params: Record<string, string> = {}) {
 <p>결제 처리 중입니다. 잠시만 기다려주세요...</p>
 <script>
   // 방법 1: top frame 직접 이동 시도
-  try { window.top.location.href = "${url}"; } catch(e) {
+  try { window.top.location.replace("${url}"); } catch(e) {
     // 방법 2: opener (팝업인 경우)
     try {
-      if (window.opener) { window.opener.location.href = "${url}"; window.close(); }
-      else { window.location.href = "${url}"; }
+      if (window.opener) { window.opener.location.replace("${url}"); window.close(); }
+      else { window.location.replace("${url}"); }
     } catch(e2) {
       // 방법 3: 현재 창에서 이동
-      window.location.href = "${url}";
+      window.location.replace("${url}");
     }
   }
 </script>

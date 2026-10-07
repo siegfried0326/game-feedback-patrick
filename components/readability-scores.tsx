@@ -9,6 +9,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePrinting } from "@/lib/use-printing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, ChevronDown } from "lucide-react"
 
@@ -39,6 +40,7 @@ function getBarColor(value: number): string {
 
 export function ReadabilityScores({ data }: ReadabilityScoresProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+  const printing = usePrinting()
 
   if (!data || data.length === 0) return null
 
@@ -79,7 +81,7 @@ export function ReadabilityScores({ data }: ReadabilityScoresProps) {
                   />
                 </div>
               </button>
-              {expandedIndex === index && item.feedback && (
+              {(expandedIndex === index || printing) && item.feedback && (
                 <div className="mt-2 ml-2 p-3 bg-secondary border border-border/50 rounded-lg">
                   <p className="text-sm text-foreground/80 leading-relaxed">{item.feedback}</p>
                 </div>

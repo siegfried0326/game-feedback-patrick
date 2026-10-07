@@ -66,7 +66,7 @@ function LoginContent() {
       if (error) {
         setEmailError("이메일 또는 비밀번호가 올바르지 않습니다.")
       } else {
-        window.location.href = redirectTo
+        window.location.replace(redirectTo)
       }
     } catch {
       setEmailError("로그인 중 오류가 발생했습니다.")

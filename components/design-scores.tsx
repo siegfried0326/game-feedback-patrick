@@ -9,6 +9,8 @@
 "use client"
 
 import { useState } from "react"
+import { GlossaryText, Term } from "@/components/glossary-text"
+import { usePrinting } from "@/lib/use-printing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Gamepad2, ChevronDown, MinusCircle } from "lucide-react"
 
@@ -49,6 +51,7 @@ function isApplicable(item: CategoryData): item is CategoryData & { value: numbe
 export function DesignScores({ data, domainLabel }: DesignScoresProps) {
   const designData = data.filter(d => !BASIC_SUBJECTS.includes(d.subject))
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+  const printing = usePrinting()
 
   if (designData.length === 0) return null
 
@@ -82,7 +85,7 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm text-foreground/80 flex items-center gap-1">
-                      {item.subject}
+                      <Term term={item.subject} />
                       <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${expandedIndex === index ? "rotate-180" : ""}`} />
                     </span>
                     <span className={`text-sm font-semibold ${getScoreColor(item.value)}`}>{item.value}점</span>
@@ -94,18 +97,18 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
                     />
                   </div>
                 </button>
-                {expandedIndex === index && item.feedback && (
+                {(expandedIndex === index || printing) && item.feedback && (
                   <div className="mt-2 ml-2 p-3 bg-secondary border border-border/50 rounded-lg space-y-2">
                     {item.feedback.split("\n").map((line, i) => {
                       const trimmed = line.trim()
                       if (!trimmed) return null
                       if (trimmed.startsWith("[강점]")) {
-                        return <p key={i} className="text-sm leading-relaxed text-emerald-600">{trimmed}</p>
+                        return <p key={i} className="text-sm leading-relaxed text-emerald-600"><GlossaryText text={trimmed} /></p>
                       }
                       if (trimmed.startsWith("[보완]")) {
-                        return <p key={i} className="text-sm leading-relaxed text-amber-600">{trimmed}</p>
+                        return <p key={i} className="text-sm leading-relaxed text-amber-600"><GlossaryText text={trimmed} /></p>
                       }
-                      return <p key={i} className="text-sm text-foreground/80 leading-relaxed">{trimmed}</p>
+                      return <p key={i} className="text-sm text-foreground/80 leading-relaxed"><GlossaryText text={trimmed} /></p>
                     })}
                   </div>
                 )}

@@ -188,3 +188,18 @@
 .animate-pulse-glow-speaking { animation: pulse-glow-speaking 1s ease-in-out infinite; }
 .animate-pulse-glow-evaluating { animation: pulse-glow-evaluating 2s ease-in-out infinite; }
 .animate-slide-up { animation: slide-up 0.5s ease-out; }
+
+/* ===== 분석 결과 PDF 저장(인쇄) ===== */
+@media print {
+  @page { margin: 12mm; }
+  html, body { background: #FFFFFF !important; }
+  header, nav, nextjs-portal, [data-print-hide] { display: none !important; }
+  [data-slot="card"] { break-inside: avoid; box-shadow: none !important; }
+  .pt-24 { padding-top: 0 !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* 프로젝트 화면의 분석 상세 창만 인쇄 */
+  body:has([data-print-modal-root]) main > *:not([data-print-modal-root]) { display: none !important; }
+  [data-print-modal-root] { position: static !important; overflow: visible !important; display: block !important; }
+  [data-print-modal-root] > div { margin: 0 !important; max-width: none !important; border: none !important; box-shadow: none !important; }
+  [data-print-modal-root] .sticky { position: static !important; }
+}

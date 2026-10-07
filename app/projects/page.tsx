@@ -13,7 +13,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
-import { ArrowLeft, FileText, Calendar, Loader2, X, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check, Inbox } from "lucide-react"
+import { ArrowLeft, Download, FileText, Calendar, Loader2, X, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject, getUnsavedAnalyses, assignAnalysisToProject, setAnalysisDocument, renameDocument } from "@/app/actions/subscription"
 import { ScoreCard } from "@/components/score-card"
@@ -754,8 +754,8 @@ export default function ProjectsPage() {
 
       {/* 분석 상세 모달 */}
       {selectedAnalysis && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedAnalysis(null)} />
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" data-print-modal-root>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" data-print-hide onClick={() => setSelectedAnalysis(null)} />
           <div className="relative w-full max-w-4xl mx-4 my-8 bg-secondary rounded-2xl border border-border shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="sticky top-0 z-10 bg-secondary rounded-t-2xl border-b border-border p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -776,9 +776,25 @@ export default function ProjectsPage() {
                   )
                 })()}
               </div>
-              <button onClick={() => setSelectedAnalysis(null)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-1" data-print-hide>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const prev = document.title
+                    document.title = `문라이트아카이브_${fileBase(selectedAnalysis.file_name)}_${selectedAnalysis.overall_score}점`
+                    const restore = () => { document.title = prev; window.removeEventListener("afterprint", restore) }
+                    window.addEventListener("afterprint", restore)
+                    setTimeout(() => window.print(), 50)
+                  }}
+                  className="border-border text-foreground/80"
+                >
+                  <Download className="w-3.5 h-3.5 mr-1" /> PDF로 저장
+                </Button>
+                <button onClick={() => setSelectedAnalysis(null)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="p-6 space-y-6">
               {loadingDetail ? (

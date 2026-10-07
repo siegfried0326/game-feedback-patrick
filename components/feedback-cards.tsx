@@ -6,6 +6,7 @@
  * 사용: analyze-dashboard.tsx 결과 화면
  */
 import { ThumbsUp, AlertTriangle } from "lucide-react"
+import { GlossaryText } from "@/components/glossary-text"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type FeedbackCardsProps = {
@@ -32,7 +33,7 @@ export function FeedbackCards({ strengths, weaknesses }: FeedbackCardsProps) {
                   {index + 1}
                 </span>
                 <span className="text-foreground/80 text-sm leading-relaxed">
-                  {strength}
+                  <GlossaryText text={strength} />
                 </span>
               </li>
             ))}
@@ -56,7 +57,7 @@ export function FeedbackCards({ strengths, weaknesses }: FeedbackCardsProps) {
                   {index + 1}
                 </span>
                 <span className="text-foreground/80 text-sm leading-relaxed">
-                  {weakness}
+                  <GlossaryText text={weakness} />
                 </span>
               </li>
             ))}

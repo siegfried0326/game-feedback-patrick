@@ -20,6 +20,7 @@ import {
   UNIVERSAL_DO_NOT_ASK,
   DOMAIN_LABELS,
   DOC_FORM_LABELS,
+  FORM_GUIDES,
   type DesignDomain,
   type DocForm,
 } from "./domains"
@@ -46,6 +47,8 @@ export interface PromptInput {
   keywords: string[]
   /** 사용자가 고른 지원 회사 (없으면 회사 무관) */
   targetCompany?: string | null
+  /** 같은 문서의 직전 분석 — 점수 일관성 기준점 */
+  previousVersion?: { score: number; categories: { subject: string; value: number | null }[]; analyzedAt: string } | null
 }
 
 const CATEGORY_DEFINITIONS: Record<(typeof CATEGORY_SUBJECTS)[number], string> = {
@@ -211,7 +214,7 @@ ${readabilityAndLayout}
   "strengths": ["강점1 — 문서에서 확인한 내용 + 같은 직군 합격작과 비교해 왜 좋은지", "...", "강점6"],
   "weaknesses": ["보완점1 — 같은 직군 합격작은 무엇을 갖췄고 이 문서엔 무엇이 없는지 + 어떻게 채울지", "...", "보완점6"],
   "nextSteps": ["가장 먼저 할 일", "두 번째", "세 번째"],
-  "companyFeedback": "**넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠** 8개 회사, 회사마다 1~2문장. 형식: **회사명** 합격 문서들은 ~한 경향이 있어, 이 문서의 ~가 ~하게 읽힐 것입니다. 회사마다 줄바꿈(\\n\\n). 벤치마크를 바탕으로 그럴듯하게 쓰되 단정하지 말고, 핵심 피드백(strengths/weaknesses)과 다른 새로운 지적을 여기서 만들지 마세요."${schemaExtra}
+  "companyFeedback": "**넥슨**, **엔씨소프트**, **넷마블**, **크래프톤**, **스마일게이트**, **펄어비스**, **네오위즈**, **웹젠**, **시프트업** 9개 회사, 회사마다 1~2문장. 형식: **회사명** 합격 문서들은 ~한 경향이 있어, 이 문서의 ~가 ~하게 읽힐 것입니다. 회사마다 줄바꿈(\\n\\n). 벤치마크를 바탕으로 그럴듯하게 쓰되 단정하지 말고, 핵심 피드백(strengths/weaknesses)과 다른 새로운 지적을 여기서 만들지 마세요."${schemaExtra}
 }
 
 **핵심**: 문서를 꼼꼼히 읽고, 실제로 있는 내용만 강점으로, 실제로 없거나 부족한 내용은 보완점으로 쓰세요. 빈말 칭찬은 사용자에게 해롭습니다. 위 '직군별 채점표'의 applicable 값을 그대로 따르세요.`
@@ -246,6 +249,13 @@ ${DOMAIN_FOCUS[domain].map(f => `- ${f}`).join("\n")}
 ${DOMAIN_DO_NOT_ASK[domain].map(f => `- ${f}`).join("\n")}
 ${UNIVERSAL_DO_NOT_ASK.map(f => `- ${f}`).join("\n")}
 
+### 문서 형식: ${DOC_FORM_LABELS[docForm]} — ${FORM_GUIDES[docForm].purpose}
+**먼저 이 문서가 무엇을 하려는 문서인지(형식·목적·범위)를 파악하고, 그 목적에 맞는 기준으로만 평가하세요.** 같은 직군이라도 형식이 다르면 요구하는 것이 다릅니다. domainFit 첫 문장에 파악한 형식과 목적을 밝히세요. 문서가 스스로 밝힌 형식(예: 표지·제목의 "포스트모템", "역기획")이 위 형식과 다르면 문서의 표기를 따르세요.
+이 형식에서 볼 것:
+${FORM_GUIDES[docForm].focus.map(f => `- ${f}`).join("\n")}${FORM_GUIDES[docForm].doNotAsk.length ? `
+이 형식에 요구하면 안 되는 것:
+${FORM_GUIDES[docForm].doNotAsk.map(f => `- ${f}`).join("\n")}` : ""}
+
 ---
 
 ${reference.section}`
@@ -268,6 +278,17 @@ function volatileBlock(input: PromptInput): string {
 - 나머지 회사는 각 1문장으로 짧게, 같은 형식(**회사명** …)과 줄바꿈 유지.
 - nextSteps 중 하나는 ${input.targetCompany} 지원을 염두에 둔 항목으로.
 회사 특징은 벤치마크 기반의 경향일 뿐이니 단정하지 말고, 핵심 판단(strengths·weaknesses)과 다른 새 지적을 만들지 마세요.`)
+  }
+  if (input.previousVersion) {
+    const pv = input.previousVersion
+    const cats = pv.categories.filter(c => typeof c.value === "number").map(c => `${c.subject} ${c.value}`).join(", ")
+    parts.push(`## 🔁 같은 문서의 직전 분석 (${pv.analyzedAt.slice(0, 10)})
+사용자는 이 문서의 이전 버전을 분석한 적이 있습니다. 직전 결과: **종합 ${pv.score}점**${cats ? ` · ${cats}` : ""}
+점수 일관성 규칙 (반드시 지킬 것):
+- 먼저 이번 문서가 직전 버전과 무엇이 달라졌는지 판단하세요.
+- 내용이 거의 같으면 종합 점수와 항목 점수 모두 직전 점수의 ±3점 안에서 매기세요. 같은 문서인데 점수가 크게 오르내리면 사용자가 결과를 믿지 못합니다.
+- 실제로 보완·추가·삭제된 부분이 있으면 그 변화가 닿는 항목만 그만큼 올리거나 내리세요. 바뀌지 않은 항목은 직전 점수를 유지하세요.
+- 달라진 점이 있으면 domainFit 마지막 문장에 "이전 버전 대비 ~가 보완/추가됐습니다"처럼 한 줄로 밝히세요.`)
   }
   if (input.vectorSection) parts.push(input.vectorSection)
   if (input.librarySection) parts.push(input.librarySection)

@@ -17,16 +17,6 @@ export const PAYMENTS_ENABLED = true
 /** 구독(월/3개월) 신규 판매 + 자동 갱신 허용 여부 — BM 개편으로 영구 종료 */
 export const SUBSCRIPTION_SALES_ENABLED = false
 
-/**
- * 간편결제 바로가기 버튼 (결제 페이지) — 나이스페이 가맹 계약에서 해당 간편결제가 승인된 뒤에만 true로.
- * 승인 전에 켜면 결제창이 "사용할 수 없는 결제수단" 오류를 낸다.
- * 기본 결제창(method "cardAndEasyPay")은 승인된 간편결제를 이미 목록에 함께 보여준다 — 이 버튼은 한 번에 바로 여는 지름길.
- */
-export const EASY_PAY = {
-  kakaopay: false,   // 나이스페이 method "kakaopay"
-  naverpay: false,   // 나이스페이 method "naverpayCard"
-} as const
-
 /** 결제 차단 시 사용자에게 보여줄 메시지 */
 export const PAYMENTS_DISABLED_MESSAGE =
   "현재 결제 서비스를 일시 중단했습니다. 더 나은 모습으로 곧 다시 찾아뵙겠습니다."

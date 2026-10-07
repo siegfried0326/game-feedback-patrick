@@ -12,7 +12,6 @@ import React from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
 import { Plus, XCircle, CheckCircle2, BarChart3 } from "lucide-react"
-import { MoonlightMark } from "@/components/brand-logo"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, setPendingUpload } from "@/lib/pending-upload"
 
 export function HeroSection() {
@@ -34,11 +33,10 @@ export function HeroSection() {
       {/* 첫 화면 — 문구 한 줄을 품은 큰 업로드 창 하나 (가로:세로 ≈ 2.35:1) */}
       <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 md:px-8 pt-20 pb-12">
         <h1 className="sr-only">문라이트 아카이브 — 게임 기획 포트폴리오 AI 피드백</h1>
-        <MoonlightMark className="w-14 h-12 mb-8" />
 
         <div
           {...getRootProps()}
-          className={`group relative w-full max-w-5xl aspect-[4/5] sm:aspect-[16/9] lg:aspect-[2.35/1] cursor-pointer rounded-[2rem] border-2 border-dashed
+          className={`group relative w-full max-w-5xl min-h-[360px] sm:min-h-0 sm:aspect-[16/9] lg:aspect-[2.35/1] cursor-pointer rounded-[2rem] border-2 border-dashed
             flex flex-col items-center justify-center gap-6 px-6 text-center transition-all
             ${isDragActive
               ? "border-primary bg-accent/60 shadow-[0_24px_70px_-20px_rgba(0,70,173,0.45)]"
@@ -56,16 +54,16 @@ export function HeroSection() {
             <br className="hidden sm:block" /> 당신의 기획 문서가 실제로 통하는지 진단합니다.
           </p>
 
-          <p className={`text-sm md:text-base font-semibold ${rejected ? "text-red-600" : "text-muted-foreground group-hover:text-primary"}`}>
-            {rejected
-              ? "PDF · PPT · DOCX · Excel · TXT 파일 1개, 200MB까지 올릴 수 있어요"
-              : isDragActive ? "놓으면 바로 분석을 시작합니다" : (
-                <>
-                  <span className="hidden md:inline">문서를 여기로 끌어다 놓으세요</span>
-                  <span className="md:hidden">눌러서 문서를 올리세요</span>
-                </>
-              )}
-          </p>
+          <div className="flex flex-col items-center gap-1.5">
+            <p className={`text-lg md:text-xl font-extrabold ${rejected ? "text-red-600" : "text-primary"}`}>
+              {rejected
+                ? "PDF · PPT · DOCX · Excel · TXT 파일 1개, 200MB까지 올릴 수 있어요"
+                : isDragActive ? "놓으면 바로 분석을 시작합니다" : "여기에 문서를 드래그해 주세요"}
+            </p>
+            {!rejected && !isDragActive && (
+              <p className="text-sm text-muted-foreground">또는 클릭해서 파일 선택</p>
+            )}
+          </div>
         </div>
       </div>
 

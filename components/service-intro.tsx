@@ -12,12 +12,12 @@ const features = [
   {
     icon: FileSearch,
     title: "15개 영역 정밀 분석",
-    description: "기본 5개 + 게임디자인 10개 영역을 점수화하여 합격자와 비교합니다."
+    description: "문서 직군에 맞는 채점표로 15개 항목을 점수화하고, 같은 직군 합격 문서가 갖춘 요소와 비교합니다."
   },
   {
     icon: BarChart3,
-    title: "점수 · 등급 · 회사별 비교",
-    description: "종합 점수와 합격 가능성 등급, 넥슨·크래프톤 등 회사별 합격 평균과 비교합니다."
+    title: "합격 기준 위치 · 회사 맞춤 분석",
+    description: "합격 문서 기준으로 지금 어디쯤인지 보여주고, 지원 회사를 고르면 그 회사 기준 분석을 맨 앞에 보여줍니다."
   },
   {
     icon: Target,

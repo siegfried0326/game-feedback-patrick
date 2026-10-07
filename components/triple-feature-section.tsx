@@ -23,7 +23,7 @@ export async function TripleFeatureSection() {
     {
       icon: <FileSearch className="w-7 h-7" />,
       tag: "포트폴리오 분석",
-      title: "187명 합격 데이터로 점수·랭킹·피드백",
+      title: "187개 합격 데이터로 점수·피드백",
       desc: "Claude AI가 15개 카테고리로 분석. 8개 게임사 기준 비교. 문서에 없는 내용은 절대 칭찬하지 않습니다.",
       stat: "15개 카테고리",
       sub: "187명 합격 데이터",

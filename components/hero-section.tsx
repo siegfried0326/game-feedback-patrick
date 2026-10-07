@@ -86,7 +86,7 @@ export function HeroSection() {
             </div>
             <div className="flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-sm text-foreground/80">넥슨·넷마블·크래프톤 등 <span className="text-foreground font-medium">회사별 합격자 평균</span>과 비교</p>
+              <p className="text-sm text-foreground/80">넥슨·넷마블·크래프톤 등 <span className="text-foreground font-medium">지원 회사 맞춤</span> 분석</p>
             </div>
             <div className="flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
@@ -94,7 +94,7 @@ export function HeroSection() {
             </div>
             <div className="flex items-start gap-2.5">
               <BarChart3 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-sm text-foreground/80"><span className="text-foreground font-medium">합격자와 점수 비교</span>를 통해 객관적인 피드백 진행</p>
+              <p className="text-sm text-foreground/80">수정본을 다시 올리면 <span className="text-foreground font-medium">이전 버전 대비 점수 변화</span> 확인</p>
             </div>
           </div>
         </div>

@@ -64,14 +64,14 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <Link
                     href="/admin/training"
-                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 hover:bg-amber-500/20 transition-colors"
+                    className="hidden xl:flex items-center gap-1.5 whitespace-nowrap text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 hover:bg-amber-500/20 transition-colors"
                   >
                     <Shield className="w-3 h-3" />
                     관리자
                   </Link>
                   <Link
                     href="/interview"
-                    className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 hover:bg-purple-500/20 transition-colors"
+                    className="hidden xl:flex items-center gap-1.5 whitespace-nowrap text-xs px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 hover:bg-purple-500/20 transition-colors"
                     title="면접 연습 (관리자 테스트)"
                   >
                     <Mic className="w-3 h-3" />
@@ -85,14 +85,14 @@ export function Header({ user }: HeaderProps) {
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 <FolderOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">프로젝트</span>
+                <span className="hidden sm:inline whitespace-nowrap">프로젝트</span>
               </Link>
               <Link
                 href="/mypage"
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <User className="w-4 h-4" />
-                <span className="hidden sm:inline">
+                <span className="hidden md:inline max-w-[8rem] truncate whitespace-nowrap">
                   {user.name || user.email?.split("@")[0] || "마이페이지"}
                 </span>
               </Link>
@@ -102,7 +102,7 @@ export function Header({ user }: HeaderProps) {
                   className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">로그아웃</span>
+                  <span className="hidden md:inline whitespace-nowrap">로그아웃</span>
                 </button>
               </form>
             </>

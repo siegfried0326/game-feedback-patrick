@@ -225,7 +225,7 @@ export default function MyPage() {
                   )}
                 </div>
               )}
-              {subscription.cancelled_at && (
+              {subscription.cancelled_at && isPaidPlan && subscription.status === "active" && (!subscription.expires_at || new Date(subscription.expires_at) > new Date()) && (
                 <p className="mt-2 text-xs text-muted-foreground">구독 해지일 {formatDate(subscription.cancelled_at)}</p>
               )}
             </>

@@ -32,7 +32,7 @@ export function CreditChip({ credits, unlimited }: { credits: number | null; unl
 
   if (unlimited) {
     return (
-      <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
+      <span className="hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
         <Coins className="w-3.5 h-3.5 text-primary" /> 크레딧 무제한
       </span>
     )
@@ -44,7 +44,7 @@ export function CreditChip({ credits, unlimited }: { credits: number | null; unl
     <Link
       href="/payment/credits"
       title="크레딧 충전하기"
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors ${
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 text-xs transition-colors ${
         empty ? "border-primary bg-primary text-white hover:bg-primary/90" : "border-border hover:border-primary/50"
       }`}
     >

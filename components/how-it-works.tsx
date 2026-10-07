@@ -24,7 +24,7 @@ const steps = [
     icon: BarChart3,
     step: "03",
     title: "점수 · 등급 확인",
-    description: "종합 점수, S~D 등급, 5개 영역 레이더 차트, 상위 몇 % 랭킹을 확인합니다."
+    description: "종합 점수, 합격 문서 기준 위치, 기본 역량 차트, 이전 버전 대비 변화를 확인합니다."
   },
   {
     icon: FolderKanban,
@@ -78,7 +78,7 @@ export function HowItWorks() {
 
         <div className="mt-16 text-center">
           <p className="text-muted-foreground mb-4">
-            무료 플랜은 <span className="text-foreground font-medium">프로젝트 1개</span>, 구독하면 <span className="text-foreground font-medium">무제한</span>으로 프로젝트를 생성할 수 있습니다.
+            첫 분석은 <span className="text-foreground font-medium">무료</span>, 프로젝트는 <span className="text-foreground font-medium">제한 없이 무료</span>로 만들 수 있어요.
           </p>
         </div>
       </div>

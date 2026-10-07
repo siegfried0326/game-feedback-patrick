@@ -57,7 +57,7 @@ export function AnalyzeHeader({ user }: AnalyzeHeaderProps) {
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <User className="w-4 h-4" />
-                <span className="hidden sm:inline">
+                <span className="hidden md:inline max-w-[8rem] truncate whitespace-nowrap">
                   {user.name || user.email?.split("@")[0] || "마이페이지"}
                 </span>
               </Link>
@@ -67,7 +67,7 @@ export function AnalyzeHeader({ user }: AnalyzeHeaderProps) {
                   className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">로그아웃</span>
+                  <span className="hidden md:inline whitespace-nowrap">로그아웃</span>
                 </button>
               </form>
             </>

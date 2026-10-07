@@ -16,7 +16,7 @@ import Image from "next/image"
 
 const PREVIEW_SLIDES = [
   { src: "/preview-score.png", alt: "종합 점수 및 레이더 차트 분석 결과", label: "종합 점수" },
-  { src: "/preview-ranking.png", alt: "회사별 합격자 평균 vs 내 점수 비교", label: "합격자 비교" },
+  { src: "/preview-ranking.png", alt: "합격 문서 기준 위치와 지원 회사 맞춤 분석", label: "회사 맞춤 분석" },
   { src: "/preview-feedback.png", alt: "강점, 약점 분석 및 게임 디자인 역량 평가", label: "강점/약점 분석" },
   { src: "/preview-readability.png", alt: "문서 가독성 분석 및 레이아웃 개선 제안", label: "가독성 분석" },
   { src: "/preview-history.png", alt: "버전별 점수 변화 추적 및 비교", label: "점수 변화" },

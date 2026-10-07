@@ -12,12 +12,13 @@ import React from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
 import { Plus, XCircle, CheckCircle2, BarChart3 } from "lucide-react"
-import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, setPendingUpload } from "@/lib/pending-upload"
+import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, setPendingUpload, getDroppedFiles } from "@/lib/pending-upload"
 
 export function HeroSection() {
   const router = useRouter()
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     accept: UPLOAD_ACCEPT,
+    getFilesFromEvent: getDroppedFiles,
     maxFiles: 1,
     maxSize: UPLOAD_MAX_SIZE,
     onDrop: (files) => {

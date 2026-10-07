@@ -23,7 +23,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
-import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload } from "@/lib/pending-upload"
+import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload, getDroppedFiles } from "@/lib/pending-upload"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -842,6 +842,7 @@ export function AnalyzeDashboard() {
     onDrop,
     onDropRejected,
     accept: UPLOAD_ACCEPT,
+    getFilesFromEvent: getDroppedFiles,
     maxFiles: MAX_FILES,
     maxSize: UPLOAD_MAX_SIZE,
     disabled: isLoggedIn && !selectedProjectId,

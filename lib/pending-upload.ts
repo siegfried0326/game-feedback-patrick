@@ -35,3 +35,28 @@ export function takePendingUpload(): File[] | null {
 export function hasPendingUpload(): boolean {
   return pending !== null
 }
+
+/**
+ * react-dropzone용 파일 수집기 — 표준 dataTransfer.files만 쓴다.
+ *
+ * 기본 수집기(file-selector 2.x)는 https 페이지에서 드롭 시 getAsFileSystemHandle().getFile()을 먼저 쓰는데,
+ * 일부 내장 브라우저(Claude 앱 브라우저 등 Electron 계열)는 이를 NotAllowedError로 막아 드롭이 통째로 실패한다
+ * (2026-10-07 운영 확인). 드래그 중(dragenter/over)에는 형식 검사용으로 DataTransferItem을 그대로 돌려준다.
+ */
+export async function getDroppedFiles(event: unknown): Promise<(File | DataTransferItem)[]> {
+  // 파일 선택 창(input change)
+  const target = (event as { target?: { files?: FileList | null } } | null)?.target
+  if (target?.files) return Array.from(target.files)
+
+  const dt = (event as { dataTransfer?: DataTransfer | null } | null)?.dataTransfer
+  if (dt) {
+    if ((event as { type?: string }).type === "drop") return Array.from(dt.files ?? [])
+    return Array.from(dt.items ?? []).filter(item => item.kind === "file")
+  }
+
+  // useFsAccessApi 경로(파일 핸들 배열) — 이 프로젝트는 쓰지 않지만 안전하게 처리
+  if (Array.isArray(event)) {
+    return Promise.all(event.map((h: { getFile: () => Promise<File> }) => h.getFile()))
+  }
+  return []
+}

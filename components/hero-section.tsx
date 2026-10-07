@@ -1,7 +1,7 @@
 /**
  * 히어로 섹션 — 랜딩 페이지 최상단
  *
- * 검색창처럼 첫 화면 한가운데에 업로드 창 하나. 파일을 놓거나 고르면
+ * 첫 화면은 대표 문구 한 줄을 품은 큰 업로드 창 하나. 파일을 놓거나 고르면
  * lib/pending-upload에 담아 /analyze로 넘기고, 분석 페이지가 이어서 처리한다.
  * 서비스 차별점 카드는 첫 화면 아래로 내렸다.
  * 사용: app/page.tsx
@@ -11,7 +11,7 @@
 import React from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
-import { Upload, XCircle, CheckCircle2, ArrowRight, BarChart3, ArrowDown } from "lucide-react"
+import { Plus, XCircle, CheckCircle2, BarChart3 } from "lucide-react"
 import { MoonlightMark } from "@/components/brand-logo"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, setPendingUpload } from "@/lib/pending-upload"
 
@@ -31,56 +31,42 @@ export function HeroSection() {
 
   return (
     <section className="bg-background">
-      {/* 첫 화면 — 검색창처럼 업로드 창 하나 */}
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 md:px-6 pt-16 pb-10">
-        <MoonlightMark className="w-14 h-12 mb-6" />
-        <p className="text-xs md:text-sm font-bold tracking-[0.35em] text-primary uppercase mb-4">
-          Moonlight Career Lab
-        </p>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground tracking-tight leading-tight mb-5 text-center">
-          문라이트 아카이브
-        </h1>
-        <p className="text-base md:text-xl text-foreground/80 text-center max-w-2xl leading-relaxed mb-10">
-          <span className="font-semibold text-primary">187개의 합격 포트폴리오</span>를 기준으로,
-          <br className="hidden sm:block" /> 당신의 기획 문서가 실제로 통하는지 진단합니다.
-        </p>
+      {/* 첫 화면 — 문구 한 줄을 품은 큰 업로드 창 하나 (가로:세로 ≈ 2.35:1) */}
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 md:px-8 pt-20 pb-12">
+        <h1 className="sr-only">문라이트 아카이브 — 게임 기획 포트폴리오 AI 피드백</h1>
+        <MoonlightMark className="w-14 h-12 mb-8" />
 
-        {/* 업로드 창 */}
         <div
           {...getRootProps()}
-          className={`group w-full max-w-2xl cursor-pointer rounded-full border bg-card pl-6 pr-2 py-2 flex items-center gap-4 transition-all
-            shadow-[0_1px_6px_rgba(32,33,36,0.12)] hover:shadow-[0_2px_14px_rgba(0,70,173,0.22)]
-            ${isDragActive ? "border-primary ring-4 ring-primary/15 bg-accent/40" : "border-border hover:border-primary/40"}`}
+          className={`group relative w-full max-w-5xl aspect-[4/5] sm:aspect-[16/9] lg:aspect-[2.35/1] cursor-pointer rounded-[2rem] border-2 border-dashed
+            flex flex-col items-center justify-center gap-6 px-6 text-center transition-all
+            ${isDragActive
+              ? "border-primary bg-accent/60 shadow-[0_24px_70px_-20px_rgba(0,70,173,0.45)]"
+              : "border-primary/25 bg-card shadow-[0_12px_50px_-24px_rgba(0,70,173,0.35)] hover:border-primary/60 hover:bg-accent/25"}`}
         >
           <input {...getInputProps()} aria-label="분석할 문서 올리기" />
-          <Upload className={`w-5 h-5 shrink-0 ${isDragActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
-          <span className="flex-1 min-w-0 text-left text-sm md:text-base text-muted-foreground truncate">
-            {isDragActive ? "여기에 놓으면 바로 분석을 시작합니다" : (
-              <>
-                <span className="hidden sm:inline">기획 문서를 끌어다 놓거나 클릭해서 올리세요</span>
-                <span className="sm:hidden">기획 문서 올리기</span>
-              </>
-            )}
+
+          <span className={`flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full transition-all
+            ${isDragActive ? "bg-primary text-white scale-110" : "bg-accent text-primary group-hover:bg-primary group-hover:text-white"}`}>
+            <Plus className="w-8 h-8 md:w-10 md:h-10" strokeWidth={2.25} />
           </span>
-          <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 md:px-6 py-2.5 md:py-3 text-sm font-semibold text-white group-hover:bg-primary/90 transition-colors">
-            분석하기
-            <ArrowRight className="w-4 h-4" />
-          </span>
+
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-[1.7rem] text-foreground leading-snug font-medium">
+            <span className="font-extrabold text-primary">187개의 합격 포트폴리오</span>를 기준으로,
+            <br className="hidden sm:block" /> 당신의 기획 문서가 실제로 통하는지 진단합니다.
+          </p>
+
+          <p className={`text-sm md:text-base font-semibold ${rejected ? "text-red-600" : "text-muted-foreground group-hover:text-primary"}`}>
+            {rejected
+              ? "PDF · PPT · DOCX · Excel · TXT 파일 1개, 200MB까지 올릴 수 있어요"
+              : isDragActive ? "놓으면 바로 분석을 시작합니다" : (
+                <>
+                  <span className="hidden md:inline">문서를 여기로 끌어다 놓으세요</span>
+                  <span className="md:hidden">눌러서 문서를 올리세요</span>
+                </>
+              )}
+          </p>
         </div>
-
-        <p className={`mt-4 text-xs md:text-sm text-center ${rejected ? "text-red-600" : "text-muted-foreground"}`}>
-          {rejected
-            ? "PDF · PPT · DOCX · Excel · TXT 파일 1개, 200MB까지 올릴 수 있어요."
-            : "PDF · PPT · DOCX · Excel · TXT — 대용량도 OK · 첫 1회 무료"}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground/80 text-center">
-          업로드 시 개인정보 처리방침에 동의한 것으로 봅니다 · 자료는 분석 후 서버에서 삭제됩니다
-        </p>
-
-        <a href="#why" className="mt-14 inline-flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
-          <span className="font-bold tracking-[0.25em] uppercase">Why Moonlight</span>
-          <ArrowDown className="w-4 h-4 animate-bounce" />
-        </a>
       </div>
 
       {/* 첫 화면 아래 — 차별점 */}

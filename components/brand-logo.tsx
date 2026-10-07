@@ -2,7 +2,7 @@
  * 문라이트 아카이브 로고 — 문라이트 커리어랩 M 심볼 + 워드마크
  *
  * 심볼은 로고 시안(2026-10)의 각진 M을 코발트→스카이 그라디언트로 옮긴 것.
- * 워드마크 구성은 시안의 "MOONLIGHT / C A R E E R  L A B"을 따라 "MOONLIGHT / A R C H I V E".
+ * 워드마크는 "MOONLIGHT / ARCHIVE" 두 줄. ARCHIVE 자간은 좁게(넓으면 AI 생성물처럼 보인다는 피드백).
  */
 import { useId } from "react"
 
@@ -34,7 +34,7 @@ export function BrandLogo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
       <MoonlightMark className={mark} />
       <span className="flex flex-col leading-none">
         <span className={`${title} font-extrabold tracking-tight text-foreground`}>MOONLIGHT</span>
-        <span className={`${sub} mt-1 font-semibold tracking-[0.42em] text-muted-foreground`}>ARCHIVE</span>
+        <span className={`${sub} mt-0.5 font-bold tracking-[0.14em] text-muted-foreground`}>ARCHIVE</span>
       </span>
       <span className="sr-only">문라이트 아카이브</span>
     </span>

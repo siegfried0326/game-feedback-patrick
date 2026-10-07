@@ -38,7 +38,7 @@
 - 라이브러리 데이터: `lib/library/*` + `components/library/*` + `app/library/*` + `content/library/*.json`
 - 분석 파이프라인: `lib/analysis/*` (직군 채점표 domains.ts · 모델 티어 model.ts · 비교군 reference.ts · 프롬프트 prompt.ts · 스캔 classify.ts · 원가 usage.ts)
 - 합격 기준 카드: `data/standards/` (README에 규약). 사용자 피드백에 합격 문서의 파일명·게임명·작성자명을 절대 넣지 않음 — `anon_label`로만 지칭
-- DB 마이그레이션: `scripts/NNN_*.sql` (다음 번호 = 022)
+- DB 마이그레이션: `scripts/NNN_*.sql` (다음 번호 = 023)
 
 ### 디자인 토큰 (문라이트 브랜드, 2026-10)
 - 서비스명: **문라이트 아카이브** (by 문라이트 커리어랩). 로고 `components/brand-logo.tsx` (M 심볼 + MOONLIGHT / ARCHIVE)

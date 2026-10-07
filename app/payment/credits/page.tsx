@@ -153,7 +153,7 @@ function CreditsContent() {
               <Link href="/">홈으로</Link>
             </Button>
             <Button asChild className="bg-primary hover:bg-primary/90 text-white">
-              <Link href="/analyze">분석하러 가기</Link>
+              <Link href="/analyze">분석하기</Link>
             </Button>
           </div>
         </div>

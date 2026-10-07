@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // 보호된 라우트: 로그인 필요
-  const protectedPaths = ['/mypage']
+  const protectedPaths = ['/mypage', '/projects']
   const adminPaths = ['/admin']
   const authPaths = ['/login']
 

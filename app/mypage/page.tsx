@@ -137,17 +137,8 @@ export default function MyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-secondary">
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> 홈으로 돌아가기
-          </Link>
-          <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/90 transition-colors">
-            <FolderOpen className="w-4 h-4" /> 프로젝트 관리
-          </Link>
-        </div>
-
+    <main className="min-h-screen bg-background">
+      <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-3xl font-black text-foreground mb-2">마이페이지</h1>
         <p className="text-sm text-muted-foreground mb-8">크레딧과 결제 내역을 관리해요. 분석 결과는 <Link href="/projects" className="text-primary hover:underline">내 프로젝트</Link>에 있어요.</p>
 

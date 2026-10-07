@@ -307,6 +307,8 @@ export async function getAnalysisDetail(id: string) {
 export async function saveAnalysisHistory(result: {
   /** 없으면 '저장 안 한 분석'으로 남고, 나중에 assignAnalysisToProject로 프로젝트에 넣는다 */
   projectId?: string | null
+  /** 프로젝트 안 문서 묶음 이름 (scripts/022). 없으면 화면에서 파일명으로 묶는다 */
+  documentName?: string | null
   fileName: string
   score: number
   categories: Record<string, unknown>[]
@@ -343,13 +345,14 @@ export async function saveAnalysisHistory(result: {
   }
   const extendedRow = {
     ...baseRow,
+    ...(result.documentName ? { document_name: result.documentName } : {}),
     design_domain: result.designDomain ?? null,
     model_tier: result.modelTier ?? "basic",
     token_usage: result.tokenUsage ?? null,
   }
 
   let { data: inserted, error } = await supabase.from("analysis_history").insert(extendedRow).select("id").single()
-  if (error && /design_domain|model_tier|token_usage/.test(error.message)) {
+  if (error && /design_domain|model_tier|token_usage|document_name/.test(error.message)) {
     console.warn("[subscription] analysis_history에 020 컬럼이 없어 기본 컬럼으로만 저장합니다. scripts/020을 실행하세요.")
     ;({ data: inserted, error } = await supabase.from("analysis_history").insert(baseRow).select("id").single())
   }
@@ -369,7 +372,7 @@ export async function saveAnalysisHistory(result: {
 }
 
 /** 저장 안 한 분석을 프로젝트에 넣는다 (분석 결과 화면의 '저장하기') */
-export async function assignAnalysisToProject(analysisId: string, projectId: string) {
+export async function assignAnalysisToProject(analysisId: string, projectId: string, documentName?: string | null) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: "로그인이 필요합니다." }
@@ -382,11 +385,16 @@ export async function assignAnalysisToProject(analysisId: string, projectId: str
     .single()
   if (!project) return { error: "프로젝트를 찾을 수 없어요." }
 
-  const { error } = await supabase
+  const name = documentName?.trim().slice(0, 60) || null
+  let { error } = await supabase
     .from("analysis_history")
-    .update({ project_id: projectId })
+    .update(name ? { project_id: projectId, document_name: name } : { project_id: projectId })
     .eq("id", analysisId)
     .eq("user_id", user.id)
+  if (error && /document_name/.test(error.message)) {
+    // 022 미적용 — 문서명 없이 저장 (화면은 파일명으로 묶는다)
+    ;({ error } = await supabase.from("analysis_history").update({ project_id: projectId }).eq("id", analysisId).eq("user_id", user.id))
+  }
   if (error) return dbError("프로젝트에 저장하지 못했어요.", error)
 
   await supabase
@@ -395,6 +403,40 @@ export async function assignAnalysisToProject(analysisId: string, projectId: str
     .eq("id", projectId)
     .eq("user_id", user.id)
 
+  return { success: true }
+}
+
+/** 분석 한 건의 문서명 지정 (다른 문서로 옮기기) */
+export async function setAnalysisDocument(analysisId: string, documentName: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "로그인이 필요합니다." }
+  const name = documentName.trim().slice(0, 60)
+  if (!name) return { error: "문서명을 입력해 주세요." }
+  const { error } = await supabase
+    .from("analysis_history")
+    .update({ document_name: name })
+    .eq("id", analysisId)
+    .eq("user_id", user.id)
+  if (error) return dbError(/document_name/.test(error.message) ? "문서명 기능을 쓰려면 DB 업데이트(scripts/022)가 필요해요." : "문서명을 바꾸지 못했어요.", error)
+  return { success: true }
+}
+
+/** 문서 이름 바꾸기 — 그 문서에 묶인 모든 버전을 함께 옮긴다 */
+export async function renameDocument(projectId: string, analysisIds: string[], newName: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "로그인이 필요합니다." }
+  const name = newName.trim().slice(0, 60)
+  if (!name) return { error: "문서명을 입력해 주세요." }
+  if (analysisIds.length === 0) return { success: true }
+  const { error } = await supabase
+    .from("analysis_history")
+    .update({ document_name: name })
+    .eq("project_id", projectId)
+    .eq("user_id", user.id)
+    .in("id", analysisIds)
+  if (error) return dbError(/document_name/.test(error.message) ? "문서명 기능을 쓰려면 DB 업데이트(scripts/022)가 필요해요." : "문서명을 바꾸지 못했어요.", error)
   return { success: true }
 }
 

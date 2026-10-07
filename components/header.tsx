@@ -12,6 +12,7 @@ import Link from "next/link"
 import { LogOut, User, Shield, FolderOpen, Mic, Library } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BrandLogo } from "@/components/brand-logo"
+import { CreditChip } from "@/components/credit-chip"
 import { PricingModal } from "@/components/pricing-modal"
 import { signOut } from "@/app/actions/auth"
 
@@ -21,6 +22,8 @@ type HeaderProps = {
     name?: string
     isAdmin?: boolean
     isStudent?: boolean
+    credits?: number | null
+    unlimitedCredits?: boolean
   } | null
 }
 
@@ -76,6 +79,7 @@ export function Header({ user }: HeaderProps) {
                   </Link>
                 </>
               )}
+              <CreditChip credits={user.credits ?? null} unlimited={user.unlimitedCredits} />
               <Link
                 href="/projects"
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"

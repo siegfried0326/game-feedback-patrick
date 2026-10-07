@@ -188,7 +188,7 @@ function CreditSuccessContent() {
             {/* CTA 버튼 */}
             <Button asChild className="bg-primary hover:bg-primary/90 text-white w-full">
               <Link href="/analyze" className="flex items-center justify-center gap-2">
-                바로 분석하러 가기 <ArrowRight className="w-4 h-4" />
+                분석하기 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </div>

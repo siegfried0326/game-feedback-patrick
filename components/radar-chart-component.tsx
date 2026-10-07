@@ -59,6 +59,8 @@ export function RadarChartComponent({ data }: RadarChartProps) {
                 fill="#0046AD"
                 fillOpacity={0.3}
                 strokeWidth={2}
+                // 애니메이션 중 컨테이너 크기가 바뀌면 다각형이 옛 중심에 남는 문제가 있어 끈다
+                isAnimationActive={false}
               />
             </RadarChart>
           </ResponsiveContainer>

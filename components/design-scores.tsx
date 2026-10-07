@@ -68,26 +68,11 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
           </span>
           <span className={`text-lg ${getScoreColor(avg)}`}>평균 {avg}점</span>
         </CardTitle>
-        {naCount > 0 && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {domainLabel ? `${domainLabel} 문서 기준으로 ` : ""}{naCount}개 항목은 평가 대상이 아니라 점수에서 제외했어요.
-          </p>
-        )}
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-4">
           {designData.map((item, index) => {
-            if (!isApplicable(item)) {
-              return (
-                <div key={index} className="flex items-center justify-between p-2 -m-2 mb-0 rounded-lg opacity-60">
-                  <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                    <MinusCircle className="w-3.5 h-3.5" />
-                    {item.subject}
-                  </span>
-                  <span className="text-xs text-muted-foreground border border-border rounded-full px-2 py-0.5">해당 없음</span>
-                </div>
-              )
-            }
+            if (!isApplicable(item)) return null
             return (
               <div key={index}>
                 <button
@@ -128,6 +113,18 @@ export function DesignScores({ data, domainLabel }: DesignScoresProps) {
             )
           })}
         </div>
+        {/* 직군에서 평가하지 않는 항목 — 목록 사이에 끼우지 않고 아래에 한 줄로 */}
+        {naCount > 0 && (
+          <div className="mt-6 pt-4 border-t border-border flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1 flex items-center gap-1">
+              <MinusCircle className="w-3.5 h-3.5" />
+              {domainLabel ? `${domainLabel} 문서라 평가하지 않은 항목` : "평가하지 않은 항목"}
+            </span>
+            {designData.filter(d => !isApplicable(d)).map(d => (
+              <span key={d.subject} className="text-xs text-muted-foreground bg-secondary rounded-full px-2.5 py-0.5">{d.subject}</span>
+            ))}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground mt-4 text-center">각 항목을 눌러 세부 피드백을 확인하세요</p>
       </CardContent>
     </Card>

@@ -28,7 +28,7 @@ export function CTASection() {
           >
             <Link href="/analyze">
               <ArrowRight className="mr-2 w-4 h-4" />
-              무료로 분석 시작
+              분석하기
             </Link>
           </Button>
           <Button

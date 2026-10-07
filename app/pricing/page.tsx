@@ -26,7 +26,7 @@ const creditPlans = [
     period: "1회",
     description: "처음 이용하시는 분들을 위한 무료 체험",
     features: ["1회 무료 분석", "15개 항목 점수 평가", "기본 피드백 제공"],
-    cta: "무료로 시작하기",
+    cta: "분석하기",
     href: "/analyze",
   },
   {

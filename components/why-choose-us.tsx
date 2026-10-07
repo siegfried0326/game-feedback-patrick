@@ -238,7 +238,7 @@ export function WhyChooseUs() {
           href="/analyze"
           className="inline-flex items-center gap-2 text-primary hover:text-brand-sky font-medium transition-colors"
         >
-          지금 바로 분석해보기
+          분석하기
           <ArrowRight className="w-4 h-4" />
         </a>
       </div>

@@ -24,6 +24,9 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload, getDroppedFiles } from "@/lib/pending-upload"
+import { notifyCreditsChanged } from "@/components/credit-chip"
+import { CompanyFeedback } from "@/components/company-feedback"
+import { TARGET_COMPANIES } from "@/lib/analysis/companies"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
 import { FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -39,7 +42,7 @@ import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
 import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
-import { getProjects, createProject, assignAnalysisToProject } from "@/app/actions/subscription"
+import { getProjects, createProject, assignAnalysisToProject, getProjectAnalyses } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
 import { TUTORING_KAKAO_URL } from "@/lib/tutoring-config"
@@ -83,6 +86,8 @@ type LayoutRecommendation = {
 
 type AnalysisResult = {
   fileName: string
+  /** 지원 회사 (없으면 회사 무관) */
+  targetCompany?: string | null
   /** analysis_history id — '저장하기'로 프로젝트에 넣을 때 쓴다 */
   historyId?: string | null
   /** 저장된 프로젝트 (없으면 아직 저장 안 함) */
@@ -146,6 +151,8 @@ export function AnalyzeDashboard() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const preselectedProjectId = searchParams.get("projectId")
+  // 프로젝트 화면의 문서에서 들어온 경우 그 문서의 새 버전으로 저장
+  const preselectedDocument = searchParams.get("doc")
 
   const [files, setFiles] = useState<FileStatus[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -164,6 +171,8 @@ export function AnalyzeDashboard() {
   // 문서 분야: AI가 3개를 미리 고르고(첫 번째 = 주 직군, 나머지 = 보조 직군) 사용자가 바꾼다
   const [pickedDomains, setPickedDomains] = useState<DesignDomain[]>(["general"])
   const selectedDomain: DesignDomain = pickedDomains[0] ?? "general"
+  // 지원 회사 — null이면 회사 무관
+  const [targetCompany, setTargetCompany] = useState<string | null>(null)
   // 사용자가 직접 적은 주제 (AI 키워드와 함께 비교 검색에 쓰인다)
   const [customTopics, setCustomTopics] = useState<string[]>([])
   const [scanDocForm, setScanDocForm] = useState<DocForm>("unknown")
@@ -190,6 +199,9 @@ export function AnalyzeDashboard() {
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [saveTarget, setSaveTarget] = useState<string>("new")
   const [saveName, setSaveName] = useState("")
+  // 프로젝트 안 문서명 — 같은 문서의 수정본은 같은 이름으로 묶인다 (파일명이 바뀌어도)
+  const [saveDocName, setSaveDocName] = useState("")
+  const [saveDocOptions, setSaveDocOptions] = useState<string[]>([])
   const [savingProject, setSavingProject] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
   // 로그인 판별: allowanceInfo가 로드된 후에만 판단 (초기 null 상태에서는 false로 취급)
@@ -259,7 +271,10 @@ export function AnalyzeDashboard() {
     setCustomTopics([])
     setDetectedDomain(null)
     window.scrollTo({ top: 0, behavior: "smooth" })
-    checkBeforeAnalysis().then(setAllowanceInfo).catch(() => {})
+    checkBeforeAnalysis().then(a => {
+      setAllowanceInfo(a)
+      if (typeof a.remaining === "number") notifyCreditsChanged(a.remaining)
+    }).catch(() => {})
   }
 
   // 페이지 로드 시 구독 상태 + 프로젝트 목록 체크
@@ -291,10 +306,23 @@ export function AnalyzeDashboard() {
   }, [preselectedProjectId])
 
   // 분석 결과 저장 — 기존 프로젝트를 고르거나 새로 만들고, 저장 뒤 프로젝트 화면으로 이동
+  const fileBaseName = (name?: string) => (name || "").replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
+
+  // 저장 대상 프로젝트의 기존 문서명 목록 (같은 문서의 새 버전으로 넣을 수 있게)
+  const loadDocOptions = async (projectId: string) => {
+    if (projectId === "new") { setSaveDocOptions([]); return }
+    const res = await getProjectAnalyses(projectId)
+    const rows = ("data" in res && res.data ? res.data : []) as { document_name?: string | null; file_name: string }[]
+    setSaveDocOptions([...new Set(rows.map(r => r.document_name || fileBaseName(r.file_name)).filter(Boolean))])
+  }
+
   const openSaveDialog = () => {
-    const base = results[currentIndex]?.fileName?.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "") || "내 포트폴리오"
-    setSaveName(base.slice(0, 40))
-    setSaveTarget(projects.length > 0 ? projects[0].id : "new")
+    const base = fileBaseName(results[currentIndex]?.fileName) || "내 포트폴리오"
+    setSaveName("내 포트폴리오")
+    setSaveDocName(base.slice(0, 60))
+    const target = projects.length > 0 ? projects[0].id : "new"
+    setSaveTarget(target)
+    loadDocOptions(target)
     setShowSaveDialog(true)
   }
 
@@ -314,7 +342,7 @@ export function AnalyzeDashboard() {
         projectId = created.data.id
       }
       for (const id of historyIds) {
-        const res = await assignAnalysisToProject(id, projectId)
+        const res = await assignAnalysisToProject(id, projectId, saveDocName.trim() || null)
         if (res.error) { setError(res.error); return }
       }
       setResults(prev => prev.map(r => ({ ...r, projectId })))
@@ -337,6 +365,7 @@ export function AnalyzeDashboard() {
       secondaryDomains: runOptions?.secondaryDomains ?? pickedDomains.slice(1),
       docForm: runOptions?.docForm ?? scanDocForm,
       keywords,
+      targetCompany,
     }
     setIsAnalyzing(true)
     setError(null)
@@ -421,6 +450,7 @@ export function AnalyzeDashboard() {
           setStatusMessage("AI 분석 중...")
           const textResult = await analyzeUrlDirect({
             projectId: selectedProjectId,
+            documentName: selectedProjectId ? preselectedDocument : null,
             extractedText,
             fileName: fileStatus.file.name,
             ...analyzeOptions,
@@ -583,6 +613,7 @@ export function AnalyzeDashboard() {
 
           analysisResult = await analyzeDocumentDirect({
             projectId: selectedProjectId,
+            documentName: selectedProjectId ? preselectedDocument : null,
             fileName: fileStatus.file.name,
             fileUrl: urlData.publicUrl,
             mimeType: fileStatus.file.type,
@@ -635,6 +666,11 @@ export function AnalyzeDashboard() {
 
     setStatusMessage("")
     setIsAnalyzing(false)
+    // 남은 크레딧 다시 읽어 화면·헤더 칩 갱신
+    checkBeforeAnalysis().then(a => {
+      setAllowanceInfo(a)
+      if (typeof a.remaining === "number") notifyCreditsChanged(a.remaining)
+    }).catch(() => {})
     // 결과 영역으로 스크롤
     setTimeout(() => {
       resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -976,7 +1012,8 @@ export function AnalyzeDashboard() {
                     <>
                       <FolderOpen className="w-4 h-4 text-primary shrink-0" />
                       <span className="truncate">
-                        <span className="text-foreground font-medium">{projects.find(p => p.id === selectedProjectId)!.name}</span>에 저장돼요
+                        <span className="text-foreground font-medium">{projects.find(p => p.id === selectedProjectId)!.name}</span>
+                        {preselectedDocument ? <> · <span className="text-foreground font-medium">{preselectedDocument}</span>의 새 버전으로</> : "에"} 저장돼요
                       </span>
                     </>
                   )}
@@ -1104,7 +1141,7 @@ export function AnalyzeDashboard() {
                   onClick={startOver}
                   className="border-border text-foreground/80 hover:bg-secondary bg-transparent"
                 >
-                  계속 분석하기
+                  분석하기
                 </Button>
               </div>
             </div>
@@ -1145,6 +1182,11 @@ export function AnalyzeDashboard() {
                     {results[currentIndex].designDomainLabel && (
                       <span className="px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary">
                         {results[currentIndex].designDomainLabel} 문서 기준 채점
+                      </span>
+                    )}
+                    {results[currentIndex].targetCompany && (
+                      <span className="px-2.5 py-1 rounded-full bg-primary text-white font-semibold">
+                        {results[currentIndex].targetCompany} 지원 기준
                       </span>
                     )}
                     {results[currentIndex].modelTierLabel && (
@@ -1223,7 +1265,7 @@ export function AnalyzeDashboard() {
                           ].map((g, i) => (
                             <div
                               key={i}
-                              className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}
+                              className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-primary ring-offset-2 ring-offset-background font-bold' : ''}`}
                             >
                               <span className="hidden sm:inline">{g.label}</span>
                               <span className="sm:hidden">{g.range}</span>
@@ -1235,31 +1277,9 @@ export function AnalyzeDashboard() {
                         </p>
                       </div>
 
-                      {/* 회사별 합격자 비교 - 텍스트 코멘트 */}
+                      {/* 회사별 분석 — 지원 회사를 골랐으면 그 회사가 맨 앞 */}
                       {results[currentIndex].companyFeedback && (
-                        <div>
-                          <p className="text-foreground font-semibold text-base mb-4">회사별 합격자 포트폴리오 특징 비교</p>
-                          <div className="space-y-3">
-                            {results[currentIndex].companyFeedback!.split('\n\n').filter(Boolean).map((paragraph, idx) => {
-                              // **회사명** 패턴을 찾아서 강조
-                              const parts = paragraph.split(/\*\*(.*?)\*\*/)
-                              return (
-                                <div key={idx} className="p-4 bg-secondary border border-border/50 rounded-xl">
-                                  <p className="text-sm text-foreground/80 leading-relaxed">
-                                    {parts.map((part, i) =>
-                                      i % 2 === 1
-                                        ? <span key={i} className="text-primary font-semibold">{part}</span>
-                                        : <span key={i}>{part}</span>
-                                    )}
-                                  </p>
-                                </div>
-                              )
-                            })}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-4 text-center">
-                            * 실제 합격 포트폴리오와 비교 분석 · 데이터는 지속 업데이트됩니다
-                          </p>
-                        </div>
+                        <CompanyFeedback feedback={results[currentIndex].companyFeedback!} targetCompany={results[currentIndex].targetCompany} />
                       )}
                     </CardContent>
                   </Card>
@@ -1330,7 +1350,7 @@ export function AnalyzeDashboard() {
                             </Button>
                           )}
                           <Button onClick={startOver} variant="outline" className="border-border text-foreground hover:bg-secondary bg-transparent">
-                            계속 분석하기
+                            분석하기
                             <ArrowRight className="w-4 h-4 ml-1" />
                           </Button>
                         </div>
@@ -1392,7 +1412,7 @@ export function AnalyzeDashboard() {
                   }`}
                 >
                   <span className="flex items-center gap-2 min-w-0">
-                    <input type="radio" name="save-target" checked={saveTarget === project.id} onChange={() => setSaveTarget(project.id)} className="accent-[#0046AD]" />
+                    <input type="radio" name="save-target" checked={saveTarget === project.id} onChange={() => { setSaveTarget(project.id); loadDocOptions(project.id) }} className="accent-[#0046AD]" />
                     <span className="text-sm text-foreground font-medium truncate">{project.name}</span>
                   </span>
                   <span className="text-xs text-muted-foreground shrink-0">{project.analysis_count}개 분석</span>
@@ -1405,7 +1425,7 @@ export function AnalyzeDashboard() {
                 }`}
               >
                 <span className="flex items-center gap-2">
-                  <input type="radio" name="save-target" checked={saveTarget === "new"} onChange={() => setSaveTarget("new")} className="accent-[#0046AD]" />
+                  <input type="radio" name="save-target" checked={saveTarget === "new"} onChange={() => { setSaveTarget("new"); setSaveDocOptions([]) }} className="accent-[#0046AD]" />
                   <span className="text-sm text-foreground font-medium">새 프로젝트</span>
                 </span>
                 {saveTarget === "new" && (
@@ -1414,13 +1434,45 @@ export function AnalyzeDashboard() {
                     value={saveName}
                     onChange={e => setSaveName(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing && saveName.trim()) handleSaveToProject() }}
-                    placeholder="예: 넥슨 지원용 포트폴리오"
+                    placeholder="프로젝트 이름 (예: 넥슨 지원용 포트폴리오)"
                     maxLength={40}
                     autoFocus
                     className="mt-2 w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
                   />
                 )}
               </label>
+            </div>
+
+            {/* 문서명 — 파일명이 바뀌어도 같은 문서의 수정본끼리 묶는다 */}
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-foreground mb-1.5">문서명</p>
+              {saveDocOptions.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {saveDocOptions.map(name => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setSaveDocName(name)}
+                      className={`text-xs rounded-full px-2.5 py-1 border transition-colors ${
+                        saveDocName === name ? "bg-primary border-primary text-white" : "border-border text-foreground/80 hover:border-primary/50"
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <input
+                type="text"
+                value={saveDocName}
+                onChange={e => setSaveDocName(e.target.value)}
+                maxLength={60}
+                placeholder="예: 레벨 디자인 기획서"
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:border-primary"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {saveDocOptions.length > 0 ? "같은 문서의 수정본이면 위에서 기존 문서를 고르세요. 파일명이 달라도 한 문서로 묶여요." : "같은 문서의 수정본을 나중에 이 이름으로 묶어 점수 변화를 볼 수 있어요."}
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -1662,6 +1714,30 @@ export function AnalyzeDashboard() {
               </div>
               <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
                 <span className="font-semibold text-foreground/80">주</span> 표시 분야의 채점표로 평가하고, 나머지는 보조로 참고해요. 눌러서 빼거나 바꿀 수 있어요.
+              </p>
+            </div>
+
+            {/* 지원 회사 — 고르면 결과의 회사별 분석이 그 회사 중심으로 */}
+            <div className="mb-5">
+              <p className="text-xs text-muted-foreground mb-2">지원 회사</p>
+              <div className="flex flex-wrap gap-1.5">
+                {[null, ...TARGET_COMPANIES].map((c) => (
+                  <button
+                    key={c ?? "none"}
+                    type="button"
+                    onClick={() => setTargetCompany(c)}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs border transition-colors ${
+                      targetCompany === c
+                        ? "bg-primary border-primary text-white font-semibold"
+                        : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                    }`}
+                  >
+                    {c ?? "회사 무관"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
+                {targetCompany ? `결과에서 ${targetCompany} 기준 분석을 맨 앞에 보여드려요.` : "회사를 고르면 그 회사 기준 분석을 맨 앞에 보여드려요."}
               </p>
             </div>
 

@@ -44,6 +44,8 @@ export interface PromptInput {
   vectorSection: string
   librarySection: string
   keywords: string[]
+  /** 사용자가 고른 지원 회사 (없으면 회사 무관) */
+  targetCompany?: string | null
 }
 
 const CATEGORY_DEFINITIONS: Record<(typeof CATEGORY_SUBJECTS)[number], string> = {
@@ -258,6 +260,14 @@ function volatileBlock(input: PromptInput): string {
   if (input.keywords.length > 0) {
     parts.push(`## 📌 사용자 확정 키워드: ${input.keywords.join(", ")}
 사용자가 문서의 주제라고 확인한 키워드입니다. 이 주제에 맞게 평가하세요.`)
+  }
+  if (input.targetCompany) {
+    parts.push(`## 🎯 지원 회사: ${input.targetCompany}
+사용자는 **${input.targetCompany}** 지원을 준비 중입니다. companyFeedback을 이렇게 쓰세요:
+- 첫 문단은 **${input.targetCompany}**로 시작하는 3~4문장 — 그 회사 합격 문서의 경향에 비춰 이 문서가 어떻게 읽힐지, 그 회사 기준으로 가장 먼저 보완할 점 1~2개를 문서 내용에 근거해 구체적으로.
+- 나머지 회사는 각 1문장으로 짧게, 같은 형식(**회사명** …)과 줄바꿈 유지.
+- nextSteps 중 하나는 ${input.targetCompany} 지원을 염두에 둔 항목으로.
+회사 특징은 벤치마크 기반의 경향일 뿐이니 단정하지 말고, 핵심 판단(strengths·weaknesses)과 다른 새 지적을 만들지 마세요.`)
   }
   if (input.vectorSection) parts.push(input.vectorSection)
   if (input.librarySection) parts.push(input.librarySection)

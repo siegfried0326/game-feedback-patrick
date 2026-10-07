@@ -49,6 +49,7 @@ import { extractJsonBlock, safeParseJSON } from "@/lib/analysis/json"
 import { summarizeUsage, logUsage, type TokenUsage } from "@/lib/analysis/usage"
 import { maskForPrompt, scrubOutput } from "@/lib/analysis/anonymize"
 import { countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
+import { isTargetCompany } from "@/lib/analysis/companies"
 import pdfParse from "pdf-parse"
 
 // ───────────────────────────────────────────
@@ -101,6 +102,8 @@ export interface AnalysisResultData {
   creditCost?: number
   /** 서버가 판정한 쪽수 (모르면 null) */
   pageCount?: number | null
+  /** 사용자가 고른 지원 회사 (없으면 회사 무관) */
+  targetCompany?: string | null
   /** analysis_history id — 프로젝트에 저장할 때 쓴다 */
   historyId?: string | null
   /** 저장된 프로젝트 (없으면 저장 안 한 분석) */
@@ -108,6 +111,8 @@ export interface AnalysisResultData {
 }
 
 export interface AnalyzeOptions {
+  /** 지원 회사 — 결과의 회사별 분석을 그 회사 중심으로 (없으면 회사 무관) */
+  targetCompany?: string | null
   tier?: ModelTier
   domain?: DesignDomain
   secondaryDomains?: DesignDomain[]
@@ -328,6 +333,8 @@ export async function scanDocument(input: {
 export async function analyzeUrlDirect(input: {
   /** 없으면 '저장 안 한 분석'으로 저장 — 결과 화면에서 프로젝트에 넣는다 */
   projectId?: string | null
+  /** 프로젝트 안 문서 묶음 (프로젝트 화면의 문서에서 '분석하기'로 들어온 경우) */
+  documentName?: string | null
   url?: string
   extractedText?: string
   fileName?: string
@@ -363,6 +370,7 @@ export async function analyzeUrlDirect(input: {
     const displayName = input.extractedText ? (input.fileName || "대용량 PDF") : input.url!
     return await runAnalysis({
       projectId: input.projectId,
+      documentName: input.documentName,
       fileName: displayName,
       content: { kind: "text", text: pageContent, source: input.extractedText ? "pdf" : "url" },
       extractedText: pageContent,
@@ -444,6 +452,8 @@ const CLAUDE_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"
 export async function analyzeDocumentDirect(input: {
   /** 없으면 '저장 안 한 분석'으로 저장 — 결과 화면에서 프로젝트에 넣는다 */
   projectId?: string | null
+  /** 프로젝트 안 문서 묶음 (프로젝트 화면의 문서에서 '분석하기'로 들어온 경우) */
+  documentName?: string | null
   fileName: string
   fileUrl: string
   mimeType: string
@@ -489,6 +499,7 @@ export async function analyzeDocumentDirect(input: {
         console.log(`[분석] 비지원 파일형식(${input.mimeType}) → 텍스트 모드`)
         return await runAnalysis({
           projectId: input.projectId,
+          documentName: input.documentName,
           fileName: input.fileName,
           content: { kind: "text", text: input.extractedText!, source: "pdf" },
           extractedText: input.extractedText,
@@ -501,6 +512,7 @@ export async function analyzeDocumentDirect(input: {
 
       return await runAnalysis({
         projectId: input.projectId,
+        documentName: input.documentName,
         fileName: input.fileName,
         content: { kind: "file", buffer: fileBuffer, mimeType: input.mimeType, sizeMB },
         extractedText: input.extractedText,
@@ -546,6 +558,8 @@ function isRequestTooLarge(message: string): boolean {
 async function runAnalysis(params: {
   /** 없으면 '저장 안 한 분석'으로 저장 — 결과 화면에서 프로젝트에 넣는다 */
   projectId?: string | null
+  /** 프로젝트 안 문서 묶음 (프로젝트 화면의 문서에서 '분석하기'로 들어온 경우) */
+  documentName?: string | null
   fileName: string
   content: ContentInput
   extractedText?: string
@@ -561,6 +575,7 @@ async function runAnalysis(params: {
   const tierInfo = MODEL_TIERS[tier]
   const model = resolveModelId(tier)
   const keywords = (options.keywords ?? []).filter(k => typeof k === "string" && k.trim()).map(k => k.trim()).slice(0, 12)
+  const targetCompany = isTargetCompany(options.targetCompany) ? options.targetCompany : null
 
   // 검색·분류에 쓸 텍스트
   const searchText = params.extractedText && params.extractedText.length >= 100
@@ -612,7 +627,7 @@ async function runAnalysis(params: {
 
   const callText = async (text: string, textMode: AnalysisMode) => {
     const clipped = text.length > TEXT_MODE_MAX_CHARS ? text.substring(0, TEXT_MODE_MAX_CHARS) : text
-    const system = buildSystemBlocks({ domain, secondary, docForm, mode: textMode, reference, benchmarkSection: formatBenchmarkForPrompt(false), vectorSection, librarySection, keywords })
+    const system = buildSystemBlocks({ domain, secondary, docForm, mode: textMode, reference, benchmarkSection: formatBenchmarkForPrompt(false), vectorSection, librarySection, keywords, targetCompany })
     return client.beta.messages.stream({
       model,
       max_tokens: 20000,
@@ -625,7 +640,7 @@ async function runAnalysis(params: {
   if (params.content.kind === "file") {
     const { buffer, mimeType, sizeMB } = params.content
     const isImage = CLAUDE_IMAGE_TYPES.includes(mimeType)
-    const system = buildSystemBlocks({ domain, secondary, docForm, mode: "pdf", reference, benchmarkSection: formatBenchmarkForPrompt(true), vectorSection, librarySection, keywords })
+    const system = buildSystemBlocks({ domain, secondary, docForm, mode: "pdf", reference, benchmarkSection: formatBenchmarkForPrompt(true), vectorSection, librarySection, keywords, targetCompany })
     const instruction = buildUserInstruction("pdf", params.fileName, `${sizeMB.toFixed(1)}MB`)
 
     let uploadedFileId: string | null = null
@@ -756,17 +771,20 @@ async function runAnalysis(params: {
     usage,
     creditCost: params.creditCost ?? tierInfo.creditCost,
     pageCount: params.pageCount ?? null,
+    targetCompany,
   }
 
   // 분석 이력 저장 + 크레딧 차감 (실패해도 결과는 돌려준다). 저장 id는 결과 화면의 '저장하기'에 쓴다
   const saved = await saveAnalysisHistory({
     projectId: params.projectId,
+    documentName: params.projectId ? params.documentName : null,
     fileName: params.fileName,
     score,
     categories: categories as unknown as Record<string, unknown>[],
     strengths,
     weaknesses,
-    ranking,
+    // 지원 회사는 별도 컬럼 없이 ranking JSON에 함께 저장 (프로젝트 화면에서 같은 순서로 보여주기 위해)
+    ranking: targetCompany ? { ...ranking, targetCompany } : ranking,
     companyFeedback: result.companyFeedback,
     analysisSource: result.analysisSource,
     readabilityCategories,
@@ -778,7 +796,8 @@ async function runAnalysis(params: {
   result.historyId = saved && "id" in saved ? saved.id ?? null : null
   result.projectId = params.projectId ?? null
 
-  deductCredit(params.creditCost ?? tierInfo.creditCost).catch(() => {})
+  // 응답 전에 끝까지 기다린다 — 서버리스는 응답 뒤 남은 작업이 잘릴 수 있어 차감이 누락될 수 있다
+  await deductCredit(params.creditCost ?? tierInfo.creditCost).catch(() => null)
 
   return { data: result }
 }

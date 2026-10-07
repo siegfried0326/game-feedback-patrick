@@ -297,3 +297,7 @@ categories는 JSON 배열 → 카테고리 수 변경해도 스키마 수정 불
 ### 2026-10-07 분석 설정 창 · 텍스트 추출
 - 분석 설정 창의 "문서 분야": AI가 직군 3개를 미리 선택 (첫 번째 = 주 직군 → `domain`, 나머지 → `secondaryDomains`). 칩을 누르면 빠지고(최소 1개), 새 칩은 3개까지 · 이미 3개면 마지막과 교체. 사용자가 적은 주제는 AI 키워드 앞에 붙여 `keywords`로 전달
 - 브라우저 텍스트 추출의 pdf.js 워커는 같은 출처(`/pdf.worker.min.mjs`)에서 받는다 — CSP가 외부 CDN을 막음
+
+### 2026-10-07 지원 회사 · 문서 묶음
+- 분석 옵션 `targetCompany` (lib/analysis/companies.ts `TARGET_COMPANIES`): 프롬프트 요청별 블록에 지원 회사 섹션 추가. 결과 `targetCompany`, 이력은 `ranking.targetCompany`에 저장. UI `components/company-feedback.tsx`
+- 분석 이력 `document_name` (scripts/022): 프로젝트 안 문서 묶음. `/analyze?projectId=&doc=`로 들어오면 그 문서의 새 버전으로 저장. 서버 액션 `assignAnalysisToProject(id, projectId, documentName)`, `setAnalysisDocument`, `renameDocument`

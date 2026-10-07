@@ -3,7 +3,9 @@
  *
  * 2026-10-07 개편 — 분석은 프로젝트 없이 먼저 하고, 결과 화면의 '저장하기'로 프로젝트에 넣는다.
  * - 목록: 저장 안 한 분석(있으면) + 프로젝트 한 줄 목록 (이름·문서 수·최고점·최근일)
- * - 상세: 버전별 점수 그래프(2개 이상) + 분석 목록 → 분석 상세 모달
+ * - 프로젝트 상세: 문서 목록 (문서명 · 버전 수 · 최신 점수 · 변화)
+ * - 문서 상세: 그 문서의 버전별 점수 그래프 + 버전 목록 → 분석 상세 모달
+ *   문서명은 사용자가 정한다 (analysis_history.document_name, scripts/022) — 파일명을 바꿔 올려도 같은 문서로 묶인다
  * - ?project=<id> 로 들어오면 그 프로젝트를 바로 연다 (저장 직후 이동)
  * 프로젝트는 무료 — 구독 시절의 잠금(슬롯·그래프) 제거
  */
@@ -13,8 +15,7 @@ import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { ArrowLeft, FileText, Calendar, Loader2, X, Trophy, FolderOpen, Plus, ChevronRight, BarChart3, Eye, Trash2, Pencil, MoreVertical, Check, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject, getUnsavedAnalyses, assignAnalysisToProject } from "@/app/actions/subscription"
-import { BrandLogo } from "@/components/brand-logo"
+import { getProjects, getProjectAnalyses, getAnalysisDetail, deleteAnalysis, deleteProject, renameProject, createProject, getUnsavedAnalyses, assignAnalysisToProject, setAnalysisDocument, renameDocument } from "@/app/actions/subscription"
 import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
@@ -22,6 +23,7 @@ import { DesignScores } from "@/components/design-scores"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { VersionComparison } from "@/components/version-comparison"
+import { CompanyFeedback } from "@/components/company-feedback"
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -48,6 +50,8 @@ type ProjectWithStats = {
 type AnalysisItem = {
   id: string
   file_name: string
+  /** 프로젝트 안 문서 묶음 (scripts/022). 없으면 파일명으로 묶는다 */
+  document_name?: string | null
   overall_score: number
   analyzed_at: string
   categories: { subject: string; value: number; fullMark: number; feedback?: string }[]
@@ -97,6 +101,15 @@ export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<ProjectWithStats | null>(null)
   const [projectAnalyses, setProjectAnalyses] = useState<AnalysisItem[]>([])
   const [loadingAnalyses, setLoadingAnalyses] = useState(false)
+
+  // 문서 (프로젝트 안)
+  const [selectedDocument, setSelectedDocument] = useState<string | null>(null)
+  const [renamingDoc, setRenamingDoc] = useState(false)
+  const [docRenameValue, setDocRenameValue] = useState("")
+  const [showNewDoc, setShowNewDoc] = useState(false)
+  const [newDocName, setNewDocName] = useState("")
+  const [movingId, setMovingId] = useState<string | null>(null)
+  const [moveTarget, setMoveTarget] = useState("")
 
   // 분석 상세 모달
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisItem | null>(null)
@@ -148,6 +161,7 @@ export default function ProjectsPage() {
 
   const handleOpenProject = async (project: ProjectWithStats) => {
     setSelectedProject(project)
+    setSelectedDocument(null)
     setLoadingAnalyses(true)
     try {
       const result = await getProjectAnalyses(project.id)
@@ -262,22 +276,58 @@ export default function ProjectsPage() {
     }
   }
 
-  const groupedAnalyses = useMemo(() => {
+  const fileBase = (name: string) => name.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
+  const docKey = (item: AnalysisItem) => item.document_name?.trim() || fileBase(item.file_name)
+
+  // 문서별 묶음 — 버전은 오래된 순(v1 → vN)
+  const documents = useMemo(() => {
     const groups: Record<string, AnalysisItem[]> = {}
     projectAnalyses.forEach(item => {
-      const baseName = item.file_name.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "")
-      if (!groups[baseName]) groups[baseName] = []
-      groups[baseName].push(item)
+      const key = docKey(item)
+      ;(groups[key] ||= []).push(item)
     })
-    Object.values(groups).forEach(group => {
-      group.sort((a, b) => new Date(a.analyzed_at).getTime() - new Date(b.analyzed_at).getTime())
-    })
-    return Object.entries(groups).sort((a, b) => {
-      const latestA = a[1][a[1].length - 1].analyzed_at
-      const latestB = b[1][b[1].length - 1].analyzed_at
-      return new Date(latestB).getTime() - new Date(latestA).getTime()
-    })
+    return Object.entries(groups)
+      .map(([name, items]) => {
+        const sorted = [...items].sort((a, b) => new Date(a.analyzed_at).getTime() - new Date(b.analyzed_at).getTime())
+        const latest = sorted[sorted.length - 1]
+        const prev = sorted.length >= 2 ? sorted[sorted.length - 2] : null
+        return {
+          name,
+          items: sorted,
+          latest,
+          best: Math.max(...sorted.map(i => i.overall_score)),
+          delta: prev ? latest.overall_score - prev.overall_score : null,
+        }
+      })
+      .sort((a, b) => new Date(b.latest.analyzed_at).getTime() - new Date(a.latest.analyzed_at).getTime())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectAnalyses])
+
+  const currentDoc = selectedDocument ? documents.find(d => d.name === selectedDocument) ?? null : null
+
+  const reloadProject = async () => {
+    if (!selectedProject) return
+    const result = await getProjectAnalyses(selectedProject.id)
+    if ("data" in result && result.data) setProjectAnalyses(result.data as AnalysisItem[])
+  }
+
+  const handleRenameDocument = async () => {
+    if (!selectedProject || !currentDoc || !docRenameValue.trim()) return
+    const res = await renameDocument(selectedProject.id, currentDoc.items.map(i => i.id), docRenameValue.trim())
+    if ("error" in res && res.error) { setMessage({ type: "error", text: res.error }); return }
+    await reloadProject()
+    setSelectedDocument(docRenameValue.trim())
+    setRenamingDoc(false)
+  }
+
+  const handleMoveVersion = async (analysisId: string) => {
+    if (!moveTarget.trim()) return
+    const res = await setAnalysisDocument(analysisId, moveTarget.trim())
+    if ("error" in res && res.error) { setMessage({ type: "error", text: res.error }); return }
+    await reloadProject()
+    setMovingId(null)
+    setMoveTarget("")
+  }
 
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
   const formatShortDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })
@@ -294,13 +344,6 @@ export default function ProjectsPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" aria-label="문라이트 아카이브 홈"><BrandLogo /></Link>
-          <Link href="/mypage" className="text-sm text-muted-foreground hover:text-foreground transition-colors">마이페이지</Link>
-        </div>
-      </header>
-
       <div className="max-w-3xl mx-auto px-6 pt-10 pb-16">
         {message && (
           <div className={`mb-6 p-3 rounded-lg border text-sm ${message.type === "success" ? "bg-accent/50 border-primary/20 text-primary" : "bg-red-500/10 border-red-500/30 text-red-600"}`}>
@@ -317,7 +360,7 @@ export default function ProjectsPage() {
                 <p className="text-sm text-muted-foreground mt-1">같은 문서의 수정본을 모아 점수 변화를 비교해요. 본인만 볼 수 있어요.</p>
               </div>
               <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
-                <Link href="/"><Plus className="w-4 h-4 mr-1" /> 새 분석</Link>
+                <Link href="/"><Plus className="w-4 h-4 mr-1" /> 분석하기</Link>
               </Button>
             </div>
 
@@ -401,7 +444,7 @@ export default function ProjectsPage() {
                 <p className="text-foreground font-semibold mb-1">아직 저장한 프로젝트가 없어요</p>
                 <p className="text-sm text-muted-foreground mb-5">문서를 분석한 뒤 결과 화면에서 &apos;저장하기&apos;를 누르면 여기에 모여요.</p>
                 <Button asChild className="bg-primary hover:bg-primary/90 text-white">
-                  <Link href="/">문서 분석하러 가기</Link>
+                  <Link href="/">분석하기</Link>
                 </Button>
               </div>
             )}
@@ -434,96 +477,217 @@ export default function ProjectsPage() {
           </>
         ) : (
           <>
-            {/* ── 프로젝트 상세 ── */}
-            <button onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4">
-              <ArrowLeft className="w-4 h-4" /> 내 프로젝트
-            </button>
+            {/* ── 프로젝트 상세 / 문서 상세 ── */}
+            {!currentDoc ? (
+              <>
+                <button onClick={() => { setSelectedProject(null); setProjectAnalyses([]) }} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4">
+                  <ArrowLeft className="w-4 h-4" /> 내 프로젝트
+                </button>
 
-            <div className="flex items-start justify-between gap-4 mb-6">
-              <div className="min-w-0">
-                {renamingProjectId === selectedProject.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={renameValue}
-                      onChange={(e) => setRenameValue(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleRename(selectedProject.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }}
-                      autoFocus
-                      className="bg-card text-foreground text-xl font-bold rounded-md px-2 py-1 border border-primary outline-none"
-                    />
-                    <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded text-primary"><Check className="w-5 h-5" /></button>
-                    <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded text-muted-foreground"><X className="w-5 h-5" /></button>
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="min-w-0">
+                    {renamingProjectId === selectedProject.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleRename(selectedProject.id); if (e.key === "Escape") { setRenamingProjectId(null); setRenameValue("") } }}
+                          autoFocus
+                          className="bg-card text-foreground text-xl font-bold rounded-md px-2 py-1 border border-primary outline-none"
+                        />
+                        <button onClick={() => handleRename(selectedProject.id)} className="p-1 rounded text-primary"><Check className="w-5 h-5" /></button>
+                        <button onClick={() => { setRenamingProjectId(null); setRenameValue("") }} className="p-1 rounded text-muted-foreground"><X className="w-5 h-5" /></button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <h1 className="text-2xl md:text-3xl font-black text-foreground truncate">{selectedProject.name}</h1>
+                        <button onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }} className="p-1 rounded text-muted-foreground/70 hover:text-foreground" title="이름 변경">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })} className="p-1 rounded text-muted-foreground/70 hover:text-red-600" title="프로젝트 삭제">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground mt-1">문서 {documents.length}개 · 분석 {projectAnalyses.length}회</p>
+                  </div>
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
+                    <Link href={`/analyze?projectId=${selectedProject.id}`}><Plus className="w-4 h-4 mr-1" /> 분석하기</Link>
+                  </Button>
+                </div>
+
+                {loadingAnalyses ? (
+                  <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+                ) : (
+                  <>
+                    <h2 className="text-sm font-bold text-foreground mb-2">문서</h2>
+                    {documents.length > 0 ? (
+                      <div className="rounded-xl border border-border divide-y divide-border">
+                        {documents.map(doc => (
+                          <button
+                            key={doc.name}
+                            onClick={() => setSelectedDocument(doc.name)}
+                            className="w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-secondary/60 transition-colors"
+                          >
+                            <FileText className="w-5 h-5 text-primary shrink-0" />
+                            <span className="flex-1 min-w-0">
+                              <span className="block text-sm font-bold text-foreground truncate">{doc.name}</span>
+                              <span className="block text-xs text-muted-foreground">
+                                버전 {doc.items.length}개 · 최고 {doc.best}점 · {formatShortDate(doc.latest.analyzed_at)}
+                              </span>
+                            </span>
+                            {doc.delta !== null && doc.delta !== 0 && (
+                              <span className={`text-xs font-semibold ${doc.delta > 0 ? "text-emerald-600" : "text-red-600"}`}>
+                                {doc.delta > 0 ? `+${doc.delta}` : doc.delta}
+                              </span>
+                            )}
+                            <span className={`text-xl font-black ${scoreColor(doc.latest.overall_score)}`}>{doc.latest.overall_score}</span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground/60 shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-border text-center py-10 text-sm text-muted-foreground">
+                        아직 이 프로젝트에 분석한 문서가 없어요
+                      </div>
+                    )}
+
+                    {/* 문서 추가 — 문서명을 정하고 바로 그 문서로 분석 */}
+                    {showNewDoc ? (
+                      <div className="mt-3 flex gap-2">
+                        <input
+                          type="text"
+                          value={newDocName}
+                          onChange={(e) => setNewDocName(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing && newDocName.trim()) window.location.href = `/analyze?projectId=${selectedProject.id}&doc=${encodeURIComponent(newDocName.trim())}` }}
+                          placeholder="문서명 (예: 레벨 디자인 기획서)"
+                          maxLength={60}
+                          autoFocus
+                          className="flex-1 bg-card text-foreground text-sm rounded-lg px-3 py-2 border border-border focus:border-primary outline-none"
+                        />
+                        <Button asChild disabled={!newDocName.trim()} className="bg-primary hover:bg-primary/90 text-white">
+                          <Link href={newDocName.trim() ? `/analyze?projectId=${selectedProject.id}&doc=${encodeURIComponent(newDocName.trim())}` : "#"}>분석하기</Link>
+                        </Button>
+                        <Button variant="outline" onClick={() => { setShowNewDoc(false); setNewDocName("") }} className="border-border text-muted-foreground">취소</Button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setShowNewDoc(true)} className="mt-3 text-sm text-primary hover:underline flex items-center gap-1">
+                        <Plus className="w-4 h-4" /> 문서 추가
+                      </button>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <button onClick={() => { setSelectedDocument(null); setRenamingDoc(false); setMovingId(null) }} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4">
+                  <ArrowLeft className="w-4 h-4" /> {selectedProject.name}
+                </button>
+
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="min-w-0">
+                    {renamingDoc ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={docRenameValue}
+                          onChange={(e) => setDocRenameValue(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleRenameDocument(); if (e.key === "Escape") setRenamingDoc(false) }}
+                          maxLength={60}
+                          autoFocus
+                          className="bg-card text-foreground text-xl font-bold rounded-md px-2 py-1 border border-primary outline-none"
+                        />
+                        <button onClick={handleRenameDocument} className="p-1 rounded text-primary"><Check className="w-5 h-5" /></button>
+                        <button onClick={() => setRenamingDoc(false)} className="p-1 rounded text-muted-foreground"><X className="w-5 h-5" /></button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <h1 className="text-2xl md:text-3xl font-black text-foreground truncate">{currentDoc.name}</h1>
+                        <button onClick={() => { setRenamingDoc(true); setDocRenameValue(currentDoc.name) }} className="p-1 rounded text-muted-foreground/70 hover:text-foreground" title="문서명 변경">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground mt-1">버전 {currentDoc.items.length}개 · 최고 {currentDoc.best}점 · 최신 {currentDoc.latest.overall_score}점</p>
+                  </div>
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
+                    <Link href={`/analyze?projectId=${selectedProject.id}&doc=${encodeURIComponent(currentDoc.name)}`}><Plus className="w-4 h-4 mr-1" /> 분석하기</Link>
+                  </Button>
+                </div>
+
+                {/* 이 문서의 버전별 점수 */}
+                {currentDoc.items.length >= 2 ? (
+                  <div className="mb-6 rounded-xl border border-border p-5">
+                    <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-1.5">
+                      <BarChart3 className="w-4 h-4 text-primary" /> 버전별 점수 변화
+                    </h2>
+                    <VersionComparison analyses={currentDoc.items} />
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5">
-                    <h1 className="text-2xl md:text-3xl font-black text-foreground truncate">{selectedProject.name}</h1>
-                    <button onClick={() => { setRenamingProjectId(selectedProject.id); setRenameValue(selectedProject.name) }} className="p-1 rounded text-muted-foreground/70 hover:text-foreground" title="이름 변경">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => setDeleteConfirm({ type: "project", id: selectedProject.id, name: selectedProject.name })} className="p-1 rounded text-muted-foreground/70 hover:text-red-600" title="프로젝트 삭제">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <p className="mb-6 text-sm text-muted-foreground rounded-xl bg-secondary px-4 py-3">
+                    수정본을 이 문서로 한 번 더 분석하면 버전별 점수 그래프가 나와요.
+                  </p>
                 )}
-                <p className="text-sm text-muted-foreground mt-1">문서 {projectAnalyses.length}개{selectedProject.best_score !== null && ` · 최고 ${selectedProject.best_score}점`}</p>
-              </div>
-              <Button asChild className="bg-primary hover:bg-primary/90 text-white shrink-0">
-                <Link href={`/analyze?projectId=${selectedProject.id}`}><Plus className="w-4 h-4 mr-1" /> 수정본 분석</Link>
-              </Button>
-            </div>
 
-            {/* 버전별 점수 (2개 이상) */}
-            {projectAnalyses.length >= 2 && (
-              <div className="mb-6 rounded-xl border border-border p-5">
-                <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-1.5">
-                  <BarChart3 className="w-4 h-4 text-primary" /> 버전별 점수 변화
-                </h2>
-                <VersionComparison analyses={projectAnalyses} />
-              </div>
-            )}
-
-            {loadingAnalyses ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
-            ) : projectAnalyses.length > 0 ? (
-              <div className="space-y-5">
-                {groupedAnalyses.map(([groupName, items]) => (
-                  <div key={groupName}>
-                    {items.length >= 2 && (
-                      <p className="text-xs text-muted-foreground font-medium mb-1.5 px-1">{groupName} · 수정본 {items.length}개</p>
-                    )}
-                    <div className="rounded-xl border border-border divide-y divide-border">
-                      {[...items].reverse().map((item) => {
-                        const versionIdx = items.indexOf(item)
-                        return (
-                          <div key={item.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors">
-                            <button onClick={() => handleOpenAnalysis(item)} className="flex-1 min-w-0 text-left flex items-center gap-3">
-                              {items.length >= 2 && (
-                                <span className="text-[11px] font-bold text-primary bg-accent rounded px-1.5 py-0.5 shrink-0">v{versionIdx + 1}</span>
-                              )}
-                              <span className="min-w-0">
-                                <span className="block text-sm text-foreground font-medium truncate">{item.file_name}</span>
-                                <span className="block text-xs text-muted-foreground">{formatShortDate(item.analyzed_at)}</span>
-                              </span>
-                            </button>
-                            <span className={`text-lg font-black ${scoreColor(item.overall_score)}`}>{item.overall_score}</span>
-                            <button onClick={() => setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name })} className="p-1 rounded text-muted-foreground/50 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity" title="삭제">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                <h2 className="text-sm font-bold text-foreground mb-2">버전</h2>
+                <div className="rounded-xl border border-border divide-y divide-border">
+                  {[...currentDoc.items].reverse().map(item => {
+                    const versionIdx = currentDoc.items.indexOf(item)
+                    return (
+                      <div key={item.id}>
+                        <div className="group flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors">
+                          <button onClick={() => handleOpenAnalysis(item)} className="flex-1 min-w-0 text-left flex items-center gap-3">
+                            <span className="text-[11px] font-bold text-primary bg-accent rounded px-1.5 py-0.5 shrink-0">v{versionIdx + 1}</span>
+                            <span className="min-w-0">
+                              <span className="block text-sm text-foreground font-medium truncate">{item.file_name}</span>
+                              <span className="block text-xs text-muted-foreground">{formatShortDate(item.analyzed_at)}</span>
+                            </span>
+                          </button>
+                          <span className={`text-lg font-black ${scoreColor(item.overall_score)}`}>{item.overall_score}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary" aria-label="버전 메뉴">
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-[160px]">
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => { setMovingId(item.id); setMoveTarget("") }}>
+                                <FolderOpen className="w-3.5 h-3.5 mr-2" /> 다른 문서로 옮기기
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-700" onClick={() => setDeleteConfirm({ type: "analysis", id: item.id, name: item.file_name })}>
+                                <Trash2 className="w-3.5 h-3.5 mr-2" /> 삭제
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        {movingId === item.id && (
+                          <div className="px-4 pb-3 flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground mr-1">옮길 문서</span>
+                            {documents.filter(d => d.name !== currentDoc.name).map(d => (
+                              <button key={d.name} type="button" onClick={() => setMoveTarget(d.name)}
+                                className={`text-xs rounded-full px-2.5 py-1 border ${moveTarget === d.name ? "bg-primary border-primary text-white" : "border-border text-foreground/80 hover:border-primary/50"}`}>
+                                {d.name}
+                              </button>
+                            ))}
+                            <input
+                              type="text"
+                              value={moveTarget}
+                              onChange={e => setMoveTarget(e.target.value)}
+                              placeholder="또는 새 문서명"
+                              maxLength={60}
+                              className="flex-1 min-w-[140px] bg-card text-foreground text-xs rounded-md px-2 py-1.5 border border-border focus:border-primary outline-none"
+                            />
+                            <Button size="sm" onClick={() => handleMoveVersion(item.id)} disabled={!moveTarget.trim()} className="bg-primary hover:bg-primary/90 text-white h-7">옮기기</Button>
+                            <Button size="sm" variant="outline" onClick={() => setMovingId(null)} className="border-border text-muted-foreground h-7">취소</Button>
                           </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-border text-center py-12">
-                <FileText className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">아직 이 프로젝트에 분석한 문서가 없어요</p>
-                <Button asChild className="bg-primary hover:bg-primary/90 text-white">
-                  <Link href={`/analyze?projectId=${selectedProject.id}`}>문서 분석하기</Link>
-                </Button>
-              </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
             )}
           </>
         )}
@@ -665,7 +829,7 @@ export default function ProjectsPage() {
                               { label: "경쟁력 있음", range: "80~89", color: "bg-emerald-500/30", textColor: "text-emerald-700", min: 80, max: 89 },
                               { label: "합격 가능", range: "90+", color: "bg-purple-500/30", textColor: "text-purple-700", min: 90, max: 100 },
                             ].map((g, i) => (
-                              <div key={i} className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}>
+                              <div key={i} className={`flex-1 h-10 ${g.color} rounded flex items-center justify-center text-xs ${g.textColor} relative ${userScore >= g.min && userScore <= g.max ? 'ring-2 ring-primary ring-offset-2 ring-offset-background font-bold' : ''}`}>
                                 <span className="hidden sm:inline">{g.label}</span>
                                 <span className="sm:hidden">{g.range}</span>
                               </div>
@@ -676,28 +840,7 @@ export default function ProjectsPage() {
                           </p>
                         </div>
                         {detail.company_feedback && (
-                          <div>
-                            <p className="text-foreground font-semibold text-sm mb-3">회사별 합격자 포트폴리오 특징 비교</p>
-                            <div className="space-y-2">
-                              {detail.company_feedback.split('\n\n').filter(Boolean).map((paragraph, idx) => {
-                                const parts = paragraph.split(/\*\*(.*?)\*\*/)
-                                return (
-                                  <div key={idx} className="p-3 bg-secondary border border-border/50 rounded-xl">
-                                    <p className="text-sm text-foreground/80 leading-relaxed">
-                                      {parts.map((part, i) =>
-                                        i % 2 === 1
-                                          ? <span key={i} className="text-primary font-semibold">{part}</span>
-                                          : <span key={i}>{part}</span>
-                                      )}
-                                    </p>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-3 text-center">
-                              * 실제 합격 포트폴리오와 비교 분석 · 데이터는 지속 업데이트됩니다
-                            </p>
-                          </div>
+                          <CompanyFeedback feedback={detail.company_feedback} targetCompany={(detail.ranking as { targetCompany?: string } | undefined)?.targetCompany} />
                         )}
                       </div>
                     )
@@ -724,8 +867,8 @@ export default function ProjectsPage() {
                   {selectedProject && (
                     <div className="flex justify-center pt-4">
                       <Button asChild className="bg-primary hover:bg-primary/90 text-white">
-                        <Link href={`/analyze?projectId=${selectedProject.id}`} onClick={() => setSelectedAnalysis(null)}>
-                          수정본 다시 분석하기
+                        <Link href={`/analyze?projectId=${selectedProject.id}&doc=${encodeURIComponent(docKey(selectedAnalysis))}`} onClick={() => setSelectedAnalysis(null)}>
+                          분석하기
                         </Link>
                       </Button>
                     </div>

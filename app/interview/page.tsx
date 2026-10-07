@@ -54,7 +54,7 @@ export default async function InterviewPage() {
                 href="/analyze"
                 className="px-5 py-2.5 border border-border text-foreground/80 hover:text-foreground hover:bg-secondary rounded-lg text-sm font-medium transition-colors"
               >
-                문서 분석 시작하기
+                분석하기
               </Link>
             </div>
           </div>

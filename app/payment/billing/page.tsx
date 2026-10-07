@@ -188,7 +188,7 @@ function BillingContent() {
             매월 자동으로 갱신됩니다. 잠시 후 분석 페이지로 이동합니다.
           </p>
           <Button asChild className="bg-primary hover:bg-primary/90 text-white">
-            <Link href="/analyze">분석하러 가기</Link>
+            <Link href="/analyze">분석하기</Link>
           </Button>
         </div>
       </main>
@@ -251,7 +251,7 @@ function BillingContent() {
               <Link href="/mypage">마이페이지로 이동</Link>
             </Button>
             <Button asChild className="bg-primary hover:bg-primary/90 text-white">
-              <Link href="/analyze">분석하러 가기</Link>
+              <Link href="/analyze">분석하기</Link>
             </Button>
           </div>
         </div>

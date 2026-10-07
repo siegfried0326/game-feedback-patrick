@@ -106,8 +106,8 @@ export function ServiceIntro() {
               <Image
                 src="/preview-history.png"
                 alt="버전별 점수 비교 기능"
-                width={2002}
-                height={780}
+                width={1440}
+                height={1366}
                 className="w-full h-auto"
               />
             </div>

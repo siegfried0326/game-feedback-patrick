@@ -9,6 +9,7 @@
 
 import Link from "next/link"
 import { BrandLogo } from "@/components/brand-logo"
+import { CreditChip } from "@/components/credit-chip"
 import { LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PricingModal } from "@/components/pricing-modal"
@@ -18,6 +19,8 @@ type AnalyzeHeaderProps = {
   user?: {
     email?: string
     name?: string
+    credits?: number | null
+    unlimitedCredits?: boolean
   } | null
 }
 
@@ -42,6 +45,13 @@ export function AnalyzeHeader({ user }: AnalyzeHeaderProps) {
         <div className="flex items-center gap-3">
           {user ? (
             <>
+              <CreditChip credits={user.credits ?? null} unlimited={user.unlimitedCredits} />
+              <Link
+                href="/projects"
+                className="hidden sm:inline text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                프로젝트
+              </Link>
               <Link
                 href="/mypage"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"

@@ -30,9 +30,14 @@ export function HeroSection() {
 
   return (
     <section className="bg-background">
-      {/* 첫 화면 — 문구 한 줄을 품은 큰 업로드 창 하나 (가로:세로 ≈ 2.35:1) */}
+      {/* 첫 화면 — 대표 문구 + 큰 업로드 창 (가로:세로 ≈ 2.35:1) + 동의 안내 */}
       <div className="min-h-[100dvh] flex flex-col items-center justify-center px-4 md:px-8 pt-20 pb-12">
         <h1 className="sr-only">문라이트 아카이브 — 게임 기획 포트폴리오 AI 피드백</h1>
+
+        <p className="mb-8 md:mb-10 text-center text-xl sm:text-2xl md:text-3xl text-foreground leading-snug font-medium">
+          <span className="font-extrabold text-primary">187개의 합격 포트폴리오</span>를 기준으로,
+          <br className="hidden sm:block" /> 당신의 기획 문서가 실제로 통하는지 진단합니다.
+        </p>
 
         <div
           {...getRootProps()}
@@ -49,11 +54,6 @@ export function HeroSection() {
             <Plus className="w-8 h-8 md:w-10 md:h-10" strokeWidth={2.25} />
           </span>
 
-          <p className="text-lg sm:text-xl md:text-2xl lg:text-[1.7rem] text-foreground leading-snug font-medium">
-            <span className="font-extrabold text-primary">187개의 합격 포트폴리오</span>를 기준으로,
-            <br className="hidden sm:block" /> 당신의 기획 문서가 실제로 통하는지 진단합니다.
-          </p>
-
           <div className="flex flex-col items-center gap-1.5">
             <p className={`text-lg md:text-xl font-extrabold ${rejected ? "text-red-600" : "text-primary"}`}>
               {rejected
@@ -65,6 +65,10 @@ export function HeroSection() {
             )}
           </div>
         </div>
+
+        <p className="mt-4 text-xs text-muted-foreground/80 text-center">
+          업로드 시 <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">개인정보 처리방침</a>에 동의한 것으로 봅니다 · 자료는 분석 후 서버에서 삭제됩니다
+        </p>
       </div>
 
       {/* 첫 화면 아래 — 차별점 */}

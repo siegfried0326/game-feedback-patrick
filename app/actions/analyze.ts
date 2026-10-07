@@ -48,6 +48,8 @@ import { scanDocumentWithClaude, type DocumentScan } from "@/lib/analysis/classi
 import { extractJsonBlock, safeParseJSON } from "@/lib/analysis/json"
 import { summarizeUsage, logUsage, type TokenUsage } from "@/lib/analysis/usage"
 import { maskForPrompt, scrubOutput } from "@/lib/analysis/anonymize"
+import { countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
+import pdfParse from "pdf-parse"
 
 // ───────────────────────────────────────────
 // 공개 타입 (클라이언트가 그대로 받는다)
@@ -95,6 +97,10 @@ export interface AnalysisResultData {
   modelTierLabel: string
   comparisonPool: { sameDomainCount: number; total: number; insufficient: boolean; cardedCount: number }
   usage: TokenUsage
+  /** 실제 차감 크레딧 (티어 + 40쪽 단위 추가분) */
+  creditCost?: number
+  /** 서버가 판정한 쪽수 (모르면 null) */
+  pageCount?: number | null
 }
 
 export interface AnalyzeOptions {
@@ -457,6 +463,15 @@ export async function analyzeDocumentDirect(input: {
       }
       const fileBuffer = Buffer.from(await response.arrayBuffer())
       const sizeMB = fileBuffer.length / (1024 * 1024)
+
+      // 40쪽마다 1크레딧 추가 (lib/analysis/pages.ts). PDF는 원본에서 직접 센다
+      const pageCount = (input.mimeType === "application/pdf" ? await countPdfPages(fileBuffer) : null)
+        ?? countPagesFromText(input.extractedText)
+      const creditCost = MODEL_TIERS[tier].creditCost + extraCreditsForPages(pageCount)
+      if (creditCost > MODEL_TIERS[tier].creditCost) {
+        const guardLarge = await guardAnalysisEntry(creditCost)
+        if (guardLarge.error) return { error: guardLarge.error }
+      }
       const isClaudeNative = CLAUDE_DOCUMENT_TYPES.includes(input.mimeType) || CLAUDE_IMAGE_TYPES.includes(input.mimeType)
       const hasText = !!input.extractedText && input.extractedText.length >= 100
 
@@ -473,6 +488,8 @@ export async function analyzeDocumentDirect(input: {
           extractedText: input.extractedText,
           options: input,
           apiKey,
+          creditCost,
+          pageCount,
         })
       }
 
@@ -483,6 +500,8 @@ export async function analyzeDocumentDirect(input: {
         extractedText: input.extractedText,
         options: input,
         apiKey,
+        creditCost,
+        pageCount,
       })
     } finally {
       // 분석이 끝나면 임시 업로드 파일 삭제 (성공/실패 무관)
@@ -525,6 +544,9 @@ async function runAnalysis(params: {
   extractedText?: string
   options: AnalyzeOptions
   apiKey: string
+  /** 차감할 크레딧 — 없으면 티어 비용 */
+  creditCost?: number
+  pageCount?: number | null
 }): Promise<{ data?: AnalysisResultData; error?: string }> {
   const startedAt = Date.now()
   const { options } = params
@@ -725,6 +747,8 @@ async function runAnalysis(params: {
     modelTierLabel: tierInfo.label,
     comparisonPool: { sameDomainCount: reference.sameDomainCount, total: reference.all.length, insufficient: reference.insufficient, cardedCount: reference.cardedCount },
     usage,
+    creditCost: params.creditCost ?? tierInfo.creditCost,
+    pageCount: params.pageCount ?? null,
   }
 
   // 분석 이력 저장 + 크레딧 차감 (실패해도 결과는 돌려준다)
@@ -745,7 +769,7 @@ async function runAnalysis(params: {
     tokenUsage: usage as unknown as Record<string, unknown>,
   }).catch(() => {})
 
-  deductCredit(tierInfo.creditCost).catch(() => {})
+  deductCredit(params.creditCost ?? tierInfo.creditCost).catch(() => {})
 
   return { data: result }
 }
@@ -821,6 +845,16 @@ function computeRanking(score: number, reference: ReferenceSet): AnalysisResultD
   companyComparison.push({ company: "전체 합격자", avgScore: reference.avgOverall, userScore: score, sampleCount: total })
 
   return { total, percentile, rank, companyComparison }
+}
+
+/** PDF 원본의 쪽수 (첫 쪽만 파싱해 빠르게). 읽지 못하면 null */
+async function countPdfPages(buffer: Buffer): Promise<number | null> {
+  try {
+    const parsed = await pdfParse(buffer, { max: 1 })
+    return typeof parsed.numpages === "number" && parsed.numpages > 0 ? parsed.numpages : null
+  } catch {
+    return null
+  }
 }
 
 function toUserError(error: unknown): string {

@@ -5,6 +5,7 @@
  * 구독(월/3개월)은 판매 종료로 제거됨.
  */
 import Link from "next/link"
+import { LARGE_DOC_NOTICE } from "@/lib/analysis/pages"
 import { Check, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -51,22 +52,22 @@ export function PricingSection() {
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-secondary">
                 <div>
-                  <span className="text-foreground font-medium">5크레딧</span>
-                  <span className="text-primary text-xs font-semibold ml-2">34%↓</span>
-                </div>
-                <span className="text-foreground font-bold">12,900원</span>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-secondary">
-                <div>
                   <span className="text-foreground font-medium">10크레딧</span>
                   <span className="text-primary text-xs font-semibold ml-2">49%↓</span>
                 </div>
                 <span className="text-foreground font-bold">19,900원</span>
               </div>
+              <div className="flex justify-between items-center p-3 rounded-lg bg-secondary">
+                <div>
+                  <span className="text-foreground font-medium">30크레딧</span>
+                  <span className="text-primary text-xs font-semibold ml-2">62%↓</span>
+                </div>
+                <span className="text-foreground font-bold">44,900원</span>
+              </div>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1">
-              {["기본 분석 1크레딧 · 정밀 분석 2크레딧", "직군별 채점표로 15개 항목 평가", "상세 코멘트 제공", "크레딧 만료 없음"].map((f, i) => (
+              {["기본 분석 1크레딧 · 정밀 분석 2크레딧", LARGE_DOC_NOTICE, "직군별 채점표로 15개 항목 평가 + 상세 코멘트", "크레딧 만료 없음"].map((f, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm">
                   <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                   <span className="text-muted-foreground">{f}</span>

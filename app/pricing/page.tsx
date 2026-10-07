@@ -2,12 +2,13 @@
  * 요금제 상세 페이지
  *
  * BM 개편(2026-08-05): 과외 중심 모델.
- * - 크레딧 단건 판매 (무료 1회 + 1/5/10크레딧)
+ * - 크레딧 단건 판매 (무료 1회 + 1/10/30크레딧), 40쪽 초과 문서는 40쪽마다 +1크레딧
  * - 1:1 과외 (가격 비공개, 오픈카톡 상담) — 수강생은 매월 크레딧 지급 + 면접·라이브러리 혜택
  * - 구독(월/3개월)은 판매 종료
  * 라우트: /pricing (공개)
  */
 import Link from "next/link"
+import { LARGE_DOC_NOTICE } from "@/lib/analysis/pages"
 import { ArrowLeft, Check, Sparkles, Shield, Clock, Zap, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -39,16 +40,6 @@ const creditPlans = [
     href: "/payment/credits?package=credit_1",
   },
   {
-    name: "5크레딧",
-    price: "12,900",
-    period: "5크레딧",
-    description: "크레딧당 2,580원 (34% 할인)",
-    badge: "34% 할인",
-    features: ["기본 분석 5회 또는 정밀 분석 2회", "직군별 채점표 15개 항목", "상세 코멘트 제공"],
-    cta: "구매하기",
-    href: "/payment/credits?package=credit_5",
-  },
-  {
     name: "10크레딧",
     price: "19,900",
     period: "10크레딧",
@@ -57,6 +48,16 @@ const creditPlans = [
     features: ["기본 분석 10회 또는 정밀 분석 5회", "직군별 채점표 15개 항목", "상세 코멘트 제공"],
     cta: "구매하기",
     href: "/payment/credits?package=credit_10",
+  },
+  {
+    name: "30크레딧",
+    price: "44,900",
+    period: "30크레딧",
+    description: "크레딧당 1,497원 (62% 할인)",
+    badge: "62% 할인",
+    features: ["기본 분석 30회 또는 정밀 분석 15회", "직군별 채점표 15개 항목", "상세 코멘트 제공"],
+    cta: "구매하기",
+    href: "/payment/credits?package=credit_30",
   },
 ]
 
@@ -93,7 +94,7 @@ export default function PricingPage() {
 
         {/* 크레딧 */}
         <h2 className="text-xl font-black text-foreground mb-4">크레딧</h2>
-        <p className="text-muted-foreground text-sm mb-6">크레딧은 만료되지 않습니다. 필요할 때 사용하세요.</p>
+        <p className="text-muted-foreground text-sm mb-6">크레딧은 만료되지 않습니다. 필요할 때 사용하세요. {LARGE_DOC_NOTICE}</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {creditPlans.map((plan, index) => (
             <div

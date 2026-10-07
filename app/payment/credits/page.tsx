@@ -6,7 +6,7 @@
  * ── 동작 흐름 ──
  * 1. 로그인 확인
  * 2. 나이스 JS SDK 스크립트 로드
- * 3. 사용자가 패키지 선택 (1/5/10크레딧)
+ * 3. 사용자가 패키지 선택 (1/10/30크레딧)
  * 4. "결제하기" 버튼 클릭
  *    → createCreditOrder()로 서버에 주문 생성
  *    → AUTHNICE.requestPay()로 나이스 결제창 표시
@@ -16,6 +16,7 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
+import { LARGE_DOC_NOTICE } from "@/lib/analysis/pages"
 import Link from "next/link"
 import { CREDIT_PACKAGES } from "@/lib/payments-config"
 import { useSearchParams } from "next/navigation"
@@ -226,11 +227,7 @@ function CreditsContent() {
         <div className="p-4 rounded-xl bg-secondary border border-border mb-8">
           <p className="text-muted-foreground text-sm">
             <Zap className="w-4 h-4 inline text-primary mr-1" />
-            10회 이상 사용한다면?{" "}
-            <Link href="/payment/billing?plan=monthly" className="text-primary hover:underline">
-              월 13,800원 무제한 구독
-            </Link>
-            이 더 합리적이에요.
+            기본 분석 1크레딧 · 정밀 분석 2크레딧. {LARGE_DOC_NOTICE}
           </p>
         </div>
 

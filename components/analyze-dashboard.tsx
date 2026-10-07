@@ -24,6 +24,7 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload } from "@/lib/pending-upload"
+import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Lock, Shield, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -800,8 +801,12 @@ export function AnalyzeDashboard() {
   // 크레딧 사용자가 정밀 분석(2크레딧)을 고를 수 있는지
   const remainingCredits = allowanceInfo?.remaining ?? 0
   const isUnlimitedUser = !!allowanceInfo?.unlimited
-  const canAffordTier = (tier: ModelTier) => isUnlimitedUser || remainingCredits >= MODEL_TIERS[tier].creditCost
-  const selectedTierCost = MODEL_TIERS[selectedTier].creditCost
+  // 40쪽마다 1크레딧 추가 (서버가 PDF 원본으로 다시 판정한다)
+  const docPages = countPagesFromText(uploadedFileInfo?.extractedText)
+  const pageExtra = extraCreditsForPages(docPages)
+  const tierCost = (tier: ModelTier) => MODEL_TIERS[tier].creditCost + pageExtra
+  const canAffordTier = (tier: ModelTier) => isUnlimitedUser || remainingCredits >= tierCost(tier)
+  const selectedTierCost = tierCost(selectedTier)
 
   // 크레딧 차감 취소
   const handleCreditCancel = () => {
@@ -1560,6 +1565,7 @@ export function AnalyzeDashboard() {
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   다음 단계에서 정밀 분석(상위 모델, {MODEL_TIERS.precision.creditCost}크레딧)으로 바꿀 수 있어요.
+                  <br />{LARGE_DOC_NOTICE}
                 </p>
               </div>
 
@@ -1719,17 +1725,22 @@ export function AnalyzeDashboard() {
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-semibold">{info.label}</span>
                         <span className={`text-xs ${active ? "text-primary" : "text-muted-foreground"}`}>
-                          {isUnlimitedUser ? "무제한" : `${info.creditCost}크레딧`}
+                          {isUnlimitedUser ? "무제한" : `${tierCost(tier)}크레딧`}
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground leading-snug">{info.description}</p>
                       {!affordable && (
-                        <p className="text-[11px] text-amber-600 mt-1">크레딧 {info.creditCost}개 필요</p>
+                        <p className="text-[11px] text-amber-600 mt-1">크레딧 {tierCost(tier)}개 필요</p>
                       )}
                     </button>
                   )
                 })}
               </div>
+              {pageExtra > 0 && !isUnlimitedUser && (
+                <p className="text-[11px] text-primary mt-2">
+                  이 문서는 {docPages}쪽이라 {PAGES_PER_CREDIT}쪽마다 1크레딧씩, {pageExtra}크레딧이 더해졌어요.
+                </p>
+              )}
             </div>
 
             {/* 키워드 칩 */}

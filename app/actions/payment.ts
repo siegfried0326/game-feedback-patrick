@@ -16,13 +16,13 @@
  * 요금:
  * - monthly: 13,800원/월 (게임캔버스 할인 시 5,900원)
  * - three_month: 39,000원/3개월
- * - credit_1: 2,900원, credit_5: 7,900원, credit_10: 12,900원
+ * - 크레딧: lib/payments-config.ts CREDIT_PACKAGES (1/10/30크레딧 = 3,900 / 19,900 / 44,900원)
  */
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
 import { approvePayment, cancelPayment } from "@/lib/nice-api"
-import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE, SUBSCRIPTION_SALES_ENABLED, SUBSCRIPTION_ENDED_MESSAGE, CREDIT_PACKAGES, unitPriceForOrder } from "@/lib/payments-config"
+import { PAYMENTS_ENABLED, PAYMENTS_DISABLED_MESSAGE, SUBSCRIPTION_SALES_ENABLED, SUBSCRIPTION_ENDED_MESSAGE, CREDIT_PACKAGES, unitPriceForOrder, packageLabel } from "@/lib/payments-config"
 
 // 서버 가격표 (클라이언트 조작 방지)
 // 가격 기준값은 lib/payments-config.ts CREDIT_PACKAGES 하나만 참조한다 (PRD_가격표_요금제.md가 원본)
@@ -292,14 +292,11 @@ export async function getCreditOrders() {
     const refundAmount = Math.max(0, order.amount - usedCredits * unitPrice)
     const canRefund = isWithin7Days && refundAmount > 0 && refundableCredits > 0
 
-    const packageLabel = order.package_type === "credit_1" ? "1크레딧"
-      : order.package_type === "credit_5" ? "5크레딧"
-      : order.package_type === "credit_10" ? "10크레딧"
-      : order.package_type
+    const label = packageLabel(order.package_type)
 
     return {
       ...order,
-      packageLabel,
+      packageLabel: label,
       isWithin7Days,
       refundableCredits,
       usedCredits,

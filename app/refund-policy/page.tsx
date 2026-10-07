@@ -50,9 +50,10 @@ export default function RefundPolicyPage() {
                 <h3 className="font-medium text-foreground mb-1">2. 크레딧</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>1크레딧: 3,900원</li>
-                  <li>5크레딧: 12,900원 (크레딧당 2,580원)</li>
                   <li>10크레딧: 19,900원 (크레딧당 1,990원)</li>
+                  <li>30크레딧: 44,900원 (크레딧당 1,497원)</li>
                   <li>크레딧은 만료되지 않으며, 기본 분석 1회당 1개, 정밀 분석 1회당 2개가 차감됩니다.</li>
+                  <li>40쪽이 넘는 문서는 40쪽마다 1크레딧이 추가로 차감됩니다 (41~80쪽 +1, 81~120쪽 +2 …).</li>
                 </ul>
               </div>
           </section>
@@ -122,7 +123,7 @@ export default function RefundPolicyPage() {
                 <h3 className="font-medium text-foreground mb-1">2. 부분 사용 환불</h3>
                 <ul className="list-disc list-inside space-y-1">
                   <li>일부 크레딧을 사용한 경우, 사용한 크레딧 수 &times; 결제 당시 정가(1크레딧 3,900원)를 차감한 잔여 금액을 환불합니다.</li>
-                  <li>예시: 5크레딧(12,900원) 구매 후 2크레딧 사용 → 12,900원 - (3,900원 &times; 2) = 5,100원 환불</li>
+                  <li>예시: 10크레딧(19,900원) 구매 후 2크레딧 사용 → 19,900원 - (3,900원 &times; 2) = 12,100원 환불</li>
                   <li>2026년 10월 6일 이전 가격으로 구매한 크레딧은 당시 정가(1크레딧 2,900원) 기준으로 차감합니다.</li>
                   <li>결제일로부터 7일 이내 요청 시에만 가능합니다.</li>
                 </ul>

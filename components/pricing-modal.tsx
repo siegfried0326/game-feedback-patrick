@@ -8,6 +8,7 @@
 "use client"
 
 import Link from "next/link"
+import { LARGE_DOC_NOTICE } from "@/lib/analysis/pages"
 import { Check, Sparkles, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -25,10 +26,11 @@ const plans = [
     name: "크레딧",
     price: "3,900",
     period: "1크레딧~",
-    description: "필요한 만큼 구매 (1/5/10크레딧)",
+    description: "필요한 만큼 구매 (1/10/30크레딧)",
     features: [
-      "1크레딧 3,900원 / 5크레딧 12,900원 / 10크레딧 19,900원",
+      "1크레딧 3,900원 / 10크레딧 19,900원 / 30크레딧 44,900원",
       "기본 분석 1크레딧 · 정밀 분석(상위 모델) 2크레딧",
+      LARGE_DOC_NOTICE,
       "직군별 채점표로 15개 항목 평가 + 상세 코멘트",
       "크레딧 만료 없음",
     ],

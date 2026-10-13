@@ -301,3 +301,9 @@ categories는 JSON 배열 → 카테고리 수 변경해도 스키마 수정 불
 ### 2026-10-07 지원 회사 · 문서 묶음
 - 분석 옵션 `targetCompany` (lib/analysis/companies.ts `TARGET_COMPANIES`): 프롬프트 요청별 블록에 지원 회사 섹션 추가. 결과 `targetCompany`, 이력은 `ranking.targetCompany`에 저장. UI `components/company-feedback.tsx`
 - 분석 이력 `document_name` (scripts/022): 프로젝트 안 문서 묶음. `/analyze?projectId=&doc=`로 들어오면 그 문서의 새 버전으로 저장. 서버 액션 `assignAnalysisToProject(id, projectId, documentName)`, `setAnalysisDocument`, `renameDocument`
+
+### 2026-10-13 직군 판정 우선순위
+1. 사용자가 분석 설정에서 고른 분야 (첫 번째 = 채점 기준)
+2. 파일명·표지 제목에 적힌 직군 (`lib/analysis/domains.ts` `explicitDomainFromTitle`) — 스캔 AI 판단보다 우선
+3. Haiku 스캔 판단 → 휴리스틱 폴백
+- "종합 기획"(general)은 선택지에서 제외 (`SELECTABLE_DOMAINS`), 내부 폴백으로만 사용

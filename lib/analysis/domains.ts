@@ -114,6 +114,31 @@ export const FORM_GUIDES: Record<DocForm, { purpose: string; focus: string[]; do
 
 export const ALL_DOMAINS: DesignDomain[] = ["level", "combat", "system", "economy", "uiux", "narrative", "data", "general"]
 
+/** 사용자가 고르는 문서 분야 — "종합 기획"은 빼고 가장 비중이 큰 분야를 고르게 한다 (2026-10-13). general은 내부 폴백으로만 남는다 */
+export const SELECTABLE_DOMAINS: DesignDomain[] = ALL_DOMAINS.filter(d => d !== "general")
+
+/**
+ * 파일명·표지 제목에 직군이 직접 적혀 있으면 그 직군 (예: "창작 레벨디자인_…", "…시스템 기획서").
+ * 본문 단어 빈도보다 작성자가 붙인 이름이 정확하다 — 대장장이 마을 레벨 문서가 본문의 제작·강화 단어 때문에
+ * 시스템으로 분류된 사례(2026-10-13)를 막는다.
+ */
+const TITLE_DOMAIN: Array<[Exclude<DesignDomain, "general">, RegExp]> = [
+  ["level", /레벨\s?디자인|레벨\s?기획|level\s?design|맵\s?기획|던전\s?기획/i],
+  ["data", /데이터\s?테이블|테이블\s?설계/i],
+  ["uiux", /UI\s?\/?\s?UX|UX\s?기획|UI\s?기획/i],
+  ["economy", /BM\s?기획|경제\s?(시스템\s?)?기획|재화\s?기획/i],
+  ["narrative", /캐릭터\s?(컨셉|설정|창작)?\s?기획|시나리오|세계관|내러티브|스토리\s?기획/i],
+  ["combat", /전투\s?(시스템\s?)?기획|보스\s?(세부\s?)?기획|몬스터\s?(시스템\s?)?기획|스킬\s?기획|전투\s?디자인/i],
+  ["system", /시스템\s?기획|콘텐츠\s?기획|컨텐츠\s?기획/i],
+]
+
+export function explicitDomainFromTitle(fileName?: string, text?: string): DesignDomain | null {
+  const title = `${fileName ?? ""} ${(text ?? "").slice(0, 300)}`
+  for (const [domain, rx] of TITLE_DOMAIN) if (rx.test(fileName ?? "")) return domain
+  for (const [domain, rx] of TITLE_DOMAIN) if (rx.test(title)) return domain
+  return null
+}
+
 /** 15개 카테고리 subject (프롬프트·UI·DB가 모두 이 문자열을 쓴다) */
 export const CATEGORY_SUBJECTS = [
   "논리력", "구체성", "가독성", "기술이해", "창의성",
@@ -309,8 +334,13 @@ export function classifyHeuristically(input: {
 
   const ranked = (Object.entries(scores) as Array<[DesignDomain, number]>).sort((a, b) => b[1] - a[1])
   let docForm: DocForm = "unknown"
+  const titled = explicitDomainFromTitle(input.fileName, input.text)
   for (const [form, rx] of FORM_KEYWORDS) {
     if (rx.test(strong) || rx.test(weak.slice(0, 500))) { docForm = form; break }
+  }
+
+  if (titled) {
+    return { domain: titled, secondary: ranked.filter(([d]) => d !== titled).slice(0, 2).map(([d]) => d), docForm, scores }
   }
 
   if (ranked.length === 0 || docForm === "pr") {
@@ -348,22 +378,23 @@ export function notApplicableSubjects(domain: DesignDomain): CategorySubject[] {
 
 /** 직군별로 함께 다뤄지기 쉬운 이웃 직군 — AI가 보조 직군을 2개 못 고를 때 채우는 순서 */
 const NEIGHBOR_DOMAINS: Record<DesignDomain, DesignDomain[]> = {
-  level: ["combat", "narrative", "general"],
+  level: ["combat", "narrative", "system"],
   combat: ["system", "level", "data"],
   system: ["economy", "data", "combat"],
-  economy: ["system", "data", "general"],
-  uiux: ["system", "general", "narrative"],
-  narrative: ["level", "general", "uiux"],
+  economy: ["system", "data", "uiux"],
+  uiux: ["system", "narrative", "economy"],
+  narrative: ["level", "uiux", "combat"],
   data: ["system", "economy", "combat"],
-  general: ["system", "level", "combat"],
+  general: [],
 }
 
 /** 주 직군 + 보조 직군을 정확히 3개로 맞춘다 (분석 설정 화면의 AI 기본 선택) */
 export function pickThreeDomains(primary: DesignDomain, secondary: DesignDomain[] = []): DesignDomain[] {
-  const out: DesignDomain[] = [primary]
+  // "종합 기획"은 고르는 목록에 없다 — 주 직군이 general이면 보조 직군만 남기고 사용자가 고르게 한다
+  const out: DesignDomain[] = primary === "general" ? [] : [primary]
   for (const d of [...secondary, ...NEIGHBOR_DOMAINS[primary]]) {
     if (out.length >= 3) break
-    if (!out.includes(d)) out.push(d)
+    if (d !== "general" && !out.includes(d)) out.push(d)
   }
   return out
 }

@@ -9,7 +9,8 @@
 
 import Anthropic from "@anthropic-ai/sdk"
 import {
-  ALL_DOMAINS,
+  SELECTABLE_DOMAINS,
+  explicitDomainFromTitle,
   DOMAIN_LABELS,
   DOC_FORM_LABELS,
   classifyHeuristically,
@@ -33,7 +34,7 @@ export interface DocumentScan {
   method: "haiku" | "heuristic"
 }
 
-const DOMAIN_GUIDE = ALL_DOMAINS.map(d => `- ${d}: ${DOMAIN_LABELS[d]}`).join("\n")
+const DOMAIN_GUIDE = SELECTABLE_DOMAINS.map(d => `- ${d}: ${DOMAIN_LABELS[d]}`).join("\n")
 const FORM_GUIDE = (Object.keys(DOC_FORM_LABELS) as DocForm[]).filter(f => f !== "unknown").map(f => `- ${f}: ${DOC_FORM_LABELS[f]}`).join("\n")
 
 export async function scanDocumentWithClaude(input: {
@@ -64,9 +65,10 @@ export async function scanDocumentWithClaude(input: {
 ## 직군(domain) — 문서가 "주로" 다루는 기획 영역 하나
 ${DOMAIN_GUIDE}
 판단 기준:
+- **파일명이나 표지 제목에 직군이 적혀 있으면(예: "레벨디자인", "시스템 기획서", "UI/UX") 그 직군이 domain입니다.** 본문에 다른 영역 단어가 많아도 바꾸지 마세요 (예: "대장장이 마을" 레벨 문서에 제작·강화 설명이 있어도 level).
 - 레벨 디자인 문서에 몬스터 배치표가 있어도 주제가 공간·동선이면 level.
 - 캐릭터의 스킬·전투 수치가 중심이면 combat, 설정·서사가 중심이면 narrative.
-- 여러 영역을 비슷한 비중으로 다루는 제안서·게임 개요·자기 PR은 general.
+- 여러 영역을 다루는 제안서·게임 개요·자기 PR도 가장 비중이 큰 직군 하나를 고르세요. general은 쓰지 마세요.
 - 엑셀/시트 형태의 수치 정의가 본체이면 data.
 
 ## 문서 형식(docForm)
@@ -90,10 +92,14 @@ ${FORM_GUIDE}
     const text = response.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map(b => b.text).join("")
     const parsed = safeParseJSON(extractJsonBlock(text))
 
-    const domain = isDesignDomain(parsed.domain) ? parsed.domain : heuristic.domain
-    const secondary = Array.isArray(parsed.secondary)
-      ? parsed.secondary.filter((d): d is DesignDomain => isDesignDomain(d) && d !== domain).slice(0, 2)
+    // 파일명·표지에 직군이 적혀 있으면 그 표기가 우선 — AI 판단은 보조 직군으로 돌린다
+    const titled = explicitDomainFromTitle(input.fileName, input.text)
+    const aiDomain = isDesignDomain(parsed.domain) ? parsed.domain : heuristic.domain
+    const domain = titled ?? aiDomain
+    const aiSecondary = Array.isArray(parsed.secondary)
+      ? parsed.secondary.filter((d): d is DesignDomain => isDesignDomain(d))
       : heuristic.secondary
+    const secondary = [aiDomain, ...aiSecondary].filter((d, i, arr) => d !== domain && d !== "general" && arr.indexOf(d) === i).slice(0, 2)
     const docForm = isDocForm(parsed.docForm) ? parsed.docForm : heuristic.docForm
     const keywords = Array.isArray(parsed.keywords)
       ? parsed.keywords.filter((k): k is string => typeof k === "string" && k.trim().length > 0).map(k => k.trim()).slice(0, 12)

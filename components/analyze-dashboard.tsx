@@ -46,7 +46,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
-import { ALL_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, isDesignDomain, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
+import { SELECTABLE_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, isDesignDomain, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
 import { getProjects, createProject, assignAnalysisToProject, getProjectAnalyses } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -181,7 +181,7 @@ export function AnalyzeDashboard() {
   // 1단계 스캔 결과: 직군 (AI 추정값 + 사용자 확정값) / 문서 형식 / 분석 티어
   const [detectedDomain, setDetectedDomain] = useState<DesignDomain | null>(null)
   // 문서 분야: AI가 3개를 미리 고르고(첫 번째 = 주 직군, 나머지 = 보조 직군) 사용자가 바꾼다
-  const [pickedDomains, setPickedDomains] = useState<DesignDomain[]>(["general"])
+  const [pickedDomains, setPickedDomains] = useState<DesignDomain[]>([])
   const selectedDomain: DesignDomain = pickedDomains[0] ?? "general"
   // 지원 회사 — null이면 회사 무관
   const [targetCompany, setTargetCompany] = useState<string | null>(null)
@@ -1643,7 +1643,7 @@ export function AnalyzeDashboard() {
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-1.5">
-                {ALL_DOMAINS.map((d) => {
+                {SELECTABLE_DOMAINS.map((d) => {
                   const order = pickedDomains.indexOf(d)
                   const picked = order >= 0
                   const full = pickedDomains.length >= 3

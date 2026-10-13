@@ -763,7 +763,8 @@ async function runAnalysis(params: {
   const strengths = toStringArray(analysis.strengths)
   const weaknesses = toStringArray(analysis.weaknesses)
   const readabilityCategories = mode === "pdf" ? toObjectArray(analysis.readabilityCategories) : []
-  const layoutRecommendations = mode === "pdf" ? toObjectArray(analysis.layoutRecommendations) : []
+  // 레이아웃 개선 제안은 2026-10-13부터 쓰지 않는다 (비현실적 제안) — 모델이 내보내도 버린다
+  const layoutRecommendations: Record<string, unknown>[] = []
 
   // ── 같은 직군 표본 기준 랭킹 ──
   const ranking = computeRanking(score, reference)
@@ -805,7 +806,11 @@ async function runAnalysis(params: {
     weaknesses,
     // 분석 설정은 별도 컬럼 없이 ranking JSON에 함께 저장 — 프로젝트 화면 표시 + 다음 분석의 기본값
     //   targetCompany: 프로젝트 단위 기본값 / settings.domains·topics: 문서 단위 기본값 (분석 모드는 비용 때문에 저장 안 함)
-    ranking: { ...ranking, targetCompany, settings: { domains: [domain, ...secondary], topics: customTopics, docForm } },
+    //   report: 프로젝트 화면·PDF에서도 결과 화면과 똑같이 보이도록 공통 요소 대조·다음에 할 일·직군 판정을 함께 남긴다
+    ranking: {
+      ...ranking, targetCompany, settings: { domains: [domain, ...secondary], topics: customTopics, docForm },
+      report: { standardsCheck: result.standardsCheck, nextSteps: result.nextSteps, domainFit: result.domainFit ?? null, domainLabel: result.designDomainLabel },
+    },
     companyFeedback: result.companyFeedback,
     analysisSource: result.analysisSource,
     readabilityCategories,

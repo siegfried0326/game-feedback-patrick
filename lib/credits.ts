@@ -1,5 +1,5 @@
 /**
- * 헤더용 크레딧 조회 (서버 전용) — AuthHeader / AuthAnalyzeHeader가 함께 쓴다
+ * 헤더용 크레딧 조회 (서버 전용) — AuthHeader(모든 페이지 공통 헤더)가 쓴다
  */
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { isAdminEmail } from "@/lib/admin"

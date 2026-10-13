@@ -20,8 +20,10 @@ import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
+import { StandardsCheck } from "@/components/standards-check"
+import { GlossaryText } from "@/components/glossary-text"
+import { printWithExpanded } from "@/lib/use-printing"
 import { ReadabilityScores } from "@/components/readability-scores"
-import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { VersionComparison } from "@/components/version-comparison"
 import { CompanyFeedback } from "@/components/company-feedback"
 import { GradeScale } from "@/components/grade-scale"
@@ -73,6 +75,14 @@ type AnalysisItem = {
     total: number
     percentile: number
     companyComparison?: { company: string; avgScore: number; userScore: number }[]
+    targetCompany?: string | null
+    /** 결과 화면과 같은 내용을 보여주기 위해 함께 저장한 판정 (2026-10-13~. 이전 분석엔 없음) */
+    report?: {
+      standardsCheck?: { element: string; status: "있음" | "부분" | "없음"; note: string }[]
+      nextSteps?: string[]
+      domainFit?: string | null
+      domainLabel?: string
+    }
   }
 }
 
@@ -780,13 +790,7 @@ export default function ProjectsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const prev = document.title
-                    document.title = `문라이트아카이브_${fileBase(selectedAnalysis.file_name)}_${selectedAnalysis.overall_score}점`
-                    const restore = () => { document.title = prev; window.removeEventListener("afterprint", restore) }
-                    window.addEventListener("afterprint", restore)
-                    setTimeout(() => window.print(), 50)
-                  }}
+                  onClick={() => printWithExpanded(`문라이트아카이브_${fileBase(selectedAnalysis.file_name)}_${selectedAnalysis.overall_score}점`)}
                   className="border-border text-foreground/80"
                 >
                   <Download className="w-3.5 h-3.5 mr-1" /> PDF로 저장
@@ -801,7 +805,10 @@ export default function ProjectsPage() {
                 <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
               ) : detail ? (
                 <>
-                  <div className="grid lg:grid-cols-2 gap-6">
+                  {detail.ranking?.report?.domainFit && (
+                    <p className="text-sm text-muted-foreground"><GlossaryText text={detail.ranking.report.domainFit} /></p>
+                  )}
+                  <div className="grid lg:grid-cols-2 print:grid-cols-2 gap-6 print:gap-4">
                     <ScoreCard score={detail.overall_score} ranking={detail.ranking} />
                     {detail.categories?.length > 0 && <RadarChartComponent data={detail.categories} />}
                   </div>
@@ -812,7 +819,7 @@ export default function ProjectsPage() {
                         <h4 className="text-foreground font-semibold mb-4">합격 문서 기준 위치</h4>
                         <div className="mb-6"><GradeScale score={userScore} /></div>
                         {detail.company_feedback && (
-                          <CompanyFeedback feedback={detail.company_feedback} targetCompany={(detail.ranking as { targetCompany?: string } | undefined)?.targetCompany} />
+                          <CompanyFeedback feedback={detail.company_feedback} targetCompany={detail.ranking?.targetCompany} />
                         )}
                       </div>
                     )
@@ -820,20 +827,23 @@ export default function ProjectsPage() {
                   {(detail.strengths?.length > 0 || detail.weaknesses?.length > 0) && (
                     <FeedbackCards strengths={detail.strengths || []} weaknesses={detail.weaknesses || []} />
                   )}
+                  {/* 같은 직군 합격 문서 공통 요소 대조 + 다음에 할 일 (결과 화면과 같은 순서) */}
+                  {detail.ranking?.report && (
+                    <StandardsCheck
+                      items={detail.ranking.report.standardsCheck ?? []}
+                      nextSteps={detail.ranking.report.nextSteps}
+                      domainLabel={detail.ranking.report.domainLabel}
+                    />
+                  )}
                   {detail.categories?.length > 0 && (
-                    <DesignScores data={detail.categories} />
+                    <DesignScores data={detail.categories} domainLabel={detail.ranking?.report?.domainLabel} />
                   )}
                   {detail.analysis_source === "pdf" && detail.readability_categories && detail.readability_categories.length > 0 ? (
-                    <>
-                      <ReadabilityScores data={detail.readability_categories} />
-                      {detail.layout_recommendations && detail.layout_recommendations.length > 0 && (
-                        <LayoutRecommendations data={detail.layout_recommendations} />
-                      )}
-                    </>
+                    <ReadabilityScores data={detail.readability_categories} />
                   ) : detail.analysis_source === "url" ? (
                     <div className="p-4 bg-card border border-border rounded-xl text-center">
                       <Eye className="w-6 h-6 text-muted-foreground/80 mx-auto mb-2" />
-                      <p className="text-muted-foreground text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
+                      <p className="text-muted-foreground text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석을 받을 수 있습니다</p>
                     </div>
                   ) : null}
                   {selectedProject && (

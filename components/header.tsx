@@ -5,10 +5,13 @@
  * 로그인 상태: 분석하기, 마이페이지, 관리자(어드민만) 링크 표시.
  * 미로그인: 구독 모달(PricingModal) + Google 로그인 버튼.
  * 사용: AuthHeader(서버 컴포넌트)에서 유저 정보 주입 후 렌더링.
+ * 2026-10-13: 분석·프로젝트·마이페이지 전용 헤더(analyze-header)를 없애고 모든 페이지가 이 헤더 하나를 쓴다.
+ *   지금 있는 페이지 메뉴는 코발트로 표시. 서비스 소개·FAQ는 다른 페이지에서도 홈의 해당 위치로 간다.
  */
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { LogOut, User, Shield, FolderOpen, Mic, Library } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BrandLogo } from "@/components/brand-logo"
@@ -28,6 +31,10 @@ type HeaderProps = {
 }
 
 export function Header({ user }: HeaderProps) {
+  const pathname = usePathname() ?? "/"
+  const on = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+  const navClass = (href: string) =>
+    `text-sm font-medium transition-colors ${on(href) ? "text-primary" : "text-muted-foreground hover:text-primary"}`
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -36,25 +43,25 @@ export function Header({ user }: HeaderProps) {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7">
-          <Link href="/analyze" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
+          <Link href="/analyze" className={navClass("/analyze")} aria-current={on("/analyze") ? "page" : undefined}>
             분석하기
           </Link>
           {(user?.isAdmin || user?.isStudent) && (
             <Link
               href="/library"
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+              className={`flex items-center gap-1.5 ${navClass("/library")}`}
             >
               <Library className="w-3.5 h-3.5" />
               라이브러리
             </Link>
           )}
-          <a href="#service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             서비스 소개
-          </a>
+          </Link>
           <PricingModal />
-          <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             FAQ
-          </a>
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -82,14 +89,14 @@ export function Header({ user }: HeaderProps) {
               <CreditChip credits={user.credits ?? null} unlimited={user.unlimitedCredits} />
               <Link
                 href="/projects"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                className={`flex items-center gap-1.5 text-sm transition-colors ${on("/projects") ? "text-primary font-medium" : "text-muted-foreground hover:text-primary"}`}
               >
                 <FolderOpen className="w-4 h-4" />
                 <span className="hidden sm:inline whitespace-nowrap">프로젝트</span>
               </Link>
               <Link
                 href="/mypage"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className={`flex items-center gap-1.5 text-sm transition-colors ${on("/mypage") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <User className="w-4 h-4" />
                 <span className="hidden md:inline max-w-[8rem] truncate whitespace-nowrap">

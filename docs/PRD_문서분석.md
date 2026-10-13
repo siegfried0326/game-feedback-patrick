@@ -138,8 +138,13 @@ PDF, JPEG, PNG, WebP, DOCX, PPTX, XLSX, XLS, PPT, TXT
 ### 5.3 가독성 세부 평가 (PDF 이미지 분석 시)
 10개 항목: 시각 위계, 정보 밀도, 색상/대비, 타이포그래피, 그리드/정렬, 다이어그램, 데이터 시각화, 여백, 시선 흐름, 아이콘/그래픽
 
-### 5.4 레이아웃 개선 제안 (PDF 이미지 분석 시)
-현재 레이아웃 vs 개선 후 레이아웃을 좌표 기반 JSON으로 출력
+### 5.4 레이아웃 개선 제안 — 2026-10-13 제거
+여러 쪽에 일부러 나눈 플로우차트를 한 쪽으로 합치라는 식의 비현실적 제안이 나와 프롬프트·화면에서 뺐다. 가독성 10개 항목 feedback에 쪽 번호와 고칠 점을 쓴다.
+
+### 5.4.1 보완점·항목 피드백 형식 (2026-10-13)
+- weaknesses 각 항목: `[문제] 한 줄 [위치] 12~14쪽 [고치는 법] 합격 문서는… + 이 문서에서 무엇을 [수정 예시] 이 문서 내용으로 고친 모습(표면 머리줄+예시 줄)` — `components/feedback-cards.tsx`가 칸으로 나눠 표시, 태그 없는 옛 결과는 한 문단
+- categories feedback: `[점수 이유]`(필수) → `[강점]` → `[보완]`(쪽 번호 + 짧은 예시). 15개 항목 모두 `components/design-scores.tsx`에서 점수 막대 아래 '이 점수인 이유'로 늘 표시
+- 공통 요소 대조·다음에 할 일·직군 판정은 `ranking.report`에 함께 저장해 프로젝트 화면·PDF에도 나옴
 
 ### 5.5 회사별 비교 피드백
 고정 8개 회사: 넥슨, 엔씨소프트, 넷마블, 크래프톤, 스마일게이트, 펄어비스, 네오위즈, 웹젠
@@ -216,7 +221,7 @@ Gemini 약점 문장을 정제하는 대신 **비교 재료 자체를 교체**�
   companyFeedback?: string     // 회사별 비교 텍스트
   analysisSource?: "pdf" | "url"
   readabilityCategories?: {...}[]     // 가독성 10개 (이미지 분석 시)
-  layoutRecommendations?: {...}[]     // 레이아웃 제안 (이미지 분석 시)
+  layoutRecommendations?: {...}[]     // 2026-10-13부터 요청 안 함 (항상 빈 배열)
   ranking?: {
     total: number
     percentile: number
@@ -256,7 +261,6 @@ categories는 JSON 배열 → 카테고리 수 변경해도 스키마 수정 불
 - 강점/보완점 카드
 - 회사별 비교 피드백
 - 가독성 점수 레이더 (이미지 분석 시)
-- 레이아웃 개선 제안 (이미지 분석 시)
 - 합격자 비교 랭킹
 
 ## 11. 관련 파일
@@ -273,7 +277,6 @@ categories는 JSON 배열 → 카테고리 수 변경해도 스키마 수정 불
 | `components/feedback-cards.tsx` | - | 강점/보완점 카드 |
 | `components/design-scores.tsx` | - | 게임디자인 점수 |
 | `components/readability-scores.tsx` | - | 가독성 점수 |
-| `components/layout-recommendations.tsx` | - | 레이아웃 제안 |
 
 ## 12. 환경변수
 

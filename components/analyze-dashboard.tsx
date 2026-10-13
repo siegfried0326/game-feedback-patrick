@@ -5,7 +5,7 @@
  * - 파일 업로드 (드래그&드롭, PDF/DOCX/XLSX/CSV/PPTX, 200MB 제한)
  * - URL 직접 분석 (크롤링 → AI 분석)
  * - 파일 크기별 3단계 처리: <30MB 직접업로드, 30~100MB 압축, 100MB+ 텍스트추출
- * - Claude AI 분석 (15개 카테고리 점수 + 강점/약점 + 랭킹 + 가독성 + 레이아웃)
+ * - Claude AI 분석 (15개 카테고리 점수 + 강점/약점 + 랭킹 + 가독성)
  * - 프로젝트 선택/생성 → 결과 자동 저장
  * - 멀티파일 탭 전환, 분석 진행률 표시, 로딩 메시지 애니메이션
  *
@@ -41,8 +41,8 @@ import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
+import { printWithExpanded } from "@/lib/use-printing"
 import { ReadabilityScores } from "@/components/readability-scores"
-import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
@@ -281,12 +281,8 @@ export function AnalyzeDashboard() {
   // 분석 결과 PDF 저장 — 브라우저 인쇄 창에서 "PDF로 저장". 파일 이름은 문서명·점수로
   const exportPdf = () => {
     const r = results[currentIndex]
-    const prevTitle = document.title
-    if (r) document.title = `문라이트아카이브_${fileBaseName(r.fileName)}_${r.score}점`
-    const restore = () => { document.title = prevTitle; window.removeEventListener("afterprint", restore) }
-    window.addEventListener("afterprint", restore)
-    // 접힌 피드백이 펼쳐질 시간을 준다 (beforeprint에서 펼침)
-    setTimeout(() => window.print(), 50)
+    // 접힌 피드백을 먼저 펼쳐 그린 뒤 인쇄한다 (펼치기 전에 쪽을 나누면 뒷부분이 잘린다)
+    printWithExpanded(r ? `문라이트아카이브_${fileBaseName(r.fileName)}_${r.score}점` : undefined)
   }
 
   // 뒤로가기: 결과 화면이나 분석 설정 창에서 누르면 다른 페이지가 아니라 업로드 화면으로 돌아온다
@@ -1412,17 +1408,12 @@ export function AnalyzeDashboard() {
 
                 {/* 문서 가독성 (PDF만) */}
                 {results[currentIndex].analysisSource === "pdf" && results[currentIndex].readabilityCategories && results[currentIndex].readabilityCategories!.length > 0 ? (
-                  <>
-                    <ReadabilityScores data={results[currentIndex].readabilityCategories!} />
-                    {results[currentIndex].layoutRecommendations && results[currentIndex].layoutRecommendations!.length > 0 && (
-                      <LayoutRecommendations data={results[currentIndex].layoutRecommendations!} />
-                    )}
-                  </>
+                  <ReadabilityScores data={results[currentIndex].readabilityCategories!} />
                 ) : results[currentIndex].analysisSource === "url" ? (
                   <Card className="bg-card border-border">
                     <CardContent className="p-6 text-center">
                       <Eye className="w-8 h-8 text-muted-foreground/80 mx-auto mb-2" />
-                      <p className="text-muted-foreground text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석과 레이아웃 개선 제안을 받을 수 있습니다</p>
+                      <p className="text-muted-foreground text-sm">PDF 파일을 업로드하면 문서의 시각적 가독성 분석을 받을 수 있습니다</p>
                     </CardContent>
                   </Card>
                 ) : null}

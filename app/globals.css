@@ -194,7 +194,12 @@
   @page { margin: 12mm; }
   html, body { background: #FFFFFF !important; }
   header, nav, nextjs-portal, [data-print-hide] { display: none !important; }
-  [data-slot="card"] { break-inside: avoid; box-shadow: none !important; }
+  /* 카드 통째로 쪽 넘김을 막으면 긴 카드가 잘리거나 큰 빈칸이 생긴다 — 항목 단위로만 막는다 */
+  [data-slot="card"] { box-shadow: none !important; }
+  li, .break-inside-avoid, [data-slot="card-header"] { break-inside: avoid; }
+  [data-slot="card-header"] { break-after: avoid; }
+  /* 펼치는 순간의 애니메이션·막대 늘어나는 중간 모습이 찍히지 않게 */
+  *, *::before, *::after { animation: none !important; transition: none !important; }
   .pt-24 { padding-top: 0 !important; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   /* 프로젝트 화면의 분석 상세 창만 인쇄 */

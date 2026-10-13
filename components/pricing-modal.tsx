@@ -3,7 +3,7 @@
  *
  * 헤더의 "가격표" 버튼 클릭 시 열리는 다이얼로그.
  * BM 개편(2026-08-05): 크레딧 + 1:1 과외 2축. 구독 판매 종료.
- * 사용: header.tsx, analyze-header.tsx
+ * 사용: header.tsx
  */
 "use client"
 

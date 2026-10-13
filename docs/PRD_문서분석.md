@@ -303,7 +303,7 @@ categories는 JSON 배열 → 카테고리 수 변경해도 스키마 수정 불
 - 분석 이력 `document_name` (scripts/022): 프로젝트 안 문서 묶음. `/analyze?projectId=&doc=`로 들어오면 그 문서의 새 버전으로 저장. 서버 액션 `assignAnalysisToProject(id, projectId, documentName)`, `setAnalysisDocument`, `renameDocument`
 
 ### 2026-10-13 직군 판정 우선순위
-1. 사용자가 분석 설정에서 고른 분야 (첫 번째 = 채점 기준)
-2. 파일명·표지 제목에 적힌 직군 (`lib/analysis/domains.ts` `explicitDomainFromTitle`) — 스캔 AI 판단보다 우선
+1. **파일명·표지 제목에 적힌 직군·형식 — 무조건 최우선** (`explicitDomainFromTitle`, `explicitFormFromTitle`). 서버에서 강제하고 설정 창에서 자물쇠로 고정
+2. 사용자가 분석 설정에서 고른 분야 (제목에 직군이 없을 때 첫 번째 = 채점 기준, 있으면 보조)
 3. Haiku 스캔 판단 → 휴리스틱 폴백
 - "종합 기획"(general)은 선택지에서 제외 (`SELECTABLE_DOMAINS`), 내부 폴백으로만 사용

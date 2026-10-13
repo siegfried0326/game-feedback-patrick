@@ -11,6 +11,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import {
   SELECTABLE_DOMAINS,
   explicitDomainFromTitle,
+  explicitFormFromTitle,
   DOMAIN_LABELS,
   DOC_FORM_LABELS,
   classifyHeuristically,
@@ -100,7 +101,7 @@ ${FORM_GUIDE}
       ? parsed.secondary.filter((d): d is DesignDomain => isDesignDomain(d))
       : heuristic.secondary
     const secondary = [aiDomain, ...aiSecondary].filter((d, i, arr) => d !== domain && d !== "general" && arr.indexOf(d) === i).slice(0, 2)
-    const docForm = isDocForm(parsed.docForm) ? parsed.docForm : heuristic.docForm
+    const docForm = explicitFormFromTitle(input.fileName, input.text) ?? (isDocForm(parsed.docForm) ? parsed.docForm : heuristic.docForm)
     const keywords = Array.isArray(parsed.keywords)
       ? parsed.keywords.filter((k): k is string => typeof k === "string" && k.trim().length > 0).map(k => k.trim()).slice(0, 12)
       : []

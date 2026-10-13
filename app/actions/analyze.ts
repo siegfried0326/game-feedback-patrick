@@ -51,6 +51,7 @@ import { maskForPrompt, scrubOutput } from "@/lib/analysis/anonymize"
 import { countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
 import { isTargetCompany } from "@/lib/analysis/companies"
 import { fileBaseName, isSameDocument } from "@/lib/analysis/doc-key"
+import { explicitDomainFromTitle, explicitFormFromTitle } from "@/lib/analysis/domains"
 import pdfParse from "pdf-parse"
 
 // ───────────────────────────────────────────
@@ -601,6 +602,16 @@ async function runAnalysis(params: {
     domain = h.domain
     secondary = h.secondary
     docForm = h.docForm
+  }
+  // 제목(파일명·표지)에 적힌 직군·형식은 무조건 우선 — 사용자 선택·AI 판단은 보조로 돌린다
+  {
+    const titledDomain = explicitDomainFromTitle(params.fileName, searchText)
+    if (titledDomain && titledDomain !== domain) {
+      secondary = [domain, ...secondary].filter((d, i, a) => d !== titledDomain && d !== "general" && a.indexOf(d) === i).slice(0, 2)
+      domain = titledDomain
+    }
+    const titledForm = explicitFormFromTitle(params.fileName, searchText)
+    if (titledForm) docForm = titledForm
   }
   // 사용자가 적은 주제·키워드나 파일명에 "포스트모템/회고"가 있으면 형식을 그쪽으로 (스캔이 놓쳐도 사용자의 표기를 따른다)
   if (docForm !== "postmortem" && /포스트 ?모템|post ?-?mortem|회고/i.test([params.fileName, ...keywords, ...(options.customTopics ?? [])].join(" "))) {

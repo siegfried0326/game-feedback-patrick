@@ -46,7 +46,7 @@ import { LayoutRecommendations } from "@/components/layout-recommendations"
 import { StandardsCheck } from "@/components/standards-check"
 import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
-import { SELECTABLE_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, isDesignDomain, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
+import { SELECTABLE_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, isDesignDomain, explicitDomainFromTitle, explicitFormFromTitle, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
 import { getProjects, createProject, assignAnalysisToProject, getProjectAnalyses } from "@/app/actions/subscription"
 import { createClient } from "@/lib/supabase/client"
 import { PAYMENTS_ENABLED } from "@/lib/payments-config"
@@ -947,7 +947,20 @@ export function AnalyzeDashboard() {
   // 분야 칩: 선택된 칩을 누르면 빠지고(최소 1개 유지), 새 칩은 3개까지 추가 · 이미 3개면 마지막 것과 교체
   // 분야 칩: 누르면 체크, 다시 누르면 해제. 최대 3개 — 넘치면 막고 안내. 먼저 고른 것이 채점 기준(주 분야)
   const [domainLimitHit, setDomainLimitHit] = useState(false)
+  const [titleLockHit, setTitleLockHit] = useState(false)
+  // 문서 제목(파일명·표지)에 적힌 분야·형식 — 무조건 첫 번째(채점 기준)로 고정
+  const titleFileName = pendingFiles[0]?.file.name ?? ""
+  const titledDomain = showKeywordEditor ? explicitDomainFromTitle(titleFileName, uploadedFileInfo?.extractedText) : null
+  const titledForm = showKeywordEditor ? explicitFormFromTitle(titleFileName, uploadedFileInfo?.extractedText) : null
+  useEffect(() => {
+    if (titledDomain && pickedDomains[0] !== titledDomain) {
+      setPickedDomains(prev => [titledDomain, ...prev.filter(x => x !== titledDomain)].slice(0, 3))
+    }
+    if (titledForm && scanDocForm !== titledForm) setScanDocForm(titledForm)
+  }, [titledDomain, titledForm, pickedDomains, scanDocForm])
   const toggleDomain = (d: DesignDomain) => {
+    if (d === titledDomain) { setTitleLockHit(true); return }
+    setTitleLockHit(false)
     if (pickedDomains.includes(d)) {
       setPickedDomains(prev => prev.filter(x => x !== d))
       setDomainLimitHit(false)
@@ -1635,6 +1648,11 @@ export function AnalyzeDashboard() {
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <p className="text-xs text-muted-foreground">
                   문서 분야 <span className="text-muted-foreground/80">· 최대 3개</span>
+                  {titledDomain && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-primary font-semibold">
+                      <Lock className="w-3 h-3" /> 문서 제목 기준으로 고정
+                    </span>
+                  )}
                 </p>
                 {/* 색 안내: 첫 번째 = 채점 기준, 두·세 번째 = 함께 참고 */}
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
@@ -1663,16 +1681,18 @@ export function AnalyzeDashboard() {
                               : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
                       }`}
                     >
-                      {picked && <Check className="w-3 h-3 shrink-0" strokeWidth={3} />}
+                      {d === titledDomain ? <Lock className="w-3 h-3 shrink-0" /> : picked && <Check className="w-3 h-3 shrink-0" strokeWidth={3} />}
                       {DOMAIN_LABELS[d]}
                     </button>
                   )
                 })}
               </div>
               <p className={`mt-1.5 px-1 text-[11px] ${
-                pickedDomains.length === 0 ? "text-primary font-semibold" : domainLimitHit && pickedDomains.length >= 3 ? "text-amber-700 font-semibold" : "text-muted-foreground"
+                titleLockHit || pickedDomains.length === 0 ? "text-primary font-semibold" : domainLimitHit && pickedDomains.length >= 3 ? "text-amber-700 font-semibold" : "text-muted-foreground"
               }`}>
-                {pickedDomains.length === 0
+                {titleLockHit && titledDomain
+                  ? `문서 제목에 "${DOMAIN_LABELS[titledDomain]}"이(가) 적혀 있어서 이 분야로 고정돼요. 다른 분야는 함께 참고로만 더할 수 있어요.`
+                  : pickedDomains.length === 0
                   ? "① 먼저 이 문서의 분야를 골라주세요 — 처음 고른 분야의 채점표로 평가해요"
                   : pickedDomains.length >= 3
                     ? domainLimitHit ? "최대 3개예요. 바꾸려면 체크된 분야를 눌러 하나 빼주세요." : "3개를 모두 골랐어요."
@@ -1686,11 +1706,14 @@ export function AnalyzeDashboard() {
                   <button
                     key={f}
                     type="button"
-                    onClick={() => setScanDocForm(f)}
-                    className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+                    onClick={() => { if (!titledForm) setScanDocForm(f) }}
+                    disabled={!!titledForm && titledForm !== f}
+                    title={titledForm && titledForm !== f ? "문서 제목에 적힌 형식으로 고정돼요" : undefined}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                       scanDocForm === f ? "bg-primary border-primary text-white font-semibold" : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
                     }`}
                   >
+                    {titledForm === f && <Lock className="w-3 h-3" />}
                     {DOC_FORM_LABELS[f]}
                   </button>
                 ))}

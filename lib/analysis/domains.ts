@@ -132,6 +132,21 @@ const TITLE_DOMAIN: Array<[Exclude<DesignDomain, "general">, RegExp]> = [
   ["system", /시스템\s?기획|콘텐츠\s?기획|컨텐츠\s?기획/i],
 ]
 
+/**
+ * 파일명·표지 제목에 적힌 문서 형식 (포스트모템·역기획·제안서 등). 제목 표기가 무조건 우선.
+ * "창작 기획서"는 "기획서"만으로는 판단하지 않고 "창작"이 있을 때만.
+ */
+export function explicitFormFromTitle(fileName?: string, text?: string): DocForm | null {
+  const pick = (src: string): DocForm | null => {
+    for (const [form, rx] of FORM_KEYWORDS) {
+      if (form === "original") { if (/창작/.test(src)) return form; continue }
+      if (rx.test(src)) return form
+    }
+    return null
+  }
+  return pick(fileName ?? "") ?? pick((text ?? "").slice(0, 300))
+}
+
 export function explicitDomainFromTitle(fileName?: string, text?: string): DesignDomain | null {
   const title = `${fileName ?? ""} ${(text ?? "").slice(0, 300)}`
   for (const [domain, rx] of TITLE_DOMAIN) if (rx.test(fileName ?? "")) return domain

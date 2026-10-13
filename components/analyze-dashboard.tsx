@@ -25,7 +25,7 @@ import { useState, useCallback, useEffect, useRef } from "react"
 import { GlossaryText } from "@/components/glossary-text"
 import { useDropzone } from "react-dropzone"
 import { UPLOAD_ACCEPT, UPLOAD_MAX_SIZE, hasPendingUpload, takePendingUpload, getDroppedFiles } from "@/lib/pending-upload"
-import { notifyCreditsChanged } from "@/components/credit-chip"
+import { notifyCreditsChanged, notifyCreditsPending } from "@/components/credit-chip"
 import { CompanyFeedback } from "@/components/company-feedback"
 import { GradeScale } from "@/components/grade-scale"
 import { docKeyLoose, fileBaseName } from "@/lib/analysis/doc-key"
@@ -328,7 +328,7 @@ export function AnalyzeDashboard() {
     window.scrollTo({ top: 0, behavior: "smooth" })
     checkBeforeAnalysis().then(a => {
       setAllowanceInfo(a)
-      if (typeof a.remaining === "number") notifyCreditsChanged(a.remaining)
+      if (a.reason !== "login_required" && !a.unlimited) notifyCreditsChanged(typeof a.remaining === "number" ? a.remaining : 0)
     }).catch(() => {})
   }
 
@@ -500,6 +500,8 @@ export function AnalyzeDashboard() {
     }
     setIsAnalyzing(true)
     setError(null)
+    // 상단 크레딧 칩에 "차감 예정" 표시 (관리자·무제한은 표시 안 함)
+    if (!allowanceInfo?.unlimited) notifyCreditsPending(MODEL_TIERS[analyzeOptions.tier].creditCost + pageExtra)
     setResults([])
     setCurrentIndex(0)
 
@@ -801,10 +803,11 @@ export function AnalyzeDashboard() {
 
     setStatusMessage("")
     setIsAnalyzing(false)
-    // 남은 크레딧 다시 읽어 화면·헤더 칩 갱신
+    notifyCreditsPending(null)
+    // 남은 크레딧 다시 읽어 화면·헤더 칩 갱신 (0이 되면 allowed=false라 remaining이 없다 → 0으로)
     checkBeforeAnalysis().then(a => {
       setAllowanceInfo(a)
-      if (typeof a.remaining === "number") notifyCreditsChanged(a.remaining)
+      if (!a.unlimited) notifyCreditsChanged(typeof a.remaining === "number" ? a.remaining : 0)
     }).catch(() => {})
     // 결과 영역으로 스크롤
     setTimeout(() => {
@@ -1150,8 +1153,8 @@ export function AnalyzeDashboard() {
 
             {isAnalyzing && <AnalysisProgress progress={fakeProgress} targetCompany={targetCompany} />}
 
-            {/* 남은 크레딧 (+ 프로젝트 화면에서 들어온 경우 저장될 프로젝트) — 한 줄 */}
-            {isLoggedIn && allowanceInfo?.allowed && (
+            {/* 프로젝트에서 들어온 경우 비교 기준 안내 — 크레딧은 상단 칩 하나로 통일 */}
+            {isLoggedIn && allowanceInfo?.allowed && selectedProjectId && (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5 min-w-0">
                   {selectedProjectId && projects.find(p => p.id === selectedProjectId) && (
@@ -1164,13 +1167,6 @@ export function AnalyzeDashboard() {
                     </>
                   )}
                 </span>
-                {!allowanceInfo.unlimited && allowanceInfo.remaining !== undefined && (
-                  <span>
-                    남은 크레딧 <span className="font-bold text-foreground">{allowanceInfo.remaining}</span>
-                    <span className="mx-1.5 text-border">|</span>
-                    <Link href="/payment/credits" className="text-primary hover:underline">충전</Link>
-                  </span>
-                )}
               </div>
             )}
 

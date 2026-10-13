@@ -518,3 +518,13 @@ export async function renameProject(id: string, newName: string) {
   if (error) return dbError("이름 변경에 실패했습니다.", error)
   return { success: true }
 }
+
+/** 상단 크레딧 칩용 — 화면에 뜰 때마다 최신 크레딧을 다시 읽는다 (서버 렌더 값이 오래될 수 있어서) */
+export async function getMyCredits(): Promise<{ credits: number | null; unlimited: boolean } | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { getHeaderCredits } = await import("@/lib/credits")
+  const c = await getHeaderCredits(supabase, user)
+  return { credits: c.credits, unlimited: c.unlimited }
+}

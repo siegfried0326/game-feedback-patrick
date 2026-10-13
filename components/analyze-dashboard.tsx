@@ -33,7 +33,7 @@ import { VersionDelta } from "@/components/version-delta"
 import { AnalysisProgress } from "@/components/analysis-progress"
 import { TARGET_COMPANIES } from "@/lib/analysis/companies"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
-import { FileText, Loader2, CheckCircle2, Download, AlertCircle, X, Lock, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
+import { FileText, Loader2, Check, CheckCircle2, Download, AlertCircle, X, Lock, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -945,11 +945,19 @@ export function AnalyzeDashboard() {
   }
 
   // 분야 칩: 선택된 칩을 누르면 빠지고(최소 1개 유지), 새 칩은 3개까지 추가 · 이미 3개면 마지막 것과 교체
+  // 분야 칩: 누르면 체크, 다시 누르면 해제. 최대 3개 — 넘치면 막고 안내. 먼저 고른 것이 채점 기준(주 분야)
+  const [domainLimitHit, setDomainLimitHit] = useState(false)
   const toggleDomain = (d: DesignDomain) => {
-    setPickedDomains(prev => {
-      if (prev.includes(d)) return prev.length > 1 ? prev.filter(x => x !== d) : prev
-      return prev.length < 3 ? [...prev, d] : [...prev.slice(0, 2), d]
-    })
+    if (pickedDomains.includes(d)) {
+      setPickedDomains(prev => prev.filter(x => x !== d))
+      setDomainLimitHit(false)
+      return
+    }
+    if (pickedDomains.length >= 3) {
+      setDomainLimitHit(true)
+      return
+    }
+    setPickedDomains(prev => [...prev, d])
   }
 
   // 2단계: 합격작 비교 시작 (확정된 직군·티어·키워드로)
@@ -1624,37 +1632,52 @@ export function AnalyzeDashboard() {
 
             {/* 문서 분야 — AI가 3개를 미리 고르고, 사용자가 바꾸거나 주제를 직접 적는다 */}
             <div className="mb-5">
-              <p className="text-xs text-muted-foreground mb-2">
-                문서 분야
-                <span className="ml-2 text-primary">
-                  {detectedDomain ? "AI가 3개를 골랐어요" : "분야를 골라주세요"}
-                </span>
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <p className="text-xs text-muted-foreground">
+                  문서 분야 <span className="text-muted-foreground/80">· 최대 3개</span>
+                </p>
+                {/* 색 안내: 첫 번째 = 채점 기준, 두·세 번째 = 함께 참고 */}
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary" /> 첫 번째 · 채점 기준</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-brand-sky" /> 두·세 번째 · 함께 참고</span>
+                </div>
+              </div>
               <div className="grid grid-cols-4 gap-1.5">
                 {ALL_DOMAINS.map((d) => {
                   const order = pickedDomains.indexOf(d)
                   const picked = order >= 0
+                  const full = pickedDomains.length >= 3
                   return (
                     <button
                       key={d}
                       type="button"
                       onClick={() => toggleDomain(d)}
-                      className={`px-2 py-1.5 rounded-lg text-xs border transition-colors ${
+                      aria-pressed={picked}
+                      className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs border transition-colors ${
                         order === 0
                           ? "bg-primary border-primary text-white font-semibold"
                           : picked
-                            ? "bg-primary/10 border-primary text-primary font-medium"
-                            : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                            ? "bg-brand-sky border-brand-sky text-brand-ink font-semibold"
+                            : full
+                              ? "bg-secondary border-border text-muted-foreground/50"
+                              : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
                       }`}
                     >
-                      {order === 0 && (
-                        <span className="mr-1 rounded bg-white/25 px-1 py-px text-[10px] font-bold">주</span>
-                      )}
+                      {picked && <Check className="w-3 h-3 shrink-0" strokeWidth={3} />}
                       {DOMAIN_LABELS[d]}
                     </button>
                   )
                 })}
               </div>
+              <p className={`mt-1.5 px-1 text-[11px] ${
+                pickedDomains.length === 0 ? "text-primary font-semibold" : domainLimitHit && pickedDomains.length >= 3 ? "text-amber-700 font-semibold" : "text-muted-foreground"
+              }`}>
+                {pickedDomains.length === 0
+                  ? "① 먼저 이 문서의 분야를 골라주세요 — 처음 고른 분야의 채점표로 평가해요"
+                  : pickedDomains.length >= 3
+                    ? domainLimitHit ? "최대 3개예요. 바꾸려면 체크된 분야를 눌러 하나 빼주세요." : "3개를 모두 골랐어요."
+                    : `② 함께 다루는 분야가 있으면 ${3 - pickedDomains.length}개 더 고를 수 있어요 (선택)`}
+              </p>
 
               {/* 문서 형식 — 포스트모템·역기획 등 형식에 따라 평가 기준이 달라진다 */}
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -1706,7 +1729,7 @@ export function AnalyzeDashboard() {
                 </button>
               </div>
               <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
-                <span className="font-semibold text-foreground/80">주</span> 표시 분야의 채점표로 평가하고, 나머지는 보조로 참고해요. 눌러서 빼거나 바꿀 수 있어요.
+                칩을 누르면 체크되고, 다시 누르면 빠져요.
               </p>
             </div>
 
@@ -1803,7 +1826,7 @@ export function AnalyzeDashboard() {
               </button>
               <button
                 onClick={handleStartComparison}
-                disabled={!canAffordTier(selectedTier)}
+                disabled={!canAffordTier(selectedTier) || pickedDomains.length === 0}
                 className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye className="w-4 h-4" />

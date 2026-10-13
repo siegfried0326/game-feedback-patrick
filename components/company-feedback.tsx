@@ -22,7 +22,8 @@ function Emphasized({ text }: { text: string }) {
 }
 
 export function CompanyFeedback({ feedback, targetCompany }: { feedback: string; targetCompany?: string | null }) {
-  const [showOthers, setShowOthers] = useState(false)
+  // 다른 회사 분석도 처음부터 펼쳐서 보여준다 (접기는 가능)
+  const [showOthers, setShowOthers] = useState(true)
   const printing = usePrinting()
   const paragraphs = splitCompanyFeedback(feedback)
   if (paragraphs.length === 0) return null

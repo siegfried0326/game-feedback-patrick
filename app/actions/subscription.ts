@@ -332,7 +332,7 @@ export async function saveAnalysisHistory(result: {
   const baseRow = {
     user_id: user.id,
     project_id: result.projectId ?? null,
-    file_name: result.fileName,
+    file_name: result.fileName.normalize("NFC"),
     overall_score: result.score,
     categories: result.categories,
     strengths: result.strengths,

@@ -927,6 +927,63 @@ async function findPreviousVersion(fileName: string, documentName?: string | nul
   }
 }
 
+/** 같은 문서의 지난 분석 설정 (분석 설정 창 자동 채움용) */
+export type SavedDocSettings = {
+  documentName: string
+  analyzedAt: string
+  domains: DesignDomain[]
+  docForm: DocForm | null
+  topics: string[]
+  /** 기록이 없으면 undefined, '회사 무관'이었으면 null */
+  targetCompany?: string | null
+}
+
+/**
+ * 올린 파일과 같은 문서(버전 번호·"최종" 등 무시)를 이전에 분석한 적이 있으면 그때 고른 설정을 돌려준다.
+ * 프로젝트에 저장했든 안 했든 내 분석 이력 전체에서 가장 최근 것. 홈·분석 화면에 바로 올려도 설정을 다시 안 고르게.
+ */
+export async function getSavedSettingsForFile(fileName: string): Promise<SavedDocSettings | null> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const { data } = await supabase
+      .from("analysis_history")
+      .select("file_name, document_name, ranking, design_domain, analyzed_at")
+      .eq("user_id", user.id)
+      .order("analyzed_at", { ascending: false })
+      .limit(100)
+    type Row = { file_name: string; document_name?: string | null; ranking?: Record<string, unknown> | null; design_domain?: string | null; analyzed_at: string }
+    const rows = ((data ?? []) as Row[]).map(r => ({ ...r, file_name: (r.file_name || "").normalize("NFC"), document_name: r.document_name?.normalize("NFC") ?? null }))
+    const key = fileBaseName(fileName.normalize("NFC"))
+    const hit = rows.find(r => isSameDocument(r, key))
+    if (!hit) return null
+
+    const ranking = (hit.ranking ?? {}) as { targetCompany?: unknown; settings?: { domains?: unknown; docForm?: unknown; topics?: unknown } }
+    const rawDomains = ranking.settings?.domains
+    const rawForm = ranking.settings?.docForm
+    const rawTopics = ranking.settings?.topics
+    const savedDomains = Array.isArray(rawDomains) ? rawDomains.filter(isDesignDomain) : []
+    const domains = (savedDomains.length > 0 ? savedDomains : isDesignDomain(hit.design_domain) ? [hit.design_domain] : [])
+      .filter(d => d !== "general")
+    const topics = Array.isArray(rawTopics) ? rawTopics.filter((t): t is string => typeof t === "string") : []
+    const out: SavedDocSettings = {
+      documentName: hit.document_name?.trim() || fileBaseName(hit.file_name),
+      analyzedAt: hit.analyzed_at,
+      domains,
+      docForm: isDocForm(rawForm) && rawForm !== "unknown" ? rawForm : null,
+      topics,
+    }
+    if ("targetCompany" in ranking) {
+      const c = ranking.targetCompany
+      out.targetCompany = typeof c === "string" && isTargetCompany(c) ? c : null
+    }
+    return out
+  } catch {
+    return null
+  }
+}
+
 /** PDF 원본의 쪽수 (첫 쪽만 파싱해 빠르게). 읽지 못하면 null */
 async function countPdfPages(buffer: Buffer): Promise<number | null> {
   try {

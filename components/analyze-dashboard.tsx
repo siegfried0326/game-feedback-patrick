@@ -45,7 +45,7 @@ import { StepBox, StepTrail, type StepState } from "@/components/analysis-step"
 import { printWithExpanded } from "@/lib/use-printing"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { StandardsCheck } from "@/components/standards-check"
-import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument } from "@/app/actions/analyze"
+import { analyzeDocumentDirect, analyzeUrlDirect, deleteFileFromStorage, checkBeforeAnalysis, scanDocument, getSavedSettingsForFile, type SavedDocSettings } from "@/app/actions/analyze"
 import { MODEL_TIERS, DEFAULT_TIER, type ModelTier } from "@/lib/analysis/model"
 import { SELECTABLE_DOMAINS, DOMAIN_LABELS, DOC_FORM_LABELS, pickThreeDomains, isDesignDomain, explicitDomainFromTitle, explicitFormFromTitle, type DesignDomain, type DocForm } from "@/lib/analysis/domains"
 import { getProjects, createProject, assignAnalysisToProject, getProjectAnalyses } from "@/app/actions/subscription"
@@ -394,6 +394,26 @@ export function AnalyzeDashboard() {
       }
     }
     setSettingsNote(notes.length ? `지난 분석의 ${notes.join("·")} 설정을 불러왔어요` : "")
+  }
+
+  // 같은 문서(버전 번호 무시)의 지난 분석 설정 — 어디서 올리든 다시 고르지 않게. 제목 고정이 있으면 그쪽이 이긴다
+  const applyFileSettings = (saved: SavedDocSettings) => {
+    const loaded: string[] = []
+    if (saved.domains.length > 0) {
+      setPickedDomains(pickThreeDomains(saved.domains[0], saved.domains.slice(1)))
+      loaded.push("분야")
+    }
+    if (saved.docForm) { setScanDocForm(saved.docForm); loaded.push("형식") }
+    if (saved.topics.length > 0) { setCustomTopics(saved.topics); loaded.push("주제") }
+    if (saved.targetCompany !== undefined) {
+      setTargetCompany(saved.targetCompany)
+      setCompanyConfirmed(true)
+      loaded.push("회사")
+    }
+    if (loaded.length === 0) return
+    // 사용자가 직접 골랐던 값이라 '자동으로 골랐어요' 표시는 하지 않는다
+    setTouchedSteps({ domain: saved.domains.length > 0, form: !!saved.docForm })
+    setSettingsNote(`지난번 "${saved.documentName}" 분석 때 고른 ${loaded.join("·")} 설정을 불러왔어요`)
   }
 
   // 결과가 프로젝트에 저장돼 있으면 같은 문서의 직전 버전을 찾아 비교한다
@@ -880,10 +900,14 @@ export function AnalyzeDashboard() {
       setUploadedFileInfo({ fileUrl: "", filePath: "", mimeType: fileStatus.file.type, extractedText })
 
       // 직군·형식·키워드 스캔 (Haiku, 크레딧 차감 없음). 서버에는 앞 8000자만 전송
-      const result = await scanDocument({
-        extractedText: extractedText.slice(0, 8000),
-        fileName: fileStatus.file.name,
-      })
+      // 같은 문서를 전에 분석했으면 그때 설정도 함께 가져온다 (스캔과 동시에)
+      const [result, savedForFile] = await Promise.all([
+        scanDocument({
+          extractedText: extractedText.slice(0, 8000),
+          fileName: fileStatus.file.name,
+        }),
+        getSavedSettingsForFile(fileStatus.file.name).catch(() => null),
+      ])
       if (result.scan) {
         setDetectedDomain(result.scan.domain)
         setPickedDomains(pickThreeDomains(result.scan.domain, result.scan.secondary))
@@ -903,6 +927,7 @@ export function AnalyzeDashboard() {
       setCustomTopics([])
       loadLastCompany()
       applySavedSettings()
+      if (savedForFile) applyFileSettings(savedForFile)
 
       setShowKeywordEditor(true)
     } catch (err) {

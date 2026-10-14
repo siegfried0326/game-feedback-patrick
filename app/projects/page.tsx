@@ -23,6 +23,7 @@ import { DesignScores } from "@/components/design-scores"
 import { StandardsCheck } from "@/components/standards-check"
 import { GlossaryText } from "@/components/glossary-text"
 import { printWithExpanded } from "@/lib/use-printing"
+import { fileBaseName } from "@/lib/analysis/doc-key"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { VersionComparison } from "@/components/version-comparison"
 import { CompanyFeedback } from "@/components/company-feedback"
@@ -285,8 +286,8 @@ export default function ProjectsPage() {
     }
   }
 
-  const fileBase = (name: string) => name.replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
-  const docKey = (item: AnalysisItem) => item.document_name?.trim() || fileBase(item.file_name)
+  const fileBase = (name: string) => fileBaseName(name)
+  const docKey = (item: AnalysisItem) => (item.document_name?.trim() || fileBase(item.file_name)).normalize("NFC")
 
   // 문서별 묶음 — 버전은 오래된 순(v1 → vN)
   const documents = useMemo(() => {

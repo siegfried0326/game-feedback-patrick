@@ -2,12 +2,14 @@
  * 같은 문서 판별 — 파일명이 조금 달라도(버전 번호·날짜·"최종"·"수정"·"2차" 등) 같은 문서로 본다
  * 화면(저장 창 기본값·이전 버전 비교)과 서버(같은 문서 직전 분석을 점수 기준점으로)가 함께 쓴다.
  */
+// 맥에서 올린 예전 분석은 파일명 한글이 자모로 풀린 NFD로 저장돼 있다 — 비교·표시는 항상 NFC로
 export function fileBaseName(name?: string | null): string {
-  return (name || "").replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
+  return (name || "").normalize("NFC").replace(/\.(pdf|docx|pptx?|xlsx?|txt)$/i, "").trim()
 }
 
 export function docKeyLoose(name?: string | null): string {
   return (name || "")
+    .normalize("NFC")
     .toLowerCase()
     .replace(/\(\d+\)|\[\d+\]/g, "")
     .replace(/(_|\s|-)?(v|ver|버전)\s*\d+(\.\d+)*/g, "")

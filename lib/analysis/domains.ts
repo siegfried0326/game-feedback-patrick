@@ -136,7 +136,12 @@ const TITLE_DOMAIN: Array<[Exclude<DesignDomain, "general">, RegExp]> = [
  * 파일명·표지 제목에 적힌 문서 형식 (포스트모템·역기획·제안서 등). 제목 표기가 무조건 우선.
  * "창작 기획서"는 "기획서"만으로는 판단하지 않고 "창작"이 있을 때만.
  */
-export function explicitFormFromTitle(fileName?: string, text?: string): DocForm | null {
+/** 맥 파일명 NFD(자모 분리) 대비 — 제목 판정 전에 항상 NFC로 */
+const nfc = (s?: string) => (s ?? "").normalize("NFC")
+
+export function explicitFormFromTitle(rawFileName?: string, rawText?: string): DocForm | null {
+  const fileName = nfc(rawFileName)
+  const text = nfc(rawText?.slice(0, 600))
   const pick = (src: string): DocForm | null => {
     for (const [form, rx] of FORM_KEYWORDS) {
       if (form === "original") { if (/창작/.test(src)) return form; continue }
@@ -147,7 +152,9 @@ export function explicitFormFromTitle(fileName?: string, text?: string): DocForm
   return pick(fileName ?? "") ?? pick((text ?? "").slice(0, 300))
 }
 
-export function explicitDomainFromTitle(fileName?: string, text?: string): DesignDomain | null {
+export function explicitDomainFromTitle(rawFileName?: string, rawText?: string): DesignDomain | null {
+  const fileName = nfc(rawFileName)
+  const text = nfc(rawText?.slice(0, 600))
   const title = `${fileName ?? ""} ${(text ?? "").slice(0, 300)}`
   for (const [domain, rx] of TITLE_DOMAIN) if (rx.test(fileName ?? "")) return domain
   for (const [domain, rx] of TITLE_DOMAIN) if (rx.test(title)) return domain
@@ -337,8 +344,8 @@ export function classifyHeuristically(input: {
   summary?: string
   text?: string
 }): HeuristicClassification {
-  const strong = [input.fileName ?? "", ...(input.tags ?? [])].join(" ")
-  const weak = `${input.summary ?? ""} ${(input.text ?? "").slice(0, 4000)}`
+  const strong = nfc([input.fileName ?? "", ...(input.tags ?? [])].join(" "))
+  const weak = nfc(`${input.summary ?? ""} ${(input.text ?? "").slice(0, 4000)}`)
   const scores: Partial<Record<DesignDomain, number>> = {}
 
   for (const [domain, rx] of Object.entries(DOMAIN_KEYWORDS) as Array<[Exclude<DesignDomain, "general">, RegExp]>) {

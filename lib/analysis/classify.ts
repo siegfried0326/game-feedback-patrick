@@ -43,6 +43,8 @@ export async function scanDocumentWithClaude(input: {
   text: string
   apiKey: string
 }): Promise<DocumentScan> {
+  // 맥 파일명은 한글이 자모로 풀린 NFD로 올 수 있다 — 판정·프롬프트 모두 NFC로
+  input = { ...input, fileName: input.fileName.normalize("NFC"), text: input.text.normalize("NFC") }
   const heuristic = classifyHeuristically({ fileName: input.fileName, text: input.text })
   const fallback: DocumentScan = {
     domain: heuristic.domain,

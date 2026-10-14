@@ -37,6 +37,16 @@ export function hasPendingUpload(): boolean {
 }
 
 /**
+ * 맥에서 올린 파일은 이름의 한글이 자모로 풀린 NFD("ㄹ+ㅔ+ㅂ…")로 오는 경우가 있다.
+ * 그러면 "레벨디자인"·"창작" 같은 제목 판정과 문서명 묶기가 전부 어긋난다 (2026-10-14 레벨 문서 자동 인식 실패)
+ * → 받는 순간 일반 형태(NFC)로 바꾼다.
+ */
+export function withNfcName(file: File): File {
+  const nfc = file.name.normalize("NFC")
+  return nfc === file.name ? file : new File([file], nfc, { type: file.type, lastModified: file.lastModified })
+}
+
+/**
  * react-dropzone용 파일 수집기 — 표준 dataTransfer.files만 쓴다.
  *
  * 기본 수집기(file-selector 2.x)는 https 페이지에서 드롭 시 getAsFileSystemHandle().getFile()을 먼저 쓰는데,
@@ -46,17 +56,17 @@ export function hasPendingUpload(): boolean {
 export async function getDroppedFiles(event: unknown): Promise<(File | DataTransferItem)[]> {
   // 파일 선택 창(input change)
   const target = (event as { target?: { files?: FileList | null } } | null)?.target
-  if (target?.files) return Array.from(target.files)
+  if (target?.files) return Array.from(target.files).map(withNfcName)
 
   const dt = (event as { dataTransfer?: DataTransfer | null } | null)?.dataTransfer
   if (dt) {
-    if ((event as { type?: string }).type === "drop") return Array.from(dt.files ?? [])
+    if ((event as { type?: string }).type === "drop") return Array.from(dt.files ?? []).map(withNfcName)
     return Array.from(dt.items ?? []).filter(item => item.kind === "file")
   }
 
   // useFsAccessApi 경로(파일 핸들 배열) — 이 프로젝트는 쓰지 않지만 안전하게 처리
   if (Array.isArray(event)) {
-    return Promise.all(event.map((h: { getFile: () => Promise<File> }) => h.getFile()))
+    return Promise.all(event.map(async (h: { getFile: () => Promise<File> }) => withNfcName(await h.getFile())))
   }
   return []
 }

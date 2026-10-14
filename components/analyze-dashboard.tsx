@@ -31,7 +31,7 @@ import { GradeScale } from "@/components/grade-scale"
 import { docKeyLoose, fileBaseName } from "@/lib/analysis/doc-key"
 import { VersionDelta } from "@/components/version-delta"
 import { AnalysisProgress } from "@/components/analysis-progress"
-import { TARGET_COMPANIES } from "@/lib/analysis/companies"
+import { TARGET_COMPANIES, isTargetCompany } from "@/lib/analysis/companies"
 import { LARGE_DOC_NOTICE, PAGES_PER_CREDIT, countPagesFromText, extraCreditsForPages } from "@/lib/analysis/pages"
 import { FileText, Loader2, Check, CheckCircle2, Download, AlertCircle, X, Lock, FolderOpen, Plus, ArrowRight, Eye, Zap, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,7 @@ import { ScoreCard } from "@/components/score-card"
 import { RadarChartComponent } from "@/components/radar-chart-component"
 import { FeedbackCards } from "@/components/feedback-cards"
 import { DesignScores } from "@/components/design-scores"
+import { StepBox, StepTrail, type StepState } from "@/components/analysis-step"
 import { printWithExpanded } from "@/lib/use-printing"
 import { ReadabilityScores } from "@/components/readability-scores"
 import { StandardsCheck } from "@/components/standards-check"
@@ -151,6 +152,10 @@ type FileStatus = {
 }
 
 const MAX_FILES = 1
+// 분석 설정 창 단계 (진행 표시 / 시작 버튼 안내)
+const STEP_LABELS = ["분야", "형식", "회사", "깊이"]
+const STEP_ASK = ["문서 분야를 골라주세요", "문서 형식을 골라주세요", "지원 회사를 골라주세요"]
+const LAST_COMPANY_KEY = "moonlight:lastCompany"
 
 function getGrade(score: number): { grade: string; color: string } {
   if (score >= 90) return { grade: "S", color: "bg-purple-500" }
@@ -370,6 +375,7 @@ export function AnalyzeDashboard() {
     if (withCompany) {
       const c = withCompany.ranking!.targetCompany
       setTargetCompany(typeof c === "string" ? c : null)
+      setCompanyConfirmed(true)
       notes.push("지원 회사")
     }
     if (preselectedDocument) {
@@ -895,6 +901,7 @@ export function AnalyzeDashboard() {
       }
       setSelectedTier(DEFAULT_TIER)
       setCustomTopics([])
+      loadLastCompany()
       applySavedSettings()
 
       setShowKeywordEditor(true)
@@ -905,6 +912,7 @@ export function AnalyzeDashboard() {
       setScanDocForm("unknown")
       setSelectedTier(DEFAULT_TIER)
       setCustomTopics([])
+      loadLastCompany()
       applySavedSettings()
       setExtractedKeywords(extractFallbackKeywords(filesToProcess[0]?.file.name || ""))
       setShowKeywordEditor(true)
@@ -957,9 +965,36 @@ export function AnalyzeDashboard() {
     }
     if (titledForm && scanDocForm !== titledForm) setScanDocForm(titledForm)
   }, [titledDomain, titledForm, pickedDomains, scanDocForm])
+  // 분석 설정 단계: ① 분야 → ② 형식 → ③ 회사 → ④ 깊이. 지금 단계만 띄우고 다음 단계는 흐리게
+  const [touchedSteps, setTouchedSteps] = useState({ domain: false, form: false })
+  const [companyConfirmed, setCompanyConfirmed] = useState(false)
+  const stepDone = [pickedDomains.length > 0, scanDocForm !== "unknown", companyConfirmed, false]
+  const firstOpenStep = stepDone.slice(0, 3).indexOf(false)
+  const currentStep = firstOpenStep === -1 ? 3 : firstOpenStep
+  const stepState = (i: number): StepState => (i === currentStep ? "current" : stepDone[i] ? "done" : "todo")
+  // 지원 회사는 이 브라우저에서 마지막으로 고른 값을 기억한다 (처음 쓰는 사람만 ③을 직접 고르게)
+  const pickCompany = (c: string | null) => {
+    setTargetCompany(c)
+    setCompanyConfirmed(true)
+    try { localStorage.setItem(LAST_COMPANY_KEY, c ?? "") } catch { /* 저장 못 해도 이번 분석엔 영향 없음 */ }
+  }
+  const loadLastCompany = () => {
+    setTouchedSteps({ domain: false, form: false })
+    try {
+      const v = localStorage.getItem(LAST_COMPANY_KEY)
+      if (v !== null && (v === "" || isTargetCompany(v))) {
+        setTargetCompany(v === "" ? null : v)
+        setCompanyConfirmed(true)
+        return
+      }
+    } catch { /* 저장소를 못 쓰면 매번 고른다 */ }
+    setTargetCompany(null)
+    setCompanyConfirmed(false)
+  }
   const toggleDomain = (d: DesignDomain) => {
     if (d === titledDomain) { setTitleLockHit(true); return }
     setTitleLockHit(false)
+    setTouchedSteps(t => ({ ...t, domain: true }))
     if (pickedDomains.includes(d)) {
       setPickedDomains(prev => prev.filter(x => x !== d))
       setDomainLimitHit(false)
@@ -1607,16 +1642,12 @@ export function AnalyzeDashboard() {
       {showKeywordEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-card border border-border rounded-2xl p-6 max-w-lg mx-4 shadow-2xl max-h-[92vh] overflow-y-auto">
-            {/* 헤더 */}
-            <div className="text-center mb-5">
-              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Plus className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-1">분석 설정을 확인해주세요</h3>
-              <p className="text-sm text-muted-foreground">
-                직군에 맞는 채점표와 같은 직군 합격작으로 비교합니다
-              </p>
+            {/* 헤더 + 1-2-3-4 진행 표시 */}
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-bold text-foreground mb-1">분석 설정</h3>
+              <p className="text-sm text-muted-foreground">순서대로 고르면 같은 분야 합격 문서와 비교해요</p>
             </div>
+            <StepTrail labels={STEP_LABELS} current={currentStep} done={stepDone} />
 
             {/* 파일 정보 */}
             {pendingFiles.length > 0 && (
@@ -1630,22 +1661,22 @@ export function AnalyzeDashboard() {
               <p className="mb-4 text-xs text-primary bg-accent/60 rounded-lg px-3 py-2">{settingsNote}. 바꾸면 다음 분석부터 바뀐 값이 기본이 돼요.</p>
             )}
 
-            {/* 문서 분야 — AI가 3개를 미리 고르고, 사용자가 바꾸거나 주제를 직접 적는다 */}
-            <div className="mb-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <p className="text-xs text-muted-foreground">
-                  문서 분야 <span className="text-muted-foreground/80">· 최대 3개</span>
-                  {titledDomain && (
-                    <span className="ml-2 inline-flex items-center gap-1 text-primary font-semibold">
-                      <Lock className="w-3 h-3" /> 문서 제목 기준으로 고정
-                    </span>
-                  )}
-                </p>
-                {/* 색 안내: 첫 번째 = 채점 기준, 두·세 번째 = 함께 참고 */}
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary" /> 첫 번째 · 채점 기준</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-brand-sky" /> 두·세 번째 · 함께 참고</span>
-                </div>
+            {/* ① 문서 분야 — 제목·AI가 미리 고르고, 사용자가 바꾼다. 첫 번째가 채점 기준 */}
+            <div className="space-y-3 mb-4">
+            <StepBox
+              n={1}
+              title="문서 분야"
+              state={stepState(0)}
+              aside={titledDomain ? (
+                <span className="inline-flex items-center gap-1 text-[11px] text-primary font-semibold"><Lock className="w-3 h-3" /> 문서 제목 기준으로 고정</span>
+              ) : pickedDomains.length > 0 && !touchedSteps.domain ? (
+                <span className="text-[11px] text-primary font-semibold">자동으로 골랐어요 · 맞는지 확인해 주세요</span>
+              ) : null}
+            >
+              <div className="flex flex-wrap items-center gap-3 mb-2 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary" /> 첫 번째 · 채점 기준</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-brand-sky" /> 두·세 번째 · 함께 참고</span>
+                <span>최대 3개</span>
               </div>
               <div className="grid grid-cols-4 gap-1.5">
                 {SELECTABLE_DOMAINS.map((d) => {
@@ -1665,7 +1696,7 @@ export function AnalyzeDashboard() {
                             ? "bg-brand-sky border-brand-sky text-brand-ink font-semibold"
                             : full
                               ? "bg-secondary border-border text-muted-foreground/50"
-                              : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                              : "bg-card border-border text-foreground/80 hover:border-primary/50"
                       }`}
                     >
                       {d === titledDomain ? <Lock className="w-3 h-3 shrink-0" /> : picked && <Check className="w-3 h-3 shrink-0" strokeWidth={3} />}
@@ -1680,24 +1711,34 @@ export function AnalyzeDashboard() {
                 {titleLockHit && titledDomain
                   ? `문서 제목에 "${DOMAIN_LABELS[titledDomain]}"이(가) 적혀 있어서 이 분야로 고정돼요. 다른 분야는 함께 참고로만 더할 수 있어요.`
                   : pickedDomains.length === 0
-                  ? "① 먼저 이 문서의 분야를 골라주세요 — 처음 고른 분야의 채점표로 평가해요"
+                  ? "이 문서의 분야를 골라주세요 — 처음 고른 분야의 채점표로 평가해요"
                   : pickedDomains.length >= 3
                     ? domainLimitHit ? "최대 3개예요. 바꾸려면 체크된 분야를 눌러 하나 빼주세요." : "3개를 모두 골랐어요."
-                    : `② 함께 다루는 분야가 있으면 ${3 - pickedDomains.length}개 더 고를 수 있어요 (선택)`}
+                    : `함께 다루는 분야가 있으면 ${3 - pickedDomains.length}개 더 고를 수 있어요 (선택) · 다시 누르면 빠져요`}
               </p>
+            </StepBox>
 
-              {/* 문서 형식 — 포스트모템·역기획 등 형식에 따라 평가 기준이 달라진다 */}
-              <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-muted-foreground mr-1">문서 형식</span>
+            {/* ② 문서 형식 — 포스트모템·역기획 등 형식에 따라 평가 기준이 달라진다 + 주제 직접 적기(선택) */}
+            <StepBox
+              n={2}
+              title="문서 형식"
+              state={stepState(1)}
+              aside={titledForm ? (
+                <span className="inline-flex items-center gap-1 text-[11px] text-primary font-semibold"><Lock className="w-3 h-3" /> 문서 제목 기준으로 고정</span>
+              ) : scanDocForm !== "unknown" && !touchedSteps.form ? (
+                <span className="text-[11px] text-primary font-semibold">자동으로 골랐어요 · 맞는지 확인해 주세요</span>
+              ) : null}
+            >
+              <div className="flex flex-wrap items-center gap-1.5">
                 {(["original", "reverse", "proposal", "postmortem", "analysis", "table", "pr"] as DocForm[]).map(f => (
                   <button
                     key={f}
                     type="button"
-                    onClick={() => { if (!titledForm) setScanDocForm(f) }}
+                    onClick={() => { if (!titledForm) { setScanDocForm(f); setTouchedSteps(t => ({ ...t, form: true })) } }}
                     disabled={!!titledForm && titledForm !== f}
                     title={titledForm && titledForm !== f ? "문서 제목에 적힌 형식으로 고정돼요" : undefined}
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                      scanDocForm === f ? "bg-primary border-primary text-white font-semibold" : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                      scanDocForm === f ? "bg-primary border-primary text-white font-semibold" : "bg-card border-border text-foreground/80 hover:border-primary/50"
                     }`}
                   >
                     {titledForm === f && <Lock className="w-3 h-3" />}
@@ -1706,9 +1747,9 @@ export function AnalyzeDashboard() {
                 ))}
               </div>
 
-              {/* 직접 적은 주제 */}
+              {/* 직접 적은 주제 (선택) */}
               {customTopics.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
+                <div className="flex flex-wrap gap-1.5 mt-2.5">
                   {customTopics.map((kw) => (
                     <span key={kw} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 bg-accent border border-primary/25 text-accent-foreground rounded-full text-xs">
                       {kw}
@@ -1719,14 +1760,14 @@ export function AnalyzeDashboard() {
                   ))}
                 </div>
               )}
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2.5">
                 <input
                   type="text"
                   value={newKeywordInput}
                   onChange={(e) => setNewKeywordInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); handleAddKeyword() } }}
-                  placeholder="다루는 주제를 직접 적어도 돼요 (예: 보스 패턴, 가챠 확률) — Enter"
-                  className="flex-1 px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  placeholder="(선택) 다루는 주제 — 예: 보스 패턴, 가챠 확률 · Enter"
+                  className="flex-1 min-w-0 px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
                 <button
                   type="button"
@@ -1738,24 +1779,20 @@ export function AnalyzeDashboard() {
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
-                칩을 누르면 체크되고, 다시 누르면 빠져요.
-              </p>
-            </div>
+            </StepBox>
 
-            {/* 지원 회사 — 고르면 결과의 회사별 분석이 그 회사 중심으로 */}
-            <div className="mb-5">
-              <p className="text-xs text-muted-foreground mb-2">지원 회사</p>
+            {/* ③ 지원 회사 — 고르면 결과의 회사별 분석이 그 회사 중심으로 */}
+            <StepBox n={3} title="지원 회사" state={stepState(2)}>
               <div className="flex flex-wrap gap-1.5">
                 {[null, ...TARGET_COMPANIES].map((c) => (
                   <button
                     key={c ?? "none"}
                     type="button"
-                    onClick={() => setTargetCompany(c)}
+                    onClick={() => pickCompany(c)}
                     className={`px-2.5 py-1.5 rounded-lg text-xs border transition-colors ${
-                      targetCompany === c
+                      companyConfirmed && targetCompany === c
                         ? "bg-primary border-primary text-white font-semibold"
-                        : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                        : "bg-card border-border text-foreground/80 hover:border-primary/50"
                     }`}
                   >
                     {c ?? "회사 무관"}
@@ -1763,13 +1800,14 @@ export function AnalyzeDashboard() {
                 ))}
               </div>
               <p className="text-[11px] text-muted-foreground mt-1.5 px-1">
-                {targetCompany ? `결과에서 ${targetCompany} 기준 분석을 맨 앞에 보여드려요.` : "회사를 고르면 그 회사 기준 분석을 맨 앞에 보여드려요."}
+                {!companyConfirmed
+                  ? "지원할 회사를 고르거나, 정하지 않았으면 '회사 무관'을 눌러 주세요."
+                  : targetCompany ? `결과에서 ${targetCompany} 기준 분석을 맨 앞에 보여드려요.` : "회사별 합격 문서 특징을 나란히 비교해 드려요."}
               </p>
-            </div>
+            </StepBox>
 
-            {/* 분석 모드 */}
-            <div className="mb-4">
-              <p className="text-xs text-muted-foreground mb-2">분석 모드</p>
+            {/* ④ 분석 깊이 */}
+            <StepBox n={4} title="분석 깊이" state={stepState(3)}>
               <div className="grid grid-cols-2 gap-2">
                 {(Object.keys(MODEL_TIERS) as ModelTier[]).map((tier) => {
                   const info = MODEL_TIERS[tier]
@@ -1784,7 +1822,7 @@ export function AnalyzeDashboard() {
                       className={`text-left p-3 rounded-xl border transition-colors ${
                         active
                           ? "bg-primary/15 border-primary text-foreground"
-                          : "bg-secondary border-border text-foreground/80 hover:border-primary/50"
+                          : "bg-card border-border text-foreground/80 hover:border-primary/50"
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1806,6 +1844,7 @@ export function AnalyzeDashboard() {
                   이 문서는 {docPages}쪽이라 {PAGES_PER_CREDIT}쪽마다 {pageExtra > 1 ? `1크레딧, 총 ${pageExtra}크레딧이` : "1크레딧이"} 더해졌어요.
                 </p>
               )}
+            </StepBox>
             </div>
 
             {/* 크레딧 — 이 창 하나에서 차감까지 확인한다 */}
@@ -1836,11 +1875,13 @@ export function AnalyzeDashboard() {
               </button>
               <button
                 onClick={handleStartComparison}
-                disabled={!canAffordTier(selectedTier) || pickedDomains.length === 0}
+                disabled={!canAffordTier(selectedTier) || currentStep < 3}
                 className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Eye className="w-4 h-4" />
-                {MODEL_TIERS[selectedTier].label} 시작{isUnlimitedUser ? "" : ` (${selectedTierCost}크레딧)`}
+                {currentStep < 3
+                  ? `${currentStep + 1}번 ${STEP_ASK[currentStep]}`
+                  : `${MODEL_TIERS[selectedTier].label} 시작${isUnlimitedUser ? "" : ` (${selectedTierCost}크레딧)`}`}
               </button>
             </div>
           </div>

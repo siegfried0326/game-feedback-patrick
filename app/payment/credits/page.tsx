@@ -119,9 +119,10 @@ function CreditsContent() {
       }
 
       // NICEPayments 결제창 호출 (Server 승인 모델)
+      // 카드 결제만. 간편결제(카카오·네이버페이 등)는 우리 가맹 조건으로 쓸 수 없는 결제 방식이라 막았다 (2026-10-17)
       window.AUTHNICE.requestPay({
         clientId: NICEPAY_CLIENT_ID,
-        method: "cardAndEasyPay",
+        method: "card",
         orderId: orderResult.orderId!,
         amount: orderResult.amount!,
         goodsName: `문라이트 아카이브 분석 ${pkg.name}`,
